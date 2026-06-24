@@ -32,7 +32,7 @@ Server RAM 2GB sudah menjalankan beberapa service. Redis bisa ditambahkan nanti 
 
 ```bash
 php -i | grep -E "opcache.validate_timestamps|opcache.memory_consumption"
-curl -I https://apsone.web.id/storage/aps_mini.png | grep Cache-Control
-curl -I https://apsone.web.id
+curl -I https://myapsone.com/storage/aps_mini.png | grep Cache-Control
+curl -I https://myapsone.com
 sudo systemctl status php8.3-fpm nginx
 ```

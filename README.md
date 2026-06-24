@@ -331,7 +331,7 @@ sudo systemctl reload nginx
 Website production:
 
 ```text
-https://apsone.web.id
+https://myapsone.com
 ```
 
 ### Dokumentasi Singkat GitHub Actions Deploy
@@ -475,7 +475,7 @@ tail -100 /home/ubuntu/project-work-uaps/backup/logs/backup.log
 
 ## Status Production Saat Ini
 
-- Domain: https://apsone.web.id
+- Domain: https://myapsone.com
 - Deployment: native VPS, tanpa Docker
 - Web server: Nginx
 - PHP service: php8.3-fpm
