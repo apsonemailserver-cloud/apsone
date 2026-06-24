@@ -11,14 +11,14 @@ set -euo pipefail
 # - rclone configured with remote name: gdrive
 #
 # Manual run:
-#   /home/ubuntu/project-work-uaps/backup/backup_apsone.sh
+#   /home/ubuntu/apsone/backup/backup_apsone.sh
 #
 # Cron example, daily 00:00:
-#   0 0 * * * /home/ubuntu/project-work-uaps/backup/backup_apsone.sh >/dev/null 2>&1
+#   0 0 * * * /home/ubuntu/apsone/backup/backup_apsone.sh >/dev/null 2>&1
 # ============================================================
 
 APP_NAME="apsone"
-APP_DIR="/home/ubuntu/project-work-uaps"
+APP_DIR="/home/ubuntu/apsone"
 ENV_FILE="${APP_DIR}/.env"
 
 # Local backup output folder. Keep outside public folder.
@@ -132,18 +132,18 @@ backup_code() {
 
   tar -czf "${CODE_BACKUP}" \
     -C "$(dirname "${APP_DIR}")" \
-    --exclude="project-work-uaps/vendor" \
-    --exclude="project-work-uaps/node_modules" \
-    --exclude="project-work-uaps/.git" \
-    --exclude="project-work-uaps/.env" \
-    --exclude="project-work-uaps/backup/files" \
-    --exclude="project-work-uaps/backup/logs" \
-    --exclude="project-work-uaps/backup/gdrive-service-account.json" \
-    --exclude="project-work-uaps/storage/logs/*.log" \
-    --exclude="project-work-uaps/storage/framework/cache/*" \
-    --exclude="project-work-uaps/storage/framework/views/*" \
-    --exclude="project-work-uaps/storage/framework/sessions/*" \
-    "project-work-uaps"
+    --exclude="apsone/vendor" \
+    --exclude="apsone/node_modules" \
+    --exclude="apsone/.git" \
+    --exclude="apsone/.env" \
+    --exclude="apsone/backup/files" \
+    --exclude="apsone/backup/logs" \
+    --exclude="apsone/backup/gdrive-service-account.json" \
+    --exclude="apsone/storage/logs/*.log" \
+    --exclude="apsone/storage/framework/cache/*" \
+    --exclude="apsone/storage/framework/views/*" \
+    --exclude="apsone/storage/framework/sessions/*" \
+    "apsone"
 
   test -s "${CODE_BACKUP}" || fail "Code backup file is empty"
   tar -tzf "${CODE_BACKUP}" >/dev/null || fail "Code backup tar verification failed"

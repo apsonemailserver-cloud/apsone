@@ -68,8 +68,8 @@ rclone lsd gdrive:
 ## Manual Run
 
 ```bash
-chmod +x /home/ubuntu/project-work-uaps/backup/backup_apsone.sh
-/home/ubuntu/project-work-uaps/backup/backup_apsone.sh
+chmod +x /home/ubuntu/apsone/backup/backup_apsone.sh
+/home/ubuntu/apsone/backup/backup_apsone.sh
 ```
 
 ## Cron Jam 12 Malam Setiap Hari
@@ -83,7 +83,7 @@ crontab -e
 Tambahkan:
 
 ```cron
-0 0 * * * /home/ubuntu/project-work-uaps/backup/backup_apsone.sh >/dev/null 2>&1
+0 0 * * * /home/ubuntu/apsone/backup/backup_apsone.sh >/dev/null 2>&1
 ```
 
 Cek cron:
@@ -95,7 +95,7 @@ crontab -l
 ## Cek Log
 
 ```bash
-tail -100 /home/ubuntu/project-work-uaps/backup/logs/backup.log
+tail -100 /home/ubuntu/apsone/backup/logs/backup.log
 ```
 
 ## Folder Google Drive
@@ -124,5 +124,5 @@ Default:
 Bisa override saat run:
 
 ```bash
-LOCAL_RETENTION_DAYS=14 GDRIVE_RETENTION_DAYS=60 /home/ubuntu/project-work-uaps/backup/backup_apsone.sh
+LOCAL_RETENTION_DAYS=14 GDRIVE_RETENTION_DAYS=60 /home/ubuntu/apsone/backup/backup_apsone.sh
 ```

@@ -202,8 +202,8 @@ Route utama:
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/takahashiumaru/project-work-uaps.git
-cd project-work-uaps
+git clone https://github.com/apsonemailserver-cloud/apsone
+cd apsone
 ```
 
 ### 2. Install Dependency PHP
@@ -313,7 +313,7 @@ Production server berjalan tanpa Docker. Stack yang digunakan:
 Alur deploy production:
 
 ```bash
-cd /home/ubuntu/project-work-uaps
+cd /home/ubuntu/apsone
 git pull origin main
 composer install --no-dev --optimize-autoloader
 npm install
@@ -380,7 +380,7 @@ apsone_code_YYYY-MM-DD_HH-MM-SS.tar.gz
 Cron backup otomatis:
 
 ```cron
-0 0 * * * /home/ubuntu/project-work-uaps/backup/backup_apsone.sh >/dev/null 2>&1
+0 0 * * * /home/ubuntu/apsone/backup/backup_apsone.sh >/dev/null 2>&1
 ```
 
 Dokumentasi detail backup ada di:
@@ -468,7 +468,7 @@ rclone lsd gdrive:
 Cek log backup:
 
 ```bash
-tail -100 /home/ubuntu/project-work-uaps/backup/logs/backup.log
+tail -100 /home/ubuntu/apsone/backup/logs/backup.log
 ```
 
 ---
