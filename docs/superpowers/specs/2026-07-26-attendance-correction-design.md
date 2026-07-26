@@ -86,6 +86,8 @@ Attendance History gains an Action column.
 - Rejected correction: show a Rejected badge.
 - Future date: show no correction action.
 
+Attendance History also gains a `Note Koreksi` column between `Out` and `Action`. It displays the submitted correction reason for Pending, Approved, and Rejected requests, and displays `-` when the date has no correction request.
+
 The correction form is prefilled from the current attendance record when one exists. Otherwise the date is fixed and the time fields start empty. The user selects an active office and supplies a required reason.
 
 ### Approver
