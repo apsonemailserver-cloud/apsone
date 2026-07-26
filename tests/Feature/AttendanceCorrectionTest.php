@@ -113,8 +113,8 @@ class AttendanceCorrectionTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('attendance.corrections.store', '2026-07-20'), [
-                'check_in_time' => '2026-07-20T08:00',
-                'check_out_time' => '2026-07-20T17:00',
+                'check_in_time' => '08:00',
+                'check_out_time' => '17:00',
                 'station_id' => $station->id,
                 'reason' => 'Mesin absensi tidak mencatat.',
             ])
@@ -142,8 +142,8 @@ class AttendanceCorrectionTest extends TestCase
         $this->actingAs($user)
             ->from(route('attendance.history'))
             ->post(route('attendance.corrections.store', '2026-07-27'), [
-                'check_in_time' => '2026-07-28T17:00',
-                'check_out_time' => '2026-07-28T08:00',
+                'check_in_time' => '17:00',
+                'check_out_time' => '08:00',
                 'station_id' => $inactiveStation->id,
                 'reason' => 'Data salah.',
             ])
@@ -153,8 +153,8 @@ class AttendanceCorrectionTest extends TestCase
         $this->actingAs($user)
             ->from(route('attendance.history'))
             ->post(route('attendance.corrections.store', '2026-07-20'), [
-                'check_in_time' => '2026-07-21T17:00',
-                'check_out_time' => '2026-07-21T08:00',
+                'check_in_time' => '17:61',
+                'check_out_time' => 'bukan-jam',
                 'station_id' => $inactiveStation->id,
                 'reason' => 'Data salah.',
             ])
@@ -183,8 +183,8 @@ class AttendanceCorrectionTest extends TestCase
         $this->actingAs($user)
             ->from(route('attendance.history'))
             ->post(route('attendance.corrections.store', '2026-07-20'), [
-                'check_in_time' => '2026-07-20T09:00',
-                'check_out_time' => '2026-07-20T18:00',
+                'check_in_time' => '09:00',
+                'check_out_time' => '18:00',
                 'station_id' => $station->id,
                 'reason' => 'Pengajuan kedua.',
             ])
@@ -357,6 +357,79 @@ class AttendanceCorrectionTest extends TestCase
             ->assertOk()
             ->assertSee('Pending')
             ->assertDontSee($correctionUrl, false);
+    }
+
+    public function test_correction_form_uses_time_only_inputs(): void
+    {
+        [$user] = $this->makeUserAndStation();
+
+        $response = $this->actingAs($user)
+            ->get(route('attendance.corrections.create', '2026-07-20'))
+            ->assertOk();
+
+        $this->assertMatchesRegularExpression(
+            '/<input\s+type="time"\s+id="check_in_time"/',
+            $response->getContent()
+        );
+        $this->assertMatchesRegularExpression(
+            '/<input\s+type="time"\s+id="check_out_time"/',
+            $response->getContent()
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/<input\s+type="datetime-local"\s+id="check_(?:in|out)_time"/',
+            $response->getContent()
+        );
+    }
+
+    public function test_time_only_overnight_submission_uses_fixed_date_and_next_day_checkout(): void
+    {
+        [$user, $station] = $this->makeUserAndStation();
+
+        $this->actingAs($user)
+            ->post(route('attendance.corrections.store', '2026-07-20'), [
+                'check_in_time' => '22:00',
+                'check_out_time' => '06:00',
+                'station_id' => $station->id,
+                'reason' => 'Shift malam.',
+            ])
+            ->assertRedirect(route('attendance.history'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('attendance_corrections', [
+            'user_id' => $user->id,
+            'attendance_date' => '2026-07-20',
+            'proposed_check_in_time' => '2026-07-20 22:00:00',
+            'proposed_check_out_time' => '2026-07-21 06:00:00',
+        ]);
+    }
+
+    public function test_history_displays_correction_note_and_placeholder(): void
+    {
+        [$user, $station] = $this->makeUserAndStation();
+
+        AttendanceCorrection::create([
+            'user_id' => $user->id,
+            'station_id' => $station->id,
+            'attendance_date' => '2026-07-20',
+            'proposed_check_in_time' => '2026-07-20 08:00:00',
+            'proposed_check_out_time' => '2026-07-20 17:00:00',
+            'reason' => 'Lupa absen karena perangkat mati.',
+            'status' => AttendanceCorrection::STATUS_PENDING,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('attendance.history', ['month' => '2026-07']))
+            ->assertOk();
+
+        $this->assertStringContainsString('Note Koreksi', $response->getContent());
+        $this->assertStringContainsString(
+            'Lupa absen karena perangkat mati.',
+            $response->getContent()
+        );
+        $this->assertStringContainsString(
+            '<td class="correction-note">-</td>',
+            $response->getContent()
+        );
     }
 
     private function makeUserAndStation(): array

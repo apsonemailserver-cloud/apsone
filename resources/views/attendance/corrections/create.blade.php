@@ -31,26 +31,26 @@
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label for="check_in_time" class="form-label">Date In</label>
+                            <label for="check_in_time" class="form-label">Jam In</label>
                             <input
-                                type="datetime-local"
+                                type="time"
                                 id="check_in_time"
                                 name="check_in_time"
                                 class="form-control @error('check_in_time') is-invalid @enderror"
-                                value="{{ old('check_in_time', $attendance?->check_in_time ? \Carbon\Carbon::parse($attendance->check_in_time)->format('Y-m-d\TH:i') : '') }}"
+                                value="{{ old('check_in_time', $attendance?->check_in_time ? \Carbon\Carbon::parse($attendance->check_in_time)->format('H:i') : '') }}"
                                 required>
                             @error('check_in_time')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label for="check_out_time" class="form-label">Date Out</label>
+                            <label for="check_out_time" class="form-label">Jam Out</label>
                             <input
-                                type="datetime-local"
+                                type="time"
                                 id="check_out_time"
                                 name="check_out_time"
                                 class="form-control @error('check_out_time') is-invalid @enderror"
-                                value="{{ old('check_out_time', $attendance?->check_out_time ? \Carbon\Carbon::parse($attendance->check_out_time)->format('Y-m-d\TH:i') : '') }}"
+                                value="{{ old('check_out_time', $attendance?->check_out_time ? \Carbon\Carbon::parse($attendance->check_out_time)->format('H:i') : '') }}"
                                 required>
                             @error('check_out_time')
                                 <div class="invalid-feedback">{{ $message }}</div>

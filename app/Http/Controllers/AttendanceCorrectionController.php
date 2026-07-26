@@ -89,27 +89,8 @@ class AttendanceCorrectionController extends Controller
         }
 
         $validated = $request->validate([
-            'check_in_time' => [
-                'required',
-                'date',
-                function (string $attribute, mixed $value, \Closure $fail) use ($attendanceDate): void {
-                    if (Carbon::parse($value)->toDateString() !== $attendanceDate) {
-                        $fail('Tanggal check-in harus sama dengan tanggal yang dikoreksi.');
-                    }
-                },
-            ],
-            'check_out_time' => [
-                'required',
-                'date',
-                'after:check_in_time',
-                function (string $attribute, mixed $value, \Closure $fail) use ($attendanceDate): void {
-                    $latestDate = Carbon::parse($attendanceDate)->addDay()->toDateString();
-
-                    if (Carbon::parse($value)->toDateString() > $latestDate) {
-                        $fail('Check-out paling lambat satu hari setelah tanggal koreksi.');
-                    }
-                },
-            ],
+            'check_in_time' => ['required', 'date_format:H:i'],
+            'check_out_time' => ['required', 'date_format:H:i'],
             'station_id' => [
                 'required',
                 Rule::exists('stations', 'id')->where(
@@ -118,6 +99,19 @@ class AttendanceCorrectionController extends Controller
             ],
             'reason' => ['required', 'string', 'max:2000'],
         ]);
+
+        $checkIn = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            "{$attendanceDate} {$validated['check_in_time']}"
+        );
+        $checkOut = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            "{$attendanceDate} {$validated['check_out_time']}"
+        );
+
+        if ($checkOut->lessThanOrEqualTo($checkIn)) {
+            $checkOut->addDay();
+        }
 
         $attendance = Attendance::where('user_id', Auth::id())
             ->whereDate('check_in_time', $attendanceDate)
@@ -129,8 +123,8 @@ class AttendanceCorrectionController extends Controller
                 'attendance_id' => $attendance?->id,
                 'station_id' => $validated['station_id'],
                 'attendance_date' => $attendanceDate,
-                'proposed_check_in_time' => $validated['check_in_time'],
-                'proposed_check_out_time' => $validated['check_out_time'],
+                'proposed_check_in_time' => $checkIn,
+                'proposed_check_out_time' => $checkOut,
                 'reason' => $validated['reason'],
                 'status' => AttendanceCorrection::STATUS_PENDING,
             ]);

@@ -43,6 +43,7 @@
                                 <th>Shift</th>
                                 <th>In</th>
                                 <th>Out</th>
+                                <th>Note Koreksi</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -112,6 +113,7 @@
                                 " style="border-radius: 0.25rem;">
                                     {{ $checkOut ? $checkOut->format('H:i') : '-' }}
                                 </td>
+                                <td class="correction-note">{{ $correction?->reason ?? '-' }}</td>
                                 <td>
                                     @if ($correction)
                                         @php
