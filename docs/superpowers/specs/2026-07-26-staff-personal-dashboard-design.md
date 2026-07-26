@@ -31,16 +31,18 @@ The existing greeting, station scope, attendance action, navigation, and theme b
 
 ### KPI Cards
 
-1. **Pengerjaan Hari Ini**
-   - Count distinct flights assigned to the authenticated user today.
+1. **Pengerjaan 1 Bulan Terakhir**
+   - Count distinct flights assigned to the authenticated user during the last
+     30 calendar days, inclusive of today.
    - Assignment is resolved through `flight_details.schedule_id` to `schedules.user_id`.
-2. **Persentase Kehadiran Anda**
-   - Calculate month-to-date attendance through today.
-   - Denominator: authenticated user's scheduled dates from the first day of the current month through today.
+2. **Persentase Kehadiran Anda (1 Bulan Terakhir)**
+   - Calculate attendance during the last 30 calendar days, inclusive of today.
+   - Denominator: authenticated user's scheduled dates during that period.
    - Numerator: those scheduled dates with at least one attendance record containing `check_in_time`.
    - Return `0%` when no scheduled date exists.
-3. **Penerbangan Selesai**
-   - Count the authenticated user's assigned flights today whose `flights.status` is true.
+3. **Penerbangan Selesai (1 Bulan Terakhir)**
+   - Count the authenticated user's assigned flights during the last 30 calendar
+     days whose `flights.status` is true.
 
 ### Riwayat Presensi Anda
 
@@ -81,14 +83,11 @@ inclusive of today (today plus the previous six days), so Staff can see recent
 station operations. Existing action authorization remains unchanged. The
 section title includes **(7 Hari Terakhir)**.
 
-### KPI Periods
+### Shared Monthly Period
 
-The three KPI cards remain based on today or month-to-date as originally
-specified. Expanding the table histories does not change:
-
-- **Pengerjaan Hari Ini**;
-- **Persentase Kehadiran Anda** (month-to-date);
-- **Penerbangan Selesai** (today).
+The three KPI cards and the Staff assignment table share the same rolling
+30-calendar-day period, inclusive of today. This keeps the summary values
+consistent with the rows shown under **Data Pengerjaan (1 Bulan Terakhir)**.
 
 ## Management Dashboard
 
@@ -123,8 +122,10 @@ Feature tests verify:
 - operational roles receive the Staff dashboard;
 - each management role, including a comma-separated multi-role user, retains the management dashboard;
 - management-only labels and data are absent from Staff responses;
-- Staff KPI counts use only the authenticated user's assigned flights;
-- attendance percentage uses scheduled month-to-date dates and authenticated-user attendance;
+- Staff KPI counts use only the authenticated user's assigned flights from the
+  last 30 calendar days;
+- attendance percentage uses the authenticated user's scheduled dates and
+  attendance from the last 30 calendar days;
 - attendance history contains only the authenticated user's records;
 - attendance history includes records inside the last seven calendar days and
   excludes older records;
@@ -132,7 +133,8 @@ Feature tests verify:
   from the last 30 calendar days and excludes older records;
 - station flight data includes only the last seven calendar days, excludes
   older records, and excludes flights from other stations;
-- the three KPI values retain their original today/month-to-date periods;
+- the three KPI values use the same rolling 30-calendar-day period as the
+  assignment table;
 - Staff dashboard renders valid empty states.
 
 ## Compatibility
