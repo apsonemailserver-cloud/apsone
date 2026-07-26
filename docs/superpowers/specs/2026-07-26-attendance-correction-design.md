@@ -23,17 +23,18 @@ The feature does not include repeat submissions, multi-level approval, notificat
 1. A user may submit at most one attendance correction for a calendar date for the lifetime of that date's correction record.
 2. Approved and rejected corrections are final. A rejected correction cannot be resubmitted.
 3. Corrections are allowed for today and past dates only. Future dates are not eligible.
-4. Check-in must fall on the selected attendance date.
-5. Check-out must be later than check-in. It may fall on the following day to support overnight shifts.
-6. Office must reference an active station from the database.
-7. Submitting a correction does not modify `attendances`.
-8. The authorized approver is:
+4. The correction form accepts time-only values (`HH:mm`) because the attendance date is already fixed by the selected history row.
+5. The server combines the submitted check-in time with the fixed attendance date.
+6. The server initially combines the submitted check-out time with the same date. If check-out is earlier than or equal to check-in, check-out is interpreted as occurring on the following day to support overnight shifts.
+7. Office must reference an active station from the database.
+8. Submitting a correction does not modify `attendances`.
+9. The authorized approver is:
    - an Admin; or
    - the authenticated user whose `fullname` exactly matches the applicant's `manager` field.
-9. Approval applies the proposal atomically:
+10. Approval applies the proposal atomically:
    - create an attendance record when none exists for the applicant and correction date; or
    - update the existing attendance record's check-in, check-out, and office.
-10. Rejection changes only the correction status and decision audit fields.
+11. Rejection changes only the correction status and decision audit fields.
 
 ## Data Model
 
@@ -88,7 +89,7 @@ Attendance History gains an Action column.
 
 Attendance History also gains a `Note Koreksi` column between `Out` and `Action`. It displays the submitted correction reason for Pending, Approved, and Rejected requests, and displays `-` when the date has no correction request.
 
-The correction form is prefilled from the current attendance record when one exists. Otherwise the date is fixed and the time fields start empty. The user selects an active office and supplies a required reason.
+The correction form is prefilled from the current attendance record when one exists. The attendance date is displayed as a fixed, read-only value. `Jam In` and `Jam Out` use time-only inputs and contain no date picker. When no attendance exists, both time fields start empty. The user selects an active office and supplies a required reason.
 
 ### Approver
 
@@ -113,7 +114,9 @@ Feature tests will verify:
 
 - a user can open and submit a valid correction for their own eligible date;
 - office options come from active stations;
-- future dates and invalid time ordering are rejected;
+- future dates and malformed time values are rejected;
+- time-only input is combined with the fixed attendance date;
+- check-out earlier than or equal to check-in is stored on the following day;
 - a second correction for the same user and date is rejected after pending, approval, or rejection;
 - users cannot submit on behalf of another user;
 - the configured manager sees and can decide the request;
@@ -124,7 +127,8 @@ Feature tests will verify:
 - approval saves `station_id`;
 - rejection leaves attendance unchanged;
 - a decided request cannot be decided again;
-- Attendance History renders the correct action or status.
+- Attendance History renders the correct action or status;
+- Attendance History displays the correction reason in `Note Koreksi`, or `-` when no correction exists.
 
 ## Migration and Compatibility
 
