@@ -1344,7 +1344,174 @@
                 </div>
             </div>
         @endif
+        @if (! $showManagementDashboard)
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card stat-card stat-card-primary shadow-sm">
+                    <div class="card-body">
+                        <div class="stat-title">Pengerjaan Hari Ini</div>
+                        <div class="stat-value">{{ $personalAssignmentsToday }}</div>
+                        <i class="fas fa-users stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card stat-card-success shadow-sm">
+                    <div class="card-body">
+                        <div class="stat-title">Persentase Kehadiran Anda</div>
+                        <div class="stat-value" data-animate-counter="false">{{ number_format($personalAttendancePercentage, 2) }}%</div>
+                        <i class="fas fa-user-check stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card stat-card-info shadow-sm">
+                    <div class="card-body">
+                        <div class="stat-title">Penerbangan Selesai</div>
+                        <div class="stat-value">{{ $personalCompletedFlightsToday }}</div>
+                        <i class="fas fa-plane-departure stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- RIWAYAT PRESENSI PERSONAL --}}
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="modern-card">
+                    <div
+                        class="card-header chart-header d-flex justify-content-between align-items-center pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-3 p-2 me-2 text-primary d-flex align-items-center justify-content-center"
+                                style="width: 34px; height: 34px; background-color: var(--primary-soft);">
+                                <i class="bx bx-list-ul fs-5"></i>
+                            </div>
+                            <h6 class="mb-0 fw-bold text-dark">Riwayat Presensi Anda</h6>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Office</th>
+                                    <th>Shift</th>
+                                    <th>In</th>
+                                    <th>Out</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($personalAttendanceHistory as $attendance)
+                                    @php
+                                        $attendanceDate = $attendance->check_in_time
+                                            ? \Carbon\Carbon::parse($attendance->check_in_time)
+                                            : \Carbon\Carbon::parse($attendance->created_at);
+                                        $schedule = $personalSchedules[$attendanceDate->toDateString()] ?? null;
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $attendanceDate->translatedFormat('d M Y') }}</td>
+                                        <td>{{ $attendance->station?->code ?? Auth::user()->station ?? '-' }}</td>
+                                        <td>
+                                            @if ($schedule?->shift)
+                                                {{ \Carbon\Carbon::parse($schedule->shift->start_time)->format('H:i') }}
+                                                -
+                                                {{ \Carbon\Carbon::parse($schedule->shift->end_time)->format('H:i') }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                        <td>{{ $attendance->check_in_time ? \Carbon\Carbon::parse($attendance->check_in_time)->format('H:i') : '-' }}</td>
+                                        <td>{{ $attendance->check_out_time ? \Carbon\Carbon::parse($attendance->check_out_time)->format('H:i') : '-' }}</td>
+                                        <td>
+                                            @if (! $attendance->check_in_time)
+                                                <span class="badge bg-label-danger">Tidak Lengkap</span>
+                                            @elseif (! $attendance->check_out_time)
+                                                <span class="badge bg-label-warning">Belum Check-out</span>
+                                            @else
+                                                <span class="badge bg-label-success">Hadir</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
+                                            <p class="mb-0">Belum ada riwayat presensi.</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- PENGERJAAN PERSONAL HARI INI --}}
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="modern-card">
+                    <div
+                        class="card-header chart-header d-flex justify-content-between align-items-center pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-3 p-2 me-2 text-primary d-flex align-items-center justify-content-center"
+                                style="width: 34px; height: 34px; background-color: var(--primary-soft);">
+                                <i class="bx bx-list-ul fs-5"></i>
+                            </div>
+                            <h6 class="mb-0 fw-bold text-dark">Data Pengerjaan Hari Ini</h6>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Airline</th>
+                                    <th>Flight No.</th>
+                                    <th>Registrasi</th>
+                                    <th>Tipe</th>
+                                    <th>Kedatangan</th>
+                                    <th>Hitung Mundur</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($assignedFlights as $flight)
+                                    <tr>
+                                        <td class="fw-bold text-primary">{{ $flight->airline }}</td>
+                                        <td><span class="badge bg-label-dark">{{ $flight->flight_number }}</span></td>
+                                        <td>{{ $flight->registasi }}</td>
+                                        <td>{{ $flight->type }}</td>
+                                        <td><i class="bx bx-time-five text-muted me-1"></i>{{ $flight->arrival }}</td>
+                                        <td><span class="countdown shadow-sm no-click"
+                                                data-time="{{ $flight->time_count }}"></span></td>
+                                        <td class="no-click">
+                                            @if ($flight->status)
+                                                <span class="badge bg-label-success px-3 py-2 rounded-pill">
+                                                    <i class="bx bx-check me-1"></i>Selesai
+                                                </span>
+                                            @else
+                                                <span class="badge bg-label-warning px-3 py-2 rounded-pill">
+                                                    <i class="bx bx-loader-alt bx-spin me-1"></i>Proses
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
+                                            <p class="mb-0">Tidak ada pengerjaan yang ditugaskan kepada Anda hari ini.</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
 
+        @if ($showManagementDashboard)
         {{-- PANEL STATISTIK UTAMA --}}
         <div class="row g-3 mb-3">
             <div class="col-md-4">
@@ -1504,7 +1671,7 @@
                 </div>
             </div>
         </div>
-
+        @endif
         {{-- TABEL PENERBANGAN --}}
         <div class="row">
             <div class="col-12">
@@ -1599,9 +1766,12 @@
 @endsection
 
 @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @if ($showManagementDashboard)
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @endif
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            @if ($showManagementDashboard)
             // DATA YANG DIKIRIM DARI CONTROLLER AKAN OTOMATIS BERUBAH SESUAI FILTER
             const lineChartLabels = @json($lineChartLabels ?? []);
             const lineChartData = @json($lineChartData ?? []);
@@ -2120,6 +2290,7 @@
             window.addEventListener('aps:theme-changed', function() {
                 dashboardCharts.forEach(applyDashboardChartTheme);
             });
+            @endif
 
             document.querySelectorAll('.countdown').forEach(function(el) {
                 let timeData = el.getAttribute('data-time');
@@ -2226,7 +2397,7 @@
                 window.requestAnimationFrame(step);
             }
 
-            document.querySelectorAll('.station-count, .stat-value').forEach(el => {
+            document.querySelectorAll('.station-count, .stat-value:not([data-animate-counter="false"])').forEach(el => {
                 const targetText = el.innerText.trim();
                 const targetValue = parseInt(targetText.replace(/\D/g, ''), 10);
                 

@@ -2,29 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Flights; // Pastikan model ini benar
-use App\Models\Document;
-use App\Models\User;
-use App\Models\Leave;
 use App\Models\Attendance;
-use App\Models\Station; // Tambahkan Model Station
-use Illuminate\Http\Request; // Wajib import Request untuk menangkap input filter
-use Illuminate\View\View;
+use App\Models\Document;
+use App\Models\Flights;
+use App\Models\Leave;
+use App\Models\Schedule;
+use App\Models\Station;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\View\View;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class HomeController extends Controller
 {
+    private const MANAGEMENT_ROLES = [
+        'Admin',
+        'Head Of Airport Service',
+        'SPV Bge',
+        'SPV Apron',
+        'Leader Bge',
+        'Leader Apron',
+        'Ass Leader Bge',
+        'Ass Leader Apron',
+        'Leader Aircraft Interior Exterior Cleaning',
+        'Leader Porter Apron',
+        'Finance',
+        'HSE',
+        'Controller',
+        'Quality Control',
+    ];
+
     /**
      * Menampilkan data dashboard utama dengan Filter Station.
      */
     public function index(Request $request): View
     {
         $user = Auth::user();
+        $showManagementDashboard = $user->hasRole(self::MANAGEMENT_ROLES);
         $todayAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('created_at', Carbon::today())
             ->latest()
@@ -33,31 +52,42 @@ class HomeController extends Controller
         // =================================================================
         // BAGIAN 0: LOGIKA FILTER STATION (BARU)
         // =================================================================
-        
+
         // Default: Station milik user yang login
-        $selectedStation = $user->station; 
+        $selectedStation = $user->station;
 
         // Jika Admin, boleh ambil dari Dropdown (Request). Jika kosong, default 'All'
-        if ($user->role == 'Admin') {
+        if ($user->hasRole('Admin')) {
             $selectedStation = $request->input('station', 'All');
         }
 
         // Siapkan list station untuk isi Dropdown (Khusus Admin)
         $listStations = [];
-        if ($user->role == 'Admin') {
+        if ($user->hasRole('Admin')) {
             $listStations = Station::where('is_active', 1)->get();
         }
 
         // =================================================================
         // BAGIAN 1: MENGAMBIL DATA UTAMA (DENGAN FILTER)
         // =================================================================
-        
+
         // 1. Data Penerbangan Hari Ini
         $flightsQuery = Flights::whereDate('created_at', Carbon::today());
         if ($selectedStation !== 'All') {
             $flightsQuery->where('station', $selectedStation);
         }
         $flights = $flightsQuery->get();
+
+        if (! $showManagementDashboard) {
+            return view('home', [
+                'showManagementDashboard' => false,
+                'selectedStation' => $selectedStation,
+                'listStations' => $listStations,
+                'todayAttendance' => $todayAttendance,
+                'flights' => $flights,
+                ...$this->staffDashboardData($user),
+            ]);
+        }
 
         // 2. Total Penerbangan Selesai Hari Ini
         $totalFlightQuery = Flights::where('status', true)->whereDate('created_at', Carbon::today());
@@ -66,10 +96,9 @@ class HomeController extends Controller
         }
         $totalFlightPerDay = $totalFlightQuery->count();
 
-
         // 3. Total Staff (ALWAYS GLOBAL as requested)
         $userCount = User::count();
-        
+
         // 3b. Staff for attendance calculation (Filtered by Station)
         $userKehadiranQuery = User::query();
         if ($selectedStation !== 'All') {
@@ -77,18 +106,16 @@ class HomeController extends Controller
         }
         $userKehadiranCount = $userKehadiranQuery->count();
 
-
         // 4. Staff Sedang Bekerja (Working Manpower via Flight Details)
         $workingQuery = DB::table('flight_details')
             ->join('flights', 'flight_details.flight_id', '=', 'flights.id')
             ->where('flights.status', 0)
             ->whereDate('flights.created_at', Carbon::today());
-            
+
         if ($selectedStation !== 'All') {
             $workingQuery->where('flights.station', $selectedStation);
         }
         $workingManpowers = $workingQuery->count();
-
 
         // =================================================================
         // BAGIAN 2: MENYIAPKAN DATA UNTUK INFO CARD
@@ -103,7 +130,6 @@ class HomeController extends Controller
         }
         $totalContractStaff = $contractQuery->count();
 
-
         // 2. PAS Expired Soon
         $pasQuery = User::whereDate('pas_expired', '<=', $twoMonthsFromNow)
             ->whereDate('pas_expired', '>=', Carbon::today());
@@ -112,18 +138,17 @@ class HomeController extends Controller
         }
         $totalPasStaff = $pasQuery->count();
 
-
         // 3. Data Absensi / Cuti Hari Ini
         $absentQuery = DB::table('leaves')
             ->join('users', 'leaves.user_id', '=', 'users.id')
             ->whereDate('leaves.start_date', '<=', Carbon::today())
             ->whereDate('leaves.end_date', '>=', Carbon::today())
             ->where('leaves.status', 'approved');
-            
+
         if ($selectedStation !== 'All') {
             $absentQuery->where('users.station', $selectedStation);
         }
-        
+
         $absentUsers = $absentQuery->select('users.id', 'users.fullname', 'leaves.leave_type', 'leaves.status')->get();
         $totalAbsent = $absentUsers->count();
 
@@ -152,21 +177,27 @@ class HomeController extends Controller
 
             // Line Chart: Total Penerbangan per hari (Filtered)
             $dailyFlightQ = Flights::whereDate('created_at', $dateString);
-            if ($selectedStation !== 'All') { $dailyFlightQ->where('station', $selectedStation); }
+            if ($selectedStation !== 'All') {
+                $dailyFlightQ->where('station', $selectedStation);
+            }
             $lineChartData[] = $dailyFlightQ->count();
 
             // Bar Chart: Sakit (Filtered by User Station via Join)
             $sickQ = Leave::join('users', 'leaves.user_id', '=', 'users.id')
-                    ->whereDate('leaves.start_date', $dateString)
-                    ->where('leaves.leave_type', 'Cuti Sakit');
-            if ($selectedStation !== 'All') { $sickQ->where('users.station', $selectedStation); }
+                ->whereDate('leaves.start_date', $dateString)
+                ->where('leaves.leave_type', 'Cuti Sakit');
+            if ($selectedStation !== 'All') {
+                $sickQ->where('users.station', $selectedStation);
+            }
             $sickData[] = $sickQ->count();
 
             // Bar Chart: Cuti (Filtered by User Station via Join)
             $leaveQ = Leave::join('users', 'leaves.user_id', '=', 'users.id')
-                    ->whereDate('leaves.start_date', $dateString)
-                    ->where('leaves.leave_type', 'Cuti Tahunan');
-            if ($selectedStation !== 'All') { $leaveQ->where('users.station', $selectedStation); }
+                ->whereDate('leaves.start_date', $dateString)
+                ->where('leaves.leave_type', 'Cuti Tahunan');
+            if ($selectedStation !== 'All') {
+                $leaveQ->where('users.station', $selectedStation);
+            }
             $leaveData[] = $leaveQ->count();
         }
 
@@ -180,11 +211,10 @@ class HomeController extends Controller
         $doughnutChartLabels = $doughnutData->pluck('role');
         $doughnutChartData = $doughnutData->pluck('total');
 
-
         // =================================================================
         // BAGIAN 4: SWEETALERT & MONITORING
         // =================================================================
-        if ($user && !session()->has('pas_warning_shown')) {
+        if ($user && ! session()->has('pas_warning_shown')) {
             if (empty($user->pas_expired)) {
                 Alert::warning('Peringatan', '⚠️ Belum ada data masa berlaku PAS Anda. Harap isi segera.');
                 session()->put('pas_warning_shown', true);
@@ -194,7 +224,7 @@ class HomeController extends Controller
                 $diffMonths = ceil($today->diffInDays($expiredDate) / 30);
 
                 if ($diffMonths <= 2 && $expiredDate->greaterThanOrEqualTo($today)) {
-                    Alert::warning('Peringatan', '⚠️ Masa berlaku PAS Anda akan habis dalam ' . $diffMonths . ' bulan lagi. Harap segera perpanjang.');
+                    Alert::warning('Peringatan', '⚠️ Masa berlaku PAS Anda akan habis dalam '.$diffMonths.' bulan lagi. Harap segera perpanjang.');
                     session()->put('pas_warning_shown', true);
                 }
             }
@@ -207,12 +237,12 @@ class HomeController extends Controller
             ->groupBy('station')
             ->pluck('total', 'station');
 
-
         // =================================================================
         // BAGIAN 5: RETURN VIEW
         // =================================================================
         return view('home', compact(
             // Data Filter
+            'showManagementDashboard',
             'selectedStation',
             'listStations',
 
@@ -245,6 +275,71 @@ class HomeController extends Controller
         ));
     }
 
+    private function staffDashboardData(User $user): array
+    {
+        $today = Carbon::today();
+        $monthStart = $today->copy()->startOfMonth();
+
+        $assignedFlights = Flights::with('details.schedule.user')
+            ->whereDate('created_at', $today)
+            ->whereHas(
+                'details.schedule',
+                fn ($query) => $query->where('user_id', $user->id)
+            )
+            ->orderBy('arrival')
+            ->get();
+
+        $scheduledDates = Schedule::where('user_id', $user->id)
+            ->whereBetween('date', [$monthStart->toDateString(), $today->toDateString()])
+            ->pluck('date')
+            ->map(fn ($date) => Carbon::parse($date)->toDateString())
+            ->unique()
+            ->values();
+
+        $attendedDates = Attendance::where('user_id', $user->id)
+            ->whereNotNull('check_in_time')
+            ->whereBetween('check_in_time', [
+                $monthStart->copy()->startOfDay(),
+                $today->copy()->endOfDay(),
+            ])
+            ->get(['check_in_time'])
+            ->map(fn (Attendance $attendance) => Carbon::parse($attendance->check_in_time)->toDateString())
+            ->unique()
+            ->intersect($scheduledDates);
+
+        $personalAttendancePercentage = $scheduledDates->isEmpty()
+            ? 0
+            : round(($attendedDates->count() / $scheduledDates->count()) * 100, 2);
+
+        $personalAttendanceHistory = Attendance::with('station')
+            ->where('user_id', $user->id)
+            ->orderByDesc('check_in_time')
+            ->limit(7)
+            ->get();
+
+        $historyDates = $personalAttendanceHistory
+            ->filter(fn (Attendance $attendance) => $attendance->check_in_time)
+            ->map(fn (Attendance $attendance) => Carbon::parse($attendance->check_in_time)->toDateString())
+            ->unique();
+
+        $personalSchedules = Schedule::with('shift')
+            ->where('user_id', $user->id)
+            ->whereIn('date', $historyDates)
+            ->get()
+            ->keyBy(fn (Schedule $schedule) => Carbon::parse($schedule->date)->toDateString());
+
+        return [
+            'assignedFlights' => $assignedFlights,
+            'personalAttendanceHistory' => $personalAttendanceHistory,
+            'personalSchedules' => $personalSchedules,
+            'personalAttendancePercentage' => $personalAttendancePercentage,
+            'personalAssignmentsToday' => $assignedFlights->count(),
+            'personalCompletedFlightsToday' => $assignedFlights
+                ->where('status', true)
+                ->count(),
+        ];
+    }
+
     /**
      * Method Generate PDF (TIDAK DIUBAH)
      */
@@ -252,7 +347,7 @@ class HomeController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login')->withErrors('Silakan login terlebih dahulu.');
         }
 
@@ -261,17 +356,17 @@ class HomeController extends Controller
             ->where('id', $user->id)
             ->first();
 
-        if (!$karyawan) {
+        if (! $karyawan) {
             return back()->withErrors('Data karyawan tidak ditemukan.');
         }
 
         $tanggal_surat = now()->translatedFormat('d F Y');
         $logoPath = public_path('storage/photo/JAS Airport Services.png');
-        
+
         // Cek jika file ada untuk menghindari error
         $base64Logo = '';
         if (file_exists($logoPath)) {
-            $base64Logo = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            $base64Logo = 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath));
         }
 
         $pdf = Pdf::loadView('template', [
@@ -311,11 +406,11 @@ class HomeController extends Controller
 
     public function downloadDocument(Document $document)
     {
-        if (!$document->isVisibleForRole(Auth::user()->role)) {
+        if (! $document->isVisibleForRole(Auth::user()->role)) {
             abort(403);
         }
 
-        if (!$document->file_path || !Storage::disk('public')->exists($document->file_path)) {
+        if (! $document->file_path || ! Storage::disk('public')->exists($document->file_path)) {
             Alert::error('File tidak ditemukan', 'Silakan unggah file dokumen terlebih dahulu.');
 
             return redirect()->route('document');
