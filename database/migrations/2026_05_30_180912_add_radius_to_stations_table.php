@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('stations', 'radius')) {
+            return;
+        }
+
         Schema::table('stations', function (Blueprint $table) {
             $table->integer('radius')->default(0)->after('longitude');
         });
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasColumn('stations', 'radius')) {
+            return;
+        }
+
         Schema::table('stations', function (Blueprint $table) {
             $table->dropColumn('radius');
         });
