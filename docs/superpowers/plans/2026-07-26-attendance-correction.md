@@ -16,6 +16,9 @@
 - Office comes from an active `stations` record.
 - Only the applicant's configured `manager` by exact `fullname`, or an Admin, can decide a request.
 - Rejection and approval are final.
+- Correction check-in and check-out fields accept `HH:mm` only; the attendance date comes from the selected history row.
+- If check-out is earlier than or equal to check-in, it is interpreted as the following day.
+- Attendance History shows the correction reason in `Note Koreksi`, or `-` when no request exists.
 - Preserve all unrelated dirty-worktree changes.
 
 ---
@@ -263,3 +266,79 @@ Expected: all correction tests pass, the full suite has no new failures, Pint pa
 - [ ] **Step 5: Perform browser QA**
 
 Open Attendance History, verify the Edit/Koreksi form and status states, then sign in as a configured manager and verify the approval table and approve/reject confirmation flow. Confirm desktop and narrow viewport layouts remain usable.
+
+### Task 5: Time-Only Correction Inputs and History Note
+
+**Files:**
+- Modify: `tests/Feature/AttendanceCorrectionTest.php`
+- Modify: `app/Http/Controllers/AttendanceCorrectionController.php`
+- Modify: `resources/views/attendance/corrections/create.blade.php`
+- Modify: `resources/views/attendance/history.blade.php`
+
+**Interfaces:**
+- Consumes: route parameter `$attendanceDate` in `Y-m-d` format.
+- Consumes: request fields `check_in_time` and `check_out_time` in `H:i` format.
+- Produces: full `proposed_check_in_time` and `proposed_check_out_time` datetimes.
+
+- [ ] **Step 1: Write failing time-only and note tests**
+
+Submit:
+
+```php
+[
+    'check_in_time' => '22:00',
+    'check_out_time' => '06:00',
+    'station_id' => $station->id,
+    'reason' => 'Mesin absensi tidak mencatat.',
+]
+```
+
+Assert that the proposal stores `2026-07-20 22:00:00` and `2026-07-21 06:00:00`. Assert the form renders `type="time"` fields without `datetime-local`. Assert History renders `Note Koreksi`, the request reason, and `-` for a date without a request.
+
+- [ ] **Step 2: Run focused tests and confirm RED**
+
+Run:
+
+```bash
+DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test tests/Feature/AttendanceCorrectionTest.php --filter='time_only|overnight|correction_note'
+```
+
+Expected: FAIL because the controller currently parses full datetimes, the form uses `datetime-local`, and History lacks the note column.
+
+- [ ] **Step 3: Implement time-only composition**
+
+Validate both request fields with `date_format:H:i`. Compose full datetimes from the route date:
+
+```php
+$checkIn = Carbon::createFromFormat('Y-m-d H:i', "{$attendanceDate} {$validated['check_in_time']}");
+$checkOut = Carbon::createFromFormat('Y-m-d H:i', "{$attendanceDate} {$validated['check_out_time']}");
+
+if ($checkOut->lessThanOrEqualTo($checkIn)) {
+    $checkOut->addDay();
+}
+```
+
+Store the composed values in the correction record.
+
+- [ ] **Step 4: Update the form and History**
+
+Render `Jam In` and `Jam Out` as `type="time"` inputs. Prefill existing attendance values with `H:i`. Add `Note Koreksi` between `Out` and `Action`, displaying `{{ $correction?->reason ?? '-' }}`.
+
+- [ ] **Step 5: Run focused and regression verification**
+
+Run:
+
+```bash
+DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test tests/Feature/AttendanceCorrectionTest.php
+vendor/bin/pint --test app/Http/Controllers/AttendanceCorrectionController.php tests/Feature/AttendanceCorrectionTest.php
+php artisan view:cache
+```
+
+Expected: all correction tests pass, Pint passes, and Blade views compile.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add tests/Feature/AttendanceCorrectionTest.php app/Http/Controllers/AttendanceCorrectionController.php resources/views/attendance/corrections/create.blade.php resources/views/attendance/history.blade.php
+git commit -m "feat: use time-only attendance corrections"
+```
