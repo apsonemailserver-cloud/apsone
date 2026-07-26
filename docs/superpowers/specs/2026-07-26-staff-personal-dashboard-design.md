@@ -44,7 +44,8 @@ The existing greeting, station scope, attendance action, navigation, and theme b
 
 ### Riwayat Presensi Anda
 
-Show the authenticated user's seven most recent attendance records with:
+Show all of the authenticated user's attendance records from the last seven
+calendar days, inclusive of today (today plus the previous six days), with:
 
 - date;
 - office, preferring attendance station and falling back to the user's station;
@@ -53,11 +54,13 @@ Show the authenticated user's seven most recent attendance records with:
 - check-out time;
 - status derived from the record: `Hadir`, `Belum Check-out`, or `Tidak Lengkap`.
 
-The table shows a personal empty state when no attendance records exist.
+The table shows a personal empty state when no attendance records exist in that
+period. The section title includes **(7 Hari Terakhir)**.
 
-### Data Pengerjaan Hari Ini
+### Data Pengerjaan
 
-Show only today's flights assigned to the authenticated user. Columns:
+Show flights assigned to the authenticated user from the last 30 calendar days,
+inclusive of today. Columns:
 
 - airline;
 - flight number;
@@ -67,11 +70,25 @@ Show only today's flights assigned to the authenticated user. Columns:
 - countdown;
 - status.
 
-This table is read-only for operational Staff and shows a personal empty state when the user has no assignment.
+This table is read-only for operational Staff and shows a personal empty state
+when the user has no assignment in that period. The section title includes
+**(1 Bulan Terakhir)**.
 
-### Data Penerbangan Hari Ini
+### Data Penerbangan
 
-Keep the existing station-scoped list of today's flights so Staff can see current station operations. Existing action authorization remains unchanged.
+Show the existing station-scoped flight list for the last seven calendar days,
+inclusive of today (today plus the previous six days), so Staff can see recent
+station operations. Existing action authorization remains unchanged. The
+section title includes **(7 Hari Terakhir)**.
+
+### KPI Periods
+
+The three KPI cards remain based on today or month-to-date as originally
+specified. Expanding the table histories does not change:
+
+- **Pengerjaan Hari Ini**;
+- **Persentase Kehadiran Anda** (month-to-date);
+- **Penerbangan Selesai** (today).
 
 ## Management Dashboard
 
@@ -109,8 +126,13 @@ Feature tests verify:
 - Staff KPI counts use only the authenticated user's assigned flights;
 - attendance percentage uses scheduled month-to-date dates and authenticated-user attendance;
 - attendance history contains only the authenticated user's records;
-- Staff assignment data contains only the authenticated user's assigned flights;
-- station flight data excludes flights from other stations;
+- attendance history includes records inside the last seven calendar days and
+  excludes older records;
+- Staff assignment data contains only the authenticated user's assigned flights
+  from the last 30 calendar days and excludes older records;
+- station flight data includes only the last seven calendar days, excludes
+  older records, and excludes flights from other stations;
+- the three KPI values retain their original today/month-to-date periods;
 - Staff dashboard renders valid empty states.
 
 ## Compatibility
