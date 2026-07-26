@@ -1349,8 +1349,8 @@
             <div class="col-md-4">
                 <div class="card stat-card stat-card-primary shadow-sm">
                     <div class="card-body">
-                        <div class="stat-title">Pengerjaan Hari Ini</div>
-                        <div class="stat-value">{{ $personalAssignmentsToday }}</div>
+                        <div class="stat-title">Pengerjaan 1 Bulan Terakhir</div>
+                        <div class="stat-value">{{ $personalAssignmentsLastMonth }}</div>
                         <i class="fas fa-users stat-icon"></i>
                     </div>
                 </div>
@@ -1358,7 +1358,7 @@
             <div class="col-md-4">
                 <div class="card stat-card stat-card-success shadow-sm">
                     <div class="card-body">
-                        <div class="stat-title">Persentase Kehadiran Anda</div>
+                        <div class="stat-title">Persentase Kehadiran Anda (1 Bulan Terakhir)</div>
                         <div class="stat-value" data-animate-counter="false">{{ number_format($personalAttendancePercentage, 2) }}%</div>
                         <i class="fas fa-user-check stat-icon"></i>
                     </div>
@@ -1367,8 +1367,8 @@
             <div class="col-md-4">
                 <div class="card stat-card stat-card-info shadow-sm">
                     <div class="card-body">
-                        <div class="stat-title">Penerbangan Selesai</div>
-                        <div class="stat-value">{{ $personalCompletedFlightsToday }}</div>
+                        <div class="stat-title">Penerbangan Selesai (1 Bulan Terakhir)</div>
+                        <div class="stat-value">{{ $personalCompletedFlightsLastMonth }}</div>
                         <i class="fas fa-plane-departure stat-icon"></i>
                     </div>
                 </div>
@@ -1385,7 +1385,10 @@
                                 style="width: 34px; height: 34px; background-color: var(--primary-soft);">
                                 <i class="bx bx-list-ul fs-5"></i>
                             </div>
-                            <h6 class="mb-0 fw-bold text-dark">Riwayat Presensi Anda</h6>
+                            <h6 class="mb-0 fw-bold text-dark">
+                                Riwayat Presensi Anda
+                                <span class="text-muted fw-normal">(7 Hari Terakhir)</span>
+                            </h6>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -1436,7 +1439,7 @@
                                     <tr>
                                         <td colspan="6" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
-                                            <p class="mb-0">Belum ada riwayat presensi.</p>
+                                            <p class="mb-0">Tidak ada riwayat presensi dalam 7 hari terakhir.</p>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -1457,7 +1460,10 @@
                                 style="width: 34px; height: 34px; background-color: var(--primary-soft);">
                                 <i class="bx bx-list-ul fs-5"></i>
                             </div>
-                            <h6 class="mb-0 fw-bold text-dark">Data Pengerjaan Hari Ini</h6>
+                            <h6 class="mb-0 fw-bold text-dark">
+                                Data Pengerjaan
+                                <span class="text-muted fw-normal">(1 Bulan Terakhir)</span>
+                            </h6>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -1499,7 +1505,7 @@
                                     <tr>
                                         <td colspan="7" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
-                                            <p class="mb-0">Tidak ada pengerjaan yang ditugaskan kepada Anda hari ini.</p>
+                                            <p class="mb-0">Tidak ada pengerjaan yang ditugaskan kepada Anda dalam 1 bulan terakhir.</p>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -1683,7 +1689,14 @@
                                 style="width: 34px; height: 34px; background-color: var(--primary-soft);">
                                 <i class="bx bx-list-ul fs-5"></i>
                             </div>
-                            <h6 class="mb-0 fw-bold text-dark">Data Penerbangan Hari Ini</h6>
+                            <h6 class="mb-0 fw-bold text-dark">
+                                @if ($showManagementDashboard)
+                                    Data Penerbangan Hari Ini
+                                @else
+                                    Data Penerbangan
+                                    <span class="text-muted fw-normal">(7 Hari Terakhir)</span>
+                                @endif
+                            </h6>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -1749,7 +1762,13 @@
                                     <tr>
                                         <td colspan="9" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
-                                            <p class="mb-0">Tidak ada data penerbangan untuk hari ini.</p>
+                                            <p class="mb-0">
+                                                @if ($showManagementDashboard)
+                                                    Tidak ada data penerbangan untuk hari ini.
+                                                @else
+                                                    Tidak ada data penerbangan dalam 7 hari terakhir.
+                                                @endif
+                                            </p>
                                         </td>
                                     </tr>
                                 @endforelse

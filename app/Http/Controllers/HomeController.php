@@ -71,8 +71,18 @@ class HomeController extends Controller
         // BAGIAN 1: MENGAMBIL DATA UTAMA (DENGAN FILTER)
         // =================================================================
 
-        // 1. Data Penerbangan Hari Ini
-        $flightsQuery = Flights::whereDate('created_at', Carbon::today());
+        // 1. Data Penerbangan sesuai periode dashboard
+        $today = Carbon::today();
+        $flightsQuery = Flights::query();
+        if ($showManagementDashboard) {
+            $flightsQuery->whereDate('created_at', $today);
+        } else {
+            $flightsQuery->whereBetween('created_at', [
+                $today->copy()->subDays(6)->startOfDay(),
+                $today->copy()->endOfDay(),
+            ]);
+        }
+
         if ($selectedStation !== 'All') {
             $flightsQuery->where('station', $selectedStation);
         }
@@ -278,10 +288,12 @@ class HomeController extends Controller
     private function staffDashboardData(User $user): array
     {
         $today = Carbon::today();
-        $monthStart = $today->copy()->startOfMonth();
+        $monthStart = $today->copy()->subDays(29);
+        $monthStartOfDay = $monthStart->copy()->startOfDay();
+        $todayEndOfDay = $today->copy()->endOfDay();
 
         $assignedFlights = Flights::with('details.schedule.user')
-            ->whereDate('created_at', $today)
+            ->whereBetween('created_at', [$monthStartOfDay, $todayEndOfDay])
             ->whereHas(
                 'details.schedule',
                 fn ($query) => $query->where('user_id', $user->id)
@@ -299,8 +311,8 @@ class HomeController extends Controller
         $attendedDates = Attendance::where('user_id', $user->id)
             ->whereNotNull('check_in_time')
             ->whereBetween('check_in_time', [
-                $monthStart->copy()->startOfDay(),
-                $today->copy()->endOfDay(),
+                $monthStartOfDay,
+                $todayEndOfDay,
             ])
             ->get(['check_in_time'])
             ->map(fn (Attendance $attendance) => Carbon::parse($attendance->check_in_time)->toDateString())
@@ -313,8 +325,11 @@ class HomeController extends Controller
 
         $personalAttendanceHistory = Attendance::with('station')
             ->where('user_id', $user->id)
+            ->whereBetween('check_in_time', [
+                $today->copy()->subDays(6)->startOfDay(),
+                $todayEndOfDay,
+            ])
             ->orderByDesc('check_in_time')
-            ->limit(7)
             ->get();
 
         $historyDates = $personalAttendanceHistory
@@ -333,8 +348,8 @@ class HomeController extends Controller
             'personalAttendanceHistory' => $personalAttendanceHistory,
             'personalSchedules' => $personalSchedules,
             'personalAttendancePercentage' => $personalAttendancePercentage,
-            'personalAssignmentsToday' => $assignedFlights->count(),
-            'personalCompletedFlightsToday' => $assignedFlights
+            'personalAssignmentsLastMonth' => $assignedFlights->count(),
+            'personalCompletedFlightsLastMonth' => $assignedFlights
                 ->where('status', true)
                 ->count(),
         ];

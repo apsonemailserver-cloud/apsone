@@ -33,34 +33,54 @@ class StaffDashboardTest extends TestCase
         $response = $this->actingAs($staff)
             ->get(route('home'))
             ->assertOk()
-            ->assertSee('Pengerjaan Hari Ini')
-            ->assertSee('Persentase Kehadiran Anda')
+            ->assertSee('Pengerjaan 1 Bulan Terakhir')
+            ->assertSee('Persentase Kehadiran Anda (1 Bulan Terakhir)')
+            ->assertSee('Penerbangan Selesai (1 Bulan Terakhir)')
             ->assertSee('Riwayat Presensi Anda')
-            ->assertSee('Data Pengerjaan Hari Ini')
-            ->assertSee('<div class="stat-value">2</div>', false)
-            ->assertSee('<div class="stat-value" data-animate-counter="false">66.67%</div>', false)
+            ->assertSee('(7 Hari Terakhir)')
+            ->assertSee('Data Pengerjaan')
+            ->assertSee('(1 Bulan Terakhir)')
+            ->assertSee('Data Penerbangan')
+            ->assertSee('<div class="stat-value">4</div>', false)
+            ->assertSee('<div class="stat-value" data-animate-counter="false">75.00%</div>', false)
             ->assertSee('GA100')
             ->assertSee('GA102')
+            ->assertSee('GA105')
+            ->assertSee('GA106')
+            ->assertSee('GA120')
+            ->assertDontSee('GA107')
+            ->assertDontSee('GA131')
             ->assertDontSee('JT900')
             ->assertDontSee('Total Staff GLOBAL')
             ->assertDontSee('Distribusi Staff by Role')
             ->assertDontSee('const lineChartLabels');
 
         $this->assertFalse($response->viewData('showManagementDashboard'));
-        $this->assertSame(2, $response->viewData('personalAssignmentsToday'));
-        $this->assertSame(1, $response->viewData('personalCompletedFlightsToday'));
-        $this->assertSame(66.67, $response->viewData('personalAttendancePercentage'));
+        $this->assertSame(4, $response->viewData('personalAssignmentsLastMonth'));
+        $this->assertSame(2, $response->viewData('personalCompletedFlightsLastMonth'));
+        $this->assertSame(75.0, $response->viewData('personalAttendancePercentage'));
         $this->assertEqualsCanonicalizing(
-            ['GA100', 'GA101'],
+            ['GA100', 'GA101', 'GA105', 'GA120'],
             $response->viewData('assignedFlights')->pluck('flight_number')->all()
         );
         $this->assertEqualsCanonicalizing(
-            ['GA100', 'GA101', 'GA102'],
+            ['GA100', 'GA101', 'GA102', 'GA105', 'GA106'],
+            $response->viewData('flights')->pluck('flight_number')->all()
+        );
+        $this->assertNotContains(
+            'GA107',
             $response->viewData('flights')->pluck('flight_number')->all()
         );
         $this->assertNotContains(
             'JT900',
             $response->viewData('flights')->pluck('flight_number')->all()
+        );
+        $this->assertEquals(
+            ['2026-07-26', '2026-07-21'],
+            $response->viewData('personalAttendanceHistory')
+                ->pluck('check_in_time')
+                ->map(fn ($checkIn) => Carbon::parse($checkIn)->toDateString())
+                ->all()
         );
         $this->assertTrue(
             $response->viewData('personalAttendanceHistory')
@@ -134,6 +154,8 @@ class StaffDashboardTest extends TestCase
             ['id' => 2, 'user_id' => $staff->id, 'date' => '2026-07-02', 'shift_id' => 'P', 'is_active' => true],
             ['id' => 3, 'user_id' => $staff->id, 'date' => '2026-07-26', 'shift_id' => 'P', 'is_active' => true],
             ['id' => 4, 'user_id' => $otherStaff->id, 'date' => '2026-07-26', 'shift_id' => 'P', 'is_active' => true],
+            ['id' => 5, 'user_id' => $staff->id, 'date' => '2026-07-21', 'shift_id' => 'P', 'is_active' => true],
+            ['id' => 6, 'user_id' => $staff->id, 'date' => '2026-06-26', 'shift_id' => 'P', 'is_active' => true],
         ]);
 
         DB::table('attendances')->insert([
@@ -164,6 +186,24 @@ class StaffDashboardTest extends TestCase
                 'created_at' => '2026-07-26 07:00:00',
                 'updated_at' => '2026-07-26 16:00:00',
             ],
+            [
+                'id' => 4,
+                'user_id' => $staff->id,
+                'station_id' => 1,
+                'check_in_time' => '2026-07-21 08:00:00',
+                'check_out_time' => '2026-07-21 17:00:00',
+                'created_at' => '2026-07-21 08:00:00',
+                'updated_at' => '2026-07-21 17:00:00',
+            ],
+            [
+                'id' => 5,
+                'user_id' => $staff->id,
+                'station_id' => 1,
+                'check_in_time' => '2026-07-19 08:00:00',
+                'check_out_time' => '2026-07-19 17:00:00',
+                'created_at' => '2026-07-19 08:00:00',
+                'updated_at' => '2026-07-19 17:00:00',
+            ],
         ]);
 
         DB::table('flights')->insert([
@@ -171,19 +211,32 @@ class StaffDashboardTest extends TestCase
             $this->flightRow(2, 'GA101', 'CGK', true),
             $this->flightRow(3, 'GA102', 'CGK', false),
             $this->flightRow(4, 'JT900', 'SUB', true),
+            $this->flightRow(5, 'GA105', 'CGK', true, '2026-07-21 09:00:00'),
+            $this->flightRow(6, 'GA120', 'CGK', false, '2026-07-06 09:00:00'),
+            $this->flightRow(7, 'GA131', 'CGK', true, '2026-06-25 09:00:00'),
+            $this->flightRow(8, 'GA107', 'CGK', false, '2026-07-19 09:00:00'),
+            $this->flightRow(9, 'GA106', 'CGK', false, '2026-07-20 09:00:00'),
         ]);
 
         DB::table('flight_details')->insert([
             ['flight_id' => 1, 'schedule_id' => 3, 'created_at' => now(), 'updated_at' => now()],
             ['flight_id' => 2, 'schedule_id' => 3, 'created_at' => now(), 'updated_at' => now()],
             ['flight_id' => 4, 'schedule_id' => 4, 'created_at' => now(), 'updated_at' => now()],
+            ['flight_id' => 5, 'schedule_id' => 5, 'created_at' => now(), 'updated_at' => now()],
+            ['flight_id' => 6, 'schedule_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['flight_id' => 7, 'schedule_id' => 6, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         return [$staff, $otherStaff];
     }
 
-    private function flightRow(int $id, string $number, string $station, bool $status): array
-    {
+    private function flightRow(
+        int $id,
+        string $number,
+        string $station,
+        bool $status,
+        string $createdAt = '2026-07-26 09:00:00'
+    ): array {
         return [
             'id' => $id,
             'airline' => str_starts_with($number, 'GA') ? 'Garuda Indonesia' : 'Lion Air',
@@ -194,8 +247,8 @@ class StaffDashboardTest extends TestCase
             'time_count' => '11:00:00',
             'station' => $station,
             'status' => $status,
-            'created_at' => '2026-07-26 09:00:00',
-            'updated_at' => '2026-07-26 09:00:00',
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
         ];
     }
 
