@@ -150,7 +150,7 @@
                                 @else
                                     <td class="{{ $checkInClass }}" style="border-radius: 0.25rem;">{{ $checkIn ? $checkIn->format('H:i:s') : '-' }}</td>
                                     <td class="{{ $checkOutClass }}" style="border-radius: 0.25rem;">{{ $checkOut ? $checkOut->format('H:i:s') : '-' }}</td>
-                                    <td>{{ $checkIn ? $row->user?->station ?? ($attendance->check_in_notes ?? '-') : '-' }}</td>
+                                    <td>{{ $checkIn ? ($attendance->station?->code ?? $row->user?->station ?? ($attendance->check_in_notes ?? '-')) : '-' }}</td>
                                 @endif
                                 <td>{{ $isOnLeave ? '-' : $workDuration }}</td>
                             </tr>

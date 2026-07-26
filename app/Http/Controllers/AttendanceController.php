@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Station;
 use App\Models\User;
+use App\Models\AttendanceCorrection;
 
 class AttendanceController extends Controller
 {
@@ -124,6 +125,7 @@ class AttendanceController extends Controller
 
             Attendance::create([
                 'user_id' => $user->id,
+                'station_id' => $station->id,
                 'check_in_time' => $now,
                 'check_in_photo' => $fileName,
                 'check_in_latitude' => $request->latitude,
@@ -232,6 +234,7 @@ class AttendanceController extends Controller
         try {
             Attendance::create([
                 'user_id' => $user->id,
+                'station_id' => $station->id,
                 'check_in_time' => $now,
                 'check_in_ip' => $request->ip(),
                 'check_in_latitude' => $userLat,
@@ -290,10 +293,16 @@ class AttendanceController extends Controller
             ->keyBy(fn($item) => Carbon::parse($item->date)->toDateString()); // keyBy tanggal YYYY-MM-DD
 
         // Ambil semua absensi user untuk sebulan
-        $attendanceData = Attendance::where('user_id', $user->id)
+        $attendanceData = Attendance::with('station')
+            ->where('user_id', $user->id)
             ->whereBetween('check_in_time', [$startDate->toDateString() . ' 00:00:00', $endDate->toDateString() . ' 23:59:59'])
             ->get()
             ->keyBy(fn($item) => Carbon::parse($item->check_in_time)->toDateString()); // keyBy tanggal YYYY-MM-DD
+
+        $correctionData = AttendanceCorrection::where('user_id', $user->id)
+            ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get()
+            ->keyBy(fn ($item) => $item->attendance_date->toDateString());
 
         // Siapkan data per hari untuk Blade
         $daysInMonth = [];
@@ -306,6 +315,7 @@ class AttendanceController extends Controller
             $daysInMonth[$day] = [
                 'schedule' => $schedule,
                 'attendance' => $attendance,
+                'correction' => $correctionData[$dateString] ?? null,
             ];
         }
 
@@ -349,7 +359,8 @@ class AttendanceController extends Controller
                 } else {
 
                     // ===== ATTENDANCE =====
-                    $attData = \App\Models\Attendance::where('user_id', $user->id)
+                    $attData = \App\Models\Attendance::with('station')
+                        ->where('user_id', $user->id)
                         ->whereBetween('check_in_time', [
                             $startDate->copy()->startOfDay(),
                             $endDate->copy()->endOfDay()
@@ -476,7 +487,8 @@ class AttendanceController extends Controller
             foreach ($users as $user) {
 
                 // ATTENDANCE
-                $attData = \App\Models\Attendance::where('user_id', $user->id)
+                $attData = \App\Models\Attendance::with('station')
+                    ->where('user_id', $user->id)
                     ->whereBetween('check_in_time', [
                         $startDate->copy()->startOfDay(),
                         $endDate->copy()->endOfDay()

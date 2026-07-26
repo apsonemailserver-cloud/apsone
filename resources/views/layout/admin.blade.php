@@ -5739,6 +5739,15 @@
                                 </li>
                             @endif
 
+                            @if (in_array('Admin', array_map('trim', explode(',', (string) Auth::user()->role)), true) || \App\Models\User::where('manager', Auth::user()->fullname)->exists())
+                                <li class="menu-item {{ request()->routeIs('attendance.corrections.approval') ? 'active' : '' }}">
+                                    <a href="{{ route('attendance.corrections.approval') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-user-check"></i>
+                                        <div data-i18n="Approval Koreksi Absensi">Approval Koreksi Absensi</div>
+                                    </a>
+                                </li>
+                            @endif
+
 
                             <li
                                 class="menu-item {{ request()->routeIs('overtime.index') || request()->routeIs('overtime.create') ? 'active' : '' }}">
@@ -5957,6 +5966,8 @@
                     ]);
                     $canViewAdminAttendance = in_array($currentUser->role, ['Admin', 'Head Of Airport Service']);
                     $canApproveOvertime = in_array($currentUser->role, ['Admin', 'LEADER', 'Head Of Airport Service', 'ASS LEADER']);
+                    $canApproveAttendanceCorrections = in_array('Admin', array_map('trim', explode(',', (string) $currentUser->role)), true)
+                        || \App\Models\User::where('manager', $currentUser->fullname)->exists();
                     $canManageTraining = in_array($currentUser->role, ['Admin', 'HSE', 'Head Of Airport Service']);
                     $canManageLeave = in_array($currentUser->role, ['Admin', 'Head Of Airport Service']);
                     $topbarMenuLinks = [
@@ -5977,6 +5988,10 @@
 
                     if ($canViewAdminAttendance) {
                         $topbarMenuLinks[] = ['label' => 'Laporan Absensi', 'category' => 'Attendance', 'hint' => 'Rekap dan export absensi', 'icon' => 'ti-file-text', 'url' => route('attendance.reports')];
+                    }
+
+                    if ($canApproveAttendanceCorrections) {
+                        $topbarMenuLinks[] = ['label' => 'Approval Koreksi Absensi', 'category' => 'Attendance', 'hint' => 'Validasi koreksi waktu absensi', 'icon' => 'ti-user-check', 'url' => route('attendance.corrections.approval')];
                     }
 
                     $topbarMenuLinks[] = ['label' => 'Lembur Saya', 'category' => 'Attendance', 'hint' => 'Pengajuan dan status lembur', 'icon' => 'ti-hourglass', 'url' => route('overtime.index')];

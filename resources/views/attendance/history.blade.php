@@ -43,6 +43,7 @@
                                 <th>Shift</th>
                                 <th>In</th>
                                 <th>Out</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -50,6 +51,7 @@
                             @php
                             $attendance = $data['attendance'];
                             $schedule = $data['schedule'];
+                            $correction = $data['correction'];
 
                             $currentDate = \Carbon\Carbon::parse($month)->day($day);
 
@@ -72,7 +74,7 @@
                             @endphp
                             <tr>
                                 <td>{{ $day }}</td>
-                                <td>{{ $attendance && $attendance->check_in_time ? $user->station ?? '-' : '-' }}</td>
+                                <td>{{ $attendance && $attendance->check_in_time ? ($attendance->station?->code ?? $user->station ?? '-') : '-' }}</td>
                                 <td>
                                     @if($schedule)
                                     {{ $startTime->format('H:i') }} - {{ $endTime->format('H:i') }}
@@ -109,6 +111,24 @@
                                     @endif
                                 " style="border-radius: 0.25rem;">
                                     {{ $checkOut ? $checkOut->format('H:i') : '-' }}
+                                </td>
+                                <td>
+                                    @if ($correction)
+                                        @php
+                                            $statusClass = match ($correction->status) {
+                                                \App\Models\AttendanceCorrection::STATUS_APPROVED => 'bg-label-success',
+                                                \App\Models\AttendanceCorrection::STATUS_REJECTED => 'bg-label-danger',
+                                                default => 'bg-label-warning',
+                                            };
+                                        @endphp
+                                        <span class="badge {{ $statusClass }}">{{ ucfirst($correction->status) }}</span>
+                                    @elseif (!$isFuture)
+                                        <a href="{{ route('attendance.corrections.create', $currentDate->toDateString()) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="ti ti-edit me-1"></i>Edit
+                                        </a>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach

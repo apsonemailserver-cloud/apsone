@@ -18,6 +18,7 @@ use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\AdminTrainingCertificateController;
 use App\Http\Controllers\AdminDocumentController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\ReportController;
 use App\Models\Blacklist;
 
@@ -139,6 +140,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.checkOut');
     Route::post('/attendance/process', [AttendanceController::class, 'process'])->name('attendance.process'); // Alternatif proses
     Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
+    Route::get('/attendance/history/{date}/correction', [AttendanceCorrectionController::class, 'create'])
+        ->name('attendance.corrections.create');
+    Route::post('/attendance/history/{date}/correction', [AttendanceCorrectionController::class, 'store'])
+        ->name('attendance.corrections.store');
+    Route::get('/attendance/corrections/approval', [AttendanceCorrectionController::class, 'approval'])
+        ->name('attendance.corrections.approval');
+    Route::post('/attendance/corrections/{correction}/approve', [AttendanceCorrectionController::class, 'approve'])
+        ->name('attendance.corrections.approve');
+    Route::post('/attendance/corrections/{correction}/reject', [AttendanceCorrectionController::class, 'reject'])
+        ->name('attendance.corrections.reject');
 
     // Laporan Absensi
     Route::get('/attendance/reports', [AttendanceController::class, 'reportsIndex'])->name('attendance.reports');

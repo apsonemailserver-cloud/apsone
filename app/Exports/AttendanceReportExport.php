@@ -48,7 +48,7 @@ class AttendanceReportExport implements FromCollection, WithHeadings
                 'NIP' => $row->user->id ?? '-',
                 'Check-in' => $checkIn,
                 'Check-out' => $checkOut,
-                'Lokasi' => $attendance ? $row->user->station : '-',
+                'Lokasi' => $attendance ? ($attendance->station?->code ?? $row->user->station) : '-',
                 'Durasi Kerja' => $workDuration,
             ];
         });

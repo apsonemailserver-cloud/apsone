@@ -11,8 +11,10 @@ class Attendance extends Model
 
     protected $fillable = [
         'user_id',
+        'station_id',
         'check_in_time',
         'check_out_time',
+        'status',
         'check_in_ip',
         'check_out_ip',
         'check_in_latitude',
@@ -31,5 +33,15 @@ class Attendance extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function station()
+    {
+        return $this->belongsTo(Station::class);
+    }
+
+    public function corrections()
+    {
+        return $this->hasMany(AttendanceCorrection::class);
     }
 }
