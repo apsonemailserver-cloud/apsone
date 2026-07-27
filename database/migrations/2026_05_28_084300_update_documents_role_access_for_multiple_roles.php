@@ -9,11 +9,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('documents', function (Blueprint $table) {
-            $table->dropIndex(['role_akses_dokumen']);
-        });
+        if (DB::getDriverName() === 'mysql') {
+            try {
+                Schema::table('documents', function (Blueprint $table) {
+                    $table->dropIndex(['role_akses_dokumen']);
+                });
+            } catch (\Throwable $e) {
+            }
 
-        DB::statement('ALTER TABLE documents MODIFY role_akses_dokumen TEXT NOT NULL');
+            DB::statement('ALTER TABLE documents MODIFY role_akses_dokumen TEXT NOT NULL');
+        }
 
         $userRoles = DB::table('users')
             ->whereNotNull('role')

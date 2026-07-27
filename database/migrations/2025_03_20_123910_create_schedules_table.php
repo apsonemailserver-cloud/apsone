@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id')->notNullable();
+            $table->string('user_id', 20);
             $table->boolean('is_active')->default(true);
-            $table->date('date')->notNullable();
-            $table->string('shift_id', 10)->notNullable();
-            $table->primary('id');
+            $table->date('date');
+            $table->string('shift_id', 10);
             $table->unique(['user_id', 'date']);
-            $table->foreign('shift_id')->references('id')->on(table: 'shifts');
+            $table->foreign('shift_id')->references('id')->on('shifts');
         });
     }
 

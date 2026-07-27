@@ -9,21 +9,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('job_title')->nullable()->after('role');
-            $table->string('cluster')->nullable();
-            $table->string('unit')->nullable();
-            $table->string('sub_unit')->nullable();
-            $table->date('tanggal_lahir')->nullable();
-            $table->string('manager')->nullable();
-            $table->string('senior_manager')->nullable();
-            $table->string('status')->nullable();
-            $table->string('alamat')->nullable();
-            $table->string('pendidikan')->nullable();
-            $table->string('domisili')->nullable();
-            $table->string('kota_domisili')->nullable();
-            $table->string('no_hp')->nullable();
-            $table->string('bpjs_tk')->nullable();
-            $table->string('bpjs_kesehatan')->nullable();
+            $columns = [
+                'job_title' => fn() => $table->string('job_title')->nullable()->after('role'),
+                'cluster' => fn() => $table->string('cluster')->nullable(),
+                'unit' => fn() => $table->string('unit')->nullable(),
+                'sub_unit' => fn() => $table->string('sub_unit')->nullable(),
+                'tanggal_lahir' => fn() => $table->date('tanggal_lahir')->nullable(),
+                'manager' => fn() => $table->string('manager')->nullable(),
+                'senior_manager' => fn() => $table->string('senior_manager')->nullable(),
+                'status' => fn() => $table->string('status')->nullable(),
+                'alamat' => fn() => $table->string('alamat')->nullable(),
+                'pendidikan' => fn() => $table->string('pendidikan')->nullable(),
+                'domisili' => fn() => $table->string('domisili')->nullable(),
+                'kota_domisili' => fn() => $table->string('kota_domisili')->nullable(),
+                'no_hp' => fn() => $table->string('no_hp')->nullable(),
+                'bpjs_tk' => fn() => $table->string('bpjs_tk')->nullable(),
+                'bpjs_kesehatan' => fn() => $table->string('bpjs_kesehatan')->nullable(),
+            ];
+
+            foreach ($columns as $name => $callback) {
+                if (!Schema::hasColumn('users', $name)) {
+                    $callback();
+                }
+            }
         });
     }
 

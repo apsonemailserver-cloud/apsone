@@ -20,6 +20,7 @@ namespace App\Models {
    * @property string|null $check_out_time
    * @property string|null $status
    * @property string|null $check_in_time
+   * @property int|null $station_id
    * @property string $user_id
    * @property int $id
    * @property-read \App\Models\User $user
@@ -28,6 +29,7 @@ namespace App\Models {
    * @property-read int|null $corrections_count
    * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereId($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereUserId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereStationId($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckInTime($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereStatus($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckOutTime($value)
@@ -346,10 +348,36 @@ namespace App\Models {
   /**
    * App\Models\AttendanceCorrection
    *
+   * @property \Illuminate\Support\Carbon|null $updated_at
+   * @property \Illuminate\Support\Carbon|null $created_at
+   * @property \Illuminate\Support\Carbon|null $decided_at
+   * @property string|null $decided_by
+   * @property string $status
+   * @property string $reason
+   * @property \Illuminate\Support\Carbon $proposed_check_out_time
+   * @property \Illuminate\Support\Carbon $proposed_check_in_time
+   * @property \Illuminate\Support\Carbon $attendance_date
+   * @property int $station_id
+   * @property int|null $attendance_id
+   * @property string $user_id
+   * @property int $id
    * @property-read \App\Models\User $user
    * @property-read \App\Models\Attendance $attendance
    * @property-read \App\Models\Station $station
    * @property-read \App\Models\User $decider
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereUserId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereAttendanceId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereStationId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereAttendanceDate($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereProposedCheckInTime($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereProposedCheckOutTime($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereReason($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereStatus($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereDecidedBy($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereDecidedAt($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereCreatedAt($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereUpdatedAt($value)
    * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection newModelQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection newQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection query()
@@ -1320,12 +1348,33 @@ namespace App\Models {
   /**
    * App\Models\Document
    *
+   * @property \Illuminate\Support\Carbon|null $updated_at
+   * @property \Illuminate\Support\Carbon|null $created_at
+   * @property string|null $updated_by
+   * @property string|null $created_by
+   * @property string|null $ukuran_file
+   * @property string $file_path
+   * @property string $nama_file
+   * @property string|null $deskripsi_dokumen
+   * @property string $nama_dokumen
+   * @property int $id
+   * @property-read mixed $role_akses_dokumen
    * @property-read mixed $role_access_values
    * @property-read mixed $access_label
    * @property-read mixed $access_full_label
    * @property-read mixed $access_class
    * @property-read \App\Models\User $creator
    * @property-read \App\Models\User $updater
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereNamaDokumen($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereDeskripsiDokumen($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereNamaFile($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereFilePath($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereUkuranFile($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereCreatedBy($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereUpdatedBy($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereCreatedAt($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereUpdatedAt($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document newModelQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document newQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document query()
@@ -4198,7 +4247,17 @@ namespace App\Models {
   /**
    * App\Models\Schedule_detail
    *
+   * @property \Illuminate\Support\Carbon|null $updated_at
+   * @property \Illuminate\Support\Carbon|null $created_at
+   * @property int $schedule_id
+   * @property string $user_id
+   * @property int $id
    * @property-read \App\Models\Schedule $schedule
+   * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereUserId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereScheduleId($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereCreatedAt($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereUpdatedAt($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail newModelQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail newQuery()
    * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail query()
@@ -4823,6 +4882,10 @@ namespace App\Models {
    *
    * @property \Illuminate\Support\Carbon|null $updated_at
    * @property \Illuminate\Support\Carbon|null $created_at
+   * @property string|null $role
+   * @property int $radius
+   * @property float|null $longitude
+   * @property float|null $latitude
    * @property bool $is_active
    * @property string $name
    * @property string $code
@@ -4831,6 +4894,10 @@ namespace App\Models {
    * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereCode($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereName($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereIsActive($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereLatitude($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereLongitude($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereRadius($value)
+   * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereRole($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereCreatedAt($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereUpdatedAt($value)
    * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station newModelQuery()

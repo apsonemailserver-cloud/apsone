@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::create('flight_details', function (Blueprint $table) {
             $table->id(); // BIGINT UNSIGNED
-            $table->unsignedBigInteger('flight_id')->notNullable();
-            $table->unsignedBigInteger('schedule_id')->notNullable();
-
-            $table->primary('id');
+            $table->unsignedBigInteger('flight_id');
+            $table->unsignedBigInteger('schedule_id');
 
             $table->foreign('flight_id')->references('id')->on('flights');
             $table->foreign('schedule_id')->references('id')->on('schedules');

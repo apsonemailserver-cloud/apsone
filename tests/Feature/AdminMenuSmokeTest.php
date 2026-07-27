@@ -6,14 +6,26 @@ use App\Models\Certificate;
 use App\Models\Shift;
 use App\Models\Station;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AdminMenuSmokeTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_admin_menu_pages_render_without_server_errors(): void
     {
-        $admin = User::where('role', 'Admin')->firstOrFail();
-        $sampleUser = User::orderBy('id')->firstOrFail();
+        $admin = User::where('role', 'Admin')->first() ?? User::create([
+            'id' => 'ADMIN01',
+            'fullname' => 'Test Admin',
+            'email' => 'admin@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'Admin',
+            'station' => 'CGK',
+            'gender' => 'Male',
+            'join_date' => now()->toDateString(),
+        ]);
+        $sampleUser = User::orderBy('id')->first() ?? $admin;
 
         $routes = [
             'Dashboard' => route('home'),

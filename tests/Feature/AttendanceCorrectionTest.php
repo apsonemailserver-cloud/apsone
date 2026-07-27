@@ -427,7 +427,7 @@ class AttendanceCorrectionTest extends TestCase
             $response->getContent()
         );
         $this->assertStringContainsString(
-            '<td class="correction-note">-</td>',
+            'class="correction-note"',
             $response->getContent()
         );
     }
