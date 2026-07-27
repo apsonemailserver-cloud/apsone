@@ -5,6 +5,11 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
+use App\Models\Announcement;
+use App\Models\AnnouncementRead;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -24,5 +29,27 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
             URL::forceRootUrl(config('app.url'));
         }
+
+        View::composer('*', function ($view) {
+            if (Auth::check() && \Illuminate\Support\Facades\Schema::hasTable('announcements') && \Illuminate\Support\Facades\Schema::hasTable('announcement_reads')) {
+                $user = Auth::user();
+                $readAnnouncementIds = AnnouncementRead::where('user_id', $user->id)
+                    ->pluck('announcement_id')
+                    ->toArray();
+
+                $topbarAnnouncements = Announcement::forUser($user)
+                    ->latest()
+                    ->take(5)
+                    ->get();
+
+                $unreadAnnouncementsCount = Announcement::forUser($user)
+                    ->whereNotIn('id', $readAnnouncementIds)
+                    ->count();
+
+                $view->with('unreadAnnouncementsCount', $unreadAnnouncementsCount)
+                     ->with('topbarAnnouncements', $topbarAnnouncements)
+                     ->with('readAnnouncementIds', $readAnnouncementIds);
+            }
+        });
     }
 }

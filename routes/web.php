@@ -19,6 +19,7 @@ use App\Http\Controllers\AdminTrainingCertificateController;
 use App\Http\Controllers\AdminDocumentController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ReportController;
 use App\Models\Blacklist;
 
@@ -206,6 +207,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/overtime/report', 'report')->name('overtime.report');
         Route::get('/overtime/export', 'exportExcel')->name('overtime.export');
     });
+
+    // --- ANNOUNCEMENTS (PENGUMUMAN) ---
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
+    Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::get('/announcements/{id}', [AnnouncementController::class, 'show'])->name('announcements.show');
+    Route::get('/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
+    Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])->name('announcements.update');
+    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    Route::post('/announcements/{id}/read', [AnnouncementController::class, 'markAsRead'])->name('announcements.read');
+    Route::post('/announcements/mark-all-read', [AnnouncementController::class, 'markAllRead'])->name('announcements.mark_all_read');
 
     // --- BANTUAN & LAINNYA ---
     Route::view('/faq', 'faq')->name('faq');
