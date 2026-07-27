@@ -30,6 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `attendances` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` varchar(20) NOT NULL,
+  `station_id` bigint(20) UNSIGNED DEFAULT NULL,
   `check_in_time` datetime DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
   `check_out_time` datetime DEFAULT NULL,
@@ -189,6 +190,28 @@ INSERT INTO `attendances` (`id`, `user_id`, `check_in_time`, `status`, `check_ou
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `attendance_corrections`
+--
+
+CREATE TABLE `attendance_corrections` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` varchar(20) NOT NULL,
+  `attendance_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `station_id` bigint(20) UNSIGNED NOT NULL,
+  `attendance_date` date NOT NULL,
+  `proposed_check_in_time` datetime NOT NULL,
+  `proposed_check_out_time` datetime NOT NULL,
+  `reason` text NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'pending',
+  `decided_by` varchar(20) DEFAULT NULL,
+  `decided_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `blacklists`
 --
 
@@ -255,6 +278,31 @@ CREATE TABLE `certificates` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `documents`
+--
+
+CREATE TABLE `documents` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `nama_dokumen` varchar(255) NOT NULL,
+  `deskripsi_dokumen` text DEFAULT NULL,
+  `nama_file` varchar(255) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `ukuran_file` varchar(50) DEFAULT NULL,
+  `role_akses_dokumen` varchar(255) NOT NULL DEFAULT 'all',
+  `created_by` varchar(20) DEFAULT NULL,
+  `updated_by` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `documents` (`id`, `nama_dokumen`, `deskripsi_dokumen`, `nama_file`, `file_path`, `ukuran_file`, `role_akses_dokumen`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, 'Formulir Perpanjangan Pas Bandara', 'Dokumen resmi untuk keperluan perpanjangan Pas Bandara, termasuk persyaratan SKCK dan foto.', 'formulir_pas_bandara.pdf', 'file/formulir_pas_bandara.pdf', '1.2 MB', 'all', NULL, NULL, '2026-05-28 08:05:00', '2026-05-28 08:05:00'),
+(2, 'Laporan Keuangan Q1 2026', 'Rekapitulasi pengeluaran dan pemasukan operasional bandara kuartal pertama.', 'laporan_keuangan_q1_2026.pdf', 'file/laporan_keuangan_q1_2026.pdf', '4.5 MB', '["admin"]', NULL, NULL, '2026-05-28 08:05:00', '2026-05-28 08:05:00'),
+(3, 'SOP Penanganan Keadaan Darurat', 'Standar operasional prosedur untuk penanganan insiden dan keadaan darurat di area stasiun.', 'sop_penanganan_keadaan_darurat.pdf', 'file/sop_penanganan_keadaan_darurat.pdf', '2.8 MB', '["head of airport service","spv apron","spv bge","spv","ass leader","ass leader apron","ass leader bge","leader","leader apron","leader bge"]', NULL, NULL, '2026-05-28 08:05:00', '2026-05-28 08:05:00');
 
 -- --------------------------------------------------------
 
@@ -6823,6 +6871,20 @@ INSERT INTO `schedules` (`id`, `user_id`, `date`, `shift_id`, `is_active`) VALUE
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `schedule_details`
+--
+
+CREATE TABLE `schedule_details` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` varchar(20) NOT NULL,
+  `schedule_id` bigint(20) UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `sessions`
 --
 
@@ -6899,6 +6961,10 @@ CREATE TABLE `stations` (
   `code` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `latitude` decimal(10,8) DEFAULT NULL,
+  `longitude` decimal(11,8) DEFAULT NULL,
+  `radius` int(11) NOT NULL DEFAULT 0,
+  `role` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -6907,11 +6973,11 @@ CREATE TABLE `stations` (
 -- Dumping data untuk tabel `stations`
 --
 
-INSERT INTO `stations` (`id`, `code`, `name`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'CGK', 'Jakarta (Soekarno-Hatta)', 1, '2026-02-02 22:03:48', '2026-03-08 21:53:06'),
-(2, 'SUB', 'Surabaya (Juanda)', 1, '2026-02-02 22:03:48', '2026-02-02 22:03:48'),
-(3, 'KNO', 'Medan (Kualanamu)', 1, '2026-02-02 22:03:48', '2026-02-02 22:03:48'),
-(4, 'TST', 'testing', 0, '2026-03-02 15:39:18', '2026-03-02 15:39:23');
+INSERT INTO `stations` (`id`, `code`, `name`, `is_active`, `latitude`, `longitude`, `radius`, `role`, `created_at`, `updated_at`) VALUES
+(1, 'CGK', 'Jakarta (Soekarno-Hatta)', 1, -6.12560000, 106.65580000, 500, NULL, '2026-02-02 22:03:48', '2026-03-08 21:53:06'),
+(2, 'SUB', 'Surabaya (Juanda)', 1, -7.37970000, 112.78740000, 500, NULL, '2026-02-02 22:03:48', '2026-02-02 22:03:48'),
+(3, 'KNO', 'Medan (Kualanamu)', 1, 3.64230000, 98.88530000, 500, NULL, '2026-02-02 22:03:48', '2026-02-02 22:03:48'),
+(4, 'TST', 'testing', 0, NULL, NULL, 0, NULL, '2026-03-02 15:39:18', '2026-03-02 15:39:23');
 
 -- --------------------------------------------------------
 
@@ -7327,7 +7393,18 @@ CREATE TABLE `user_menus` (
 --
 ALTER TABLE `attendances`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `attendances_user_id_foreign` (`user_id`);
+  ADD KEY `attendances_user_id_foreign` (`user_id`),
+  ADD KEY `attendances_station_id_foreign` (`station_id`);
+
+--
+-- Indeks untuk tabel `attendance_corrections`
+--
+ALTER TABLE `attendance_corrections`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `attendance_corrections_user_id_attendance_date_unique` (`user_id`,`attendance_date`),
+  ADD KEY `attendance_corrections_attendance_id_foreign` (`attendance_id`),
+  ADD KEY `attendance_corrections_station_id_foreign` (`station_id`),
+  ADD KEY `attendance_corrections_decided_by_foreign` (`decided_by`);
 
 --
 -- Indeks untuk tabel `blacklists`
@@ -7354,6 +7431,15 @@ ALTER TABLE `cache_locks`
 ALTER TABLE `certificates`
   ADD PRIMARY KEY (`id`),
   ADD KEY `certificates_user_id_foreign` (`user_id`);
+
+--
+-- Indeks untuk tabel `documents`
+--
+ALTER TABLE `documents`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `documents_role_akses_dokumen_index` (`role_akses_dokumen`),
+  ADD KEY `documents_created_by_foreign` (`created_by`),
+  ADD KEY `documents_updated_by_foreign` (`updated_by`);
 
 --
 -- Indeks untuk tabel `failed_jobs`
@@ -7440,6 +7526,14 @@ ALTER TABLE `schedules`
   ADD KEY `schedules_shift_id_foreign` (`shift_id`);
 
 --
+-- Indeks untuk tabel `schedule_details`
+--
+ALTER TABLE `schedule_details`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `schedule_details_user_id_foreign` (`user_id`),
+  ADD KEY `schedule_details_schedule_id_foreign` (`schedule_id`);
+
+--
 -- Indeks untuk tabel `sessions`
 --
 ALTER TABLE `sessions`
@@ -7486,6 +7580,12 @@ ALTER TABLE `attendances`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
 
 --
+-- AUTO_INCREMENT untuk tabel `attendance_corrections`
+--
+ALTER TABLE `attendance_corrections`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `blacklists`
 --
 ALTER TABLE `blacklists`
@@ -7496,6 +7596,12 @@ ALTER TABLE `blacklists`
 --
 ALTER TABLE `certificates`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT untuk tabel `documents`
+--
+ALTER TABLE `documents`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `failed_jobs`
@@ -7558,6 +7664,12 @@ ALTER TABLE `schedules`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94908;
 
 --
+-- AUTO_INCREMENT untuk tabel `schedule_details`
+--
+ALTER TABLE `schedule_details`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `stations`
 --
 ALTER TABLE `stations`
@@ -7577,13 +7689,30 @@ ALTER TABLE `user_menus`
 -- Ketidakleluasaan untuk tabel `attendances`
 --
 ALTER TABLE `attendances`
-  ADD CONSTRAINT `attendances_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `attendances_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `attendances_station_id_foreign` FOREIGN KEY (`station_id`) REFERENCES `stations` (`id`) ON DELETE SET NULL;
+
+--
+-- Ketidakleluasaan untuk tabel `attendance_corrections`
+--
+ALTER TABLE `attendance_corrections`
+  ADD CONSTRAINT `attendance_corrections_attendance_id_foreign` FOREIGN KEY (`attendance_id`) REFERENCES `attendances` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `attendance_corrections_decided_by_foreign` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `attendance_corrections_station_id_foreign` FOREIGN KEY (`station_id`) REFERENCES `stations` (`id`),
+  ADD CONSTRAINT `attendance_corrections_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `certificates`
 --
 ALTER TABLE `certificates`
   ADD CONSTRAINT `certificates_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `documents`
+--
+ALTER TABLE `documents`
+  ADD CONSTRAINT `documents_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `documents_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Ketidakleluasaan untuk tabel `flight_details`
@@ -7611,6 +7740,13 @@ ALTER TABLE `overtimes`
 --
 ALTER TABLE `schedules`
   ADD CONSTRAINT `schedules_shift_id_foreign` FOREIGN KEY (`shift_id`) REFERENCES `shifts` (`id`);
+
+--
+-- Ketidakleluasaan untuk tabel `schedule_details`
+--
+ALTER TABLE `schedule_details`
+  ADD CONSTRAINT `schedule_details_schedule_id_foreign` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `schedule_details_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `sessions`

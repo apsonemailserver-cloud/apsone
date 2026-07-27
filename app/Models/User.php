@@ -49,6 +49,8 @@ class User extends Authenticatable
         'tanggal_lahir',
         'tempat_lahir',
         'domisili',
+        'kota_domisili',
+        'no_hp',
         'alamat',
         'no_nik',
         'no_kk',
