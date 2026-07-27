@@ -3435,6 +3435,103 @@
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
         }
 
+        .topbar-notification-switch {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            width: 48px;
+            padding: 0.24rem;
+            border: 1px solid #e6edf5;
+            border-radius: 999px;
+            background: #eef2f8;
+            flex: 0 0 auto;
+            position: relative;
+        }
+
+        .topbar-notification-btn {
+            height: 38px;
+            width: 38px;
+            min-width: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: 0;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #64748b;
+            font-size: 1.1rem;
+            transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        .topbar-notification-btn:hover {
+            color: #2f80ed;
+        }
+
+        .notification-badge-count {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 18px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+            border: 2px solid #ffffff;
+        }
+
+        .bg-light-subtle-unread {
+            background-color: rgba(47, 128, 237, 0.06) !important;
+        }
+
+        .notification-item-link:hover {
+            background-color: rgba(47, 128, 237, 0.1) !important;
+        }
+
+        /* Dark mode overrides for topbar notification */
+        html.aps-dark .topbar-notification-switch {
+            border-color: #24324a !important;
+            background: #192740 !important;
+        }
+
+        html.aps-dark .topbar-notification-btn {
+            background: #111c31 !important;
+            color: #94a3b8 !important;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        html.aps-dark .topbar-notification-btn:hover {
+            color: #3b82f6 !important;
+        }
+
+        html.aps-dark .notification-badge-count {
+            border-color: #111c31 !important;
+        }
+
+        html.aps-dark .notification-dropdown-menu {
+            background-color: #111c31 !important;
+            border-color: #24324a !important;
+        }
+
+        html.aps-dark .notification-dropdown-menu .bg-light {
+            background-color: #192740 !important;
+            border-color: #24324a !important;
+        }
+
+        html.aps-dark .bg-light-subtle-unread {
+            background-color: rgba(59, 130, 246, 0.15) !important;
+        }
+
         .dropdown-user .topbar-user-chip.nav-link {
             height: 48px !important;
         }
@@ -3664,6 +3761,19 @@
             }
 
             .topbar-theme-option {
+                width: 34px;
+                min-width: 34px;
+                height: 34px;
+                padding: 0;
+            }
+
+            .topbar-notification-switch {
+                height: 44px;
+                width: 44px;
+                padding: 0.2rem;
+            }
+
+            .topbar-notification-btn {
                 width: 34px;
                 min-width: 34px;
                 height: 34px;
@@ -5930,6 +6040,16 @@
                         </ul>
                     </li>
 
+                    <li class="menu-item {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
+                        <a href="{{ route('announcements.index') }}" class="menu-link">
+                            <i class="menu-icon tf-icons ti ti-speakerphone"></i>
+                            <div data-i18n="Pengumuman">Pengumuman</div>
+                            @if(isset($unreadAnnouncementsCount) && $unreadAnnouncementsCount > 0)
+                                <span class="badge rounded-pill bg-danger ms-auto">{{ $unreadAnnouncementsCount > 99 ? '99+' : $unreadAnnouncementsCount }}</span>
+                            @endif
+                        </a>
+                    </li>
+
                     <li class="menu-item {{ request()->routeIs('faq') ? 'active' : '' }}">
                         <a href="{{ route('faq') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-help-circle"></i>
@@ -6064,6 +6184,62 @@
                                         title="Switch to dark mode">
 	                                    <i class="ti ti-moon"></i>
 	                                </button>
+	                            </div>
+
+	                            <div class="dropdown topbar-notification-dropdown ms-2">
+	                                <div class="topbar-notification-switch">
+	                                    <button class="topbar-notification-btn" type="button" id="topbarNotificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Pengumuman">
+	                                        <i class="ti ti-bell"></i>
+	                                        @if(isset($unreadAnnouncementsCount) && $unreadAnnouncementsCount > 0)
+	                                            <span class="notification-badge-count" id="bellNotificationBadge">{{ $unreadAnnouncementsCount > 99 ? '99+' : $unreadAnnouncementsCount }}</span>
+	                                        @endif
+	                                    </button>
+	                                    <div class="dropdown-menu dropdown-menu-end shadow-lg p-0 notification-dropdown-menu" aria-labelledby="topbarNotificationBell" style="width: 290px; max-width: 86vw; border-radius: 0.75rem; border: 1px solid rgba(226, 232, 240, 0.8); overflow: hidden;">
+	                                        <div class="px-3 py-2 bg-light border-bottom d-flex align-items-center justify-content-between">
+	                                            <div class="d-flex align-items-center gap-2">
+	                                                <i class="ti ti-bell text-primary fs-6"></i>
+	                                                <strong class="text-dark" style="font-size: 0.82rem;">Pengumuman</strong>
+	                                            </div>
+	                                            <span class="badge bg-primary rounded-pill px-2 py-1" style="font-size: 0.65rem;" id="dropdownUnreadLabel">
+	                                                {{ isset($unreadAnnouncementsCount) && $unreadAnnouncementsCount > 0 ? $unreadAnnouncementsCount . ' Belum Dibaca' : 'Semua Dibaca' }}
+	                                            </span>
+	                                        </div>
+	                                        <div class="notification-list-body" style="max-height: 280px; overflow-y: auto;">
+	                                            @forelse($topbarAnnouncements ?? [] as $announcement)
+	                                                @php
+	                                                    $isRead = in_array($announcement->id, $readAnnouncementIds ?? []);
+	                                                @endphp
+	                                                <a href="{{ route('announcements.index', ['select' => $announcement->id]) }}" 
+	                                                   class="d-block px-3 py-2 text-decoration-none border-bottom notification-item-link {{ !$isRead ? 'bg-light-subtle-unread' : '' }}"
+	                                                   onclick="markSingleRead('{{ route('announcements.read', $announcement->id) }}', event, '{{ route('announcements.index', ['select' => $announcement->id]) }}')">
+	                                                    <div class="d-flex justify-content-between align-items-start mb-1">
+	                                                        <span class="fw-bold text-dark text-truncate d-inline-block" style="max-width: 165px; font-size: 0.8rem;">{{ $announcement->title }}</span>
+	                                                        <small class="text-muted" style="font-size: 0.65rem;">{{ $announcement->created_at->diffForHumans(null, true) }}</small>
+	                                                    </div>
+	                                                    <p class="mb-1 text-secondary text-truncate-2" style="font-size: 0.73rem; line-height: 1.25;">{{ Str::limit(strip_tags($announcement->content), 60) }}</p>
+	                                                    <div class="d-flex align-items-center justify-content-between">
+	                                                        <span class="badge bg-label-info text-capitalize py-1 px-2" style="font-size: 0.6rem;">
+	                                                            {{ is_array($announcement->target_stations) ? (in_array('ALL', $announcement->target_stations) ? 'Semua Station' : implode(', ', $announcement->target_stations)) : 'Semua Station' }}
+	                                                        </span>
+	                                                        @if(!$isRead)
+	                                                            <span class="badge bg-danger rounded-circle p-0" style="width: 7px; height: 7px; display: inline-block;" title="Belum Dibaca"></span>
+	                                                        @endif
+	                                                    </div>
+	                                                </a>
+	                                            @empty
+	                                                <div class="p-3 text-center text-muted">
+	                                                    <i class="ti ti-bell-off fs-4 d-block mb-1 opacity-50"></i>
+	                                                    <span style="font-size: 0.78rem;">Tidak ada pengumuman</span>
+	                                                </div>
+	                                            @endforelse
+	                                        </div>
+	                                        <div class="p-2 border-top bg-light text-center">
+	                                            <a href="{{ route('announcements.index') }}" class="btn btn-sm btn-primary w-100 py-1" style="font-size: 0.75rem;">
+	                                                Lihat Semua Pengumuman <i class="ti ti-chevron-right ms-1"></i>
+	                                            </a>
+	                                        </div>
+	                                    </div>
+	                                </div>
 	                            </div>
                             <ul class="navbar-nav flex-row align-items-center">
                                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
@@ -7588,6 +7764,20 @@
                 }
             });
         });
+
+        function markSingleRead(readUrl, event, targetUrl) {
+            if (event) event.preventDefault();
+            fetch(readUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }).finally(function() {
+                window.location.href = targetUrl;
+            });
+        }
     </script>
 </body>
 
