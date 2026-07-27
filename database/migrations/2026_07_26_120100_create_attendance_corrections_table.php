@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('attendance_corrections', function (Blueprint $table) {
+        if (!Schema::hasTable('attendance_corrections')) {
+            Schema::create('attendance_corrections', function (Blueprint $table) {
             $table->id();
             $table->string('user_id', 20);
             $table->foreignId('attendance_id')
@@ -36,6 +37,7 @@ return new class extends Migration
                 ->on('users')
                 ->nullOnDelete();
         });
+        }
     }
 
     public function down(): void

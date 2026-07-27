@@ -190,6 +190,37 @@ INSERT INTO `attendances` (`id`, `user_id`, `check_in_time`, `status`, `check_ou
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `announcements`
+--
+
+CREATE TABLE `announcements` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `target_stations` text DEFAULT NULL,
+  `created_by` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `announcement_reads`
+--
+
+CREATE TABLE `announcement_reads` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `announcement_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` varchar(20) NOT NULL,
+  `read_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `attendance_corrections`
 --
 
@@ -7389,6 +7420,21 @@ CREATE TABLE `user_menus` (
 --
 
 --
+-- Indeks untuk tabel `announcements`
+--
+ALTER TABLE `announcements`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `announcements_created_by_foreign` (`created_by`);
+
+--
+-- Indeks untuk tabel `announcement_reads`
+--
+ALTER TABLE `announcement_reads`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `announcement_reads_announcement_id_user_id_unique` (`announcement_id`,`user_id`),
+  ADD KEY `announcement_reads_user_id_foreign` (`user_id`);
+
+--
 -- Indeks untuk tabel `attendances`
 --
 ALTER TABLE `attendances`
@@ -7574,6 +7620,18 @@ ALTER TABLE `user_menus`
 --
 
 --
+-- AUTO_INCREMENT untuk tabel `announcements`
+--
+ALTER TABLE `announcements`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT untuk tabel `announcement_reads`
+--
+ALTER TABLE `announcement_reads`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `attendances`
 --
 ALTER TABLE `attendances`
@@ -7684,6 +7742,19 @@ ALTER TABLE `user_menus`
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
 --
+
+--
+-- Ketidakleluasaan untuk tabel `announcements`
+--
+ALTER TABLE `announcements`
+  ADD CONSTRAINT `announcements_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Ketidakleluasaan untuk tabel `announcement_reads`
+--
+ALTER TABLE `announcement_reads`
+  ADD CONSTRAINT `announcement_reads_announcement_id_foreign` FOREIGN KEY (`announcement_id`) REFERENCES `announcements` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `announcement_reads_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `attendances`
