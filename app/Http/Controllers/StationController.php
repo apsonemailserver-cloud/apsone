@@ -28,7 +28,13 @@ class StationController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'radius' => 'required|integer|min:1',
+            'role' => 'nullable',
         ]);
+
+        $roles = $request->role;
+        if (is_array($roles)) {
+            $roles = implode(', ', $roles);
+        }
 
         Station::create([
             'code' => strtoupper($request->code),
@@ -37,6 +43,7 @@ class StationController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'radius' => $request->radius,
+            'role' => $roles,
         ]);
 
         Alert::success('Berhasil', 'Station baru berhasil dibuka!');
@@ -97,12 +104,19 @@ class StationController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'radius' => 'required|integer|min:1',
+            'role' => 'nullable',
         ]);
+
+        $roles = $request->role;
+        if (is_array($roles)) {
+            $roles = implode(', ', $roles);
+        }
 
         $station->update([
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'radius' => $request->radius,
+            'role' => $roles,
         ]);
 
         Alert::success('Berhasil', 'Station berhasil diubah!');

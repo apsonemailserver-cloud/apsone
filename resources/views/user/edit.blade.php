@@ -80,27 +80,13 @@
                                         <div class="mb-3">
                                             <label class="form-label">Station <span class="text-danger">*</span></label>
                                             <select name="station" class="form-select" required>
-                                                <option value="Office-CGK"
-                                                    {{ old('station', $user->station) == 'Office-CGK' ? 'selected' : '' }}>
-                                                    Office CGK</option>
-                                                <option value="CGK"
-                                                    {{ old('station', $user->station) == 'CGK' ? 'selected' : '' }}>CGK
-                                                </option>
-                                                <option value="DPS"
-                                                    {{ old('station', $user->station) == 'DPS' ? 'selected' : '' }}>DPS
-                                                </option>
-                                                <option value="KNO"
-                                                    {{ old('station', $user->station) == 'KNO' ? 'selected' : '' }}>KNO
-                                                </option>
-                                                <option value="UPG"
-                                                    {{ old('station', $user->station) == 'UPG' ? 'selected' : '' }}>UPG
-                                                </option>
-                                                <option value="SUB"
-                                                    {{ old('station', $user->station) == 'SUB' ? 'selected' : '' }}>SUB
-                                                </option>
-                                                <option value="KJT"
-                                                    {{ old('station', $user->station) == 'KJT' ? 'selected' : '' }}>KJT
-                                                </option>
+                                                <option value="">-- Pilih Station --</option>
+                                                @foreach ($stations as $station)
+                                                    <option value="{{ $station->code }}"
+                                                        {{ old('station', $user->station) == $station->code ? 'selected' : '' }}>
+                                                        {{ $station->code }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                         </div>
 
@@ -234,65 +220,40 @@
                                         <div class="mb-3">
                                             <label class="form-label">Role <span class="text-danger">*</span></label>
                                             <select name="role" class="form-select" required>
-                                                <option value="ADMIN"
-                                                    {{ old('role', $user->role) == 'ADMIN' ? 'selected' : '' }}>ADMIN
-                                                </option>
-                                                <option value="ASS LEADER"
-                                                    {{ old('role', $user->role) == 'ASS LEADER' ? 'selected' : '' }}>ASS
-                                                    LEADER</option>
-                                                <option value="Head Of Airport Service"
-                                                    {{ old('role', $user->role) == 'Head Of Airport Service' ? 'selected' : '' }}>
-                                                    Head Of Airport Service</option>
-                                                <option value="DISPATCHER"
-                                                    {{ old('role', $user->role) == 'DISPATCHER' ? 'selected' : '' }}>
-                                                    DISPATCHER</option>
-                                                <option value="DRIVER"
-                                                    {{ old('role', $user->role) == 'DRIVER' ? 'selected' : '' }}>DRIVER
-                                                </option>
-                                                <option value="HSE"
-                                                    {{ old('role', $user->role) == 'HSE' ? 'selected' : '' }}>HSE</option>
-                                                <option value="LEADER"
-                                                    {{ old('role', $user->role) == 'LEADER' ? 'selected' : '' }}>LEADER
-                                                </option>
-                                                <option value="PORTER"
-                                                    {{ old('role', $user->role) == 'PORTER' ? 'selected' : '' }}>PORTER
-                                                </option>
+                                                <option value="">-- Pilih Role --</option>
+                                                <option value="Admin" {{ old('role', $user->role) == 'Admin' ? 'selected' : '' }}>Admin</option>
+                                                <option value="Finance" {{ old('role', $user->role) == 'Finance' ? 'selected' : '' }}>Finance</option>
+                                                <option value="Leader Bge" {{ old('role', $user->role) == 'Leader Bge' ? 'selected' : '' }}>Leader Bge</option>
+                                                <option value="SPV Bge" {{ old('role', $user->role) == 'SPV Bge' ? 'selected' : '' }}>SPV Bge</option>
+                                                <option value="SPV Apron" {{ old('role', $user->role) == 'SPV Apron' ? 'selected' : '' }}>SPV Apron</option>
+                                                <option value="Leader Apron" {{ old('role', $user->role) == 'Leader Apron' ? 'selected' : '' }}>Leader Apron</option>
+                                                <option value="Porter Bge" {{ old('role', $user->role) == 'Porter Bge' ? 'selected' : '' }}>Porter Bge</option>
+                                                <option value="HSE" {{ old('role', $user->role) == 'HSE' ? 'selected' : '' }}>HSE</option>
+                                                <option value="Head Of Airport Service" {{ old('role', $user->role) == 'Head Of Airport Service' ? 'selected' : '' }}>Head Of Airport Service</option>
+                                                <option value="Porter Apron" {{ old('role', $user->role) == 'Porter Apron' ? 'selected' : '' }}>Porter Apron</option>
+                                                <option value="Ass Leader Apron" {{ old('role', $user->role) == 'Ass Leader Apron' ? 'selected' : '' }}>Ass Leader Apron</option>
+                                                <option value="Dispatcher" {{ old('role', $user->role) == 'Dispatcher' ? 'selected' : '' }}>Dispatcher</option>
+                                                <option value="Ass Leader Bge" {{ old('role', $user->role) == 'Ass Leader Bge' ? 'selected' : '' }}>Ass Leader Bge</option>
+                                                <option value="Driver" {{ old('role', $user->role) == 'Driver' ? 'selected' : '' }}>Driver</option>
+                                                <option value="Aircraft Interior Exterior Cleaning" {{ old('role', $user->role) == 'Aircraft Interior Exterior Cleaning' ? 'selected' : '' }}>Aircraft Interior Exterior Cleaning</option>
+                                                <option value="Leader Aircraft Interior Exterior Cleaning" {{ old('role', $user->role) == 'Leader Aircraft Interior Exterior Cleaning' ? 'selected' : '' }}>Leader Aircraft Interior Exterior Cleaning</option>
+                                                <option value="Leader Porter Apron" {{ old('role', $user->role) == 'Leader Porter Apron' ? 'selected' : '' }}>Leader Porter Apron</option>
+                                                <option value="Controller" {{ old('role', $user->role) == 'Controller' ? 'selected' : '' }}>Controller</option>
+                                                <option value="Quality Control" {{ old('role', $user->role) == 'Quality Control' ? 'selected' : '' }}>Quality Control</option>
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Manager <span class="text-danger">*</span></label>
+                                            <label class="form-label">Supervisor<span class="text-danger">*</span></label>
                                             <select name="manager" class="form-select" required>
-                                                <option value="HAURA SHAFA AFANIN"
-                                                    {{ old('manager', $user->manager) == 'HAURA SHAFA AFANIN' ? 'selected' : '' }}>
-                                                    HAURA SHAFA AFANIN (24080101002)</option>
-                                                <option value="TRI UTAMI RHAHAYU"
-                                                    {{ old('manager', $user->manager) == 'TRI UTAMI RHAHAYU' ? 'selected' : '' }}>
-                                                    TRI UTAMI RHAHAYU (24080101001)</option>
-                                                <option value="SISI FADILLAH"
-                                                    {{ old('manager', $user->manager) == 'SISI FADILLAH' ? 'selected' : '' }}>
-                                                    SISI FADILLAH (24080101003)</option>
-                                                <option value="DIMAS RAFI HADITIYO"
-                                                    {{ old('manager', $user->manager) == 'DIMAS RAFI HADITIYO' ? 'selected' : '' }}>
-                                                    DIMAS RAFI HADITIYO (24080101004)</option>
-                                                <option value="MULYADI"
-                                                    {{ old('manager', $user->manager) == 'MULYADI' ? 'selected' : '' }}>
-                                                    MULYADI (102240008)</option>
-                                                <option value="JUNAIDI"
-                                                    {{ old('manager', $user->manager) == 'JUNAIDI' ? 'selected' : '' }}>
-                                                    JUNAIDI (102240006)</option>
+                                                <option value="">-- Pilih Supervisor --</option>
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Senior Manager</label>
+                                            <label class="form-label">Manager</label>
                                             <select name="senior_manager" class="form-select">
-                                                <option value="SUBCHAN"
-                                                    {{ old('senior_manager', $user->senior_manager) == 'SUBCHAN' ? 'selected' : '' }}>
-                                                    SUBCHAN (507040102)</option>
-                                                <option value="ADE IRWAN EFFENDI"
-                                                    {{ old('senior_manager', $user->senior_manager) == 'ADE IRWAN EFFENDI' ? 'selected' : '' }}>
-                                                    ADE IRWAN EFFENDI (102240243)</option>
+                                                <option value="">-- Pilih Manager --</option>
                                             </select>
                                         </div>
 
@@ -341,8 +302,85 @@
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            if (typeof $.fn.select2 !== 'undefined') {
+                $('.select2').select2({
+                    placeholder: '-- Pilih Role --',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
+
+            // Dynamic Superiors Filter based on Station
+            const stationSelect = document.querySelector('select[name="station"]');
+            const managerSelect = document.querySelector('select[name="manager"]');
+            const seniorManagerSelect = document.querySelector('select[name="senior_manager"]');
+
+            const initialManager = "{{ old('manager', $user->manager) }}";
+            const initialSeniorManager = "{{ old('senior_manager', $user->senior_manager) }}";
+
+            function syncSelectUI(select, defaultPlaceholder) {
+                if (select._apsCombobox) {
+                    if (defaultPlaceholder) {
+                        select._apsCombobox.placeholder = defaultPlaceholder;
+                    }
+                    const selected = select.options[select.selectedIndex];
+                    const text = (selected && selected.value !== '') ? selected.text.trim() : '';
+                    const hasValue = select.value !== '';
+                    select._apsCombobox.value.textContent = text || defaultPlaceholder || select._apsCombobox.placeholder;
+                    select._apsCombobox.value.classList.toggle('aps-combobox-placeholder', !hasValue);
+                }
+            }
+
+            function updateSuperiors(station, selectedMgr = '', selectedSeniorMgr = '') {
+                const url = "{{ route('users.superiors') }}?station=" + encodeURIComponent(station || '');
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        // Manager Options
+                        let mgrHtml = '<option value="">-- Pilih Manager --</option>';
+                        if (data.managers && data.managers.length > 0) {
+                            data.managers.forEach(m => {
+                                const isSelected = (selectedMgr && (m.fullname === selectedMgr || m.display === selectedMgr || selectedMgr.includes(m.fullname))) ? 'selected' : '';
+                                mgrHtml += `<option value="${m.fullname}" ${isSelected}>${m.display}</option>`;
+                            });
+                        } else {
+                            mgrHtml = '<option value="">-- Tidak ada Manager --</option>';
+                        }
+                        managerSelect.innerHTML = mgrHtml;
+
+                        // Senior Manager Options
+                        let smHtml = '<option value="">-- Pilih Senior Manager --</option>';
+                        if (data.senior_managers && data.senior_managers.length > 0) {
+                            data.senior_managers.forEach(sm => {
+                                const isSelected = (selectedSeniorMgr && (sm.fullname === selectedSeniorMgr || sm.display === selectedSeniorMgr || selectedSeniorMgr.includes(sm.fullname))) ? 'selected' : '';
+                                smHtml += `<option value="${sm.fullname}" ${isSelected}>${sm.display}</option>`;
+                            });
+                        } else {
+                            smHtml = '<option value="">-- Tidak ada Senior Manager --</option>';
+                        }
+                        seniorManagerSelect.innerHTML = smHtml;
+
+                        syncSelectUI(managerSelect, '-- Pilih Manager --');
+                        syncSelectUI(seniorManagerSelect, '-- Pilih Senior Manager --');
+                    })
+                    .catch(err => {
+                        console.error('Gagal mengambil data atasan:', err);
+                    });
+            }
+
+            if (stationSelect) {
+                stationSelect.addEventListener('change', function() {
+                    updateSuperiors(this.value, managerSelect.value, seniorManagerSelect.value);
+                });
+
+                // Auto fetch on load
+                updateSuperiors(stationSelect.value || '', initialManager, initialSeniorManager);
+            }
+
             // Validasi form sebelum submit
             const form = document.getElementById('editUserForm');
             form.addEventListener('submit', function(e) {
@@ -420,7 +458,38 @@
 @endsection
 
 @section('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
+        .select2-container--default .select2-selection--multiple {
+            background-color: #1e293b;
+            border-color: #334155;
+            border-radius: 6px;
+            min-height: 38px;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #3b82f6;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #fff;
+            margin-right: 5px;
+        }
+        .select2-dropdown {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #fff;
+        }
+        .select2-results__option {
+            color: #e2e8f0;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #3b82f6;
+            color: #fff;
+        }
+
         .is-invalid {
             border-color: #dc3545;
         }

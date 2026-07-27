@@ -2,6 +2,43 @@
 
 @section('title', 'Riwayat Absensi')
 
+@section('styles')
+<style>
+    .attendance-row.has-note {
+        transition: background-color 0.15s ease;
+    }
+    .attendance-row.has-note:hover {
+        background-color: rgba(37, 99, 235, 0.06) !important;
+    }
+    .note-truncate {
+        max-width: 160px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    /* Dark Mode Styling for Modal */
+    html.aps-dark #noteDetailModal .modal-content {
+        background-color: #1e293b;
+        color: #f8fafc;
+    }
+    html.aps-dark #noteDetailModal .bg-light {
+        background-color: #0f172a !important;
+        border-color: #334155 !important;
+    }
+    html.aps-dark #noteDetailModal .bg-body {
+        background-color: #0f172a !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+    html.aps-dark #noteDetailModal .text-dark {
+        color: #f8fafc !important;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="py-4">
@@ -35,7 +72,7 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                    <table class="table text-center">
+                    <table class="table text-center align-middle">
                         <thead style="position: sticky; top: 0; z-index: 10;">
                             <tr>
                                 <th>Date</th>
@@ -43,7 +80,7 @@
                                 <th>Shift</th>
                                 <th>In</th>
                                 <th>Out</th>
-                                <th>Note Koreksi</th>
+                                <th style="max-width: 180px; width: 180px;">Note Koreksi</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -72,8 +109,31 @@
 
                             $today = now()->startOfDay();
                             $isFuture = $currentDate->gt($today);
+
+                            $hasNote = !empty($correction?->reason);
+                            $statusClass = '';
+                            if ($correction) {
+                                $statusClass = match ($correction->status) {
+                                    \App\Models\AttendanceCorrection::STATUS_APPROVED => 'bg-label-success',
+                                    \App\Models\AttendanceCorrection::STATUS_REJECTED => 'bg-label-danger',
+                                    default => 'bg-label-warning',
+                                };
+                            }
                             @endphp
-                            <tr>
+                            <tr class="attendance-row {{ $hasNote ? 'has-note' : '' }}"
+                                @if($hasNote)
+                                    style="cursor: pointer;"
+                                    title="Klik row untuk lihat detail note koreksi"
+                                    data-date="{{ $currentDate->translatedFormat('d F Y') }}"
+                                    data-station="{{ $attendance && $attendance->check_in_time ? ($attendance->station?->code ?? $user->station ?? '-') : '-' }}"
+                                    data-shift="{{ $schedule ? $startTime->format('H:i') . ' - ' . $endTime->format('H:i') : '-' }}"
+                                    data-in="{{ $checkIn ? $checkIn->format('H:i') : '-' }}"
+                                    data-out="{{ $checkOut ? $checkOut->format('H:i') : '-' }}"
+                                    data-status="{{ $correction ? ucfirst($correction->status) : '' }}"
+                                    data-status-class="{{ $statusClass }}"
+                                    data-note="{{ $correction->reason }}"
+                                @endif
+                            >
                                 <td>{{ $day }}</td>
                                 <td>{{ $attendance && $attendance->check_in_time ? ($attendance->station?->code ?? $user->station ?? '-') : '-' }}</td>
                                 <td>
@@ -113,16 +173,21 @@
                                 " style="border-radius: 0.25rem;">
                                     {{ $checkOut ? $checkOut->format('H:i') : '-' }}
                                 </td>
-                                <td class="correction-note">{{ $correction?->reason ?? '-' }}</td>
+                                
+                                {{-- Kolom Note Koreksi --}}
+                                <td class="correction-note-cell" style="max-width: 180px;">
+                                    @if($hasNote)
+                                        <div class="note-truncate mx-auto" title="{{ $correction->reason }}">
+                                            <i class="ti ti-notes text-primary me-1"></i>
+                                            <span>{{ $correction->reason }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+
                                 <td>
                                     @if ($correction)
-                                        @php
-                                            $statusClass = match ($correction->status) {
-                                                \App\Models\AttendanceCorrection::STATUS_APPROVED => 'bg-label-success',
-                                                \App\Models\AttendanceCorrection::STATUS_REJECTED => 'bg-label-danger',
-                                                default => 'bg-label-warning',
-                                            };
-                                        @endphp
                                         <span class="badge {{ $statusClass }}">{{ ucfirst($correction->status) }}</span>
                                     @elseif (!$isFuture)
                                         <a href="{{ route('attendance.corrections.create', $currentDate->toDateString()) }}" class="btn btn-sm btn-outline-primary">
@@ -157,4 +222,102 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Detail Note Koreksi --}}
+<div class="modal fade" id="noteDetailModal" tabindex="-1" aria-labelledby="noteDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header border-bottom py-3">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="noteDetailModalLabel">
+                    <i class="ti ti-notes text-primary fs-4"></i> Detail Note Koreksi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-3 p-3 rounded bg-light border">
+                    <div class="col-6">
+                        <small class="text-muted d-block mb-1">Tanggal</small>
+                        <strong id="modalDateVal" class="text-dark">-</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block mb-1">Status Koreksi</small>
+                        <span id="modalStatusBadge" class="badge bg-label-secondary">-</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block mb-1">Office / Station</small>
+                        <span id="modalOfficeVal" class="fw-semibold text-dark">-</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block mb-1">Shift</small>
+                        <span id="modalShiftVal" class="fw-semibold text-dark">-</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block mb-1">Jam Masuk (In)</small>
+                        <span id="modalInVal" class="fw-semibold text-dark">-</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block mb-1">Jam Keluar (Out)</small>
+                        <span id="modalOutVal" class="fw-semibold text-dark">-</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label fw-bold text-dark mb-1">
+                        <i class="ti ti-file-description me-1 text-primary"></i> Catatan Koreksi:
+                    </label>
+                    <div id="modalNoteContent" class="p-3 rounded border bg-body" style="word-break: break-word; white-space: pre-wrap; font-size: 0.925rem; line-height: 1.6;"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-top py-2">
+                <button type="button" class="btn btn-primary btn-sm px-4" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('noteDetailModal');
+        if (!modalEl) return;
+
+        const noteModal = new bootstrap.Modal(modalEl);
+        const modalDateVal = document.getElementById('modalDateVal');
+        const modalStatusBadge = document.getElementById('modalStatusBadge');
+        const modalOfficeVal = document.getElementById('modalOfficeVal');
+        const modalShiftVal = document.getElementById('modalShiftVal');
+        const modalInVal = document.getElementById('modalInVal');
+        const modalOutVal = document.getElementById('modalOutVal');
+        const modalNoteContent = document.getElementById('modalNoteContent');
+
+        document.querySelectorAll('.attendance-row.has-note').forEach(row => {
+            row.addEventListener('click', function (e) {
+                if (e.target.closest('a') || e.target.closest('button')) return;
+
+                const note = this.dataset.note;
+                if (!note) return;
+
+                modalDateVal.textContent = this.dataset.date || '-';
+                modalOfficeVal.textContent = this.dataset.station || '-';
+                modalShiftVal.textContent = this.dataset.shift || '-';
+                modalInVal.textContent = this.dataset.in || '-';
+                modalOutVal.textContent = this.dataset.out || '-';
+
+                const status = this.dataset.status;
+                const statusClass = this.dataset.statusClass;
+                if (status) {
+                    modalStatusBadge.textContent = status;
+                    modalStatusBadge.className = 'badge ' + (statusClass || 'bg-label-primary');
+                    modalStatusBadge.style.display = 'inline-block';
+                } else {
+                    modalStatusBadge.style.display = 'none';
+                }
+
+                modalNoteContent.textContent = note;
+                noteModal.show();
+            });
+        });
+    });
+</script>
 @endsection

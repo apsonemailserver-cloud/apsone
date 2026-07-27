@@ -23,13 +23,34 @@ class AttendanceCorrectionController extends Controller
         $query = AttendanceCorrection::with(['user', 'station', 'attendance'])
             ->where('status', AttendanceCorrection::STATUS_PENDING);
 
+        $rawStation = trim((string) $actor->station);
+        $userStations = ($rawStation !== '' && strtoupper($rawStation) !== 'ALL' && strtoupper($rawStation) !== 'SEMUA')
+            ? array_filter(array_map('trim', explode(',', $rawStation)))
+            : [];
+
         if (! $isAdmin) {
             $query->whereHas(
                 'user',
                 fn ($builder) => $builder->where('manager', $actor->fullname)
             );
-        } elseif ($request->filled('station_id')) {
-            $query->where('station_id', $request->integer('station_id'));
+            if (! empty($userStations)) {
+                $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
+            }
+        } else {
+            if (count($userStations) === 1) {
+                $singleCode = reset($userStations);
+                $query->whereHas('station', fn ($b) => $b->where('code', $singleCode));
+            } elseif (count($userStations) > 1) {
+                if ($request->filled('station_id')) {
+                    $query->where('station_id', $request->integer('station_id'));
+                } else {
+                    $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
+                }
+            } else {
+                if ($request->filled('station_id')) {
+                    $query->where('station_id', $request->integer('station_id'));
+                }
+            }
         }
 
         if ($request->filled('search')) {
@@ -45,9 +66,22 @@ class AttendanceCorrectionController extends Controller
             ->paginate($request->integer('per_page', 20))
             ->withQueryString();
 
-        $stations = $isAdmin
-            ? Station::where('is_active', true)->orderBy('code')->get()
-            : collect();
+        if ($isAdmin) {
+            if (count($userStations) === 1) {
+                $stations = collect();
+            } elseif (count($userStations) > 1) {
+                $stations = Station::where('is_active', true)
+                    ->whereIn('code', $userStations)
+                    ->orderBy('code')
+                    ->get();
+            } else {
+                $stations = Station::where('is_active', true)
+                    ->orderBy('code')
+                    ->get();
+            }
+        } else {
+            $stations = collect();
+        }
 
         return view('attendance.corrections.approval', compact('corrections', 'stations', 'isAdmin'));
     }

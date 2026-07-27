@@ -1024,7 +1024,20 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="col-md-6">
+                                        <div class="info-tile">
+                                            <div class="tile-icon-wrapper">
+                                                <i class="bx bx-phone"></i>
+                                            </div>
+                                            <div class="tile-content">
+                                                <div class="tile-label">No. Telepon</div>
+                                                <div class="tile-value">{{ $user->no_hp ?? 'N/A' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+
                             </div>
 
                         </div>

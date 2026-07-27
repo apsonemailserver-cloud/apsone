@@ -5723,7 +5723,7 @@
                         <ul class="menu-sub">
 
 
-                            <li class="menu-item {{ request()->routeIs('attendance.index') ? 'active' : '' }}">
+                            <li class="menu-item {{ request()->routeIs('attendance.index') || request()->routeIs('attendance.history') || request()->routeIs('attendance.camera') || request()->routeIs('attendance.corrections.create') || request()->routeIs('attendance.corrections.store') ? 'active' : '' }}">
                                 <a href="{{ route('attendance.index') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-stopwatch"></i>
                                     <div data-i18n="Absensi Hari Ini">Absensi Hari Ini</div>

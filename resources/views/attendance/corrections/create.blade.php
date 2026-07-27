@@ -5,14 +5,9 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="mx-auto py-4" style="max-width: 760px;">
-        <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-            <div>
-                <h4 class="fw-bold mb-1">Koreksi Absensi</h4>
-                <p class="text-muted mb-0">Ajukan perubahan data absensi tanggal {{ \Carbon\Carbon::parse($attendanceDate)->translatedFormat('d F Y') }}.</p>
-            </div>
-            <a href="{{ route('attendance.history') }}" class="btn btn-label-secondary">
-                <i class="ti ti-arrow-left me-1"></i>Kembali
-            </a>
+        <div class="mb-4">
+            <h4 class="fw-bold mb-1">Koreksi Absensi</h4>
+            <p class="text-muted mb-0">Ajukan perubahan data absensi tanggal {{ \Carbon\Carbon::parse($attendanceDate)->translatedFormat('d F Y') }}.</p>
         </div>
 
         <div class="card">

@@ -30,6 +30,18 @@
         border-color: rgba(47, 128, 237, 0.45) !important;
         box-shadow: 0 4px 12px 0 rgba(47, 128, 237, 0.15) !important;
     }
+
+    /* Guide Box styling for side-by-side cards */
+    .guide-box {
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+    html.aps-dark .guide-box {
+        background-color: #16233b !important;
+        border-color: #243552 !important;
+    }
 </style>
 @endsection
 
@@ -65,7 +77,38 @@
                     </h2>
                     <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
                         <div class="accordion-body">
-                            Buka menu <strong>Attendance</strong> > <strong>Absensi Hari Ini</strong>. Klik tombol Check-In saat mulai bertugas, dan Check-Out setelah selesai.
+                            <p class="mb-3">Buka menu <strong>Attendance</strong> &gt; <strong>Absensi Hari Ini</strong>. Klik tombol <strong>Check-In</strong> saat mulai bertugas, dan <strong>Check-Out</strong> setelah selesai.</p>
+
+                            <div class="row g-3 mt-1">
+                                {{-- Card Kiri: HP Android --}}
+                                <div class="col-md-6">
+                                    <div class="guide-box h-100">
+                                        <h6 class="fw-bold mb-2 text-primary">
+                                            <i class="bx bxl-android me-1"></i> HP Android (Google Chrome):
+                                        </h6>
+                                        <ol class="mb-0 ps-3 small">
+                                            <li>Aktifkan GPS / Lokasi pada panel notifikasi atas HP Anda.</li>
+                                            <li>Buka Pengaturan HP &gt; Aplikasi &gt; Chrome &gt; Izin (Permissions).</li>
+                                            <li>Setel Lokasi &amp; Kamera ke "Izinkan saat aplikasi digunakan".</li>
+                                            <li>Saat di web, tekan Izinkan (Allow) pada pop-up izin yang muncul.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                {{-- Card Kanan: iPhone / iOS --}}
+                                <div class="col-md-6">
+                                    <div class="guide-box h-100">
+                                        <h6 class="fw-bold mb-2 text-primary">
+                                            <i class="bx bxl-apple me-1"></i> iPhone / iOS (Safari):
+                                        </h6>
+                                        <ol class="mb-0 ps-3 small">
+                                            <li>Buka Pengaturan &gt; Privasi &amp; Keamanan &gt; Layanan Lokasi &gt; Pastikan ON.</li>
+                                            <li>Buka Pengaturan &gt; Safari &gt; opsi Kamera &amp; Lokasi pilih Izinkan (Allow).</li>
+                                            <li>Tekan Izinkan (Allow) ketika Safari meminta konfirmasi lokasi &amp; kamera.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -74,6 +74,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user/profile/{id}', [UserController::class, 'userProfile'])->name('users.userProfile');
 
     // --- USER MANAGEMENT (CRUD) ---
+    Route::get('/get-superiors-by-station', [UserController::class, 'getSuperiorsByStation'])->name('users.superiors');
     Route::get('/users/apron', [UserController::class, 'indexApron'])->name('users.apron');
     Route::get('/users/bge', [UserController::class, 'indexBGE'])->name('users.bge');
     Route::get('/users/office', [UserController::class, 'indexOffice'])->name('users.office');

@@ -22,25 +22,47 @@ class AttendanceReportExport implements FromCollection, WithHeadings
 
             $attendance = $row->attendance ?? null;
             $schedule = $row->schedule ?? null;
+            $leave = $row->leave ?? null;
+            $correction = $row->correction ?? null;
             $date = \Carbon\Carbon::parse($row->date);
+            $today = \Carbon\Carbon::today();
 
-            $shiftLabel = $schedule
-                ? $schedule->shift_description . ' (' . $schedule->start_time . '-' . $schedule->end_time . ')'
-                : 'Libur';
+            $checkInTime = $attendance?->check_in_time ? \Carbon\Carbon::parse($attendance->check_in_time) : null;
+            $checkOutTime = $attendance?->check_out_time ? \Carbon\Carbon::parse($attendance->check_out_time) : null;
 
-            $checkIn = $attendance?->check_in_time
-                ? \Carbon\Carbon::parse($attendance->check_in_time)->format('H:i:s')
+            $checkIn = $checkInTime ? $checkInTime->format('H:i:s') : '-';
+            $checkOut = $checkOutTime ? $checkOutTime->format('H:i:s') : '-';
+
+            $workDuration = ($checkInTime && $checkOutTime)
+                ? $checkInTime->diff($checkOutTime)->format('%H:%I:%S')
                 : '-';
 
-            $checkOut = $attendance?->check_out_time
-                ? \Carbon\Carbon::parse($attendance->check_out_time)->format('H:i:s')
-                : '-';
+            // Status Telat
+            $latenessStatus = '-';
+            if ($checkInTime) {
+                if ($schedule && $schedule->start_time) {
+                    $schedStart = \Carbon\Carbon::parse($date->toDateString() . ' ' . $schedule->start_time);
+                    $latenessStatus = $checkInTime->gt($schedStart) ? 'Telat' : 'Tepat Waktu';
+                } else {
+                    $latenessStatus = ($attendance->status === 'Terlambat') ? 'Telat' : 'Tepat Waktu';
+                }
+            } elseif (!$leave && $date->lt($today)) {
+                if ($schedule) {
+                    $latenessStatus = 'Tidak Absen';
+                }
+            }
 
-            $workDuration = ($attendance?->check_in_time && $attendance?->check_out_time)
-                ? \Carbon\Carbon::parse($attendance->check_in_time)
-                ->diff(\Carbon\Carbon::parse($attendance->check_out_time))
-                ->format('%H:%I:%S')
-                : '-';
+            // Keterangan / Status Koreksi / Cuti
+            $keteranganText = '-';
+            if ($leave) {
+                $keteranganText = 'Cuti (' . ($leave->leave_type ?? 'Cuti') . ')';
+            } elseif ($correction) {
+                $keteranganText = 'Koreksi Absen (' . ucfirst($correction->status) . ')';
+            } elseif ($attendance) {
+                $keteranganText = 'Hadir';
+            } elseif ($date->lt($today)) {
+                $keteranganText = $schedule ? 'Tidak Hadir' : 'Libur';
+            }
 
             return [
                 'Tanggal' => $date->translatedFormat('d M Y'),
@@ -50,6 +72,8 @@ class AttendanceReportExport implements FromCollection, WithHeadings
                 'Check-out' => $checkOut,
                 'Lokasi' => $attendance ? ($attendance->station?->code ?? $row->user->station) : '-',
                 'Durasi Kerja' => $workDuration,
+                'Status Telat' => $latenessStatus,
+                'Keterangan' => $keteranganText,
             ];
         });
     }
@@ -57,6 +81,6 @@ class AttendanceReportExport implements FromCollection, WithHeadings
     // Heading kolom
     public function headings(): array
     {
-        return ['Tanggal', 'Nama', 'NIP', 'Check-in', 'Check-out', 'Lokasi',  'Durasi Kerja'];
+        return ['Tanggal', 'Nama', 'NIP', 'Check-in', 'Check-out', 'Lokasi', 'Durasi Kerja', 'Status Telat', 'Keterangan'];
     }
 }

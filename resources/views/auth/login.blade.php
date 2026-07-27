@@ -45,20 +45,6 @@
                 <h1>Operasional station lebih tenang dalam satu sistem.</h1>
                 <p>Masuk untuk memantau schedule, kehadiran, flight, dan data staff APS dengan tampilan yang rapi di
                     desktop maupun mobile.</p>
-                <div class="aps-auth-hero-stats">
-                    <div class="aps-auth-stat">
-                        <strong>332</strong>
-                        <span>Total Staff</span>
-                    </div>
-                    <div class="aps-auth-stat">
-                        <strong>24/7</strong>
-                        <span>Monitoring</span>
-                    </div>
-                    <div class="aps-auth-stat">
-                        <strong>APS</strong>
-                        <span>Station Ops</span>
-                    </div>
-                </div>
             </div>
         </aside>
 

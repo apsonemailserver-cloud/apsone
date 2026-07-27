@@ -148,7 +148,7 @@ class UserController extends Controller
         $request->validate([
             'fullname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'role' => 'required|string|max:50',
+            'role' => 'required',
             'station' => 'required|string|max:15',
             'gender' => 'required|in:Male,Female',
             'job_title' => 'required|string|max:255',
@@ -204,7 +204,7 @@ class UserController extends Controller
             $user->id = $generatedId;
             $user->fullname = $request->fullname;
             $user->email = $request->email;
-            $user->role = $request->role;
+            $user->role = is_array($request->role) ? implode(', ', $request->role) : $request->role;
             $user->station = $request->station;
             $user->gender = $request->gender;
             $user->job_title = $request->job_title;
@@ -229,14 +229,100 @@ class UserController extends Controller
         }
     }
 
+    public function getSuperiorsByStation(Request $request)
+    {
+        $station = $request->query('station');
+
+        $managerRoles = [
+            'SPV Bge', 'SPV Apron', 'Leader Bge', 'Leader Apron',
+            'Ass Leader Bge', 'Ass Leader Apron', 'Leader Aircraft Interior Exterior Cleaning',
+            'Leader Porter Apron', 'Head Of Airport Service', 'Admin', 'Finance', 'HSE', 'Controller', 'Quality Control'
+        ];
+
+        $seniorRoles = [
+            'Head Of Airport Service', 'Admin'
+        ];
+
+        $queryManagers = User::where(function ($q) use ($managerRoles) {
+            foreach ($managerRoles as $r) {
+                $q->orWhere('role', 'like', "%{$r}%");
+            }
+        });
+
+        $querySenior = User::where(function ($q) use ($seniorRoles) {
+            foreach ($seniorRoles as $r) {
+                $q->orWhere('role', 'like', "%{$r}%");
+            }
+        });
+
+        if (!empty($station)) {
+            $queryManagers->where('station', $station);
+            $querySenior->where('station', $station);
+        }
+
+        $managers = $queryManagers->orderBy('fullname', 'asc')->get()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'fullname' => trim($user->fullname),
+                'role' => $user->role,
+                'display' => trim($user->fullname) . ' (' . $user->id . ')'
+            ];
+        })->values();
+
+        $seniorManagers = $querySenior->orderBy('fullname', 'asc')->get()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'fullname' => trim($user->fullname),
+                'role' => $user->role,
+                'display' => trim($user->fullname) . ' (' . $user->id . ')'
+            ];
+        })->values();
+
+        if ($seniorManagers->isEmpty() && !empty($station)) {
+            $seniorManagers = User::where(function ($q) use ($seniorRoles) {
+                foreach ($seniorRoles as $r) {
+                    $q->orWhere('role', 'like', "%{$r}%");
+                }
+            })->orderBy('fullname', 'asc')->get()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'fullname' => trim($user->fullname),
+                    'role' => $user->role,
+                    'display' => trim($user->fullname) . ' (' . $user->id . ')'
+                ];
+            })->values();
+        }
+
+        if ($managers->isEmpty() && !empty($station)) {
+            $managers = User::where(function ($q) use ($managerRoles) {
+                foreach ($managerRoles as $r) {
+                    $q->orWhere('role', 'like', "%{$r}%");
+                }
+            })->orderBy('fullname', 'asc')->get()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'fullname' => trim($user->fullname),
+                    'role' => $user->role,
+                    'display' => trim($user->fullname) . ' (' . $user->id . ')'
+                ];
+            })->values();
+        }
+
+        return response()->json([
+            'managers' => $managers,
+            'senior_managers' => $seniorManagers
+        ]);
+    }
+
     public function edit(User $user, Request $request): View
     {
         if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
         $page = $request->get('page', 1);
+        $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
 
-        return view('user.edit', compact('user', 'page'));
+        return view('user.edit', compact('user', 'page', 'stations'));
     }
 
     public function update(Request $request, User $user)
@@ -261,7 +347,11 @@ class UserController extends Controller
         ]);
 
         try {
-            $user->update($request->all());
+            $data = $request->all();
+            if (isset($data['role']) && is_array($data['role'])) {
+                $data['role'] = implode(', ', $data['role']);
+            }
+            $user->update($data);
             Alert::success('Success', 'Data user berhasil diupdate');
 
             return redirect()->route('users.index');

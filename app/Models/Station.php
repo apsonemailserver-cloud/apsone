@@ -18,5 +18,6 @@ class Station extends Model
         'latitude',  // Latitude
         'longitude', // Longitude
         'radius',    // Radius absensi (meter)
+        'role',      // Role-role di station
     ];
 }

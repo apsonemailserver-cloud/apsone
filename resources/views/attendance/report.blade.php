@@ -43,6 +43,17 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div>
+                            <label class="form-label">Role Karyawan</label>
+                            <select name="role" class="form-select" style="min-width: 180px;">
+                                <option value="">Semua Role</option>
+                                @foreach ($roles as $roleOption)
+                                <option value="{{ $roleOption }}" {{ request('role') == $roleOption ? 'selected' : '' }}>
+                                    {{ $roleOption }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="dt-search">
                             <i class="bx bx-search search-icon"></i>
                             <input type="text" name="user_name" class="form-control" placeholder="Cari NIP atau Nama..." value="{{ request('user_name') }}">
@@ -51,7 +62,7 @@
                             <i class="bx bx-filter-alt me-1"></i>Filter
                         </button>
                     </form>
-                    <a href="{{ route('attendance.export', request()->only(['month', 'station_id', 'user_name'])) }}" class="btn btn-success" style="height: 40px; display: inline-flex; align-items: center; white-space: nowrap;">
+                    <a href="{{ route('attendance.export', request()->only(['month', 'station_id', 'role', 'user_name'])) }}" class="btn btn-success" style="height: 40px; display: inline-flex; align-items: center; white-space: nowrap;">
                         <i class="bx bx-download me-1"></i>Export Excel
                     </a>
                 </div>
@@ -87,6 +98,8 @@
                                 <th>Check-Out</th>
                                 <th>Lokasi</th>
                                 <th>Durasi Kerja</th>
+                                <th>Status Telat</th>
+                                <th>Keterangan / Koreksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,6 +108,7 @@
                             $attendance = $row->attendance ?? null;
                             $schedule   = $row->schedule   ?? null;
                             $leave      = $row->leave      ?? null;
+                            $correction = $row->correction ?? null;
                             $date       = \Carbon\Carbon::parse($row->date);
                             $today      = \Carbon\Carbon::today();
 
@@ -116,8 +130,8 @@
                                         $checkInClass  = 'bg-danger text-white';
                                         $checkOutClass = 'bg-danger text-white';
                                     } elseif ($schedule) {
-                                        $schedStart = \Carbon\Carbon::parse($schedule->start_time);
-                                        $schedEnd   = \Carbon\Carbon::parse($schedule->end_time);
+                                        $schedStart = \Carbon\Carbon::parse($date->toDateString() . ' ' . $schedule->start_time);
+                                        $schedEnd   = \Carbon\Carbon::parse($date->toDateString() . ' ' . $schedule->end_time);
 
                                         if ($checkIn->gt($schedStart)) {
                                             $checkInClass = 'bg-danger text-white';
@@ -134,29 +148,87 @@
                                 }
                             }
 
-                            $workDuration =
-                            $checkIn && $checkOut ? $checkIn->diff($checkOut)->format('%H:%I:%S') : '-';
+                            $workDuration = $checkIn && $checkOut ? $checkIn->diff($checkOut)->format('%H:%I:%S') : '-';
+
+                            // Status Telat
+                            $latenessStatus = '-';
+                            $latenessBadgeClass = 'bg-label-secondary';
+
+                            if ($checkIn && $schedule && $schedule->start_time) {
+                                $schedStart = \Carbon\Carbon::parse($date->toDateString() . ' ' . $schedule->start_time);
+                                if ($checkIn->gt($schedStart)) {
+                                    $latenessStatus = 'Telat';
+                                    $latenessBadgeClass = 'bg-label-danger';
+                                } else {
+                                    $latenessStatus = 'Tepat Waktu';
+                                    $latenessBadgeClass = 'bg-label-success';
+                                }
+                            } elseif ($checkIn) {
+                                if ($attendance->status === 'Terlambat') {
+                                    $latenessStatus = 'Telat';
+                                    $latenessBadgeClass = 'bg-label-danger';
+                                } else {
+                                    $latenessStatus = 'Tepat Waktu';
+                                    $latenessBadgeClass = 'bg-label-success';
+                                }
+                            } elseif (!$isOnLeave && $date->lt($today)) {
+                                if ($schedule) {
+                                    $latenessStatus = 'Tidak Absen';
+                                    $latenessBadgeClass = 'bg-label-danger';
+                                }
+                            }
+
+                            // Keterangan / Status Koreksi / Cuti
+                            $keteranganText = '-';
+                            $keteranganBadgeClass = 'bg-label-secondary';
+
+                            if ($isOnLeave) {
+                                $keteranganText = 'Cuti (' . ($leave->leave_type ?? 'Cuti') . ')';
+                                $keteranganBadgeClass = 'bg-label-info';
+                            } elseif ($correction) {
+                                $corrStatus = ucfirst($correction->status);
+                                $keteranganText = 'Koreksi Absen (' . $corrStatus . ')';
+                                if ($correction->status === 'approved') {
+                                    $keteranganBadgeClass = 'bg-label-success';
+                                } elseif ($correction->status === 'rejected') {
+                                    $keteranganBadgeClass = 'bg-label-danger';
+                                } else {
+                                    $keteranganBadgeClass = 'bg-label-warning';
+                                }
+                            } elseif ($attendance) {
+                                $keteranganText = 'Hadir';
+                                $keteranganBadgeClass = 'bg-label-success';
+                            } elseif ($date->lt($today)) {
+                                if ($schedule) {
+                                    $keteranganText = 'Tidak Hadir';
+                                    $keteranganBadgeClass = 'bg-label-danger';
+                                } else {
+                                    $keteranganText = 'Libur';
+                                    $keteranganBadgeClass = 'bg-label-secondary';
+                                }
+                            }
                             @endphp
 
                             <tr class="{{ $isOnLeave ? 'table-info' : '' }}">
                                 <td>{{ $date->translatedFormat('d M Y') }}</td>
-                                @if ($isOnLeave)
-                                    <td colspan="3" class="text-center">
-                                        <span class="badge" style="background-color:#3b82f6; font-size:0.85rem; padding:0.35em 0.85em; border-radius:0.5rem;">
-                                            <i class="bx bx-calendar-check me-1"></i>
-                                            Cuti — {{ $leave->leave_type }}
-                                        </span>
-                                    </td>
-                                @else
-                                    <td class="{{ $checkInClass }}" style="border-radius: 0.25rem;">{{ $checkIn ? $checkIn->format('H:i:s') : '-' }}</td>
-                                    <td class="{{ $checkOutClass }}" style="border-radius: 0.25rem;">{{ $checkOut ? $checkOut->format('H:i:s') : '-' }}</td>
-                                    <td>{{ $checkIn ? ($attendance->station?->code ?? $row->user?->station ?? ($attendance->check_in_notes ?? '-')) : '-' }}</td>
-                                @endif
+                                <td class="{{ $checkInClass }}" style="border-radius: 0.25rem;">{{ $checkIn ? $checkIn->format('H:i:s') : '-' }}</td>
+                                <td class="{{ $checkOutClass }}" style="border-radius: 0.25rem;">{{ $checkOut ? $checkOut->format('H:i:s') : '-' }}</td>
+                                <td>{{ $checkIn ? ($attendance->station?->code ?? $row->user?->station ?? ($attendance->check_in_notes ?? '-')) : '-' }}</td>
                                 <td>{{ $isOnLeave ? '-' : $workDuration }}</td>
+                                <td>
+                                    <span class="badge {{ $latenessBadgeClass }}">
+                                        {{ $latenessStatus }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {{ $keteranganBadgeClass }}">
+                                        {{ $keteranganText }}
+                                    </span>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5">
+                                <td colspan="7" class="text-center py-5">
                                     <div class="empty-state">
                                         <i class="bx bx-calendar-x d-block"></i>
                                         <p>Tidak ada data absensi.</p>

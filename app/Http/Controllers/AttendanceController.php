@@ -340,18 +340,26 @@ class AttendanceController extends Controller
                 // ===== QUERY USER (GABUNG SEMUA FILTER) =====
                 $queryUser = \App\Models\User::query();
 
-                if ($request->user_name) {
+                if ($request->filled('user_name')) {
                     $queryUser->where(function ($q) use ($request) {
                         $q->where('id', $request->user_name)
                             ->orWhere('fullname', 'LIKE', "%{$request->user_name}%");
                     });
                 }
 
-                if ($request->station_id) {
+                if ($request->filled('station_id')) {
                     $queryUser->where('station', $request->station_id);
                 }
 
-                $user = $queryUser->first();
+                if ($request->filled('role')) {
+                    $queryUser->where('role', $request->role);
+                }
+
+                if (! $request->filled('user_name') && ! $request->filled('station_id') && ! $request->filled('role')) {
+                    $user = Auth::user();
+                } else {
+                    $user = $queryUser->first();
+                }
 
                 // ===== VALIDASI USER =====
                 if (! $user) {
@@ -405,6 +413,12 @@ class AttendanceController extends Controller
                         }
                     }
 
+                    // ===== CORRECTION DATA =====
+                    $correctionData = \App\Models\AttendanceCorrection::where('user_id', $user->id)
+                        ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
+                        ->get()
+                        ->keyBy(fn ($item) => $item->attendance_date->toDateString());
+
                     // ===== GENERATE DATA =====
                     $cursor = $startDate->copy();
 
@@ -414,6 +428,7 @@ class AttendanceController extends Controller
                         $attendancesForDate = $attData->get($dateStr) ?? collect();
                         $schedulesForDate = $scheduleData->get($dateStr) ?? collect();
                         $leaveForDate = $leaveDates->get($dateStr);
+                        $correctionForDate = $correctionData->get($dateStr);
 
                         if ($schedulesForDate->isEmpty()) {
                             $attendances->push((object) [
@@ -422,6 +437,7 @@ class AttendanceController extends Controller
                                 'schedule'   => null,
                                 'user'       => $user,
                                 'leave'      => $leaveForDate,
+                                'correction' => $correctionForDate,
                             ]);
                         } else {
                             foreach ($schedulesForDate as $schedule) {
@@ -431,6 +447,7 @@ class AttendanceController extends Controller
                                     'schedule'   => $schedule,
                                     'user'       => $user,
                                     'leave'      => $leaveForDate,
+                                    'correction' => $correctionForDate,
                                 ]);
                             }
                         }
@@ -443,7 +460,14 @@ class AttendanceController extends Controller
             }
         }
 
-        return view('attendance.report', compact('attendances', 'message', 'stations'));
+        $roles = [
+            'Admin', 'Finance', 'Leader Bge', 'SPV Bge', 'SPV Apron', 'Leader Apron',
+            'Porter Bge', 'HSE', 'Head Of Airport Service', 'Porter Apron', 'Ass Leader Apron',
+            'Dispatcher', 'Ass Leader Bge', 'Driver', 'Aircraft Interior Exterior Cleaning',
+            'Leader Aircraft Interior Exterior Cleaning', 'Leader Porter Apron', 'Controller', 'Quality Control'
+        ];
+
+        return view('attendance.report', compact('attendances', 'message', 'stations', 'roles'));
     }
 
     public function export(Request $request)
@@ -472,7 +496,15 @@ class AttendanceController extends Controller
                 $queryUser->where('station', $request->station_id);
             }
 
-            $users = $queryUser->orderBy('fullname')->get();
+            if ($request->filled('role')) {
+                $queryUser->where('role', $request->role);
+            }
+
+            if (! $request->filled('user_name') && ! $request->filled('station_id') && ! $request->filled('role')) {
+                $users = collect([Auth::user()]);
+            } else {
+                $users = $queryUser->orderBy('fullname')->get();
+            }
 
             // ===== AMBIL INFO STATION UNTUK FILENAME =====
             $stationName = 'Semua_Station';
@@ -507,6 +539,36 @@ class AttendanceController extends Controller
                     ->get()
                     ->groupBy(fn($item) => \Carbon\Carbon::parse($item->date)->toDateString());
 
+                // LEAVE DATA
+                $leaveData = Leave::where('user_id', $user->id)
+                    ->where('status', 'approved')
+                    ->where(function ($q) use ($startDate, $endDate) {
+                        $q->whereBetween('start_date', [$startDate->toDateString(), $endDate->toDateString()])
+                          ->orWhereBetween('end_date', [$startDate->toDateString(), $endDate->toDateString()])
+                          ->orWhere(function ($q2) use ($startDate, $endDate) {
+                              $q2->where('start_date', '<=', $startDate->toDateString())
+                                 ->where('end_date', '>=', $endDate->toDateString());
+                          });
+                    })
+                    ->get();
+
+                $leaveDates = collect();
+                foreach ($leaveData as $leave) {
+                    $leaveStart = Carbon::parse($leave->start_date);
+                    $leaveEnd   = Carbon::parse($leave->end_date);
+                    $leaveCursor = $leaveStart->copy();
+                    while ($leaveCursor->lte($leaveEnd)) {
+                        $leaveDates->put($leaveCursor->toDateString(), $leave);
+                        $leaveCursor->addDay();
+                    }
+                }
+
+                // CORRECTION DATA
+                $correctionData = \App\Models\AttendanceCorrection::where('user_id', $user->id)
+                    ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->get()
+                    ->keyBy(fn ($item) => $item->attendance_date->toDateString());
+
                 // LOOP TANGGAL
                 $cursor = $startDate->copy();
 
@@ -515,21 +577,27 @@ class AttendanceController extends Controller
 
                     $attendancesForDate = $attData->get($dateStr) ?? collect();
                     $schedulesForDate = $scheduleData->get($dateStr) ?? collect();
+                    $leaveForDate = $leaveDates->get($dateStr);
+                    $correctionForDate = $correctionData->get($dateStr);
 
                     if ($schedulesForDate->isEmpty()) {
                         $attendances->push((object) [
-                            'date' => $dateStr,
+                            'date'       => $dateStr,
                             'attendance' => $attendancesForDate->first(),
-                            'schedule' => null,
-                            'user' => $user,
+                            'schedule'   => null,
+                            'user'       => $user,
+                            'leave'      => $leaveForDate,
+                            'correction' => $correctionForDate,
                         ]);
                     } else {
                         foreach ($schedulesForDate as $schedule) {
                             $attendances->push((object) [
-                                'date' => $dateStr,
+                                'date'       => $dateStr,
                                 'attendance' => $attendancesForDate->first(),
-                                'schedule' => $schedule,
-                                'user' => $user,
+                                'schedule'   => $schedule,
+                                'user'       => $user,
+                                'leave'      => $leaveForDate,
+                                'correction' => $correctionForDate,
                             ]);
                         }
                     }

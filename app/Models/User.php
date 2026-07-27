@@ -74,6 +74,20 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function hasRole($roles): bool
+    {
+        if (empty($this->role)) {
+            return false;
+        }
+
+        $userRoles = array_map('trim', explode(',', $this->role));
+        if (is_array($roles)) {
+            return count(array_intersect($roles, $userRoles)) > 0;
+        }
+
+        return in_array($roles, $userRoles);
+    }
+
     /**
      * The attributes that should be cast.
      *

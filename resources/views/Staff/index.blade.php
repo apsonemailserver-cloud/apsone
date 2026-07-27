@@ -123,6 +123,9 @@
                                             <i class="ti ti-eye"></i>
                                         </a>
                                         @if(Auth::user()->role == 'Admin')
+                                        <a href="{{ route('users.edit', ['user' => $staff->id, 'page' => request('page')]) }}" class="action-btn" title="Edit Staff">
+                                            <i class="ti ti-pencil"></i>
+                                        </a>
                                         <button type="button" class="action-btn action-delete" onclick="openBanModal('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Blacklist">
                                             <i class="ti ti-ban"></i>
                                         </button>

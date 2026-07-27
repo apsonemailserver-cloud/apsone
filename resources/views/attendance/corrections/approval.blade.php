@@ -19,7 +19,7 @@
                     <div class="flex-grow-1" style="min-width: 220px;">
                         <input type="search" name="search" class="form-control" placeholder="Cari nama atau NIP..." value="{{ request('search') }}">
                     </div>
-                    @if ($isAdmin)
+                    @if ($isAdmin && $stations->count() > 1)
                         <div style="min-width: 200px;">
                             <select name="station_id" class="form-select">
                                 <option value="">Semua Office</option>
