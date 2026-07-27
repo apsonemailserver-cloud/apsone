@@ -165,22 +165,26 @@ class UserController extends Controller
         try {
 
             // =========================
-            // GENERATE ID YYMM001
+            // GENERATE ID (NIP: 2643001)
+            // 2 angka depan tahun + 2 angka tengah random + 3 angka urut
             // =========================
-            $prefix = Carbon::now()->format('ym'); // contoh: 2602
+            $yearPrefix = Carbon::now()->format('y'); // contoh: 26
 
-            $lastUser = User::where('id', 'like', $prefix.'%')
+            $lastUser = User::where('id', 'like', $yearPrefix.'%')
                 ->orderBy('id', 'desc')
                 ->first();
 
-            if ($lastUser) {
+            if ($lastUser && strlen($lastUser->id) === 7) {
                 $lastNumber = (int) substr($lastUser->id, -3);
                 $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
             } else {
                 $newNumber = '001';
             }
 
-            $generatedId = $prefix.$newNumber;
+            do {
+                $randomDigits = str_pad(mt_rand(10, 99), 2, '0', STR_PAD_LEFT);
+                $generatedId = $yearPrefix . $randomDigits . $newNumber;
+            } while (User::where('id', $generatedId)->exists());
 
             // =========================
             // CEK BLACKLIST

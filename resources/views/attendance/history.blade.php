@@ -175,14 +175,14 @@
                                 </td>
                                 
                                 {{-- Kolom Note Koreksi --}}
-                                <td class="correction-note-cell" style="max-width: 180px;">
+                                <td class="correction-note" style="max-width: 180px;">
                                     @if($hasNote)
                                         <div class="note-truncate mx-auto" title="{{ $correction->reason }}">
                                             <i class="ti ti-notes text-primary me-1"></i>
                                             <span>{{ $correction->reason }}</span>
                                         </div>
                                     @else
-                                        <span class="text-muted">-</span>
+                                        -
                                     @endif
                                 </td>
 
