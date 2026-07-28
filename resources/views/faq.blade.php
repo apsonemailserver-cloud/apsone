@@ -152,6 +152,7 @@
                     </div>
                 </div>
                 
+                @if (Auth::user()?->role === 'Admin')
                 <div class="accordion-item card mt-2">
                     <h2 class="accordion-header" id="headingSix">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
@@ -190,6 +191,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>
