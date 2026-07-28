@@ -284,19 +284,37 @@ class LeaveController extends Controller
         }
 
         // Kirim email pemberitahuan ke pemohon (creator)
-        RequestNotificationMailService::sendSubmissionEmail(
-            $user,
-            'Cuti (' . $request->leave_type . ')',
-            [
-                'Jenis Cuti'         => $request->leave_type,
-                'Tanggal Mulai'      => $startDate->translatedFormat('d F Y'),
-                'Tanggal Selesai'    => $endDate->translatedFormat('d F Y'),
-                'Total Hari'         => $totalDays . ' Hari',
-                'Alasan'             => $request->reason,
-                'Karyawan Pengganti' => $request->replacement_employee_name ?: '-',
-                'Status'             => 'Pending (Menunggu Persetujuan Atasan)',
-            ]
-        );
+        if ($status === 'approved') {
+            RequestNotificationMailService::sendDecisionEmail(
+                $user,
+                'Cuti (' . $request->leave_type . ')',
+                'Approved',
+                [
+                    'Jenis Cuti'         => $request->leave_type,
+                    'Tanggal Mulai'      => $startDate->translatedFormat('d F Y'),
+                    'Tanggal Selesai'    => $endDate->translatedFormat('d F Y'),
+                    'Total Hari'         => $totalDays . ' Hari',
+                    'Alasan'             => $request->reason,
+                    'Karyawan Pengganti' => $request->replacement_employee_name ?: '-',
+                    'Status'             => 'Disetujui (Otomatis Approved)',
+                ],
+                'Sistem (Admin Auto-Approve)'
+            );
+        } else {
+            RequestNotificationMailService::sendSubmissionEmail(
+                $user,
+                'Cuti (' . $request->leave_type . ')',
+                [
+                    'Jenis Cuti'         => $request->leave_type,
+                    'Tanggal Mulai'      => $startDate->translatedFormat('d F Y'),
+                    'Tanggal Selesai'    => $endDate->translatedFormat('d F Y'),
+                    'Total Hari'         => $totalDays . ' Hari',
+                    'Alasan'             => $request->reason,
+                    'Karyawan Pengganti' => $request->replacement_employee_name ?: '-',
+                    'Status'             => 'Pending (Menunggu Persetujuan Atasan)',
+                ]
+            );
+        }
 
         Alert::success('Berhasil', 'Pengajuan Anda telah berhasil dikirim.');
         return redirect()->route('leaves.pengajuan');
