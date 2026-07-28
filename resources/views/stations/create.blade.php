@@ -187,6 +187,55 @@
         font-size: 1.35rem;
     }
 
+    .station-map-chip span {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    /* Map Search Autocomplete Results Dropdown */
+    #stationMapSearchResults {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18), 0 4px 10px rgba(15, 23, 42, 0.08) !important;
+        overflow: hidden !important;
+    }
+
+    #stationMapSearchResults .list-group-item {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: none !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        transition: background-color 0.15s ease;
+    }
+
+    #stationMapSearchResults .list-group-item:last-child {
+        border-bottom: none !important;
+    }
+
+    #stationMapSearchResults .list-group-item:hover,
+    #stationMapSearchResults .list-group-item:focus {
+        background-color: #f1f5f9 !important;
+        color: #2563eb !important;
+    }
+
+    html.aps-dark #stationMapSearchResults {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html.aps-dark #stationMapSearchResults .list-group-item {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border-bottom: 1px solid #334155 !important;
+    }
+
+    html.aps-dark #stationMapSearchResults .list-group-item:hover,
+    html.aps-dark #stationMapSearchResults .list-group-item:focus {
+        background-color: #334155 !important;
+        color: #60a5fa !important;
+    }
+
     .station-map-chip {
         position: absolute;
         left: 12px;
@@ -720,7 +769,19 @@
                         </div>
 
                         <div class="station-map-field mb-3">
-                            <label class="form-label">Preview Titik Lokasi & Radius Absen</label>
+                            <label class="form-label">Pencarian & Preview Titik Lokasi</label>
+                            
+                            <div class="position-relative mb-2">
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti ti-search text-muted"></i></span>
+                                    <input type="text" id="stationMapSearchInput" class="form-control ps-0" placeholder="Cari nama lokasi / bandara / kota (cth: Soekarno-Hatta, Juanda, Kualanamu)..." autocomplete="off" />
+                                    <button type="button" id="stationMapSearchBtn" class="btn btn-primary px-3">
+                                        <i class="ti ti-search me-1"></i>Cari
+                                    </button>
+                                </div>
+                                <div id="stationMapSearchResults" class="list-group shadow-lg border-0 d-none mt-1 position-absolute w-100" style="z-index: 99999; max-height: 230px; overflow-y: auto; border-radius: 10px;"></div>
+                            </div>
+
                             <div class="station-map-preview js-station-map-preview" aria-label="Preview titik lokasi station">
                                 <div id="leafletStationMap" style="width: 100%; height: 100%; z-index: 1;"></div>
                                 <div class="station-map-empty" style="z-index: 2;">
@@ -733,7 +794,7 @@
                                     <span class="js-station-map-coordinate">-</span>
                                 </div>
                             </div>
-                            <div class="form-text mt-1"><i class="ti ti-info-circle me-1"></i>Anda dapat menggeser marker atau mengklik area pada peta untuk menentukan koordinat secara presisi.</div>
+                            <div class="form-text mt-1"><i class="ti ti-info-circle me-1"></i>Cari lokasi di atas, geser marker, atau klik area pada peta untuk menentukan koordinat presisi.</div>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -1030,6 +1091,76 @@
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
         updateMap();
+
+        // ── Geocoding Location Search (100% Free OpenStreetMap Nominatim) ──
+        const searchInput = document.getElementById('stationMapSearchInput');
+        const searchBtn = document.getElementById('stationMapSearchBtn');
+        const searchResults = document.getElementById('stationMapSearchResults');
+
+        if (searchInput && searchResults) {
+            let debounceTimer = null;
+
+            async function performSearch(query) {
+                if (!query || query.length < 2) {
+                    searchResults.classList.add('d-none');
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`);
+                    const data = await res.json();
+
+                    if (!data || data.length === 0) {
+                        searchResults.innerHTML = '<div class="list-group-item text-muted small py-2 px-3">Lokasi tidak ditemukan</div>';
+                        searchResults.classList.remove('d-none');
+                        return;
+                    }
+
+                    searchResults.innerHTML = data.map(item => `
+                        <button type="button" class="list-group-item list-group-item-action py-2 px-3 text-start js-search-result-item" data-lat="${item.lat}" data-lng="${item.lon}">
+                            <div class="fw-semibold small"><i class="ti ti-map-pin me-1 text-primary"></i>${item.display_name}</div>
+                        </button>
+                    `).join('');
+
+                    searchResults.classList.remove('d-none');
+                } catch (err) {
+                    console.error('Geocoding search error:', err);
+                }
+            }
+
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => performSearch(this.value.trim()), 350);
+            });
+
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function () {
+                    performSearch(searchInput.value.trim());
+                });
+            }
+
+            searchResults.addEventListener('click', function (e) {
+                const btn = e.target.closest('.js-search-result-item');
+                if (!btn) return;
+
+                const lat = Number(btn.dataset.lat);
+                const lng = Number(btn.dataset.lng);
+
+                if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                    latitudeInput.value = lat.toFixed(6);
+                    longitudeInput.value = lng.toFixed(6);
+                    updateMap();
+                    searchResults.classList.add('d-none');
+                    searchInput.value = '';
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('#stationMapSearchInput') && !e.target.closest('#stationMapSearchResults')) {
+                    searchResults.classList.add('d-none');
+                }
+            });
+        }
     });
 </script>
 @endsection
