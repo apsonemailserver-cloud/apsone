@@ -633,6 +633,7 @@
                 </div>
             </div>
 
+            @if (Auth::user()?->role === 'Admin')
             <div class="stat-card-item">
                 <div class="stat-icon-wrapper" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">
                     <i class="bx bx-shield-quarter"></i>
@@ -642,6 +643,7 @@
                     <div class="stat-label">Khusus Admin</div>
                 </div>
             </div>
+            @endif
         </div>
 
         {{-- Live Search & Counter Bar --}}
