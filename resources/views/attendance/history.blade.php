@@ -221,8 +221,19 @@
                                             <i class="ti ti-notes text-primary me-1"></i>
                                             <span>{{ $correction->reason }}</span>
                                         </div>
+                                        @if ($correction && $correction->status === 'rejected' && !empty($correction->rejection_reason))
+                                            <div class="small text-danger mt-1 text-truncate" title="Alasan Penolakan: {{ $correction->rejection_reason }}">
+                                                <i class="ti ti-alert-circle me-1"></i>{{ $correction->rejection_reason }}
+                                            </div>
+                                        @endif
                                     @else
-                                        -
+                                        @if ($correction && $correction->status === 'rejected' && !empty($correction->rejection_reason))
+                                            <div class="small text-danger text-truncate" title="Alasan Penolakan: {{ $correction->rejection_reason }}">
+                                                <i class="ti ti-alert-circle me-1"></i>{{ $correction->rejection_reason }}
+                                            </div>
+                                        @else
+                                            -
+                                        @endif
                                     @endif
                                 </td>
 

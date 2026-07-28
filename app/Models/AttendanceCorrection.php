@@ -23,6 +23,7 @@ class AttendanceCorrection extends Model
         'proposed_check_in_time',
         'proposed_check_out_time',
         'reason',
+        'rejection_reason',
         'status',
         'decided_by',
         'decided_at',

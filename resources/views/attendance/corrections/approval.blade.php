@@ -81,6 +81,7 @@
                                             </form>
                                             <form id="rejectForm-{{ $correction->id }}" action="{{ route('attendance.corrections.reject', $correction) }}" method="POST">
                                                 @csrf
+                                                <input type="hidden" name="rejection_reason" id="rejection_reason-{{ $correction->id }}" value="">
                                                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmReject('{{ $correction->id }}', '{{ addslashes($correction->user->fullname) }}', '{{ $correction->attendance_date->format('d M Y') }}')">
                                                     <i class="ti ti-x me-1"></i>Tolak
                                                 </button>
@@ -119,6 +120,7 @@
 
         Swal.fire({
             icon: 'question',
+            iconColor: '#16a34a',
             title: 'Setujui Koreksi Absensi?',
             html: `
                 <div style="background:#f0fdf4; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
@@ -138,8 +140,9 @@
             showCancelButton: true,
             confirmButtonText: '✓ Ya, Setujui',
             cancelButtonText: 'Batal',
-            confirmButtonColor: '#2563eb',
+            confirmButtonColor: '#16a34a',
             cancelButtonColor: '#94a3b8',
+            customClass: { confirmButton: 'btn-success' },
             reverseButtons: true,
         }).then((result) => {
             if (result.isConfirmed) {
@@ -150,7 +153,9 @@
 
     function confirmReject(id, staffName, date) {
         if (typeof Swal === 'undefined') {
-            if (confirm('Tolak koreksi absensi untuk ' + staffName + '?')) {
+            const reason = prompt('Masukkan alasan penolakan untuk ' + staffName + ':');
+            if (reason) {
+                document.getElementById('rejection_reason-' + id).value = reason;
                 document.getElementById('rejectForm-' + id).submit();
             }
             return;
@@ -158,6 +163,7 @@
 
         Swal.fire({
             icon: 'warning',
+            iconColor: '#dc2626',
             title: 'Tolak Koreksi Absensi?',
             html: `
                 <div style="background:#fef2f2; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
@@ -170,18 +176,36 @@
                         <span style="font-weight:500; color:#374151; font-size:0.875rem;">${date}</span>
                     </div>
                 </div>
-                <p style="color:#dc2626; font-size:0.8125rem; margin-top:0.75rem;">
-                    Pengajuan koreksi absensi ini akan <strong>ditolak</strong> dan keputusan ini tidak dapat dibatalkan.
-                </p>
+                <div style="text-align:left; margin-top:1rem;">
+                    <label for="swal-rejection-reason" style="display:block; font-weight:600; font-size:0.875rem; color:#374151; margin-bottom:0.35rem;">
+                        Alasan Penolakan <span style="color:#dc2626;">*</span>
+                    </label>
+                    <textarea id="swal-rejection-reason" class="form-control" placeholder="Tuliskan alasan penolakan di sini..." style="width:100%; border-radius:0.5rem; border:1px solid #cbd5e1; padding:0.6rem 0.75rem; font-size:0.875rem; min-height:80px; resize:vertical;"></textarea>
+                    <div id="swal-rejection-error" style="color:#dc2626; font-size:0.8rem; margin-top:0.35rem; display:none;">Alasan penolakan wajib diisi.</div>
+                </div>
             `,
             showCancelButton: true,
             confirmButtonText: '✕ Ya, Tolak',
             cancelButtonText: 'Batal',
-            confirmButtonColor: '#ea580c',
+            confirmButtonColor: '#dc2626',
             cancelButtonColor: '#94a3b8',
+            customClass: { confirmButton: 'btn-danger' },
             reverseButtons: true,
+            preConfirm: () => {
+                const reasonInput = document.getElementById('swal-rejection-reason');
+                const errorDiv = document.getElementById('swal-rejection-error');
+                const reason = reasonInput ? reasonInput.value.trim() : '';
+
+                if (!reason) {
+                    if (errorDiv) errorDiv.style.display = 'block';
+                    if (reasonInput) reasonInput.style.borderColor = '#dc2626';
+                    return false;
+                }
+                return reason;
+            }
         }).then((result) => {
-            if (result.isConfirmed) {
+            if (result.isConfirmed && result.value) {
+                document.getElementById('rejection_reason-' + id).value = result.value;
                 document.getElementById('rejectForm-' + id).submit();
             }
         });

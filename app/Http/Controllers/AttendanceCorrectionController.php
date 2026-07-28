@@ -250,9 +250,13 @@ class AttendanceCorrectionController extends Controller
         return back()->with('success', 'Koreksi absensi berhasil disetujui.');
     }
 
-    public function reject(AttendanceCorrection $correction)
+    public function reject(Request $request, AttendanceCorrection $correction)
     {
-        DB::transaction(function () use ($correction): void {
+        $validated = $request->validate([
+            'rejection_reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        DB::transaction(function () use ($correction, $validated): void {
             $lockedCorrection = AttendanceCorrection::with('user')
                 ->lockForUpdate()
                 ->findOrFail($correction->id);
@@ -262,6 +266,7 @@ class AttendanceCorrectionController extends Controller
 
             $lockedCorrection->update([
                 'status' => AttendanceCorrection::STATUS_REJECTED,
+                'rejection_reason' => $validated['rejection_reason'],
                 'decided_by' => Auth::id(),
                 'decided_at' => now(),
             ]);
@@ -278,6 +283,7 @@ class AttendanceCorrectionController extends Controller
                     'Usulan Jam Masuk' => Carbon::parse($correction->proposed_check_in_time)->format('H:i'),
                     'Usulan Jam Keluar' => Carbon::parse($correction->proposed_check_out_time)->format('H:i'),
                     'Status'           => 'Ditolak (Rejected)',
+                    'Alasan Penolakan' => $validated['rejection_reason'],
                     'Ditolak Oleh'     => Auth::user()->fullname,
                 ],
                 Auth::user()->fullname

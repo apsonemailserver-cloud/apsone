@@ -22,6 +22,7 @@ return new class extends Migration
             $table->dateTime('proposed_check_in_time');
             $table->dateTime('proposed_check_out_time');
             $table->text('reason');
+            $table->text('rejection_reason')->nullable();
             $table->string('status')->default('pending');
             $table->string('decided_by', 20)->nullable();
             $table->timestamp('decided_at')->nullable();

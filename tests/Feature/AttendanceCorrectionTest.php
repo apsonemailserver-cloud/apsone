@@ -236,13 +236,16 @@ class AttendanceCorrectionTest extends TestCase
         [$manager, , , $correction, $attendance] = $this->makePendingCorrection(true);
 
         $this->actingAs($manager)
-            ->post(route('attendance.corrections.reject', $correction))
+            ->post(route('attendance.corrections.reject', $correction), [
+                'rejection_reason' => 'Jam tidak sesuai dengan bukti',
+            ])
             ->assertRedirect();
 
         $this->assertSame('2026-07-20 09:00:00', $attendance->fresh()->check_in_time);
         $this->assertDatabaseHas('attendance_corrections', [
             'id' => $correction->id,
             'status' => AttendanceCorrection::STATUS_REJECTED,
+            'rejection_reason' => 'Jam tidak sesuai dengan bukti',
             'decided_by' => $manager->id,
         ]);
 
