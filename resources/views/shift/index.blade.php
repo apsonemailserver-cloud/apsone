@@ -373,12 +373,14 @@
                 title: 'Apakah Anda yakin?',
                 text: "Data shift yang dihapus tidak dapat dikembalikan!",
                 icon: 'warning',
+                iconColor: '#ff3e1d',
                 showCancelButton: true,
                 confirmButtonColor: '#ff3e1d',
                 cancelButtonColor: '#8592a3',
                 confirmButtonText: '<i class="bx bx-trash me-1"></i> Ya, Hapus!',
                 cancelButtonText: 'Batal',
                 customClass: {
+                    popup: 'delete-confirm-popup',
                     confirmButton: 'btn btn-danger me-3',
                     cancelButton: 'btn btn-label-secondary'
                 },

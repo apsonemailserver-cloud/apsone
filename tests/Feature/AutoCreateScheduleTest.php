@@ -63,4 +63,75 @@ class AutoCreateScheduleTest extends TestCase
             'user_id' => '25100403100',
         ]);
     }
+
+    public function test_schedule_update_supports_off_shift_and_empty_shift_id(): void
+    {
+        $admin = User::create([
+            'id' => 'ADMIN02',
+            'fullname' => 'Admin User 2',
+            'email' => 'admin2@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'Admin',
+            'station' => 'CGK',
+            'gender' => 'Male',
+            'join_date' => now()->toDateString(),
+        ]);
+
+        $user = User::create([
+            'id' => 'USER100',
+            'fullname' => 'Staff User',
+            'email' => 'staff@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'Porter Bge',
+            'station' => 'CGK',
+            'gender' => 'Male',
+            'join_date' => now()->toDateString(),
+        ]);
+
+        Shift::create([
+            'id' => 'off',
+            'name' => 'OFF',
+            'description' => 'Libur',
+            'start_time' => '00:00:00',
+            'end_time' => '00:00:00',
+            'use_manpower' => 0,
+        ]);
+
+        Shift::create([
+            'id' => 'A',
+            'name' => 'Shift A',
+            'description' => 'Pagi',
+            'start_time' => '05:00:00',
+            'end_time' => '15:00:00',
+            'use_manpower' => 10,
+        ]);
+
+        // Update schedule to 'off' explicitly
+        $response1 = $this->actingAs($admin)->post(route('schedule.update_details', [
+            'userId' => $user->id,
+            'date' => '2026-07-28',
+        ]), [
+            'shift_id' => 'off',
+        ]);
+        $response1->assertRedirect();
+        $this->assertDatabaseHas('schedules', [
+            'user_id' => $user->id,
+            'date' => '2026-07-28',
+            'shift_id' => 'off',
+        ]);
+
+        // Update schedule with empty shift_id (fallback to 'off')
+        $response2 = $this->actingAs($admin)->post(route('schedule.update_details', [
+            'userId' => $user->id,
+            'date' => '2026-07-29',
+        ]), [
+            'shift_id' => '',
+        ]);
+        $response2->assertRedirect();
+        $this->assertDatabaseHas('schedules', [
+            'user_id' => $user->id,
+            'date' => '2026-07-29',
+            'shift_id' => 'off',
+        ]);
+    }
 }

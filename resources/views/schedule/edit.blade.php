@@ -459,7 +459,7 @@
         $scheduleMap = ($schedules instanceof \Illuminate\Support\Collection ? $schedules : collect($schedules))
             ->keyBy(fn($item) => \Carbon\Carbon::parse($item->date)->format('Y-m-d'));
             
-        $shifts = \App\Models\Shift::all();
+        $shifts = \App\Models\Shift::where('id', '!=', 'off')->orderBy('id', 'asc')->get();
         $remainingDays = (7 - (($firstDay + $daysInMonth) % 7)) % 7;
     @endphp
 
@@ -545,7 +545,7 @@
                             <form method="POST" action="{{ route('schedule.update_details', ['userId' => $userId, 'date' => $dateString]) }}">
                                 @csrf
                                 <select name="shift_id" class="form-select form-select-sm" onchange="this.form.submit()">
-                                    <option value="">-- OFF --</option>
+                                    <option value="off" {{ optional($schedule)->shift_id == 'off' || !optional($schedule)->shift_id ? 'selected' : '' }}>-- OFF --</option>
                                     @foreach($shifts as $shift)
                                         <option value="{{ $shift->id }}"
                                             {{ optional($schedule)->shift_id == $shift->id ? 'selected' : '' }}>

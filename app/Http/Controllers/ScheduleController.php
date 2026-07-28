@@ -536,6 +536,9 @@ class ScheduleController extends Controller
         DB::beginTransaction();
         try {
             $shiftId = $request->input('shift_id');
+            if (empty($shiftId)) {
+                $shiftId = 'off';
+            }
 
             \App\Models\Schedule::updateOrCreate(
                 ['user_id' => $userId, 'date' => $date],
