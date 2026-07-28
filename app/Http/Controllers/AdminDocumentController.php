@@ -179,7 +179,13 @@ class AdminDocumentController extends Controller
 
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'pdf');
         $fileName = $safeBaseName . '_' . now()->format('YmdHis') . '_' . uniqid() . '.' . $extension;
-        $filePath = $file->storeAs('file', $fileName, 'public');
+
+        $targetDirectory = 'file';
+        if (! Storage::disk('public')->exists($targetDirectory)) {
+            Storage::disk('public')->makeDirectory($targetDirectory);
+        }
+
+        $filePath = $file->storeAs($targetDirectory, $fileName, 'public');
 
         return [
             'nama_file' => $fileName,
