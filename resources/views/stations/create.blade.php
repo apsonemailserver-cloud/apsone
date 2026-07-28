@@ -573,20 +573,22 @@
                     <form action="{{ route('stations.store') }}" method="POST">
                         @csrf
 
-                        <div class="mb-3">
-                            <label class="form-label">Kode Station (IATA Code)</label>
-                            <div class="input-group input-group-merge">
-                                <span class="input-group-text"><i class="ti ti-plane"></i></span>
-                                <input type="text" name="code" class="form-control" placeholder="Cth: SOC" maxlength="3" required style="text-transform: uppercase;" value="{{ old('code') }}" />
+                        <div class="station-location-grid mb-3">
+                            <div>
+                                <label class="form-label">Kode Station (IATA Code)</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti ti-plane"></i></span>
+                                    <input type="text" name="code" class="form-control" placeholder="Cth: SOC" maxlength="3" required style="text-transform: uppercase;" value="{{ old('code') }}" />
+                                </div>
+                                <div class="form-text">Maksimal 3 Huruf (Contoh: CGK, SUB, SOC).</div>
                             </div>
-                            <div class="form-text">Maksimal 3 Huruf (Contoh: CGK, SUB, SOC).</div>
-                        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Nama Lokasi / Kota</label>
-                            <div class="input-group input-group-merge">
-                                <span class="input-group-text"><i class="ti ti-map-2"></i></span>
-                                <input type="text" name="name" class="form-control" placeholder="Cth: Solo (Adi Soemarmo)" required value="{{ old('name') }}" />
+                            <div>
+                                <label class="form-label">Nama Lokasi / Kota</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti ti-map-2"></i></span>
+                                    <input type="text" name="name" class="form-control" placeholder="Cth: Solo (Adi Soemarmo)" required value="{{ old('name') }}" />
+                                </div>
                             </div>
                         </div>
 

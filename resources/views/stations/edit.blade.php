@@ -578,19 +578,21 @@
                     <form action="{{ route('stations.update', $station->id) }}" method="POST">
                         @csrf
 
-                        <div class="mb-3">
-                            <label class="form-label">Kode Station (IATA Code)</label>
-                            <div class="input-group input-group-merge">
-                                <span class="input-group-text"><i class="ti ti-plane"></i></span>
-                                <input type="text" name="code" class="form-control" value="{{ $station->code }}" maxlength="3" required style="text-transform: uppercase;" readonly />
+                        <div class="station-location-grid mb-3">
+                            <div>
+                                <label class="form-label">Kode Station (IATA Code)</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti ti-plane"></i></span>
+                                    <input type="text" name="code" class="form-control" value="{{ $station->code }}" maxlength="3" required style="text-transform: uppercase;" readonly />
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Nama Lokasi / Kota</label>
-                            <div class="input-group input-group-merge">
-                                <span class="input-group-text"><i class="ti ti-map-2"></i></span>
-                                <input type="text" name="name" class="form-control" value="{{ $station->name }}" readonly/>
+                            <div>
+                                <label class="form-label">Nama Lokasi / Kota</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti ti-map-2"></i></span>
+                                    <input type="text" name="name" class="form-control" value="{{ $station->name }}" readonly/>
+                                </div>
                             </div>
                         </div>
 
