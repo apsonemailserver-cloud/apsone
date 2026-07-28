@@ -6032,7 +6032,7 @@
                         </ul>
                     </li>
 
-                    <li class="menu-item {{ request()->is('training*') ? 'active open' : '' }}">
+                    <li class="menu-item {{ (request()->is('training*') || request()->is('my-certificates*') || request()->routeIs('my.certificates*')) ? 'active open' : '' }}">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons ti ti-award"></i>
                             <div data-i18n="Training">Training</div>
