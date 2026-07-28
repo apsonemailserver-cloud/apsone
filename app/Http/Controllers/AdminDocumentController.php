@@ -177,6 +177,7 @@ class AdminDocumentController extends Controller
             $safeBaseName = trim((string) preg_replace('/[^A-Za-z0-9]+/', '_', $documentName), '_') ?: 'dokumen';
         }
 
+        $fileSize = (int) $file->getSize();
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'pdf');
         $fileName = $safeBaseName . '_' . now()->format('YmdHis') . '_' . uniqid() . '.' . $extension;
 
@@ -197,7 +198,7 @@ class AdminDocumentController extends Controller
         return [
             'nama_file' => $fileName,
             'file_path' => $filePath,
-            'ukuran_file' => $this->formatFileSize((int) $file->getSize()),
+            'ukuran_file' => $this->formatFileSize($fileSize),
         ];
     }
 
