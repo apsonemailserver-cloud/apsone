@@ -197,11 +197,14 @@
             title: 'Yakin hapus?',
             html: `<p>Pengumuman <b>"${title}"</b> akan dihapus secara permanen.</p>`,
             icon: 'warning',
+            iconColor: '#dc2626',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#94a3b8',
             confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal'
+            cancelButtonText: 'Batal',
+            customClass: { confirmButton: 'btn-danger' },
+            reverseButtons: true,
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('delete-form-' + id).submit();

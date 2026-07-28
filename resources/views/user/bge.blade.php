@@ -117,11 +117,14 @@
                 title: 'Hapus User?',
                 html: `Apakah Anda yakin ingin menghapus user <strong>${userName}</strong>?<br><small>Data yang dihapus tidak dapat dikembalikan</small>`,
                 icon: 'warning',
+                iconColor: '#dc2626',
                 showCancelButton: true,
                 confirmButtonColor: '#dc2626',
                 cancelButtonColor: '#9ca3af',
                 confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal'
+                cancelButtonText: 'Batal',
+                customClass: { confirmButton: 'btn-danger' },
+                reverseButtons: true,
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById(`deleteForm-${userId}`).submit();

@@ -112,15 +112,18 @@
         Swal.fire({
             title: 'Yakin hapus?',
             html: `
-                <p>Station ini akan dihapus.</p>
-                <p>User dengan code <b>${code}</b> juga akan terhapus.</p>
+                <p class="mb-1">Station ini akan dihapus.</p>
+                <p class="text-muted small mb-0">User dengan code <b>${code}</b> juga akan terhapus.</p>
             `,
             icon: 'warning',
+            iconColor: '#dc2626',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#94a3b8',
             confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal'
+            cancelButtonText: 'Batal',
+            customClass: { confirmButton: 'btn-danger' },
+            reverseButtons: true,
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('delete-form-' + id).submit();

@@ -213,6 +213,7 @@
     function openBanModal(id, name) {
         Swal.fire({
             icon: 'warning',
+            iconColor: '#dc2626',
             title: 'Blacklist Staff',
             html: `
                 <div style="background:#fef2f2; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
@@ -234,6 +235,7 @@
             cancelButtonText: 'Batal',
             confirmButtonColor: '#dc2626',
             cancelButtonColor: '#e5e7eb',
+            customClass: { confirmButton: 'btn-danger' },
             reverseButtons: true,
             focusCancel: true,
             preConfirm: () => {
