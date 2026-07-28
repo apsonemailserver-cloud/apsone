@@ -738,14 +738,16 @@
                                     </div>
                                     <div class="multiselect-options-list js-multiselect-options">
                                         @php
-                                            $allRoles = [
-                                                'Admin', 'Finance', 'Leader Bge', 'SPV Bge', 'SPV Apron',
-                                                'Leader Apron', 'Porter Bge', 'HSE', 'Head Of Airport Service',
-                                                'Porter Apron', 'Ass Leader Apron', 'Dispatcher', 'Ass Leader Bge',
-                                                'Driver', 'Aircraft Interior Exterior Cleaning',
-                                                'Leader Aircraft Interior Exterior Cleaning', 'Leader Porter Apron',
-                                                'Controller', 'Quality Control'
-                                            ];
+                                            $allRoles = $availableRoles ?? \App\Models\User::query()
+                                                ->whereNotNull('role')
+                                                ->where('role', '!=', '')
+                                                ->select('role')
+                                                ->distinct()
+                                                ->orderBy('role')
+                                                ->pluck('role')
+                                                ->filter()
+                                                ->values()
+                                                ->all();
                                             $stationRoles = old('role', []);
                                             if (!is_array($stationRoles)) {
                                                 $stationRoles = explode(',', (string)$stationRoles);

@@ -15,9 +15,24 @@ class StationController extends Controller
     // =================================================================
     // 1. FITUR BUKA STATION BARU
     // =================================================================
+    private function availableRoles(): array
+    {
+        return User::query()
+            ->whereNotNull('role')
+            ->where('role', '!=', '')
+            ->select('role')
+            ->distinct()
+            ->orderBy('role')
+            ->pluck('role')
+            ->filter()
+            ->values()
+            ->all();
+    }
+
     public function create()
     {
-        return view('stations.create');
+        $availableRoles = $this->availableRoles();
+        return view('stations.create', compact('availableRoles'));
     }
 
     public function store(Request $request)
@@ -93,8 +108,9 @@ class StationController extends Controller
     public function edit($id)
     {
         $station = Station::findOrFail($id);
+        $availableRoles = $this->availableRoles();
 
-        return view('stations.edit', compact('station'));
+        return view('stations.edit', compact('station', 'availableRoles'));
     }
 
     // Proses Ubah Station
