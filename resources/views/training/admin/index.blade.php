@@ -137,11 +137,13 @@
             title: 'Apakah Anda yakin?',
             text: "Data sertifikat yang dihapus tidak dapat dikembalikan!",
             icon: 'warning',
+            iconColor: '#dc2626',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#6b7280',
+            cancelButtonColor: '#94a3b8',
             confirmButtonText: 'Ya, Hapus!',
             cancelButtonText: 'Batal',
+            customClass: { confirmButton: 'btn-danger' },
             reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
