@@ -2507,6 +2507,36 @@
             background: linear-gradient(135deg, #3b8df3 0%, #1f62c4 100%) !important;
             border-color: var(--aps-blue-dark) !important;
         }
+        .swal2-confirm.btn-success,
+        .swal2-confirm.swal2-confirm-success {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+            border: 1px solid #16a34a !important;
+            color: #ffffff !important;
+            box-shadow: 0 12px 24px rgba(22, 163, 74, 0.3) !important;
+        }
+        .swal2-confirm.btn-success:hover,
+        .swal2-confirm.swal2-confirm-success:hover {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
+            border-color: #15803d !important;
+        }
+        .swal2-confirm.btn-danger,
+        .swal2-confirm.swal2-confirm-danger,
+        .delete-confirm-popup .swal2-confirm {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            border: 1px solid #dc2626 !important;
+            color: #ffffff !important;
+            box-shadow: 0 12px 24px rgba(220, 38, 38, 0.3) !important;
+        }
+        .swal2-confirm.btn-danger:hover,
+        .swal2-confirm.swal2-confirm-danger:hover,
+        .delete-confirm-popup .swal2-confirm:hover {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+            border-color: #b91c1c !important;
+        }
+        .delete-confirm-popup .swal2-icon.swal2-warning {
+            color: #ff3e1d !important;
+            border-color: #ffb4a7 !important;
+        }
         .swal2-cancel {
             background: #f8fafc !important;
             border: 1px solid var(--aps-line) !important;
@@ -5929,7 +5959,7 @@
                         </li>
 
                         <li
-                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('users.kontrak') || request()->routeIs('users.pas') || request()->routeIs('users.tim') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
+                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') || request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') || request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
                                 <i class="menu-icon tf-icons ti ti-users"></i>
                                 <div data-i18n="User Management">User</div>
@@ -5947,19 +5977,19 @@
                                         <div data-i18n="Blacklist"> Blacklist</div>
                                     </a>
                                 </li>
-                                <li class="menu-item {{ request()->routeIs('users.kontrak') ? 'active' : '' }}">
+                                <li class="menu-item {{ request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') ? 'active' : '' }}">
                                     <a href="{{ route('users.kontrak') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
                                         <div data-i18n="Kontrak">Kontrak</div>
                                     </a>
                                 </li>
-                                <li class="menu-item {{ request()->routeIs('users.pas') ? 'active' : '' }}">
+                                <li class="menu-item {{ request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') ? 'active' : '' }}">
                                     <a href="{{ route('users.pas') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-id"></i>
                                         <div data-i18n="PAS Tahunan">PAS Bandara</div>
                                     </a>
                                 </li>
-                                <li class="menu-item {{ request()->routeIs('users.tim') ? 'active' : '' }}">
+                                <li class="menu-item {{ request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') ? 'active' : '' }}">
                                     <a href="{{ route('users.tim') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-badge"></i>
                                         <div data-i18n="TIM Bandara">TIM Bandara</div>
