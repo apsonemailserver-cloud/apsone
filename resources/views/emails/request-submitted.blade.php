@@ -70,7 +70,7 @@
 
                                 <!-- Structured Detail Table -->
                                 <tr>
-                                    <td style="padding:12px 40px 24px;">
+                                    <td style="padding:12px 40px 20px;">
                                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; border-collapse:separate; border-spacing:0; overflow:hidden;">
                                             @foreach($details as $label => $val)
                                             <tr>
@@ -85,6 +85,32 @@
                                         </table>
                                     </td>
                                 </tr>
+
+                                <!-- Explicit Submission Reason / Note Card -->
+                                @php
+                                    $subReason = $details['Alasan'] ?? $details['Catatan'] ?? $details['Keterangan'] ?? null;
+                                @endphp
+                                @if(!empty($subReason) && $subReason !== '-')
+                                <tr>
+                                    <td style="padding:0 40px 24px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:14px; padding:16px 20px;">
+                                            <tr>
+                                                <td style="vertical-align:top; width:28px; padding-right:12px;">
+                                                    <div style="width:24px; height:24px; border-radius:50%; background:#475569; color:#ffffff; text-align:center; line-height:24px; font-weight:bold; font-size:12px;">📝</div>
+                                                </td>
+                                                <td style="vertical-align:top;">
+                                                    <div style="font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                                                        Alasan / Catatan Pengajuan
+                                                    </div>
+                                                    <div style="font-size:14px; line-height:1.6; color:#0f172a; font-weight:700;">
+                                                        "{{ $subReason }}"
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                @endif
 
                                 <!-- Informative Notice Card -->
                                 <tr>

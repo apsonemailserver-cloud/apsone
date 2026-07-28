@@ -102,7 +102,7 @@
 
                                 <!-- Decision Result Card -->
                                 <tr>
-                                    <td style="padding:0 40px 32px;">
+                                    <td style="padding:0 40px 24px;">
                                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{ $cardBg }}; border:1px solid {{ $cardBorder }}; border-radius:14px; padding:20px;">
                                             <tr>
                                                 <td style="vertical-align:top; width:28px; padding-right:12px;">
@@ -124,6 +124,32 @@
                                         </table>
                                     </td>
                                 </tr>
+
+                                <!-- Explicit Rejection / Note Highlight Card -->
+                                @php
+                                    $reasonValue = $details['Alasan Penolakan'] ?? $details['Catatan Penolakan'] ?? $details['Alasan'] ?? $details['Catatan'] ?? $details['Keterangan'] ?? null;
+                                @endphp
+                                @if(!empty($reasonValue))
+                                <tr>
+                                    <td style="padding:0 40px 28px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{ $isApproved ? '#f0fdf4' : '#fff7ed' }}; border:1px solid {{ $isApproved ? '#bbf7d0' : '#fed7aa' }}; border-radius:14px; padding:18px 20px;">
+                                            <tr>
+                                                <td style="vertical-align:top; width:28px; padding-right:12px;">
+                                                    <div style="width:24px; height:24px; border-radius:50%; background:{{ $isApproved ? '#16a34a' : '#ea580c' }}; color:#ffffff; text-align:center; line-height:24px; font-weight:bold; font-size:12px;">📌</div>
+                                                </td>
+                                                <td style="vertical-align:top;">
+                                                    <div style="font-size:11px; font-weight:800; color:{{ $isApproved ? '#15803d' : '#c2410c' }}; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                                                        {{ $isApproved ? 'Catatan Pengajuan / Persetujuan' : 'Alasan Penolakan / Catatan' }}
+                                                    </div>
+                                                    <div style="font-size:14px; line-height:1.6; color:{{ $isApproved ? '#166534' : '#9a3412' }}; font-weight:700;">
+                                                        "{{ $reasonValue }}"
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                @endif
 
                                 <!-- Footer / Sign-off -->
                                 <tr>
