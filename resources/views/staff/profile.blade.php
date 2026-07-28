@@ -67,42 +67,92 @@
         }
 
         /* Custom Navigation Tabs */
+        .profile-page .profile-card .nav-tabs,
         .profile-card .nav-tabs {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            padding: 0 1.5rem;
-            background: #fcfcfd;
+            display: inline-flex !important;
+            gap: 0.35rem !important;
+            margin: 1.25rem 1.25rem 0.5rem 1.25rem !important;
+            padding: 0.35rem !important;
+            border: 1px solid #e2e8f0 !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            border-radius: 999px !important;
+            background: #f8fafc !important;
+            box-shadow: none !important;
         }
 
+        .profile-page .profile-card .nav-link,
         .profile-card .nav-link {
-            border: none;
-            color: #697a8d;
-            padding: 1rem 1.25rem;
-            font-weight: 500;
+            border: none !important;
+            border-bottom: none !important;
+            border-radius: 999px !important;
+            color: #64748b !important;
+            padding: 0.55rem 1.15rem !important;
+            font-size: 0.86rem !important;
+            font-weight: 600 !important;
             position: relative;
-            background: transparent;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
+            background: transparent !important;
+            transition: all 0.2s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            box-shadow: none !important;
+            outline: none !important;
         }
 
+        .profile-page .profile-card .nav-link:hover,
         .profile-card .nav-link:hover {
-            color: #667eea;
+            color: #2f80ed !important;
+            background: rgba(47, 128, 237, 0.06) !important;
         }
 
+        .profile-page .profile-card .nav-link.active,
         .profile-card .nav-link.active {
-            color: #667eea;
-            background: transparent;
+            color: #2f80ed !important;
+            background: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+            border: none !important;
+            border-bottom: none !important;
         }
 
-        .profile-card .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: #667eea;
-            border-radius: 3px 3px 0 0;
+        .profile-page .profile-card .nav-link::after,
+        .profile-page .profile-card .nav-link.active::after,
+        .profile-card .nav-link::after,
+        .profile-card .nav-link.active::after,
+        .profile-page .profile-card .nav-link::before,
+        .profile-page .profile-card .nav-link.active::before,
+        .profile-card .nav-link::before,
+        .profile-card .nav-link.active::before {
+            display: none !important;
+            content: none !important;
+            border: none !important;
+            background: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        /* Dark Mode Nav Tabs */
+        html.aps-dark .profile-page .profile-card .nav-tabs,
+        html.aps-dark .profile-card .nav-tabs {
+            background: #0f172a !important;
+            border-color: #263653 !important;
+        }
+
+        html.aps-dark .profile-page .profile-card .nav-link,
+        html.aps-dark .profile-card .nav-link {
+            color: #94a3b8 !important;
+        }
+
+        html.aps-dark .profile-page .profile-card .nav-link:hover,
+        html.aps-dark .profile-card .nav-link:hover {
+            color: #60a5fa !important;
+            background: rgba(96, 165, 250, 0.12) !important;
+        }
+
+        html.aps-dark .profile-page .profile-card .nav-link.active,
+        html.aps-dark .profile-card .nav-link.active {
+            color: #60a5fa !important;
+            background: #1e293b !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
         }
 
         /* Info Tiles Grid */
@@ -282,6 +332,9 @@
                         <span class="text-muted fw-light">Profile /</span> {{ $user->fullname }}
                     </h4>
                     <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('staff.index') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="ti ti-arrow-left me-1"></i> Kembali
+                        </a>
                         <span class="badge bg-primary">{{ $user->role }}</span>
                         <span class="badge bg-label-secondary">{{ $user->station }}</span>
                     </div>
