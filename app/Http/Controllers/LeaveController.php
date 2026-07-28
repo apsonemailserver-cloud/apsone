@@ -279,6 +279,22 @@ class LeaveController extends Controller
         Leave::create($leaveData);
 
         if ($isAutomaticallyRejected) {
+            RequestNotificationMailService::sendDecisionEmail(
+                $user,
+                'Cuti (' . $request->leave_type . ')',
+                'Rejected',
+                [
+                    'Jenis Cuti'         => $request->leave_type,
+                    'Tanggal Mulai'      => $startDate->translatedFormat('d F Y'),
+                    'Tanggal Selesai'    => $endDate->translatedFormat('d F Y'),
+                    'Total Hari'         => $totalDays . ' Hari',
+                    'Alasan'             => $request->reason,
+                    'Keterangan'         => 'Pengajuan cuti tahunan melebihi kuota 12 hari.',
+                    'Status'             => 'Ditolak Otomatis (Kuota Terlampaui)',
+                ],
+                'Sistem (Kuota Terlampaui)'
+            );
+
             Alert::warning('Ditolak Otomatis', 'Pengajuan cuti tahunan melebihi kuota 12 hari dan otomatis ditolak.');
             return redirect()->route('leaves.pengajuan');
         }
@@ -348,6 +364,24 @@ class LeaveController extends Controller
                 $leave->approved_at = null;
                 $leave->manager_comment = $this->annualLeaveRejectionComment($annualLeaveDecision);
                 $leave->save();
+
+                $leave->load('user');
+                if ($leave->user) {
+                    RequestNotificationMailService::sendDecisionEmail(
+                        $leave->user,
+                        'Cuti (' . $leave->leave_type . ')',
+                        'Rejected',
+                        [
+                            'Jenis Cuti'      => $leave->leave_type,
+                            'Tanggal Mulai'   => Carbon::parse($leave->start_date)->translatedFormat('d F Y'),
+                            'Tanggal Selesai' => Carbon::parse($leave->end_date)->translatedFormat('d F Y'),
+                            'Total Hari'      => $leave->total_days . ' Hari',
+                            'Keterangan'      => 'Pengajuan cuti tahunan melebihi kuota 12 hari.',
+                            'Status'          => 'Ditolak Otomatis (Kuota Terlampaui)',
+                        ],
+                        Auth::user()->fullname
+                    );
+                }
 
                 Alert::warning('Ditolak Otomatis', 'Cuti tahunan ini melebihi kuota 12 hari, sehingga otomatis ditolak.');
                 return redirect()->route('leaves.index');
