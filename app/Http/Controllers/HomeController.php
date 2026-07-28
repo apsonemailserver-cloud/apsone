@@ -330,6 +330,7 @@ class HomeController extends Controller
             ->get(['check_in_time'])
             ->map(fn (Attendance $attendance) => Carbon::parse($attendance->check_in_time)->toDateString())
             ->unique()
+            ->toBase()
             ->intersect($scheduledDates);
 
         $personalAttendancePercentage = $scheduledDates->isEmpty()
