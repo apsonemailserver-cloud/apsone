@@ -181,8 +181,9 @@ class AdminDocumentController extends Controller
         $fileName = $safeBaseName . '_' . now()->format('YmdHis') . '_' . uniqid() . '.' . $extension;
 
         $targetDirectory = 'file';
-        if (! Storage::disk('public')->exists($targetDirectory)) {
-            Storage::disk('public')->makeDirectory($targetDirectory);
+        $fullPublicPath = storage_path('app/public/' . $targetDirectory);
+        if (! file_exists($fullPublicPath)) {
+            @mkdir($fullPublicPath, 0777, true);
         }
 
         $filePath = $file->storeAs($targetDirectory, $fileName, 'public');
