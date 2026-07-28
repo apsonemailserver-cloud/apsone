@@ -71,11 +71,12 @@
                                         <form id="approveForm-{{ $ot->id }}" action="{{ route('overtime.approve', $ot->id) }}" method="POST">
                                             @csrf
                                             <button type="button" class="btn btn-sm btn-success" onclick="confirmApprove({{ $ot->id }}, '{{ addslashes($ot->user->fullname) }}', '{{ addslashes($ot->title) }}')">
-                                                <i class="bx bx-check me-1"></i>ACC
+                                                <i class="bx bx-check me-1"></i>Approve
                                             </button>
                                         </form>
                                         <form id="rejectForm-{{ $ot->id }}" action="{{ route('overtime.reject', $ot->id) }}" method="POST">
                                             @csrf
+                                            <input type="hidden" name="rejection_reason" id="rejection_reason-{{ $ot->id }}" value="">
                                             <button type="button" class="btn btn-sm btn-outline-secondary" style="color:#dc2626 !important; border-color:#fecaca !important;" onclick="confirmReject({{ $ot->id }}, '{{ addslashes($ot->user->fullname) }}', '{{ addslashes($ot->title) }}')">
                                                 <i class="bx bx-x me-1"></i>Tolak
                                             </button>
@@ -113,6 +114,7 @@
         window.confirmApprove = function(id, staffName, title) {
             Swal.fire({
                 icon: 'question',
+                iconColor: '#16a34a',
                 title: 'Setujui Lembur?',
                 html: `
                     <div style="background:#f0fdf4; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
@@ -132,8 +134,9 @@
                 showCancelButton: true,
                 confirmButtonText: '✓ Ya, Setujui',
                 cancelButtonText: 'Batal',
-                confirmButtonColor: '#111827',
+                confirmButtonColor: '#16a34a',
                 cancelButtonColor: '#f3f4f6',
+                customClass: { confirmButton: 'btn-success' },
                 reverseButtons: true,
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -143,9 +146,19 @@
         }
 
         window.confirmReject = function(id, staffName, title) {
+            if (typeof Swal === 'undefined') {
+                const reason = prompt('Masukkan alasan penolakan untuk ' + staffName + ':');
+                if (reason) {
+                    document.getElementById(`rejection_reason-${id}`).value = reason;
+                    document.getElementById(`rejectForm-${id}`).submit();
+                }
+                return;
+            }
+
             Swal.fire({
                 icon: 'warning',
-                title: 'Tolak Pengajuan?',
+                iconColor: '#dc2626',
+                title: 'Tolak Pengajuan Lembur?',
                 html: `
                     <div style="background:#fef2f2; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
                         <div style="margin-bottom:0.75rem; display:flex; align-items:flex-start; gap:0.75rem;">
@@ -157,18 +170,36 @@
                             <span style="font-weight:500; color:#374151; font-size:0.875rem;">${title}</span>
                         </div>
                     </div>
-                    <p style="color:#dc2626; font-size:0.8125rem; margin-top:0.75rem;">
-                        ⚠ Tindakan ini <strong>tidak dapat dibatalkan</strong>.
-                    </p>
+                    <div style="text-align:left; margin-top:1rem;">
+                        <label for="swal-ot-rejection-reason" style="display:block; font-weight:600; font-size:0.875rem; color:#374151; margin-bottom:0.35rem;">
+                            Alasan Penolakan <span style="color:#dc2626;">*</span>
+                        </label>
+                        <textarea id="swal-ot-rejection-reason" class="form-control" placeholder="Tuliskan alasan penolakan di sini..." style="width:100%; border-radius:0.5rem; border:1px solid #cbd5e1; padding:0.6rem 0.75rem; font-size:0.875rem; min-height:80px; resize:vertical;"></textarea>
+                        <div id="swal-ot-rejection-error" style="color:#dc2626; font-size:0.8rem; margin-top:0.35rem; display:none;">Alasan penolakan wajib diisi.</div>
+                    </div>
                 `,
                 showCancelButton: true,
                 confirmButtonText: '✕ Ya, Tolak',
                 cancelButtonText: 'Kembali',
                 confirmButtonColor: '#dc2626',
                 cancelButtonColor: '#f3f4f6',
+                customClass: { confirmButton: 'btn-danger' },
                 reverseButtons: true,
+                preConfirm: () => {
+                    const reasonInput = document.getElementById('swal-ot-rejection-reason');
+                    const errorDiv = document.getElementById('swal-ot-rejection-error');
+                    const reason = reasonInput ? reasonInput.value.trim() : '';
+
+                    if (!reason) {
+                        if (errorDiv) errorDiv.style.display = 'block';
+                        if (reasonInput) reasonInput.style.borderColor = '#dc2626';
+                        return false;
+                    }
+                    return reason;
+                }
             }).then((result) => {
-                if (result.isConfirmed) {
+                if (result.isConfirmed && result.value) {
+                    document.getElementById(`rejection_reason-${id}`).value = result.value;
                     document.getElementById(`rejectForm-${id}`).submit();
                 }
             });

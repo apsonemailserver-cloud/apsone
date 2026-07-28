@@ -18,6 +18,7 @@ return new class extends Migration
         $table->integer('duration');    // Durasi (Jam)
         $table->string('title');        // Judul Kegiatan
         $table->text('description');    // Deskripsi Detail
+        $table->text('rejection_reason')->nullable(); // Alasan Penolakan
         $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
         $table->string('approved_by')->nullable(); // Nama Leader yang ACC
         $table->timestamps();

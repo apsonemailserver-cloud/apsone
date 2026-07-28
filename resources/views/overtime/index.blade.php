@@ -234,6 +234,11 @@
                                                     <span class="badge bg-success"><i class="bx bx-check-circle me-1"></i> Disetujui</span>
                                                 @else
                                                     <span class="badge bg-danger"><i class="bx bx-x-circle me-1"></i> Ditolak</span>
+                                                    @if(!empty($ot->rejection_reason))
+                                                        <div class="small text-danger mt-1 text-truncate" style="max-width: 160px;" title="Alasan Penolakan: {{ $ot->rejection_reason }}">
+                                                            <i class="bx bx-error-circle me-1"></i>{{ $ot->rejection_reason }}
+                                                        </div>
+                                                    @endif
                                                 @endif
                                             </td>
                                             <td>
@@ -309,7 +314,4 @@
             @endif
         });
     </script>
-    @if (session('success') || session('error'))
-        <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    @endif
 @endsection

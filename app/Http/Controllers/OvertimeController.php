@@ -138,11 +138,16 @@ class OvertimeController extends Controller
         return back();
     }
 
-    public function reject($id)
+    public function reject(Request $request, $id)
     {
+        $request->validate([
+            'rejection_reason' => 'required|string|max:1000',
+        ]);
+
         $ot = Overtime::with('user')->findOrFail($id);
         $ot->update([
             'status' => 'Rejected',
+            'rejection_reason' => $request->input('rejection_reason'),
             'approved_by' => Auth::user()->fullname
         ]);
 
@@ -152,11 +157,12 @@ class OvertimeController extends Controller
                 'Lembur',
                 'Rejected',
                 [
-                    'Tanggal Lembur' => \Carbon\Carbon::parse($ot->date)->translatedFormat('d F Y'),
-                    'Durasi'         => $ot->duration . ' Jam',
-                    'Judul'          => $ot->title,
-                    'Status'         => 'Ditolak (Rejected)',
-                    'Ditolak Oleh'   => Auth::user()->fullname,
+                    'Tanggal Lembur'  => \Carbon\Carbon::parse($ot->date)->translatedFormat('d F Y'),
+                    'Durasi'          => $ot->duration . ' Jam',
+                    'Judul'           => $ot->title,
+                    'Status'          => 'Ditolak (Rejected)',
+                    'Alasan Penolakan'=> $request->input('rejection_reason'),
+                    'Ditolak Oleh'    => Auth::user()->fullname,
                 ],
                 Auth::user()->fullname
             );
