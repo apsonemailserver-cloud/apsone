@@ -95,8 +95,8 @@
                                     <td class="fw-bold">{{ $end->translatedFormat('d M Y') }}</td>
                                     <td>{!! $statusBadge !!}</td>
                                     <td class="text-center">
-                                        <a href="{{ route('users.TIMEdit', $user->id) }}" class="action-btn" title="Update TIM">
-                                            <i class="bx bx-edit-alt"></i>
+                                        <a href="{{ route('users.TIMEdit', $user->id) }}" class="action-btn action-edit" title="Update TIM">
+                                            <i class="ti ti-pencil"></i>
                                         </a>
                                     </td>
                                 </tr>

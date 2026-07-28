@@ -76,6 +76,10 @@
                         </thead>
                         <tbody>
                             @forelse($staffs as $staff)
+                            @php
+                                $staffKey = trim((string)($staff->no_nik ?: $staff->id));
+                                $isBlacklisted = in_array($staffKey, $blacklistedNiks ?? []);
+                            @endphp
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -95,7 +99,9 @@
                                     <span class="badge bg-label-info">{{ $staff->station }}</span>
                                 </td>
                                 <td>
-                                    @if(Auth::user()->role == 'Admin')
+                                    @if($isBlacklisted)
+                                    <span class="badge bg-danger" title="Di-blacklist"><i class="ti ti-ban me-1"></i>Blacklisted</span>
+                                    @elseif(Auth::user()->role == 'Admin')
                                     <form action="{{ route('staff.toggle', $staff->id) }}" method="POST">
                                         @csrf
                                         <div class="form-check form-switch">
@@ -123,12 +129,14 @@
                                             <i class="ti ti-eye"></i>
                                         </a>
                                         @if(Auth::user()->role == 'Admin')
-                                        <a href="{{ route('users.edit', ['user' => $staff->id, 'page' => request('page')]) }}" class="action-btn" title="Edit Staff">
+                                        <a href="{{ route('users.edit', ['user' => $staff->id, 'redirect_to' => url()->full()]) }}" class="action-btn action-edit" title="Edit Staff">
                                             <i class="ti ti-pencil"></i>
                                         </a>
+                                        @if(!$isBlacklisted)
                                         <button type="button" class="action-btn action-delete" onclick="openBanModal('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Blacklist">
                                             <i class="ti ti-ban"></i>
                                         </button>
+                                        @endif
                                         @endif
                                     </div>
                                 </td>

@@ -52,8 +52,8 @@
                                                 <a href="{{ route('users.show', ['user' => $users->id, 'page' => request('page')]) }}" class="action-btn" title="Lihat Detail">
                                                     <i class="bx bx-show"></i>
                                                 </a>
-                                                <a href="{{ route('users.edit', ['user' => $users->id, 'page' => request('page')]) }}" class="action-btn" title="Edit Data">
-                                                    <i class="bx bx-edit"></i>
+                                                <a href="{{ route('users.edit', ['user' => $users->id, 'page' => request('page'), 'redirect_to' => url()->full()]) }}" class="action-btn action-edit" title="Edit Data">
+                                                    <i class="ti ti-pencil"></i>
                                                 </a>
                                                 <button type="button" class="action-btn border-0" onclick="confirmReset({{ $users->id }}, '{{ $users->fullname }}')" title="Reset Password">
                                                     <i class="bx bx-refresh"></i>

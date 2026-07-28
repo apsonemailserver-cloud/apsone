@@ -161,8 +161,8 @@
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            <a href="{{ route('users.PASEdit', $user->id) }}" class="action-btn" title="Edit Pas">
-                                                <i class="bx bx-edit"></i>
+                                            <a href="{{ route('users.PASEdit', $user->id) }}" class="action-btn action-edit" title="Edit Pas">
+                                                <i class="ti ti-pencil"></i>
                                             </a>
                                         </td>
                                     </tr>

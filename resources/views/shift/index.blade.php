@@ -33,25 +33,6 @@
             background-color: #f8fbff;
         }
 
-        .action-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            background: #2f80ed;
-            color: white;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        .action-btn:hover {
-            background: #2368c8;
-            transform: translateY(-1px);
-            color: white;
-        }
-
         .stats-card {
             background: linear-gradient(135deg, #2f80ed 0%, #2368c8 52%, #174ea6 100%);
             color: white;
@@ -248,7 +229,7 @@
                                             </td>
                                             <td class="d-flex align-items-center gap-2">
                                                 @if (in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER']))
-                                                    <a href="{{ route('shift.edit', $shift->id) }}" class="action-btn"
+                                                    <a href="{{ route('shift.edit', $shift->id) }}" class="action-btn action-edit"
                                                         title="Edit Shift">
                                                         <i class="ti ti-pencil"></i>
                                                     </a>

@@ -29,28 +29,6 @@
         text-align: center;
     }
 
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 0.7rem;
-        background: #eaf4ff;
-        border: 1px solid rgba(47, 128, 237, 0.18);
-        color: #2368c8;
-        box-shadow: none;
-        text-decoration: none;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease;
-    }
-
-    .action-btn:hover {
-        background: linear-gradient(135deg, #2f80ed 0%, #2368c8 100%);
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 10px 22px rgba(47, 128, 237, 0.22);
-    }
-
     .action-btn i {
         font-size: 1rem;
         line-height: 1;
@@ -399,8 +377,8 @@
                                     </td>
                                     <td>
                                         <a href="{{ route('schedule.edit', ['schedule' => $users->id, 'page' => request('page')]) }}"
-                                            class="action-btn" title="Edit Schedule">
-                                            <i class="bx bx-edit"></i>
+                                            class="action-btn action-edit" title="Edit Schedule">
+                                            <i class="ti ti-pencil"></i>
                                         </a>
 
                                     </td>
@@ -514,15 +492,21 @@
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Ya, Proses!',
                     cancelButtonText: 'Batal',
-                    showLoaderOnConfirm: true,
-                    preConfirm: () => {
-                        return new Promise((resolve) => {
-                            // Submit the form
-                            e.target.submit();
-                            resolve();
+                    allowOutsideClick: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Memproses Jadwal...',
+                            text: 'Mohon tunggu, sedang meng-generate jadwal otomatis.',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
                         });
-                    },
-                    allowOutsideClick: () => !Swal.isLoading()
+                        autoCreateForm.submit();
+                    }
                 });
             });
         }

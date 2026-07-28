@@ -100,8 +100,8 @@
                             </td>
                             <td class="text-center">
                                 <a href="{{ route('users.KontrakEdit', ['id' => $user->id, 'page' => request('page')]) }}" 
-                                   class="action-btn" title="Edit Kontrak">
-                                    <i class="bx bx-edit"></i>
+                                   class="action-btn action-edit" title="Edit Kontrak">
+                                    <i class="ti ti-pencil"></i>
                                 </a>
                             </td>
                         </tr>
