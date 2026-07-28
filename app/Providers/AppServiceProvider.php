@@ -30,26 +30,37 @@ class AppServiceProvider extends ServiceProvider
             URL::forceRootUrl(config('app.url'));
         }
 
-        View::composer('*', function ($view) {
-            if (Auth::check() && \Illuminate\Support\Facades\Schema::hasTable('announcements') && \Illuminate\Support\Facades\Schema::hasTable('announcement_reads')) {
-                $user = Auth::user();
-                $readAnnouncementIds = AnnouncementRead::where('user_id', $user->id)
-                    ->pluck('announcement_id')
-                    ->toArray();
+        View::composer('layout.admin', function ($view) {
+            $req = request();
+            $cacheKey = 'topbar_announcement_data';
 
-                $topbarAnnouncements = Announcement::forUser($user)
-                    ->latest()
-                    ->take(3)
-                    ->get();
+            if (! $req->attributes->has($cacheKey)) {
+                if (Auth::check() && \Illuminate\Support\Facades\Schema::hasTable('announcements') && \Illuminate\Support\Facades\Schema::hasTable('announcement_reads')) {
+                    $user = Auth::user();
+                    $readAnnouncementIds = AnnouncementRead::where('user_id', $user->id)
+                        ->pluck('announcement_id')
+                        ->toArray();
 
-                $unreadAnnouncementsCount = Announcement::forUser($user)
-                    ->whereNotIn('id', $readAnnouncementIds)
-                    ->count();
+                    $topbarAnnouncements = Announcement::forUser($user)
+                        ->latest()
+                        ->take(3)
+                        ->get();
 
-                $view->with('unreadAnnouncementsCount', $unreadAnnouncementsCount)
-                     ->with('topbarAnnouncements', $topbarAnnouncements)
-                     ->with('readAnnouncementIds', $readAnnouncementIds);
+                    $unreadAnnouncementsCount = Announcement::forUser($user)
+                        ->whereNotIn('id', $readAnnouncementIds)
+                        ->count();
+
+                    $req->attributes->set($cacheKey, [
+                        'unreadAnnouncementsCount' => $unreadAnnouncementsCount,
+                        'topbarAnnouncements' => $topbarAnnouncements,
+                        'readAnnouncementIds' => $readAnnouncementIds,
+                    ]);
+                } else {
+                    $req->attributes->set($cacheKey, []);
+                }
             }
+
+            $view->with($req->attributes->get($cacheKey));
         });
     }
 }

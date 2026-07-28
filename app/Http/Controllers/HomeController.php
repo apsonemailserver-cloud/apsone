@@ -169,13 +169,47 @@ class HomeController extends Controller
             : 0;
 
         // =================================================================
-        // BAGIAN 3: CHART (DENGAN FILTER STATION)
+        // BAGIAN 3: CHART (DENGAN FILTER STATION - EFFICIENT BATCH QUERY)
         // =================================================================
         $lineChartLabels = [];
         $lineChartData = [];
         $barChartLabels = [];
         $sickData = [];
         $leaveData = [];
+
+        $chartStartDate = Carbon::now()->subDays(6)->startOfDay();
+        $chartEndDate = Carbon::now()->endOfDay();
+
+        // 1. Batch query daily flights (1 query instead of 7)
+        $dailyFlightQ = Flights::select(DB::raw('DATE(created_at) as date_key'), DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$chartStartDate, $chartEndDate]);
+        if ($selectedStation !== 'All') {
+            $dailyFlightQ->where('station', $selectedStation);
+        }
+        $dailyFlightCounts = $dailyFlightQ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('total', 'date_key');
+
+        // 2. Batch query daily leaves for Sakit & Tahunan (1 query instead of 14)
+        $dailyLeaveQ = Leave::join('users', 'leaves.user_id', '=', 'users.id')
+            ->select(DB::raw('DATE(leaves.start_date) as date_key'), 'leaves.leave_type', DB::raw('count(*) as total'))
+            ->whereBetween('leaves.start_date', [$chartStartDate->toDateString(), $chartEndDate->toDateString()])
+            ->whereIn('leaves.leave_type', ['Cuti Sakit', 'Cuti Tahunan']);
+        if ($selectedStation !== 'All') {
+            $dailyLeaveQ->where('users.station', $selectedStation);
+        }
+        $dailyLeaveCounts = $dailyLeaveQ->groupBy(DB::raw('DATE(leaves.start_date)'), 'leaves.leave_type')
+            ->get();
+
+        $sickByDate = [];
+        $leaveByDate = [];
+        foreach ($dailyLeaveCounts as $row) {
+            $dKey = (string) $row->date_key;
+            if ($row->leave_type === 'Cuti Sakit') {
+                $sickByDate[$dKey] = (int) $row->total;
+            } elseif ($row->leave_type === 'Cuti Tahunan') {
+                $leaveByDate[$dKey] = (int) $row->total;
+            }
+        }
 
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
@@ -185,30 +219,9 @@ class HomeController extends Controller
             $lineChartLabels[] = $dayName;
             $barChartLabels[] = $dayName;
 
-            // Line Chart: Total Penerbangan per hari (Filtered)
-            $dailyFlightQ = Flights::whereDate('created_at', $dateString);
-            if ($selectedStation !== 'All') {
-                $dailyFlightQ->where('station', $selectedStation);
-            }
-            $lineChartData[] = $dailyFlightQ->count();
-
-            // Bar Chart: Sakit (Filtered by User Station via Join)
-            $sickQ = Leave::join('users', 'leaves.user_id', '=', 'users.id')
-                ->whereDate('leaves.start_date', $dateString)
-                ->where('leaves.leave_type', 'Cuti Sakit');
-            if ($selectedStation !== 'All') {
-                $sickQ->where('users.station', $selectedStation);
-            }
-            $sickData[] = $sickQ->count();
-
-            // Bar Chart: Cuti (Filtered by User Station via Join)
-            $leaveQ = Leave::join('users', 'leaves.user_id', '=', 'users.id')
-                ->whereDate('leaves.start_date', $dateString)
-                ->where('leaves.leave_type', 'Cuti Tahunan');
-            if ($selectedStation !== 'All') {
-                $leaveQ->where('users.station', $selectedStation);
-            }
-            $leaveData[] = $leaveQ->count();
+            $lineChartData[] = (int) ($dailyFlightCounts[$dateString] ?? 0);
+            $sickData[] = $sickByDate[$dateString] ?? 0;
+            $leaveData[] = $leaveByDate[$dateString] ?? 0;
         }
 
         // Doughnut Chart: Distribusi Role (Filtered)
@@ -242,7 +255,7 @@ class HomeController extends Controller
 
         // Data Monitoring Station (Untuk Widget Kartu-Kartu Station)
         // Kita tampilkan semua station di widget bawah, tapi Dashboard utama mengikuti filter dropdown
-        $allStations = Station::where('is_active', 1)->get();
+        $allStations = !empty($listStations) ? $listStations : Station::where('is_active', 1)->get();
         $stationStats = User::select('station', DB::raw('count(*) as total'))
             ->groupBy('station')
             ->pluck('total', 'station');
