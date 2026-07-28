@@ -78,7 +78,7 @@
                                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #edf2f7;">
                                             <tr>
                                                 <td align="center" style="padding-top:22px; color:#8a97aa; font-size:12px; line-height:1.6;">
-                                                    Email ini dikirim otomatis oleh sistem APSone.
+                                                    Email ini dikirim otomatis oleh sistem APSone. Mohon tidak membalas email ini secara langsung.
                                                     <br>
                                                     &copy; 2025 PT. Angkasa Pratama Sejahtera. All Rights Reserved.
                                                 </td>

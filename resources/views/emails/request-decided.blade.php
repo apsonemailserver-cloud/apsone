@@ -127,16 +127,13 @@
 
                                 <!-- Footer / Sign-off -->
                                 <tr>
-                                    <td style="padding:24px 40px 36px; background:#f8fafc; border-top:1px solid #f1f5f9;">
-                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                    <td style="padding:0 40px 34px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #edf2f7;">
                                             <tr>
-                                                <td align="left" style="color:#94a3b8; font-size:12px; line-height:1.6;">
-                                                    <strong style="color:#64748b;">APSone System Operations</strong><br>
-                                                    PT. Angkasa Pratama Sejahtera<br>
-                                                    <span style="font-size:11px;">Email ini dikirim secara otomatis. Mohon tidak membalas email ini secara langsung.</span>
-                                                </td>
-                                                <td align="right" valign="bottom" style="color:#cbd5e1; font-size:11px; font-weight:700;">
-                                                    &copy; {{ date('Y') }} APSone
+                                                <td align="center" style="padding-top:22px; color:#8a97aa; font-size:12px; line-height:1.6;">
+                                                    Email ini dikirim otomatis oleh sistem APSone. Mohon tidak membalas email ini secara langsung.
+                                                    <br>
+                                                    &copy; 2025 PT. Angkasa Pratama Sejahtera. All Rights Reserved.
                                                 </td>
                                             </tr>
                                         </table>
