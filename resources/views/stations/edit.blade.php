@@ -1,6 +1,7 @@
 @extends('layout.admin')
 
 @section('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <style>
     .station-form-shell {
         max-width: 760px;
@@ -103,38 +104,60 @@
         color: #64748b;
     }
 
-    /* Map Preview */
+    /* Leaflet Map Preview */
     .station-map-preview {
         position: relative;
-        height: 154px;
+        height: 240px;
         border: 1px solid #cbd5e1;
         border-radius: 14px;
         overflow: hidden;
-        background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+        background: #f8fafc;
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
     }
 
-    .station-map-preview iframe {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: calc(100% + 34px);
-        border: 0;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.2s ease;
+    .leaflet-control-attribution {
+        display: none !important;
     }
 
-    .station-map-preview::after {
+    .custom-station-pin-wrapper {
+        background: transparent !important;
+        border: none !important;
+    }
+
+    .custom-station-pin-container {
+        position: relative;
+        width: 38px;
+        height: 38px;
+    }
+
+    .station-leaflet-marker {
+        width: 34px;
+        height: 34px;
+        border-radius: 50% 50% 50% 0;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        position: absolute;
+        transform: rotate(-45deg);
+        left: 2px;
+        top: 2px;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+    }
+
+    .station-leaflet-marker::after {
         content: "";
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        cursor: default;
+        width: 12px;
+        height: 12px;
+        background: #ffffff;
+        border-radius: 50%;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.25);
     }
 
-    .station-map-preview.has-location iframe {
-        opacity: 1;
+    html.aps-dark .station-leaflet-marker {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        box-shadow: 0 8px 18px rgba(59, 130, 246, 0.5);
     }
 
     .station-map-empty {
@@ -149,10 +172,7 @@
         padding: 1rem;
         color: #64748b;
         pointer-events: none;
-    }
-
-    .station-map-preview.has-location .station-map-empty {
-        display: none;
+        background: #f8fafc;
     }
 
     .station-map-empty i {
@@ -171,8 +191,8 @@
         position: absolute;
         left: 12px;
         bottom: 10px;
-        z-index: 2;
-        display: none;
+        z-index: 500;
+        display: inline-flex;
         align-items: center;
         gap: 0.35rem;
         max-width: calc(100% - 24px);
@@ -187,17 +207,13 @@
         pointer-events: none;
     }
 
-    .station-map-preview.has-location .station-map-chip {
-        display: inline-flex;
-    }
-
     @media (max-width: 767.98px) {
         .station-location-grid {
             grid-template-columns: 1fr;
         }
 
         .station-map-preview {
-            height: 140px;
+            height: 190px;
         }
     }
 
@@ -500,6 +516,11 @@
         border-color: #334155 !important;
     }
 
+    html.aps-dark .station-map-empty {
+        background: #0f172a !important;
+        color: #94a3b8 !important;
+    }
+
     html.aps-dark .station-map-chip {
         background: rgba(30, 41, 59, 0.94) !important;
         color: #f8fafc !important;
@@ -700,11 +721,11 @@
                             <div class="form-text">Pilih satu atau beberapa role pekerjaan yang beroperasi pada station ini.</div>
                         </div>
 
-                        <div class="station-map-field">
-                            <label class="form-label">Preview Titik Lokasi</label>
+                        <div class="station-map-field mb-3">
+                            <label class="form-label">Preview Titik Lokasi & Radius Absen</label>
                             <div class="station-map-preview js-station-map-preview" aria-label="Preview titik lokasi station">
-                                <iframe class="js-station-map-frame" title="Preview Map Station" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                                <div class="station-map-empty">
+                                <div id="leafletStationMap" style="width: 100%; height: 100%; z-index: 1;"></div>
+                                <div class="station-map-empty" style="z-index: 2;">
                                     <i class="ti ti-map-search"></i>
                                     <strong>Belum ada titik</strong>
                                     <small>Masukkan latitude dan longitude untuk melihat preview.</small>
@@ -714,6 +735,7 @@
                                     <span class="js-station-map-coordinate">-</span>
                                 </div>
                             </div>
+                            <div class="form-text mt-1"><i class="ti ti-info-circle me-1"></i>Anda dapat menggeser marker atau mengklik area pada peta untuk menentukan koordinat secara presisi.</div>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -730,6 +752,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // ── Custom Multi-Select ────────────────────────────────────────
@@ -748,53 +771,46 @@
 
             // ── Portal: move dropdown to <body> to escape overflow:hidden ──
             document.body.appendChild(dropdown);
-            dropdown.classList.remove('d-none');
-            dropdown.style.cssText = [
-                'display:none',
-                'position:fixed',
-                'z-index:99999',
-                'top:0',
-                'left:0',
-                'right:auto',
-            ].join(';') + ';';
 
             let isOpen = false;
 
             function reposition() {
-                const r = trigger.getBoundingClientRect();
-                const dropHeight = dropdown.offsetHeight || 260;
-                const spaceBelow = window.innerHeight - r.bottom;
+                const rect = trigger.getBoundingClientRect();
+                dropdown.style.position = 'fixed';
+                dropdown.style.left     = rect.left + 'px';
+                dropdown.style.width    = rect.width + 'px';
+                dropdown.style.zIndex   = '999999';
 
-                if (spaceBelow < dropHeight && r.top > dropHeight) {
-                    dropdown.style.top = Math.max(10, r.top - dropHeight - 4) + 'px';
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const dropdownHeight = 290;
+
+                if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                    dropdown.style.top    = (rect.top - dropdownHeight - 2) + 'px';
+                    dropdown.style.bottom = 'auto';
                 } else {
-                    dropdown.style.top = (r.bottom + 4) + 'px';
+                    dropdown.style.top    = (rect.bottom + 2) + 'px';
+                    dropdown.style.bottom = 'auto';
                 }
-                dropdown.style.left  = r.left  + 'px';
-                dropdown.style.width = r.width + 'px';
             }
 
             function open() {
-                dropdown.style.display = 'block';
-                wrapper.classList.add('open');
                 isOpen = true;
+                dropdown.classList.remove('d-none');
+                wrapper.classList.add('open');
                 reposition();
                 searchIn.value = '';
-                items.forEach(item => item.classList.remove('d-none-filter'));
-                setTimeout(() => {
-                    reposition();
-                    searchIn.focus();
-                }, 20);
+                items.forEach(i => i.classList.remove('d-none-filter'));
+                setTimeout(() => searchIn.focus(), 50);
             }
 
             function close() {
-                dropdown.style.display = 'none';
-                wrapper.classList.remove('open');
                 isOpen = false;
+                dropdown.classList.add('d-none');
+                wrapper.classList.remove('open');
             }
 
             function renderUI() {
-                const checked = Array.from(optsList.querySelectorAll('.js-option-checkbox:checked'));
+                const checked = optsList.querySelectorAll('.js-option-checkbox:checked');
                 tagsArea.innerHTML = '';
 
                 if (checked.length === 0) {
@@ -821,8 +837,8 @@
                     const ico = box ? box.querySelector('i') : null;
                     item.classList.toggle('selected', cb.checked);
                     if (box) {
-                        box.style.background  = cb.checked ? '#2563eb' : '';
-                        box.style.borderColor = cb.checked ? '#2563eb' : '';
+                        box.style.background  = cb.checked ? '#2f80ed' : '';
+                        box.style.borderColor = cb.checked ? '#2f80ed' : '';
                     }
                     if (ico) ico.style.display = cb.checked ? 'block' : 'none';
                 });
@@ -832,24 +848,16 @@
                 }
             }
 
-            // ── stopPropagation pattern ──────────────────────────────────
-            // 1. wrapper stops propagation → document never sees clicks inside wrapper
             wrapper.addEventListener('click', e => e.stopPropagation());
-
-            // 2. dropdown (in body) stops propagation → document never sees clicks inside dropdown
             dropdown.addEventListener('click', e => e.stopPropagation());
-
-            // 3. document click = click was OUTSIDE both → close
             document.addEventListener('click', () => { if (isOpen) close(); });
 
-            // ── Trigger ──────────────────────────────────────────────────
             trigger.addEventListener('click', function (e) {
                 if (e.target.closest('.multiselect-tag-remove') ||
                     e.target.closest('.js-multiselect-clear')) return;
                 isOpen ? close() : open();
             });
 
-            // ── Remove tag ───────────────────────────────────────────────
             tagsArea.addEventListener('click', function (e) {
                 const btn = e.target.closest('.multiselect-tag-remove');
                 if (!btn) return;
@@ -859,22 +867,17 @@
                 if (cb) { cb.checked = false; renderUI(); }
             });
 
-            // ── Clear all ─────────────────────────────────────────────────
             clearBtn.addEventListener('click', function () {
                 optsList.querySelectorAll('.js-option-checkbox').forEach(cb => (cb.checked = false));
                 renderUI();
             });
 
-            // ── Toggle option ──────────────────────────────────────────────────
-            // Items are <label> elements — browser NATIVELY toggles the nested
-            // checkbox on label click. We only need to call renderUI().
             items.forEach(item => {
                 item.addEventListener('click', function () {
                     requestAnimationFrame(renderUI);
                 });
             });
 
-            // ── Search filter ─────────────────────────────────────────────
             searchIn.addEventListener('input', function () {
                 const q = this.value.toLowerCase();
                 items.forEach(item => {
@@ -885,55 +888,150 @@
                 });
             });
 
-            // ── Reposition on scroll / resize ─────────────────────────────
             window.addEventListener('scroll', () => { if (isOpen) reposition(); }, true);
             window.addEventListener('resize', () => { if (isOpen) reposition(); });
 
             renderUI();
         })();
 
-
-
+        // ── Leaflet Interactive Map ────────────────────────────────────
         const latitudeInput = document.querySelector('.js-station-latitude');
         const longitudeInput = document.querySelector('.js-station-longitude');
-        const preview = document.querySelector('.js-station-map-preview');
-        const frame = document.querySelector('.js-station-map-frame');
-        const coordinate = document.querySelector('.js-station-map-coordinate');
+        const radiusInput = document.querySelector('input[name="radius"]');
+        const mapContainer = document.getElementById('leafletStationMap');
+        const mapEmptyOverlay = document.querySelector('.station-map-empty');
+        const coordinateChip = document.querySelector('.js-station-map-coordinate');
 
-        if (!latitudeInput || !longitudeInput || !preview || !frame || !coordinate) return;
+        if (!latitudeInput || !longitudeInput || !mapContainer) return;
 
-        const isCoordinateValid = (lat, lng) => Number.isFinite(lat) && Number.isFinite(lng) &&
-            lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+        let map = null;
+        let marker = null;
+        let radiusCircle = null;
+        let currentTileLayer = null;
 
-        const updateMapPreview = () => {
-            const latitudeValue = latitudeInput.value.trim();
-            const longitudeValue = longitudeInput.value.trim();
-            const lat = Number(latitudeValue);
-            const lng = Number(longitudeValue);
+        const GOOGLE_ROADS = 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
+        const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
-            if (!latitudeValue || !longitudeValue || !isCoordinateValid(lat, lng)) {
-                preview.classList.remove('has-location');
-                frame.removeAttribute('src');
-                coordinate.textContent = '-';
+        function isDarkMode() {
+            return document.documentElement.classList.contains('aps-dark');
+        }
+
+        function getTileUrl() {
+            return isDarkMode() ? DARK_TILES : GOOGLE_ROADS;
+        }
+
+        function getSubdomains() {
+            return isDarkMode() ? 'abcd' : '0123';
+        }
+
+        function initMap(lat, lng) {
+            map = L.map('leafletStationMap', {
+                center: [lat, lng],
+                zoom: 16,
+                zoomControl: true,
+                attributionControl: false
+            });
+
+            currentTileLayer = L.tileLayer(getTileUrl(), {
+                maxZoom: 20,
+                subdomains: getSubdomains(),
+                attribution: ''
+            }).addTo(map);
+
+            const customIcon = L.divIcon({
+                className: 'custom-station-pin-wrapper',
+                html: `<div class="custom-station-pin-container"><div class="station-leaflet-marker"></div></div>`,
+                iconSize: [38, 38],
+                iconAnchor: [19, 36]
+            });
+
+            marker = L.marker([lat, lng], { draggable: true, icon: customIcon }).addTo(map);
+
+            const rMeters = Number(radiusInput?.value) || 40;
+            radiusCircle = L.circle([lat, lng], {
+                radius: rMeters,
+                color: '#2563eb',
+                fillColor: '#2563eb',
+                fillOpacity: 0.15,
+                weight: 2
+            }).addTo(map);
+
+            marker.on('dragend', function () {
+                const pos = marker.getLatLng();
+                latitudeInput.value = pos.lat.toFixed(6);
+                longitudeInput.value = pos.lng.toFixed(6);
+                updateRadiusCircle(pos.lat, pos.lng);
+                updateChip(pos.lat, pos.lng);
+            });
+
+            map.on('click', function (e) {
+                const { lat, lng } = e.latlng;
+                latitudeInput.value = lat.toFixed(6);
+                longitudeInput.value = lng.toFixed(6);
+                marker.setLatLng([lat, lng]);
+                updateRadiusCircle(lat, lng);
+                updateChip(lat, lng);
+            });
+        }
+
+        function updateRadiusCircle(lat, lng) {
+            const rMeters = Number(radiusInput?.value) || 40;
+            if (radiusCircle) {
+                radiusCircle.setLatLng([lat, lng]);
+                radiusCircle.setRadius(rMeters);
+            }
+        }
+
+        function updateChip(lat, lng) {
+            if (coordinateChip) {
+                coordinateChip.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            }
+        }
+
+        function updateMap() {
+            const latVal = Number(latitudeInput.value.trim());
+            const lngVal = Number(longitudeInput.value.trim());
+
+            const isValid = Number.isFinite(latVal) && Number.isFinite(lngVal) &&
+                latVal >= -90 && latVal <= 90 && lngVal >= -180 && lngVal <= 180;
+
+            if (!isValid) {
+                if (mapEmptyOverlay) mapEmptyOverlay.style.display = 'flex';
                 return;
             }
 
-            const delta = 0.002;
-            const bbox = [
-                (lng - delta).toFixed(6),
-                (lat - delta).toFixed(6),
-                (lng + delta).toFixed(6),
-                (lat + delta).toFixed(6),
-            ].join('%2C');
+            if (mapEmptyOverlay) mapEmptyOverlay.style.display = 'none';
 
-            frame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat.toFixed(6)}%2C${lng.toFixed(6)}`;
-            coordinate.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            preview.classList.add('has-location');
-        };
+            if (!map) {
+                initMap(latVal, lngVal);
+            } else {
+                map.setView([latVal, lngVal], 16);
+                marker.setLatLng([latVal, lngVal]);
+                updateRadiusCircle(latVal, lngVal);
+            }
+            updateChip(latVal, lngVal);
+        }
 
-        latitudeInput.addEventListener('input', updateMapPreview);
-        longitudeInput.addEventListener('input', updateMapPreview);
-        updateMapPreview();
+        latitudeInput.addEventListener('input', updateMap);
+        longitudeInput.addEventListener('input', updateMap);
+        if (radiusInput) {
+            radiusInput.addEventListener('input', function () {
+                const latVal = Number(latitudeInput.value.trim());
+                const lngVal = Number(longitudeInput.value.trim());
+                if (Number.isFinite(latVal) && Number.isFinite(lngVal)) {
+                    updateRadiusCircle(latVal, lngVal);
+                }
+            });
+        }
+
+        const observer = new MutationObserver(() => {
+            if (currentTileLayer) {
+                currentTileLayer.setUrl(getTileUrl());
+            }
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+        updateMap();
     });
 </script>
 @endsection
