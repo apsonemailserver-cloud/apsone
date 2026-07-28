@@ -2349,17 +2349,24 @@
             transform: translateY(-1px);
             box-shadow: 0 10px 22px rgba(47, 128, 237, 0.18);
         }
+        .action-btn-edit,
         .action-btn[title*="Edit"],
+        .action-btn[title*="Update"],
         .action-btn.action-edit {
-            background: var(--aps-amber-soft) !important;
-            color: var(--aps-amber-dark) !important;
-            border-color: rgba(245, 158, 11, 0.2) !important;
+            background-color: #fff7ed !important;
+            border: 1.5px solid #fed7aa !important;
+            color: #d97706 !important;
+            box-shadow: none !important;
         }
+        .action-btn-edit:hover,
         .action-btn[title*="Edit"]:hover,
+        .action-btn[title*="Update"]:hover,
         .action-btn.action-edit:hover {
-            background: var(--aps-amber) !important;
-            color: #ffffff !important;
-            box-shadow: 0 10px 22px rgba(245, 158, 11, 0.2);
+            background-color: #ffedd5 !important;
+            border-color: #f97316 !important;
+            color: #c2410c !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.15) !important;
         }
         .action-btn[title*="Delete"],
         .action-btn[title*="Hapus"],
@@ -4773,16 +4780,21 @@
             color: #ffffff !important;
         }
 
+        html.aps-dark .action-btn-edit,
         html.aps-dark .action-btn[title*="Edit"],
+        html.aps-dark .action-btn[title*="Update"],
         html.aps-dark .action-btn.action-edit {
-            background: rgba(245, 158, 11, 0.15) !important;
-            border-color: rgba(245, 158, 11, 0.28) !important;
+            background-color: rgba(249, 115, 22, 0.15) !important;
+            border-color: rgba(249, 115, 22, 0.35) !important;
             color: #fbbf24 !important;
         }
 
+        html.aps-dark .action-btn-edit:hover,
         html.aps-dark .action-btn[title*="Edit"]:hover,
+        html.aps-dark .action-btn[title*="Update"]:hover,
         html.aps-dark .action-btn.action-edit:hover {
-            background: #f59e0b !important;
+            background-color: rgba(249, 115, 22, 0.28) !important;
+            border-color: rgba(249, 115, 22, 0.6) !important;
             color: #ffffff !important;
         }
 
@@ -4852,6 +4864,19 @@
         html.aps-dark .table .badge.bg-dark {
             background-color: rgba(148, 163, 184, 0.16) !important;
             color: #cbd5e1 !important;
+        }
+
+        html.aps-dark input[type="file"]::file-selector-button,
+        html.aps-dark input[type="file"]::-webkit-file-upload-button {
+            background-color: #2b3b5a !important;
+            color: #f1f5f9 !important;
+            border-color: #3b4d71 !important;
+        }
+
+        html.aps-dark input[type="file"]::file-selector-button:hover,
+        html.aps-dark input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #3b4d71 !important;
+            color: #ffffff !important;
         }
 
         html.aps-dark .status-approved { background-color: rgba(16, 185, 129, 0.16) !important; color: #6ee7b7 !important; }
@@ -5904,13 +5929,13 @@
                         </li>
 
                         <li
-                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('users.kontrak') || request()->routeIs('users.pas') || request()->routeIs('users.tim') ? 'active open' : '' }}">
+                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('users.kontrak') || request()->routeIs('users.pas') || request()->routeIs('users.tim') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
                             <a href="javascript:void(0);" class="menu-link menu-toggle">
                                 <i class="menu-icon tf-icons ti ti-users"></i>
                                 <div data-i18n="User Management">User</div>
                             </a>
                             <ul class="menu-sub">
-                                <li class="menu-item {{ request()->routeIs('staff.*') ? 'active' : '' }}">
+                                <li class="menu-item {{ request()->routeIs('staff.*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active' : '' }}">
                                     <a href="{{ route('staff.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-device-desktop"></i>
                                         <div data-i18n="Monitor Station">Monitor Station</div>
@@ -6205,7 +6230,7 @@
 	                                            </span>
 	                                        </div>
 	                                        <div class="notification-list-body" style="max-height: 280px; overflow-y: auto;">
-	                                            @forelse($topbarAnnouncements ?? [] as $announcement)
+	                                            @forelse(collect($topbarAnnouncements ?? [])->take(3) as $announcement)
 	                                                @php
 	                                                    $isRead = in_array($announcement->id, $readAnnouncementIds ?? []);
 	                                                @endphp

@@ -54,7 +54,9 @@ class StaffController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('staff.index', compact('staffs', 'stations'));
+        $blacklistedNiks = \App\Models\Blacklist::pluck('nik')->map(fn($val) => trim((string)$val))->toArray();
+
+        return view('staff.index', compact('staffs', 'stations', 'blacklistedNiks'));
     }
 
     // =================================================================

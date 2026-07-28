@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
 
                 $topbarAnnouncements = Announcement::forUser($user)
                     ->latest()
-                    ->take(5)
+                    ->take(3)
                     ->get();
 
                 $unreadAnnouncementsCount = Announcement::forUser($user)

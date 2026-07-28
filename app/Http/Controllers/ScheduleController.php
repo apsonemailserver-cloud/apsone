@@ -78,6 +78,9 @@ class ScheduleController extends Controller
         if (!in_array(Auth::user()->role, ['SPV Bge', 'SPV Apron', 'Admin'])) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
+
+        @set_time_limit(300);
+
         try {
             $startDate = Carbon::now()->startOfMonth();
             $endDate   = Carbon::now()->endOfMonth();
@@ -161,9 +164,9 @@ class ScheduleController extends Controller
             $shiftOrder = $activeShifts->pluck('id')->values()->toArray();
             $shiftUse   = $activeShifts->mapWithKeys(fn($s) => [$s->id => (int)$s->use_manpower])->toArray();
 
-            for ($d = 0; $d < $totalDays; $d++) {
-                $currentDate = $startDate->copy()->addDays($d)->toDateString();
+            $schedulesToInsert = [];
 
+            for ($d = 0; $d < $totalDays; $d++) {
                 $currentDate = $startDate->copy()->addDays($d)->toDateString();
 
                 // Guard: jangan lewat dari akhir bulan
@@ -222,7 +225,7 @@ class ScheduleController extends Controller
                     if ($targetQ > 0) {
                         $picked = $pick($workingQantas, $usedToday, $targetQ);
                         foreach ($picked as $uid) {
-                            $this->upsertSchedule($uid, $currentDate, $sid);
+                            $schedulesToInsert[] = ['user_id' => $uid, 'date' => $currentDate, 'shift_id' => $sid];
                             $assignedPerShift[$sid]++;
                             $qantasPerShift[$sid]++;
                         }
@@ -243,7 +246,7 @@ class ScheduleController extends Controller
                         if ($takeQ > 0) {
                             $picked = $pick($workingQantas, $usedToday, $takeQ);
                             foreach ($picked as $uid) {
-                                $this->upsertSchedule($uid, $currentDate, $sid);
+                                $schedulesToInsert[] = ['user_id' => $uid, 'date' => $currentDate, 'shift_id' => $sid];
                                 $assignedPerShift[$sid]++;
                                 $qantasPerShift[$sid]++;
                             }
@@ -254,7 +257,7 @@ class ScheduleController extends Controller
                             $takeNQ = min($remain, $this->availableCount($workingNonQantas, $usedToday));
                             $picked = $pick($workingNonQantas, $usedToday, $takeNQ);
                             foreach ($picked as $uid) {
-                                $this->upsertSchedule($uid, $currentDate, $sid);
+                                $schedulesToInsert[] = ['user_id' => $uid, 'date' => $currentDate, 'shift_id' => $sid];
                                 $assignedPerShift[$sid]++;
                             }
                         }
@@ -264,7 +267,7 @@ class ScheduleController extends Controller
                             $takeNQ = min($remain, $this->availableCount($workingNonQantas, $usedToday));
                             $picked = $pick($workingNonQantas, $usedToday, $takeNQ);
                             foreach ($picked as $uid) {
-                                $this->upsertSchedule($uid, $currentDate, $sid);
+                                $schedulesToInsert[] = ['user_id' => $uid, 'date' => $currentDate, 'shift_id' => $sid];
                                 $assignedPerShift[$sid]++;
                             }
                             $remain = $limit - $assignedPerShift[$sid];
@@ -274,7 +277,7 @@ class ScheduleController extends Controller
                             $takeQ2 = min($remain, $this->availableCount($workingQantas, $usedToday));
                             $picked = $pick($workingQantas, $usedToday, $takeQ2);
                             foreach ($picked as $uid) {
-                                $this->upsertSchedule($uid, $currentDate, $sid);
+                                $schedulesToInsert[] = ['user_id' => $uid, 'date' => $currentDate, 'shift_id' => $sid];
                                 $assignedPerShift[$sid]++;
                                 $qantasPerShift[$sid]++;
                             }
@@ -285,20 +288,26 @@ class ScheduleController extends Controller
                 // PASS 3: pastikan semua user yang statusnya "kerja" tapi belum kepakai → OFF (biar 1 orang 1 jadwal/hari)
                 foreach (array_merge($workingQantas, $workingNonQantas) as $uid) {
                     if (!isset($usedToday[$uid])) {
-                        $this->upsertSchedule($uid, $currentDate, $offShiftId);
+                        $schedulesToInsert[] = ['user_id' => $uid, 'date' => $currentDate, 'shift_id' => $offShiftId];
                         $usedToday[$uid] = true;
                     }
                 }
 
                 // PASS 4: yang memang fase-nya off → OFF (id=off)
                 foreach ($offToday as $uid) {
-                    $this->upsertSchedule($uid, $currentDate, $offShiftId);
+                    $schedulesToInsert[] = ['user_id' => $uid, 'date' => $currentDate, 'shift_id' => $offShiftId];
                     $usedToday[$uid] = true;
                 }
 
                 // Majuin fase 1 hari untuk semua user
                 foreach ($users as $u) {
                     $phaseMap[$u->id] = (($phaseMap[$u->id] ?? 0) + 1) % 8;
+                }
+            }
+
+            if (!empty($schedulesToInsert)) {
+                foreach (array_chunk($schedulesToInsert, 1000) as $chunk) {
+                    DB::table('schedules')->upsert($chunk, ['user_id', 'date'], ['shift_id']);
                 }
             }
 
