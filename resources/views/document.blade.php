@@ -689,14 +689,14 @@
                     if ($document->isAllRoleAccess()) {
                         $accessLabel = 'Semua Role';
                         $accessBadgeClass = 'is-all';
-                    } elseif ($document->hasRoleAccess('Admin') && count($document->role_akses ?? []) === 1) {
+                    } elseif ($document->hasRoleAccess('Admin') && count($document->role_access_values) === 1) {
                         $accessLabel = 'Khusus Admin';
                         $accessBadgeClass = 'is-admin';
                     } elseif ($document->hasAnyRoleAccess(\App\Models\Document::managerRoles())) {
                         $accessLabel = 'Khusus Manager';
                         $accessBadgeClass = 'is-manager';
-                    } elseif ($document->role_akses) {
-                        $accessLabel = implode(', ', array_map(fn($r) => ucfirst($r), $document->role_akses));
+                    } elseif (!empty($document->role_access_values)) {
+                        $accessLabel = implode(', ', array_map(fn($r) => ucfirst($r), $document->role_access_values));
                         $accessBadgeClass = 'is-custom';
                     }
                 @endphp
