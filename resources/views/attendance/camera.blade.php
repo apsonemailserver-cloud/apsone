@@ -209,13 +209,27 @@
             gap: 0.55rem;
             padding: 0.72rem 1rem;
             border-radius: 999px;
-            background: rgba(15, 23, 42, 0.68);
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             color: #ffffff;
             font-size: 0.84rem;
             font-weight: 650;
             text-align: center;
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
+            transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+        }
+
+        .camera-hint.is-success {
+            background: rgba(22, 163, 74, 0.85) !important;
+            border-color: rgba(34, 197, 94, 0.4) !important;
+            color: #ffffff !important;
+        }
+
+        .camera-hint.is-warning {
+            background: rgba(220, 38, 38, 0.85) !important;
+            border-color: rgba(239, 68, 68, 0.4) !important;
+            color: #ffffff !important;
         }
 
         .camera-loader {
@@ -390,58 +404,120 @@
             background: var(--cam-blue) !important;
         }
 
+        .camera-status-pill.is-success {
+            background: rgba(34, 197, 94, 0.15) !important;
+            color: #16a34a !important;
+        }
+
+        .camera-status-pill.is-warning {
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #dc2626 !important;
+        }
+
+        .face-guide {
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .face-guide.is-valid {
+            border-color: #22c55e !important;
+            box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.1), 0 0 45px rgba(34, 197, 94, 0.5) !important;
+        }
+
         @media (max-width: 767.98px) {
             html,
             body {
-                overflow: auto;
+                overflow: hidden;
+                touch-action: manipulation;
             }
 
             .camera-page {
-                min-height: 100dvh;
                 height: 100dvh;
-                padding: 0.75rem;
+                min-height: 100dvh;
+                padding: 0.6rem;
                 grid-template-rows: auto minmax(0, 1fr) auto;
-                gap: 0.72rem;
+                gap: 0.6rem;
             }
 
             .camera-topbar {
-                border-radius: 24px;
+                border-radius: 20px;
+                padding: 0.45rem 0.6rem;
+                gap: 0.5rem;
+            }
+
+            .camera-back {
+                width: 38px;
+                height: 38px;
+                flex-shrink: 0;
+            }
+
+            .camera-back i {
+                font-size: 1.15rem;
+            }
+
+            .camera-title small {
+                font-size: 0.65rem;
+            }
+
+            .camera-title strong {
+                font-size: 0.88rem;
             }
 
             .camera-status-pill {
-                display: none;
+                display: inline-flex;
+                height: 32px;
+                padding: 0 0.6rem;
+                font-size: 0.7rem;
+                gap: 0.3rem;
+                flex-shrink: 0;
+            }
+
+            .camera-status-pill i {
+                font-size: 0.9rem;
             }
 
             .camera-stage {
-                border-radius: 28px;
+                border-radius: 24px;
             }
 
             .face-guide {
-                width: min(58vw, 230px);
+                width: min(52vw, 200px);
             }
 
             .camera-hint {
-                bottom: 0.85rem;
-                width: calc(100% - 1.5rem);
-                border-radius: 18px;
-                font-size: 0.78rem;
+                bottom: 0.65rem;
+                width: calc(100% - 1.2rem);
+                padding: 0.5rem 0.75rem;
+                border-radius: 14px;
+                font-size: 0.75rem;
+                gap: 0.4rem;
             }
 
             .camera-bottom-card {
                 grid-template-columns: 1fr;
-                border-radius: 24px;
-                padding: 0.65rem;
+                border-radius: 22px;
+                padding: 0.65rem 0.85rem;
+                gap: 0.5rem;
             }
 
             .camera-meta {
                 text-align: center;
-                padding: 0.15rem 0.25rem 0;
+                padding: 0;
+            }
+
+            .camera-meta strong {
+                font-size: 0.88rem;
+            }
+
+            .camera-meta span {
+                font-size: 0.72rem;
             }
 
             .camera-submit {
                 width: 100%;
                 min-width: 0;
-                height: 52px;
+                height: 46px;
+                border-radius: 14px;
+                font-size: 0.88rem;
             }
         }
     </style>
@@ -504,6 +580,8 @@
         </form>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @if(session('error'))
@@ -538,18 +616,245 @@
             const loaderTitle = document.getElementById('loaderTitle');
             const loaderText = document.getElementById('loaderText');
             const cameraStatus = document.getElementById('cameraStatus');
+            const faceGuide = document.querySelector('.face-guide');
+            const hintText = document.querySelector('.camera-hint span');
+
+            let isFaceDetected = false;
+            let isModelReady = false;
+            let blazefaceModel = null;
+            let nativeDetector = null;
 
             const setStatus = (icon, text) => {
-                cameraStatus.innerHTML = `<i class="bx ${icon}"></i><span>${text}</span>`;
+                if (cameraStatus) {
+                    cameraStatus.innerHTML = `<i class="bx ${icon}"></i><span>${text}</span>`;
+                }
             };
 
             const setErrorState = (title, text) => {
-                loader.classList.remove('is-hidden');
-                loaderTitle.textContent = title;
-                loaderText.textContent = text;
+                if (loader) loader.classList.remove('is-hidden');
+                if (loaderTitle) loaderTitle.textContent = title;
+                if (loaderText) loaderText.textContent = text;
                 setStatus('bx-error-circle', 'Kamera belum siap');
                 btnSubmit.disabled = true;
             };
+
+            const updateFaceStatusUI = (hasFace) => {
+                isFaceDetected = hasFace;
+                const cameraHint = document.querySelector('.camera-hint');
+                const hintIcon = document.querySelector('.camera-hint i');
+
+                if (hasFace) {
+                    if (cameraStatus) {
+                        cameraStatus.className = 'camera-status-pill is-success';
+                        cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Wajah Terdeteksi</span>';
+                    }
+                    if (faceGuide) faceGuide.classList.add('is-valid');
+                    if (cameraHint) cameraHint.className = 'camera-hint is-success';
+                    if (hintIcon) hintIcon.className = 'bx bx-check-circle';
+                    if (hintText) hintText.textContent = 'Wajah terdeteksi dengan jelas. Silakan klik {{ $actionTitle }}.';
+                    btnSubmit.disabled = false;
+                } else {
+                    if (cameraStatus) {
+                        cameraStatus.className = 'camera-status-pill is-warning';
+                        cameraStatus.innerHTML = '<i class="bx bx-error-circle"></i><span>Wajah Tidak Terdeteksi</span>';
+                    }
+                    if (faceGuide) faceGuide.classList.remove('is-valid');
+                    if (cameraHint) cameraHint.className = 'camera-hint is-warning';
+                    if (hintIcon) hintIcon.className = 'bx bx-x-circle';
+                    if (hintText) hintText.textContent = 'Posisikan wajah di tengah frame hingga indikator berwarna hijau.';
+                    btnSubmit.disabled = true;
+                }
+            };
+
+            setStatus('bx-loader-alt bx-spin', 'Memuat AI Deteksi Wajah...');
+
+            // Load BlazeFace AI Neural Model
+            if (typeof blazeface !== 'undefined') {
+                blazeface.load().then(model => {
+                    blazefaceModel = model;
+                    isModelReady = true;
+                    console.log('BlazeFace AI model loaded.');
+                }).catch(err => {
+                    console.warn('BlazeFace model load error:', err);
+                    isModelReady = true; // Fallback to Laplacian edge detector
+                });
+            } else {
+                isModelReady = true;
+            }
+
+            if ('FaceDetector' in window) {
+                try {
+                    nativeDetector = new FaceDetector({ fastMode: true, maxFaces: 1 });
+                } catch(e) {
+                    nativeDetector = null;
+                }
+            }
+
+            const faceCanvas = document.createElement('canvas');
+            const faceCtx = faceCanvas.getContext('2d', { willReadFrequently: true });
+            faceCanvas.width = 160;
+            faceCanvas.height = 120;
+
+            // Laplacian Sharpness/Edge Test (Prevents hands/fingers covering lens)
+            function calculateEdgeSharpness(imageData) {
+                const data = imageData.data;
+                const w = faceCanvas.width;
+                const h = faceCanvas.height;
+                let lapSum = 0;
+                let lapSqSum = 0;
+                let count = 0;
+
+                for (let y = 1; y < h - 1; y += 2) {
+                    for (let x = 1; x < w - 1; x += 2) {
+                        const getLum = (px, py) => {
+                            const i = (py * w + px) * 4;
+                            return 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                        };
+
+                        const center = getLum(x, y);
+                        const lap = Math.abs(
+                            -4 * center +
+                            getLum(x - 1, y) + getLum(x + 1, y) +
+                            getLum(x, y - 1) + getLum(x, y + 1)
+                        );
+
+                        lapSum += lap;
+                        lapSqSum += lap * lap;
+                        count++;
+                    }
+                }
+
+                const meanLap = lapSum / count;
+                return (lapSqSum / count) - (meanLap * meanLap);
+            }
+
+            async function detectFaceInVideo() {
+                if (!video.videoWidth || !video.videoHeight || video.paused || video.ended) {
+                    return false;
+                }
+
+                const vw = video.videoWidth;
+                const vh = video.videoHeight;
+
+                // First check if camera lens is covered by hand/finger (blurry skin surface with zero edges)
+                try {
+                    faceCtx.drawImage(video, 0, 0, faceCanvas.width, faceCanvas.height);
+                    const imgData = faceCtx.getImageData(0, 0, faceCanvas.width, faceCanvas.height);
+                    const edgeVariance = calculateEdgeSharpness(imgData);
+
+                    // If camera is covered by hand/object, edge variance is extremely low (< 25)
+                    if (edgeVariance < 25) {
+                        return false; // Lens covered by hand or object!
+                    }
+                } catch (e) {}
+
+                // 1. AI Neural Network BlazeFace (Strict Full-Face Landmark Visibility Test)
+                if (blazefaceModel) {
+                    try {
+                        const predictions = await blazefaceModel.estimateFaces(video, false);
+                        if (predictions && predictions.length > 0) {
+                            const pred = predictions[0];
+                            const prob = pred.probability ? pred.probability[0] : 1;
+                            const landmarks = pred.landmarks;
+
+                            if (prob > 0.75 && landmarks && landmarks.length >= 4) {
+                                const rightEye = landmarks[0]; // [x, y]
+                                const leftEye = landmarks[1];  // [x, y]
+                                const nose = landmarks[2];     // [x, y]
+                                const mouth = landmarks[3];    // [x, y]
+
+                                // CRITICAL VALIDATION: Both Eyes, Nose, AND Mouth MUST be clearly inside video frame!
+                                // Prevents neck/chest/chin (where eyes are cut off at the top) from passing
+                                const eyesVisible = rightEye[1] > (vh * 0.06) && leftEye[1] > (vh * 0.06) &&
+                                                    rightEye[1] < (vh * 0.65) && leftEye[1] < (vh * 0.65);
+                                const noseVisible = nose[1] > rightEye[1] && nose[1] < (vh * 0.82);
+                                const mouthVisible = mouth[1] > nose[1] && mouth[1] < (vh * 0.95);
+
+                                if (eyesVisible && noseVisible && mouthVisible) {
+                                    return true; // Full face with eyes, nose, and mouth present!
+                                }
+                            }
+                        }
+                        return false; // Neck, chin, chest, or cut-off face returns false!
+                    } catch (e) {
+                        console.warn('BlazeFace detection error:', e);
+                    }
+                }
+
+                // 2. Native Browser FaceDetector (Chromium / Edge / Mac Safari)
+                if (nativeDetector) {
+                    try {
+                        const faces = await nativeDetector.detect(video);
+                        if (faces && faces.length > 0) {
+                            const box = faces[0].boundingBox;
+                            if (box.top > (vh * 0.04) && box.height > (vh * 0.22)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    } catch (e) {}
+                }
+
+                // 3. Strict Structural Fallback: Eyebrows/Eyes (Dark pixels) in Upper Oval + Skin in Mid Oval
+                try {
+                    const imgData = faceCtx.getImageData(0, 0, faceCanvas.width, faceCanvas.height);
+                    const data = imgData.data;
+
+                    let darkEyePixels = 0;
+                    let noseSkinPixels = 0;
+                    let totalEyeSamples = 0;
+                    let totalNoseSamples = 0;
+
+                    const startX = Math.floor(faceCanvas.width * 0.32);
+                    const endX = Math.floor(faceCanvas.width * 0.68);
+
+                    // Upper Oval (Eye & Eyebrow Zone: y = 20..45)
+                    for (let y = 20; y < 45; y += 2) {
+                        for (let x = startX; x < endX; x += 2) {
+                            const idx = (y * faceCanvas.width + x) * 4;
+                            const r = data[idx];
+                            const g = data[idx + 1];
+                            const b = data[idx + 2];
+                            totalEyeSamples++;
+
+                            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                            // Eyebrows / pupils / eye sockets are significantly darker (lum < 95)
+                            if (lum < 95) {
+                                darkEyePixels++;
+                            }
+                        }
+                    }
+
+                    // Middle Oval (Nose & Cheek Zone: y = 45..75)
+                    for (let y = 45; y < 75; y += 2) {
+                        for (let x = startX; x < endX; x += 2) {
+                            const idx = (y * faceCanvas.width + x) * 4;
+                            const r = data[idx];
+                            const g = data[idx + 1];
+                            const b = data[idx + 2];
+                            totalNoseSamples++;
+
+                            const maxRGB = Math.max(r, g, b);
+                            const minRGB = Math.min(r, g, b);
+                            const isSkin = (r > 65) && (g > 45) && (b > 30) &&
+                                           (maxRGB - minRGB > 18) &&
+                                           (Math.abs(r - g) > 15) &&
+                                           (r > g) && (r > b);
+
+                            if (isSkin) noseSkinPixels++;
+                        }
+                    }
+
+                    const darkEyeRatio = darkEyePixels / totalEyeSamples;
+                    const noseSkinRatio = noseSkinPixels / totalNoseSamples;
+
+                    // Neck/Chest has NO eyebrows/eyes at the top (darkEyeRatio < 0.04)
+                    // Full face MUST have eyebrows/eyes dark pixels (> 0.065) AND nose skin (> 0.25)
+                    return (darkEyeRatio >= 0.065 && noseSkinRatio >= 0.25);
+                } catch (err) {
+                    return false;
+                }
+            }
 
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 setErrorState('Browser belum mendukung kamera', 'Gunakan browser modern dan pastikan akses kamera tersedia.');
@@ -567,8 +872,13 @@
                 video.srcObject = stream;
                 video.onloadedmetadata = () => {
                     loader.classList.add('is-hidden');
-                    btnSubmit.disabled = false;
-                    setStatus('bx-check-circle', 'Kamera siap');
+                    
+                    setInterval(async () => {
+                        if (loader.classList.contains('is-hidden')) {
+                            const detected = await detectFaceInVideo();
+                            updateFaceStatusUI(detected);
+                        }
+                    }, 300);
                 };
             }).catch(() => {
                 setErrorState('Tidak bisa membuka kamera', 'Periksa izin kamera di browser, lalu coba buka halaman ini kembali.');
@@ -588,6 +898,16 @@
                         icon: 'warning',
                         title: 'Kamera belum siap',
                         text: 'Tunggu preview kamera muncul sebelum melakukan absensi.',
+                        confirmButtonColor: '#2f80ed'
+                    });
+                    return;
+                }
+
+                if (!isFaceDetected) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Wajah Tidak Terdeteksi',
+                        text: 'Posisikan wajah Anda dengan jelas di tengah kamera sebelum menekan tombol {{ $actionTitle }}.',
                         confirmButtonColor: '#2f80ed'
                     });
                     return;
@@ -637,13 +957,10 @@
                     });
                 };
 
-                // Coba dapatkan lokasi dengan akurasi tinggi terlebih dahulu
                 navigator.geolocation.getCurrentPosition(handleSuccess, function(error) {
-                    // Jika izin lokasi ditolak oleh pengguna, langsung tampilkan error
                     if (error.code === error.PERMISSION_DENIED) {
                         handleFailure(error);
                     } else {
-                        // Jika error berupa timeout atau posisi tidak tersedia, lakukan fallback dengan akurasi standar
                         navigator.geolocation.getCurrentPosition(handleSuccess, function(error2) {
                             handleFailure(error2);
                         }, {
@@ -654,7 +971,7 @@
                     }
                 }, {
                     enableHighAccuracy: true,
-                    timeout: 6000, // Timeout 6 detik untuk pencarian presisi tinggi
+                    timeout: 6000,
                     maximumAge: 0
                 });
             });
