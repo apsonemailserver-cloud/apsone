@@ -10,6 +10,8 @@ use RealRashid\SweetAlert\Facades\Alert;
 use App\Exports\OvertimeReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 
+use App\Services\RequestNotificationMailService;
+
 class OvertimeController extends Controller
 {
     // ==========================================
@@ -40,7 +42,7 @@ class OvertimeController extends Controller
             'description' => 'required|string',
         ]);
 
-        Overtime::create([
+        $overtime = Overtime::create([
             'user_id' => Auth::id(),
             'date' => $request->date,
             'duration' => $request->duration,
@@ -48,6 +50,19 @@ class OvertimeController extends Controller
             'description' => $request->description,
             'status' => 'Pending', // Otomatis Pending
         ]);
+
+        // Kirim email pemberitahuan ke pemohon (creator)
+        RequestNotificationMailService::sendSubmissionEmail(
+            Auth::user(),
+            'Lembur',
+            [
+                'Tanggal Lembur' => \Carbon\Carbon::parse($request->date)->translatedFormat('d F Y'),
+                'Durasi'         => $request->duration . ' Jam',
+                'Judul'          => $request->title,
+                'Keterangan'     => $request->description,
+                'Status'         => 'Pending (Menunggu Persetujuan Atasan)',
+            ]
+        );
 
         Alert::success('Terkirim', 'Pengajuan lembur berhasil dikirim ke Leader.');
         return redirect()->route('overtime.index');
@@ -97,11 +112,27 @@ class OvertimeController extends Controller
 
     public function approve($id)
     {
-        $ot = Overtime::findOrFail($id);
+        $ot = Overtime::with('user')->findOrFail($id);
         $ot->update([
             'status' => 'Approved',
             'approved_by' => Auth::user()->fullname
         ]);
+
+        if ($ot->user) {
+            RequestNotificationMailService::sendDecisionEmail(
+                $ot->user,
+                'Lembur',
+                'Approved',
+                [
+                    'Tanggal Lembur' => \Carbon\Carbon::parse($ot->date)->translatedFormat('d F Y'),
+                    'Durasi'         => $ot->duration . ' Jam',
+                    'Judul'          => $ot->title,
+                    'Status'         => 'Disetujui (Approved)',
+                    'Disetujui Oleh' => Auth::user()->fullname,
+                ],
+                Auth::user()->fullname
+            );
+        }
 
         Alert::success('Approved', 'Lembur staff telah disetujui.');
         return back();
@@ -109,11 +140,27 @@ class OvertimeController extends Controller
 
     public function reject($id)
     {
-        $ot = Overtime::findOrFail($id);
+        $ot = Overtime::with('user')->findOrFail($id);
         $ot->update([
             'status' => 'Rejected',
             'approved_by' => Auth::user()->fullname
         ]);
+
+        if ($ot->user) {
+            RequestNotificationMailService::sendDecisionEmail(
+                $ot->user,
+                'Lembur',
+                'Rejected',
+                [
+                    'Tanggal Lembur' => \Carbon\Carbon::parse($ot->date)->translatedFormat('d F Y'),
+                    'Durasi'         => $ot->duration . ' Jam',
+                    'Judul'          => $ot->title,
+                    'Status'         => 'Ditolak (Rejected)',
+                    'Ditolak Oleh'   => Auth::user()->fullname,
+                ],
+                Auth::user()->fullname
+            );
+        }
 
         Alert::warning('Rejected', 'Pengajuan lembur ditolak.');
         return back();

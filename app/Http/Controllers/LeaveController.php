@@ -12,6 +12,8 @@ use Illuminate\Validation\Rule;
 use App\Exports\LeavesReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 
+use App\Services\RequestNotificationMailService;
+
 class LeaveController extends Controller
 {
     private const ANNUAL_LEAVE_QUOTA_DAYS = 12;
@@ -281,6 +283,21 @@ class LeaveController extends Controller
             return redirect()->route('leaves.pengajuan');
         }
 
+        // Kirim email pemberitahuan ke pemohon (creator)
+        RequestNotificationMailService::sendSubmissionEmail(
+            $user,
+            'Cuti (' . $request->leave_type . ')',
+            [
+                'Jenis Cuti'         => $request->leave_type,
+                'Tanggal Mulai'      => $startDate->translatedFormat('d F Y'),
+                'Tanggal Selesai'    => $endDate->translatedFormat('d F Y'),
+                'Total Hari'         => $totalDays . ' Hari',
+                'Alasan'             => $request->reason,
+                'Karyawan Pengganti' => $request->replacement_employee_name ?: '-',
+                'Status'             => 'Pending (Menunggu Persetujuan Atasan)',
+            ]
+        );
+
         Alert::success('Berhasil', 'Pengajuan Anda telah berhasil dikirim.');
         return redirect()->route('leaves.pengajuan');
     }
@@ -334,6 +351,23 @@ class LeaveController extends Controller
         }
 
         $leave->save();
+
+        // Kirim email pemberitahuan status keputusan ke pemohon
+        if ($leave->user) {
+            RequestNotificationMailService::sendDecisionEmail(
+                $leave->user,
+                'Cuti (' . $leave->leave_type . ')',
+                $status,
+                [
+                    'Jenis Cuti'      => $leave->leave_type,
+                    'Tanggal Mulai'   => Carbon::parse($leave->start_date)->translatedFormat('d F Y'),
+                    'Tanggal Selesai' => Carbon::parse($leave->end_date)->translatedFormat('d F Y'),
+                    'Total Hari'      => $leave->total_days . ' Hari',
+                    'Status'          => str_contains(strtolower($status), 'approved') ? 'Disetujui (Approved)' : 'Ditolak (Rejected)',
+                ],
+                Auth::user()->fullname
+            );
+        }
 
         Alert::success('Berhasil', 'Status pengajuan telah diubah.');
         return redirect()->route('leaves.index');

@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
+use App\Services\RequestNotificationMailService;
+
 class AttendanceCorrectionController extends Controller
 {
     public function approval(Request $request)
@@ -172,6 +174,19 @@ class AttendanceCorrectionController extends Controller
             throw $exception;
         }
 
+        // Kirim email pemberitahuan ke pemohon (creator)
+        RequestNotificationMailService::sendSubmissionEmail(
+            Auth::user(),
+            'Koreksi Absensi',
+            [
+                'Tanggal Absen'    => Carbon::parse($attendanceDate)->translatedFormat('d F Y'),
+                'Usulan Jam Masuk' => $checkIn->format('H:i'),
+                'Usulan Jam Keluar' => $checkOut->format('H:i'),
+                'Alasan Koreksi'   => $validated['reason'],
+                'Status'           => 'Pending (Menunggu Persetujuan Atasan)',
+            ]
+        );
+
         return redirect()
             ->route('attendance.history')
             ->with('success', 'Pengajuan koreksi absensi berhasil dikirim ke atasan.');
@@ -215,6 +230,23 @@ class AttendanceCorrectionController extends Controller
             ]);
         });
 
+        $correction->load('user');
+        if ($correction->user) {
+            RequestNotificationMailService::sendDecisionEmail(
+                $correction->user,
+                'Koreksi Absensi',
+                'Approved',
+                [
+                    'Tanggal Absen'    => Carbon::parse($correction->attendance_date)->translatedFormat('d F Y'),
+                    'Usulan Jam Masuk' => Carbon::parse($correction->proposed_check_in_time)->format('H:i'),
+                    'Usulan Jam Keluar' => Carbon::parse($correction->proposed_check_out_time)->format('H:i'),
+                    'Status'           => 'Disetujui (Approved)',
+                    'Disetujui Oleh'   => Auth::user()->fullname,
+                ],
+                Auth::user()->fullname
+            );
+        }
+
         return back()->with('success', 'Koreksi absensi berhasil disetujui.');
     }
 
@@ -234,6 +266,23 @@ class AttendanceCorrectionController extends Controller
                 'decided_at' => now(),
             ]);
         });
+
+        $correction->load('user');
+        if ($correction->user) {
+            RequestNotificationMailService::sendDecisionEmail(
+                $correction->user,
+                'Koreksi Absensi',
+                'Rejected',
+                [
+                    'Tanggal Absen'    => Carbon::parse($correction->attendance_date)->translatedFormat('d F Y'),
+                    'Usulan Jam Masuk' => Carbon::parse($correction->proposed_check_in_time)->format('H:i'),
+                    'Usulan Jam Keluar' => Carbon::parse($correction->proposed_check_out_time)->format('H:i'),
+                    'Status'           => 'Ditolak (Rejected)',
+                    'Ditolak Oleh'     => Auth::user()->fullname,
+                ],
+                Auth::user()->fullname
+            );
+        }
 
         return back()->with('success', 'Koreksi absensi ditolak.');
     }
