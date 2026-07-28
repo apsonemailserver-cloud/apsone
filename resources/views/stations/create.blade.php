@@ -673,8 +673,8 @@
                                         type="number"
                                         name="latitude"
                                         class="form-control js-station-latitude"
-                                        placeholder="Cth: -7.516111"
-                                        value="{{ old('latitude') }}"
+                                        placeholder="Cth: -6.175392"
+                                        value="{{ old('latitude', '-6.175392') }}"
                                         step="any"
                                         required />
                                 </div>
@@ -690,8 +690,8 @@
                                         type="number"
                                         name="longitude"
                                         class="form-control js-station-longitude"
-                                        placeholder="Cth: 110.756944"
-                                        value="{{ old('longitude') }}"
+                                        placeholder="Cth: 106.827153"
+                                        value="{{ old('longitude', '106.827153') }}"
                                         step="any"
                                         required />
                                 </div>
@@ -1048,15 +1048,17 @@
         }
 
         function updateMap() {
-            const latVal = Number(latitudeInput.value.trim());
-            const lngVal = Number(longitudeInput.value.trim());
+            let latVal = Number(latitudeInput.value.trim());
+            let lngVal = Number(longitudeInput.value.trim());
 
             const isValid = Number.isFinite(latVal) && Number.isFinite(lngVal) &&
                 latVal >= -90 && latVal <= 90 && lngVal >= -180 && lngVal <= 180;
 
             if (!isValid) {
-                if (mapEmptyOverlay) mapEmptyOverlay.style.display = 'flex';
-                return;
+                latVal = -6.175392;
+                lngVal = 106.827153;
+                latitudeInput.value = latVal.toFixed(6);
+                longitudeInput.value = lngVal.toFixed(6);
             }
 
             if (mapEmptyOverlay) mapEmptyOverlay.style.display = 'none';
