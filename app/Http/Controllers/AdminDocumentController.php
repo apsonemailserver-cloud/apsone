@@ -182,11 +182,17 @@ class AdminDocumentController extends Controller
 
         $targetDirectory = 'file';
         $fullPublicPath = storage_path('app/public/' . $targetDirectory);
+
         if (! file_exists($fullPublicPath)) {
             @mkdir($fullPublicPath, 0777, true);
         }
 
-        $filePath = $file->storeAs($targetDirectory, $fileName, 'public');
+        try {
+            $file->move($fullPublicPath, $fileName);
+            $filePath = $targetDirectory . '/' . $fileName;
+        } catch (\Throwable $e) {
+            $filePath = $file->storeAs($targetDirectory, $fileName, 'public');
+        }
 
         return [
             'nama_file' => $fileName,
