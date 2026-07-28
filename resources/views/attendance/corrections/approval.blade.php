@@ -73,15 +73,15 @@
                                     <td style="min-width: 220px;">{{ $correction->reason }}</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <form action="{{ route('attendance.corrections.approve', $correction) }}" method="POST">
+                                            <form id="approveForm-{{ $correction->id }}" action="{{ route('attendance.corrections.approve', $correction) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Setujui koreksi absensi ini?')">
+                                                <button type="button" class="btn btn-sm btn-success" onclick="confirmApprove('{{ $correction->id }}', '{{ addslashes($correction->user->fullname) }}', '{{ $correction->attendance_date->format('d M Y') }}')">
                                                     <i class="ti ti-check me-1"></i>Approve
                                                 </button>
                                             </form>
-                                            <form action="{{ route('attendance.corrections.reject', $correction) }}" method="POST">
+                                            <form id="rejectForm-{{ $correction->id }}" action="{{ route('attendance.corrections.reject', $correction) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tolak koreksi absensi ini? Keputusan tidak dapat dibatalkan.')">
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmReject('{{ $correction->id }}', '{{ addslashes($correction->user->fullname) }}', '{{ $correction->attendance_date->format('d M Y') }}')">
                                                     <i class="ti ti-x me-1"></i>Tolak
                                                 </button>
                                             </form>
@@ -107,4 +107,84 @@
         </div>
     </div>
 </div>
+
+<script>
+    function confirmApprove(id, staffName, date) {
+        if (typeof Swal === 'undefined') {
+            if (confirm('Setujui koreksi absensi untuk ' + staffName + '?')) {
+                document.getElementById('approveForm-' + id).submit();
+            }
+            return;
+        }
+
+        Swal.fire({
+            icon: 'question',
+            title: 'Setujui Koreksi Absensi?',
+            html: `
+                <div style="background:#f0fdf4; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
+                    <div style="margin-bottom:0.75rem; display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span style="flex-shrink:0; background:#dcfce7; color:#16a34a; border-radius:999px; padding:0.15rem 0.65rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px;">Staff</span>
+                        <span style="font-weight:600; color:#111827; font-size:0.9375rem;">${staffName}</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span style="flex-shrink:0; background:#dcfce7; color:#16a34a; border-radius:999px; padding:0.15rem 0.5rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px;">Tanggal</span>
+                        <span style="font-weight:500; color:#374151; font-size:0.875rem;">${date}</span>
+                    </div>
+                </div>
+                <p style="color:#6b7280; font-size:0.8125rem; margin-top:0.75rem;">
+                    Koreksi absensi ini akan <strong style="color:#059669;">disetujui</strong> dan waktu absensi staff akan diperbarui.
+                </p>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '✓ Ya, Setujui',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#94a3b8',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('approveForm-' + id).submit();
+            }
+        });
+    }
+
+    function confirmReject(id, staffName, date) {
+        if (typeof Swal === 'undefined') {
+            if (confirm('Tolak koreksi absensi untuk ' + staffName + '?')) {
+                document.getElementById('rejectForm-' + id).submit();
+            }
+            return;
+        }
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'Tolak Koreksi Absensi?',
+            html: `
+                <div style="background:#fef2f2; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
+                    <div style="margin-bottom:0.75rem; display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span style="flex-shrink:0; background:#fecaca; color:#dc2626; border-radius:999px; padding:0.15rem 0.65rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px;">Staff</span>
+                        <span style="font-weight:600; color:#111827; font-size:0.9375rem;">${staffName}</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span style="flex-shrink:0; background:#fecaca; color:#dc2626; border-radius:999px; padding:0.15rem 0.5rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px;">Tanggal</span>
+                        <span style="font-weight:500; color:#374151; font-size:0.875rem;">${date}</span>
+                    </div>
+                </div>
+                <p style="color:#dc2626; font-size:0.8125rem; margin-top:0.75rem;">
+                    Pengajuan koreksi absensi ini akan <strong>ditolak</strong> dan keputusan ini tidak dapat dibatalkan.
+                </p>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '✕ Ya, Tolak',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#ea580c',
+            cancelButtonColor: '#94a3b8',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('rejectForm-' + id).submit();
+            }
+        });
+    }
+</script>
 @endsection
