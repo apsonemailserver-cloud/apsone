@@ -20,16 +20,11 @@
             </a>
         </div>
 
-        <div class="card">
-            <h5 class="card-header">Formulir Tambah Dokumen</h5>
-            <div class="card-body">
-                <form action="{{ route('admin.documents.store') }}" method="POST" enctype="multipart/form-data">
-                    @include('document.admin._form', [
-                        'submitLabel' => 'Simpan Dokumen',
-                    ])
-                </form>
-            </div>
-        </div>
+        <form action="{{ route('admin.documents.store') }}" method="POST" enctype="multipart/form-data">
+            @include('document.admin._form', [
+                'submitLabel' => 'Simpan Dokumen',
+            ])
+        </form>
     </div>
 @endsection
 

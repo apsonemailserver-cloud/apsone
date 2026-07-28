@@ -324,9 +324,13 @@ class UserController extends Controller
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
         $page = $request->get('page', 1);
+        $redirectTo = $request->get('redirect_to', url()->previous());
+        if (empty($redirectTo) || $redirectTo === $request->url()) {
+            $redirectTo = route('staff.index');
+        }
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
 
-        return view('user.edit', compact('user', 'page', 'stations'));
+        return view('user.edit', compact('user', 'page', 'redirectTo', 'stations'));
     }
 
     public function update(Request $request, User $user)
@@ -358,7 +362,12 @@ class UserController extends Controller
             $user->update($data);
             Alert::success('Success', 'Data user berhasil diupdate');
 
-            return redirect()->route('users.index');
+            $redirectTo = $request->input('redirect_to');
+            if (!empty($redirectTo)) {
+                return redirect($redirectTo);
+            }
+
+            return redirect()->route('staff.index');
         } catch (\Exception $e) {
             Log::error('Gagal update user', ['error' => $e->getMessage()]);
             Alert::error('Gagal', 'Terjadi kesalahan saat mengupdate user: '.$e->getMessage());

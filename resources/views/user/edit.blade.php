@@ -14,7 +14,11 @@
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
                         <li class="breadcrumb-item"><a href="javascript:void(0);">User Management</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('users.apron') }}">Daftar User</a></li>
+                        @if(isset($redirectTo) && str_contains($redirectTo, 'staff'))
+                            <li class="breadcrumb-item"><a href="{{ route('staff.index') }}">Monitor Station</a></li>
+                        @else
+                            <li class="breadcrumb-item"><a href="{{ route('users.apron') }}">Daftar User</a></li>
+                        @endif
                         <li class="breadcrumb-item active">Edit User</li>
                     </ol>
                 </nav>
@@ -53,6 +57,7 @@
                                 @csrf
                                 @method('PUT')
                                 <input type="hidden" name="page" value="{{ $page }}">
+                                <input type="hidden" name="redirect_to" value="{{ $redirectTo ?? route('staff.index') }}">
 
                                 <div class="row">
                                     {{-- Kolom Kiri --}}
@@ -288,7 +293,7 @@
                                     <button type="submit" class="btn btn-info">
                                         <i class="bx bx-save me-1"></i>UPDATE DATA
                                     </button>
-                                    <a href="{{ route('users.apron', ['page' => $page]) }}" class="btn btn-secondary">
+                                    <a href="{{ $redirectTo ?? route('staff.index') }}" class="btn btn-secondary">
                                         <i class="bx bx-arrow-back me-1"></i>KEMBALI
                                     </a>
                                 </div>

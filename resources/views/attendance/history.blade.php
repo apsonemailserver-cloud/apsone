@@ -19,7 +19,47 @@
         vertical-align: middle;
     }
 
-    /* Dark Mode Styling for Modal */
+    .action-btn-edit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 0.75rem;
+        background-color: #fff7ed !important;
+        border: 1.5px solid #fed7aa !important;
+        color: #d97706 !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease-in-out;
+        box-shadow: none !important;
+    }
+
+    .action-btn-edit:hover {
+        background-color: #ffedd5 !important;
+        border-color: #f97316 !important;
+        color: #c2410c !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(249, 115, 22, 0.15) !important;
+    }
+
+    .action-btn-edit i {
+        font-size: 1.15rem;
+        line-height: 1;
+    }
+
+    /* Dark Mode Styling for Modal & Edit Button */
+    html.aps-dark .action-btn-edit {
+        background-color: rgba(249, 115, 22, 0.15) !important;
+        border-color: rgba(249, 115, 22, 0.35) !important;
+        color: #fbbf24 !important;
+    }
+
+    html.aps-dark .action-btn-edit:hover {
+        background-color: rgba(249, 115, 22, 0.28) !important;
+        border-color: rgba(249, 115, 22, 0.6) !important;
+        color: #ffffff !important;
+    }
+
     html.aps-dark #noteDetailModal .modal-content {
         background-color: #1e293b;
         color: #f8fafc;
@@ -190,8 +230,8 @@
                                     @if ($correction)
                                         <span class="badge {{ $statusClass }}">{{ ucfirst($correction->status) }}</span>
                                     @elseif (!$isFuture)
-                                        <a href="{{ route('attendance.corrections.create', $currentDate->toDateString()) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="ti ti-edit me-1"></i>Edit
+                                        <a href="{{ route('attendance.corrections.create', $currentDate->toDateString()) }}" class="action-btn-edit" title="Edit Absensi">
+                                            <i class="ti ti-pencil"></i>
                                         </a>
                                     @else
                                         -

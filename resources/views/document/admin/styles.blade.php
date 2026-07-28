@@ -79,9 +79,9 @@
         align-items: center;
         gap: 0.75rem;
         padding: 0.85rem;
-        border: 1px solid #e5edf7;
+        border: 1px solid #e2e8f0;
         border-radius: 14px;
-        background: #f8fbff;
+        background: #ffffff;
     }
 
     .document-admin-page .document-file-summary-icon {
@@ -102,10 +102,11 @@
     }
 
     .document-admin-page .document-role-picker {
-        padding: 0.75rem;
-        border: 1px solid #e5edf7;
+        padding: 0.85rem;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
-        background: #f8fbff;
+        background: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
     .document-admin-page .document-role-picker.is-invalid {
@@ -129,6 +130,8 @@
     .document-admin-page .document-role-search .form-control {
         padding-left: 2.35rem;
         border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
     }
 
     .document-admin-page .document-role-list {
@@ -148,12 +151,15 @@
         padding: 0.58rem 0.7rem;
         border-radius: 12px;
         color: #28364a;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
         cursor: pointer;
-        transition: background 0.18s ease, color 0.18s ease;
+        transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
     }
 
     .document-admin-page .document-role-option:hover {
         background: #edf5ff;
+        border-color: #dbeafe;
     }
 
     .document-admin-page .document-role-option input {
@@ -185,6 +191,7 @@
         background: #e8f2ff;
         color: #2368c8;
         font-weight: 700;
+        border-color: #bfdbfe;
     }
 
     .document-admin-page .document-role-option.is-hidden {
@@ -192,23 +199,55 @@
     }
 
     html.aps-dark .document-admin-page .document-file-summary {
-        border-color: #263653;
-        background: #16243a;
+        border-color: #2b3b5a;
+        background: #172339 !important;
     }
 
     html.aps-dark .document-admin-page .document-role-picker {
-        border-color: #263653;
-        background: #111c31;
+        border-color: #2b3b5a !important;
+        background: #172339 !important;
+    }
+
+    html.aps-dark .document-admin-page .document-role-search .form-control {
+        background: #0f172a !important;
+        border-color: #2b3b5a !important;
+        color: #e2e8f0 !important;
+    }
+
+    html.aps-dark .document-admin-page input[type="file"] {
+        background-color: #0f172a !important;
+        border-color: #2b3b5a !important;
+        color: #cbd5e1 !important;
+    }
+
+    html.aps-dark .document-admin-page input[type="file"]::file-selector-button,
+    html.aps-dark .document-admin-page input[type="file"]::-webkit-file-upload-button {
+        background-color: #2b3b5a !important;
+        color: #f1f5f9 !important;
+        border-color: #3b4d71 !important;
+    }
+
+    html.aps-dark .document-admin-page input[type="file"]::file-selector-button:hover,
+    html.aps-dark .document-admin-page input[type="file"]::-webkit-file-upload-button:hover {
+        background-color: #3b4d71 !important;
+        color: #ffffff !important;
     }
 
     html.aps-dark .document-admin-page .document-role-option {
-        color: #e7f0fb;
+        color: #e2e8f0;
+        background: #0f172a;
+        border-color: #1e293b;
     }
 
-    html.aps-dark .document-admin-page .document-role-option:hover,
+    html.aps-dark .document-admin-page .document-role-option:hover {
+        background: #1e293b;
+        color: #60a5fa;
+    }
+
     html.aps-dark .document-admin-page .document-role-option:has(input:checked) {
-        background: #162842;
-        color: #8fc1ff;
+        background: rgba(47, 128, 237, 0.25) !important;
+        color: #60a5fa !important;
+        border-color: rgba(47, 128, 237, 0.4) !important;
     }
 
     html.aps-dark .document-admin-page .document-role-check {

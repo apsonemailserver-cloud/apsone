@@ -117,7 +117,7 @@
                                     <img src="{{ asset('storage/eye.png') }}" width="20" height="20" alt="Show" style="margin-right: 10px;">
                                 </a>
 
-                                <a href="{{ route('users.edit', ['user' => $users->id, 'page' => request('page')]) }}">
+                                <a href="{{ route('users.edit', ['user' => $users->id, 'page' => request('page'), 'redirect_to' => url()->full()]) }}">
                                     <img src="{{ asset('storage/edit.png') }}" width="20" height="20" alt="Edit" style="margin-right: 10px;">
                                 </a>
                                 <form action="{{ route('users.destroy', $users->id) }}" method="POST" style="display:inline;" data-confirm-delete="True" onsubmit="return confirm('Apakah Anda Yakin?');">

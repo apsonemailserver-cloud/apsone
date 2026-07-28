@@ -20,17 +20,12 @@
             </a>
         </div>
 
-        <div class="card">
-            <h5 class="card-header">Formulir Edit Dokumen</h5>
-            <div class="card-body">
-                <form action="{{ route('admin.documents.update', $document) }}" method="POST" enctype="multipart/form-data">
-                    @include('document.admin._form', [
-                        'method' => 'PUT',
-                        'submitLabel' => 'Perbarui Dokumen',
-                    ])
-                </form>
-            </div>
-        </div>
+        <form action="{{ route('admin.documents.update', $document) }}" method="POST" enctype="multipart/form-data">
+            @include('document.admin._form', [
+                'method' => 'PUT',
+                'submitLabel' => 'Perbarui Dokumen',
+            ])
+        </form>
     </div>
 @endsection
 
