@@ -3,652 +3,785 @@
 @section('styles')
     <style>
         .document-page {
+            --doc-bg: #f8fafc;
             --doc-surface: #ffffff;
-            --doc-surface-soft: #f8fbff;
-            --doc-surface-muted: #eef5ff;
-            --doc-border: #e5edf7;
-            --doc-border-strong: #d8e4f2;
-            --doc-text: #28364a;
-            --doc-muted: #718096;
-            --doc-faint: #9aa8bb;
-            --doc-blue: #2f80ed;
-            --doc-blue-deep: #2368c8;
-            --doc-green: #16a163;
-            --doc-green-soft: #e9f8f0;
-            --doc-red: #e34d4d;
-            --doc-red-soft: #fdecec;
-            --doc-amber: #b7791f;
-            --doc-amber-soft: #fff7e6;
-            --doc-shadow: 0 14px 34px rgba(31, 49, 78, 0.07);
+            --doc-border: #e2e8f0;
+            --doc-border-hover: #cbd5e1;
+            --doc-text-main: #0f172a;
+            --doc-text-sub: #475569;
+            --doc-text-muted: #64748b;
+            
+            --doc-primary: #2f80ed;
+            --doc-primary-hover: #1e6bd6;
+            --doc-primary-soft: #eff6ff;
+            
+            --doc-pdf: #e34d4d;
+            --doc-pdf-bg: #fdecec;
+            --doc-word: #2f80ed;
+            --doc-word-bg: #eff6ff;
+            --doc-excel: #16a163;
+            --doc-excel-bg: #e9f8f0;
+            --doc-default: #4f46e5;
+            --doc-default-bg: #eef2ff;
+
+            --doc-shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            --doc-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04);
+            --doc-shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
         }
 
-        .document-page .document-page-header {
-            margin-bottom: 1.35rem;
-        }
-
-        .document-page .document-total-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            min-height: 32px;
-            padding: 0.4rem 0.8rem;
-            border-radius: 999px;
-            background: linear-gradient(135deg, var(--doc-blue), var(--doc-blue-deep));
-            color: #ffffff;
-            font-size: 0.76rem;
-            font-weight: 700;
-            box-shadow: 0 10px 22px rgba(47, 128, 237, 0.18);
-            white-space: nowrap;
-        }
-
-        .document-page .document-overview {
-            display: grid;
-            grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
-            gap: 1rem;
-            margin-bottom: 1.35rem;
-        }
-
-        .document-page .document-overview-main,
-        .document-page .document-stat,
-        .document-page .document-card {
-            border: 1px solid var(--doc-border);
-            border-radius: 16px;
-            background: var(--doc-surface);
-            box-shadow: var(--doc-shadow);
-        }
-
-        .document-page .document-overview-main {
+        /* Hero Banner */
+        .document-page .hero-banner {
             position: relative;
-            overflow: hidden;
-            padding: 1.25rem;
-            background:
-                radial-gradient(circle at 94% 8%, rgba(22, 161, 99, 0.14), transparent 24%),
-                linear-gradient(135deg, #2f80ed 0%, #2368c8 52%, #184fa8 100%);
+            background: linear-gradient(135deg, #2f80ed 0%, #2368c8 52%, #184fa8 100%);
+            border-radius: 1.25rem;
+            padding: 2.25rem 2rem;
             color: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 10px 30px -5px rgba(47, 128, 237, 0.28);
+            margin-bottom: 2rem;
         }
 
-        .document-page .document-overview-main::after {
-            content: "";
+        .document-page .hero-banner::before {
+            content: '';
             position: absolute;
-            inset: auto -6% -42% auto;
-            width: 260px;
-            height: 260px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 999px;
+            top: -50%;
+            right: -10%;
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            border-radius: 50%;
             pointer-events: none;
         }
 
-        .document-page .overview-kicker {
-            position: relative;
+        .document-page .hero-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: 20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .document-page .hero-tag {
             display: inline-flex;
             align-items: center;
-            gap: 0.45rem;
-            margin-bottom: 0.8rem;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
             font-size: 0.75rem;
             font-weight: 700;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.78);
-        }
-
-        .document-page .document-overview-main h5 {
-            position: relative;
-            margin: 0 0 0.35rem;
             color: #ffffff;
-            font-size: 1.2rem;
-            font-weight: 700;
-            line-height: 1.35;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.25);
         }
 
-        .document-page .document-overview-main p {
-            position: relative;
-            max-width: 680px;
-            margin: 0;
-            color: rgba(255, 255, 255, 0.82);
-            font-size: 0.88rem;
-            line-height: 1.55;
+        .document-page .hero-title {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
         }
 
-        .document-page .document-stats {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1rem;
+        .document-page .hero-subtitle {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.88);
+            max-width: 620px;
+            margin-bottom: 0;
+            line-height: 1.5;
         }
 
-        .document-page .document-stat {
+        /* Search & Filter Bar */
+        .document-page .filter-bar {
+            background: var(--doc-surface);
+            border: 1px solid var(--doc-border);
+            border-radius: 1rem;
+            padding: 0.85rem 1.25rem;
+            box-shadow: var(--doc-shadow-sm);
+            margin-bottom: 1.75rem;
             display: flex;
             align-items: center;
-            gap: 0.85rem;
-            min-height: 92px;
-            padding: 1rem;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
-        .document-page .document-stat-icon,
-        .document-page .document-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex: 0 0 auto;
-            border-radius: 999px;
+        .document-page .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
         }
 
-        .document-page .document-stat-icon {
-            width: 42px;
-            height: 42px;
-            background: var(--doc-surface-muted);
-            color: var(--doc-blue);
+        .document-page .search-box input {
+            width: 100%;
+            padding: 0.65rem 1rem 0.65rem 2.65rem;
+            border: 1px solid var(--doc-border);
+            border-radius: 0.75rem;
+            background: var(--doc-bg);
+            color: var(--doc-text-main);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .document-page .search-box input:focus {
+            outline: none;
+            border-color: var(--doc-primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .document-page .search-box i {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--doc-text-muted);
             font-size: 1.15rem;
         }
 
-        .document-page .document-stat-value {
-            color: var(--doc-text);
-            font-size: 1.25rem;
-            font-weight: 750;
+        .document-page .doc-counter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--doc-primary-soft);
+            color: var(--doc-primary);
+            font-weight: 700;
+            font-size: 0.825rem;
+            padding: 0.45rem 0.9rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
+        /* Stat Cards */
+        .document-page .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .document-page .stat-card-item {
+            background: var(--doc-surface);
+            border: 1px solid var(--doc-border);
+            border-radius: 1rem;
+            padding: 1.15rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--doc-shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .document-page .stat-card-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--doc-shadow-md);
+        }
+
+        .document-page .stat-icon-wrapper {
+            width: 46px;
+            height: 46px;
+            border-radius: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+
+        .document-page .stat-info .stat-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--doc-text-main);
             line-height: 1.1;
         }
 
-        .document-page .document-stat-label {
-            margin-top: 0.25rem;
-            color: var(--doc-muted);
-            font-size: 0.78rem;
-            font-weight: 650;
+        .document-page .stat-info .stat-label {
+            font-size: 0.775rem;
+            font-weight: 600;
+            color: var(--doc-text-muted);
+            margin-top: 0.2rem;
         }
 
-        .document-page .document-list {
+        /* Document Grid & Cards */
+        .document-page .doc-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1.1rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
         }
 
-        .document-page .document-card {
-            --doc-card-accent: var(--doc-blue);
-            --doc-card-accent-deep: var(--doc-blue-deep);
-            --doc-card-soft: rgba(47, 128, 237, 0.09);
-            --doc-card-wash: rgba(47, 128, 237, 0.035);
-            --doc-card-border: rgba(47, 128, 237, 0.18);
-            --doc-card-shadow: rgba(47, 128, 237, 0.22);
-            position: relative;
-            overflow: hidden;
-            min-height: 230px;
-            background:
-                linear-gradient(180deg, var(--doc-card-wash), transparent 44%),
-                var(--doc-surface);
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .document-page .document-card.is-all {
-            --doc-card-accent: var(--doc-blue);
-            --doc-card-accent-deep: var(--doc-blue-deep);
-            --doc-card-soft: rgba(47, 128, 237, 0.1);
-            --doc-card-wash: rgba(47, 128, 237, 0.04);
-            --doc-card-border: rgba(47, 128, 237, 0.2);
-            --doc-card-shadow: rgba(47, 128, 237, 0.24);
-        }
-
-        .document-page .document-card.is-admin {
-            --doc-card-accent: var(--doc-red);
-            --doc-card-accent-deep: #c83f3f;
-            --doc-card-soft: rgba(227, 77, 77, 0.1);
-            --doc-card-wash: rgba(227, 77, 77, 0.04);
-            --doc-card-border: rgba(227, 77, 77, 0.18);
-            --doc-card-shadow: rgba(227, 77, 77, 0.2);
-        }
-
-        .document-page .document-card.is-manager {
-            --doc-card-accent: var(--doc-amber);
-            --doc-card-accent-deep: #946315;
-            --doc-card-soft: rgba(183, 121, 31, 0.11);
-            --doc-card-wash: rgba(183, 121, 31, 0.045);
-            --doc-card-border: rgba(183, 121, 31, 0.2);
-            --doc-card-shadow: rgba(183, 121, 31, 0.2);
-        }
-
-        .document-page .document-card.is-staff-admin {
-            --doc-card-accent: var(--doc-green);
-            --doc-card-accent-deep: #0d8350;
-            --doc-card-soft: rgba(22, 161, 99, 0.1);
-            --doc-card-wash: rgba(22, 161, 99, 0.04);
-            --doc-card-border: rgba(22, 161, 99, 0.2);
-            --doc-card-shadow: rgba(22, 161, 99, 0.2);
-        }
-
-        .document-page .document-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--doc-card-border);
-            box-shadow: 0 20px 44px rgba(31, 49, 78, 0.105);
-        }
-
-        .document-page .document-empty {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
-            min-height: 118px;
-            padding: 1.25rem;
-            border: 1px solid var(--doc-border);
-            border-radius: 16px;
+        .document-page .doc-card {
             background: var(--doc-surface);
-            box-shadow: var(--doc-shadow);
+            border: 1px solid var(--doc-border);
+            border-radius: 1.15rem;
+            padding: 1.35rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: var(--doc-shadow-sm);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .document-page .document-card-header {
-            padding: 1.18rem 1.2rem 0.9rem;
-            background: transparent;
-            border-bottom: 0;
+        .document-page .doc-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--doc-border-hover);
+            box-shadow: var(--doc-shadow-hover);
         }
 
-        .document-page .document-head {
+        .document-page .doc-card-header {
             display: flex;
             align-items: flex-start;
-            justify-content: space-between;
             gap: 1rem;
+            margin-bottom: 1rem;
         }
 
-        .document-page .document-title-group {
+        .document-page .doc-type-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.9rem;
             display: flex;
             align-items: center;
-            gap: 0.9rem;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+        }
+
+        /* File Type Colors */
+        .doc-type-icon.pdf { background: var(--doc-pdf-bg); color: var(--doc-pdf); }
+        .doc-type-icon.word { background: var(--doc-word-bg); color: var(--doc-word); }
+        .doc-type-icon.excel { background: var(--doc-excel-bg); color: var(--doc-excel); }
+        .doc-type-icon.default { background: var(--doc-default-bg); color: var(--doc-default); }
+
+        .document-page .doc-meta-top {
+            flex: 1;
             min-width: 0;
         }
 
-        .document-page .document-icon {
-            width: 46px;
-            height: 46px;
-            border: 1px solid var(--doc-card-border);
-            background: var(--doc-card-accent);
-            color: #ffffff;
-            font-size: 1.25rem;
-            box-shadow: 0 10px 20px var(--doc-card-shadow);
-        }
-
-        .document-page .document-kicker {
-            margin-bottom: 0.15rem;
-            color: var(--doc-card-accent);
-            font-size: 0.72rem;
-            font-weight: 800;
-            letter-spacing: 0.06em;
+        .document-page .doc-badge-pill {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.4rem;
+            margin-bottom: 0.35rem;
         }
 
-        .document-page .document-name {
+        .doc-badge-pill.pdf { background: var(--doc-pdf-bg); color: var(--doc-pdf); }
+        .doc-badge-pill.word { background: var(--doc-word-bg); color: var(--doc-word); }
+        .doc-badge-pill.excel { background: var(--doc-excel-bg); color: var(--doc-excel); }
+        .doc-badge-pill.default { background: var(--doc-default-bg); color: var(--doc-default); }
+
+        .document-page .doc-title {
+            font-size: 0.975rem;
+            font-weight: 700;
+            color: var(--doc-text-main);
             margin: 0;
-            color: var(--doc-text);
-            font-size: 1rem;
-            font-weight: 750;
-            line-height: 1.3;
-            text-align: left;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
             word-break: break-word;
         }
 
-        .document-page .access-badge,
-        .document-page .document-size,
-        .document-page .document-download {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            line-height: 1.25;
-            white-space: normal;
+        .document-page .doc-desc {
+            font-size: 0.85rem;
+            color: var(--doc-text-sub);
+            line-height: 1.5;
+            margin-bottom: 1.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .document-page .access-badge {
-            flex: 0 0 auto;
-            max-width: min(360px, 45%);
-            padding: 0.48rem 0.72rem;
-            text-align: right;
-        }
-
-        .document-page .access-badge.is-all {
-            background: rgba(47, 128, 237, 0.1);
-            color: var(--doc-blue-deep);
-        }
-
-        .document-page .access-badge.is-admin {
-            background: var(--doc-red-soft);
-            color: var(--doc-red);
-        }
-
-        .document-page .access-badge.is-manager {
-            background: var(--doc-amber-soft);
-            color: var(--doc-amber);
-        }
-
-        .document-page .access-badge.is-staff-admin {
-            background: var(--doc-green-soft);
-            color: var(--doc-green);
-        }
-
-        .document-page .document-card-body {
-            display: flex;
-            min-height: 132px;
-            flex-direction: column;
-            padding: 0 1.2rem 1.15rem;
-        }
-
-        .document-page .document-description {
-            color: var(--doc-muted);
-            font-size: 0.88rem;
-            line-height: 1.55;
-            margin: 0;
-        }
-
-        .document-page .document-card-footer {
+        .document-page .doc-card-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 0.75rem;
+            padding-top: 0.85rem;
+            border-top: 1px dashed var(--doc-border);
             margin-top: auto;
-            padding: 0.72rem 0;
-            border: 1px solid var(--doc-card-border);
-            border-radius: 14px;
-            border-right: 0;
-            border-left: 0;
-            background: transparent;
         }
 
-        .document-page .document-size {
-            padding: 0.42rem 0.65rem;
-            background: var(--doc-surface);
-            border: 1px solid var(--doc-card-border);
-            color: var(--doc-muted);
-            font-family: "Courier New", monospace;
-            opacity: 1;
+        .document-page .doc-file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.775rem;
+            font-weight: 600;
+            color: var(--doc-text-muted);
         }
 
-        .document-page .document-download {
-            min-height: 38px;
-            min-width: 118px;
-            justify-content: center;
-            padding: 0.52rem 0.95rem;
-            border: 1px solid var(--doc-card-accent);
-            background: var(--doc-surface);
-            color: var(--doc-card-accent);
+        .document-page .btn-download-doc {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 0.75rem;
+            background: var(--doc-primary);
+            color: #ffffff;
+            font-size: 0.825rem;
+            font-weight: 700;
             text-decoration: none;
-            box-shadow: none;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+            transition: all 0.2s ease;
         }
 
-        .document-page .document-download i {
-            line-height: 1;
-        }
-
-        .document-page .document-download:hover {
-            background: linear-gradient(135deg, var(--doc-card-accent), var(--doc-card-accent-deep));
+        .document-page .btn-download-doc:hover {
+            background: var(--doc-primary-hover);
             color: #ffffff;
             transform: translateY(-1px);
-            box-shadow: 0 14px 28px var(--doc-card-shadow);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.32);
         }
 
-        .document-page .document-download-icon {
+        .document-page .btn-download-doc i {
+            font-size: 1.05rem;
+            transition: transform 0.2s ease;
+        }
+
+        .document-page .btn-download-doc:hover i {
+            transform: translateY(2px);
+        }
+
+        /* Empty State */
+        .document-page .empty-doc-state {
+            grid-column: 1 / -1;
+            background: var(--doc-surface);
+            border: 2px dashed var(--doc-border);
+            border-radius: 1.25rem;
+            padding: 3.5rem 1.5rem;
+            text-align: center;
+        }
+
+        .document-page .empty-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--doc-primary-soft);
+            color: var(--doc-primary);
+            font-size: 2rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 22px;
-            height: 22px;
+            margin-bottom: 1rem;
+        }
+
+        /* Access Role Badge Styles */
+        .document-page .access-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.2rem 0.55rem;
             border-radius: 999px;
-            border: 1px solid var(--doc-card-border);
-            background: var(--doc-card-soft);
-            color: var(--doc-card-accent);
-            font-size: 0.92rem;
-            transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+            white-space: nowrap;
         }
 
-        .document-page .document-download:hover .document-download-icon {
-            border-color: rgba(255, 255, 255, 0.38);
-            background: rgba(255, 255, 255, 0.18);
-            color: #ffffff;
+        .document-page .access-role-badge.is-all {
+            background: rgba(47, 128, 237, 0.1);
+            color: #2f80ed;
+            border: 1px solid rgba(47, 128, 237, 0.25);
         }
 
+        .document-page .access-role-badge.is-admin {
+            background: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(220, 38, 38, 0.25);
+        }
+
+        .document-page .access-role-badge.is-manager {
+            background: rgba(217, 119, 6, 0.1);
+            color: #d97706;
+            border: 1px solid rgba(217, 119, 6, 0.25);
+        }
+
+        .document-page .access-role-badge.is-custom {
+            background: rgba(22, 163, 74, 0.1);
+            color: #16a34a;
+            border: 1px solid rgba(22, 163, 74, 0.25);
+        }
+
+        /* Dark Mode Extensions */
         html.aps-dark .document-page {
+            --doc-bg: #0f172a;
             --doc-surface: #111c31;
-            --doc-surface-soft: #16243a;
-            --doc-surface-muted: #162842;
-            --doc-border: #263653;
-            --doc-border-strong: #315071;
-            --doc-text: #e7f0fb;
-            --doc-muted: #a5b7cf;
-            --doc-faint: #72849d;
-            --doc-green: #6ee7a8;
-            --doc-green-soft: rgba(34, 197, 94, 0.14);
-            --doc-red: #fb7185;
-            --doc-red-soft: rgba(239, 68, 68, 0.14);
-            --doc-amber: #fbbf24;
-            --doc-amber-soft: rgba(245, 158, 11, 0.16);
-            --doc-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+            --doc-border: #24324a;
+            --doc-border-hover: #3b4d6b;
+            --doc-text-main: #f1f5f9;
+            --doc-text-sub: #cbd5e1;
+            --doc-text-muted: #94a3b8;
+            --doc-primary-soft: rgba(47, 128, 237, 0.25);
+            
+            --doc-pdf: #fca5a5;
+            --doc-pdf-bg: rgba(220, 38, 38, 0.28);
+            --doc-word: #93c5fd;
+            --doc-word-bg: rgba(47, 128, 237, 0.28);
+            --doc-excel: #86efac;
+            --doc-excel-bg: rgba(22, 163, 74, 0.28);
+            --doc-default: #c7d2fe;
+            --doc-default-bg: rgba(79, 70, 229, 0.28);
         }
 
-        html.aps-dark .document-page .document-overview-main {
-            background:
-                radial-gradient(circle at 94% 8%, rgba(110, 231, 168, 0.14), transparent 26%),
-                linear-gradient(135deg, #172942 0%, #132039 58%, #111c31 100%);
-            border-color: #315071;
+        html.aps-dark .document-page .hero-banner {
+            background: linear-gradient(135deg, #193863 0%, #1c5296 52%, #143e75 100%) !important;
+            border: 1px solid #24324a;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4) !important;
         }
 
-        html.aps-dark .document-page .document-card {
-            background:
-                linear-gradient(180deg, var(--doc-card-wash), transparent 44%),
-                var(--doc-surface);
+        html.aps-dark .document-page .filter-bar {
+            background: #111c31 !important;
+            border-color: #24324a !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
         }
 
-        html.aps-dark .document-page .document-card.is-all {
-            --doc-card-accent: #8fc1ff;
-            --doc-card-accent-deep: #5aa3ff;
-            --doc-card-soft: rgba(47, 128, 237, 0.16);
-            --doc-card-wash: rgba(47, 128, 237, 0.08);
-            --doc-card-border: rgba(143, 193, 255, 0.28);
-            --doc-card-shadow: rgba(47, 128, 237, 0.22);
+        html.aps-dark .document-page .search-box input {
+            background: #0b1324 !important;
+            border-color: #24324a !important;
+            color: #f1f5f9 !important;
         }
 
-        html.aps-dark .document-page .document-card.is-admin {
-            --doc-card-accent: #fb7185;
-            --doc-card-accent-deep: #f43f5e;
-            --doc-card-soft: rgba(239, 68, 68, 0.14);
-            --doc-card-wash: rgba(239, 68, 68, 0.07);
-            --doc-card-border: rgba(251, 113, 133, 0.3);
-            --doc-card-shadow: rgba(239, 68, 68, 0.18);
+        html.aps-dark .document-page .search-box input::placeholder {
+            color: #64748b !important;
         }
 
-        html.aps-dark .document-page .document-card.is-manager {
-            --doc-card-accent: #fbbf24;
-            --doc-card-accent-deep: #f59e0b;
-            --doc-card-soft: rgba(245, 158, 11, 0.16);
-            --doc-card-wash: rgba(245, 158, 11, 0.08);
-            --doc-card-border: rgba(251, 191, 36, 0.3);
-            --doc-card-shadow: rgba(245, 158, 11, 0.18);
+        html.aps-dark .document-page .doc-counter-badge {
+            background: rgba(47, 128, 237, 0.22) !important;
+            color: #93c5fd !important;
+            border-color: rgba(147, 197, 253, 0.3) !important;
         }
 
-        html.aps-dark .document-page .document-card.is-staff-admin {
-            --doc-card-accent: #6ee7a8;
-            --doc-card-accent-deep: #22c55e;
-            --doc-card-soft: rgba(34, 197, 94, 0.14);
-            --doc-card-wash: rgba(34, 197, 94, 0.07);
-            --doc-card-border: rgba(110, 231, 168, 0.3);
-            --doc-card-shadow: rgba(34, 197, 94, 0.18);
+        html.aps-dark .document-page .stat-card-item {
+            background: #111c31 !important;
+            border-color: #24324a !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
         }
 
-        html.aps-dark .document-page .document-card-header {
-            background: transparent;
+        html.aps-dark .document-page .stat-card-item:hover {
+            border-color: #3b4d6b !important;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35) !important;
         }
 
-        html.aps-dark .document-page .document-page-header h4 {
-            color: var(--doc-text);
+        html.aps-dark .document-page .stat-info .stat-value {
+            color: #f8fafc !important;
         }
 
-        html.aps-dark .document-page .document-page-header .text-muted {
-            color: var(--doc-faint) !important;
+        html.aps-dark .document-page .stat-info .stat-label {
+            color: #94a3b8 !important;
         }
 
-        html.aps-dark .document-page .access-badge.is-all {
-            background: rgba(47, 128, 237, 0.16);
-            color: #8fc1ff;
+        html.aps-dark .document-page .doc-card {
+            background: #111c31 !important;
+            border-color: #24324a !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
         }
 
-        html.aps-dark .document-page .access-badge.is-admin {
-            background: rgba(239, 68, 68, 0.14);
-            color: #fb7185;
+        html.aps-dark .document-page .doc-card:hover {
+            border-color: #3b4d6b !important;
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45) !important;
         }
 
-        html.aps-dark .document-page .access-badge.is-manager {
-            background: rgba(245, 158, 11, 0.16);
-            color: #fbbf24;
+        html.aps-dark .document-page .doc-title {
+            color: #f8fafc !important;
         }
 
-        html.aps-dark .document-page .access-badge.is-staff-admin {
-            background: rgba(34, 197, 94, 0.14);
-            color: #6ee7a8;
+        html.aps-dark .document-page .doc-desc {
+            color: #cbd5e1 !important;
         }
 
-        html.aps-dark .document-page .document-card-footer {
-            border-color: var(--doc-card-border);
+        html.aps-dark .document-page .doc-file-info {
+            color: #94a3b8 !important;
         }
 
-        html.aps-dark .document-page .document-size,
-        html.aps-dark .document-page .document-download {
-            background: var(--doc-surface-soft);
+        html.aps-dark .document-page .doc-badge-pill {
+            font-weight: 800 !important;
         }
 
-        html.aps-dark .document-page .document-download:hover {
-            background: linear-gradient(135deg, var(--doc-card-accent), var(--doc-card-accent-deep));
+        html.aps-dark .document-page .doc-badge-pill.pdf {
+            background: rgba(220, 38, 38, 0.28) !important;
+            color: #fca5a5 !important;
         }
 
-        html.aps-dark .document-page .document-download-icon {
-            background: var(--doc-card-soft);
-            color: var(--doc-card-accent);
+        html.aps-dark .document-page .doc-badge-pill.word {
+            background: rgba(47, 128, 237, 0.28) !important;
+            color: #93c5fd !important;
         }
 
-        @media (max-width: 1199.98px) {
-            .document-page .document-overview {
-                grid-template-columns: 1fr;
-            }
+        html.aps-dark .document-page .doc-badge-pill.excel {
+            background: rgba(22, 163, 74, 0.28) !important;
+            color: #86efac !important;
         }
 
-        @media (max-width: 991.98px) {
-            .document-page .document-list {
-                grid-template-columns: 1fr;
-            }
+        html.aps-dark .document-page .doc-badge-pill.default {
+            background: rgba(79, 70, 229, 0.28) !important;
+            color: #c7d2fe !important;
         }
 
-        @media (max-width: 767.98px) {
-            .document-page .document-stats {
-                grid-template-columns: 1fr;
-            }
+        html.aps-dark .document-page .doc-type-icon.pdf {
+            background: rgba(220, 38, 38, 0.25) !important;
+            color: #fca5a5 !important;
+        }
 
-            .document-page .document-head,
-            .document-page .document-card-footer {
-                align-items: flex-start;
-                flex-direction: column;
-            }
+        html.aps-dark .document-page .doc-type-icon.word {
+            background: rgba(47, 128, 237, 0.25) !important;
+            color: #93c5fd !important;
+        }
 
-            .document-page .access-badge {
-                align-self: flex-start;
-                max-width: 100%;
-                text-align: left;
-            }
+        html.aps-dark .document-page .doc-type-icon.excel {
+            background: rgba(22, 163, 74, 0.25) !important;
+            color: #86efac !important;
+        }
 
-            .document-page .document-download {
-                width: 100%;
-            }
+        html.aps-dark .document-page .doc-type-icon.default {
+            background: rgba(79, 70, 229, 0.25) !important;
+            color: #c7d2fe !important;
+        }
+
+        html.aps-dark .document-page .access-role-badge.is-all {
+            background: rgba(47, 128, 237, 0.25) !important;
+            color: #93c5fd !important;
+            border-color: rgba(147, 197, 253, 0.35) !important;
+        }
+
+        html.aps-dark .document-page .access-role-badge.is-admin {
+            background: rgba(220, 38, 38, 0.25) !important;
+            color: #fca5a5 !important;
+            border-color: rgba(252, 165, 165, 0.35) !important;
+        }
+
+        html.aps-dark .document-page .access-role-badge.is-manager {
+            background: rgba(217, 119, 6, 0.25) !important;
+            color: #fde047 !important;
+            border-color: rgba(253, 224, 71, 0.35) !important;
+        }
+
+        html.aps-dark .document-page .access-role-badge.is-custom {
+            background: rgba(22, 163, 74, 0.25) !important;
+            color: #86efac !important;
+            border-color: rgba(134, 239, 172, 0.35) !important;
+        }
+
+        html.aps-dark .document-page .empty-doc-state {
+            background: #111c31 !important;
+            border-color: #24324a !important;
+        }
+
+        html.aps-dark .document-page .empty-doc-state h4 {
+            color: #f8fafc !important;
+        }
+
+        html.aps-dark .document-page .empty-doc-state p {
+            color: #94a3b8 !important;
         }
     </style>
 @endsection
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y document-page">
-        <div class="document-page-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
-            <h4 class="fw-bold pt-3 pb-1 mb-0">
-                <span class="text-muted fw-light">Dokumen /</span> Cetak Dokumen
-            </h4>
-            <span class="document-total-pill">
-                <i class="bx bx-file"></i>
-                {{ $totalDocuments }} Dokumen
-            </span>
+        {{-- Hero Header Banner --}}
+        <div class="hero-banner">
+            <div class="hero-tag">
+                <i class="bx bx-folder-open"></i> Pusat Dokumen Resmi
+            </div>
+            <h1 class="hero-title">Dokumen Operasional & Administrasi</h1>
+            <p class="hero-subtitle">
+                Akses cepat ke formulir, kebijakan, panduan kerja, dan laporan resmi AP3 sesuai peran Anda.
+            </p>
         </div>
 
-        <div class="document-overview">
-            <section class="document-overview-main" aria-label="Ringkasan dokumen">
-                <div class="overview-kicker">
-                    <i class="bx bx-folder-open"></i>
-                    Pusat Dokumen AP3
+        {{-- Statistics Overview --}}
+        <div class="stats-row">
+            <div class="stat-card-item">
+                <div class="stat-icon-wrapper" style="background: rgba(47, 128, 237, 0.1); color: #2f80ed;">
+                    <i class="bx bx-file"></i>
                 </div>
-                <h5>Dokumen Operasional & Administrasi</h5>
-                <p>
-                    Akses formulir, kebijakan, laporan, dan panduan kerja resmi sesuai kebutuhan role masing-masing.
-                </p>
-            </section>
+                <div class="stat-info">
+                    <div class="stat-value">{{ $totalDocuments }}</div>
+                    <div class="stat-label">Total Dokumen</div>
+                </div>
+            </div>
 
-            <div class="document-stats" aria-label="Statistik dokumen">
-                <div class="document-stat" style="grid-column: span 2;">
-                    <span class="document-stat-icon"><i class="bx bx-file"></i></span>
-                    <div>
-                        <div class="document-stat-value">{{ $totalDocuments }}</div>
-                        <div class="document-stat-label">Total</div>
-                    </div>
+            <div class="stat-card-item">
+                <div class="stat-icon-wrapper" style="background: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                    <i class="bx bx-group"></i>
                 </div>
-                <div class="document-stat">
-                    <span class="document-stat-icon"><i class="bx bx-group"></i></span>
-                    <div>
-                        <div class="document-stat-value">{{ $allRoleDocuments }}</div>
-                        <div class="document-stat-label">Semua Role</div>
-                    </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ $allRoleDocuments }}</div>
+                    <div class="stat-label">Semua Role Staff</div>
                 </div>
+            </div>
 
-                <div class="document-stat">
-                    <span class="document-stat-icon"><i class="bx bx-briefcase"></i></span>
-                    <div>
-                        <div class="document-stat-value">{{ $managerDocuments }}</div>
-                        <div class="document-stat-label">Manager</div>
-                    </div>
+            <div class="stat-card-item">
+                <div class="stat-icon-wrapper" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">
+                    <i class="bx bx-briefcase"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ $managerDocuments }}</div>
+                    <div class="stat-label">Khusus Manager</div>
+                </div>
+            </div>
+
+            <div class="stat-card-item">
+                <div class="stat-icon-wrapper" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">
+                    <i class="bx bx-shield-quarter"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ $adminDocuments }}</div>
+                    <div class="stat-label">Khusus Admin</div>
                 </div>
             </div>
         </div>
 
-        <div class="document-list">
+        {{-- Live Search & Counter Bar --}}
+        <div class="filter-bar">
+            <div class="search-box">
+                <i class="bx bx-search"></i>
+                <input type="text" id="docSearchInput" placeholder="Cari nama atau deskripsi dokumen..." onkeyup="filterDocuments()">
+            </div>
+            <div class="doc-counter-badge">
+                <i class="bx bx-folder"></i>
+                <span id="visibleDocCount">{{ count($visibleDocuments) }}</span> Dokumen Tersedia
+            </div>
+        </div>
+
+        {{-- Document Grid List --}}
+        <div class="doc-grid" id="documentGrid">
             @forelse ($visibleDocuments as $document)
-                <article class="document-card is-all">
-                    <div class="document-card-header">
-                        <div class="document-head">
-                            <div class="document-title-group">
-                                <span class="document-icon">
-                                    <i class="bx bx-file"></i>
-                                </span>
-                                <div>
-                                    <div class="document-kicker">Dokumen</div>
-                                    <h5 class="document-name">{{ $document->nama_dokumen }}</h5>
-                                </div>
-                            </div>
+                @php
+                    $fileExt = strtolower(pathinfo($document->file_path ?? '', PATHINFO_EXTENSION));
+                    if (empty($fileExt) && !empty($document->ukuran_file)) {
+                        if (str_contains(strtolower($document->ukuran_file), 'pdf')) $fileExt = 'pdf';
+                    }
+                    
+                    $typeClass = 'default';
+                    $typeLabel = 'DOKUMEN';
+                    $iconClass = 'bx bx-file';
+                    
+                    if (in_array($fileExt, ['pdf'])) {
+                        $typeClass = 'pdf';
+                        $typeLabel = 'PDF DOCUMENT';
+                        $iconClass = 'bxs-file-pdf';
+                    } elseif (in_array($fileExt, ['doc', 'docx'])) {
+                        $typeClass = 'word';
+                        $typeLabel = 'WORD DOCUMENT';
+                        $iconClass = 'bxs-file-doc';
+                    } elseif (in_array($fileExt, ['xls', 'xlsx', 'csv'])) {
+                        $typeClass = 'excel';
+                        $typeLabel = 'EXCEL SPREADSHEET';
+                        $iconClass = 'bxs-file-json';
+                    }
 
-                        </div>
-                    </div>
+                    $accessLabel = 'Semua Role';
+                    $accessBadgeClass = 'is-all';
 
-                    <div class="document-card-body">
-                        <p class="document-description">{{ $document->deskripsi_dokumen }}</p>
-
-                        <div class="document-card-footer">
-                            <span class="document-size">
-                                <i class="bx bx-data"></i>
-                                {{ $document->ukuran_file ?? '-' }}
-                            </span>
-                            <a href="{{ route('document.download', $document) }}" class="document-download"
-                                aria-label="Unduh {{ $document->nama_dokumen }}">
-                                <span class="document-download-icon"><i class="bx bx-download"></i></span>
-                                <span>Unduh</span>
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            @empty
-                <div class="document-empty">
-                    <span class="document-icon">
-                        <i class="bx bx-file"></i>
-                    </span>
+                    if ($document->isAllRoleAccess()) {
+                        $accessLabel = 'Semua Role';
+                        $accessBadgeClass = 'is-all';
+                    } elseif ($document->hasRoleAccess('Admin') && count($document->role_akses ?? []) === 1) {
+                        $accessLabel = 'Khusus Admin';
+                        $accessBadgeClass = 'is-admin';
+                    } elseif ($document->hasAnyRoleAccess(\App\Models\Document::managerRoles())) {
+                        $accessLabel = 'Khusus Manager';
+                        $accessBadgeClass = 'is-manager';
+                    } elseif ($document->role_akses) {
+                        $accessLabel = implode(', ', array_map(fn($r) => ucfirst($r), $document->role_akses));
+                        $accessBadgeClass = 'is-custom';
+                    }
+                @endphp
+                
+                <div class="doc-card doc-item-card" data-title="{{ strtolower($document->nama_dokumen) }}" data-desc="{{ strtolower($document->deskripsi_dokumen) }}">
                     <div>
-                        <h5 class="document-name mb-1">Belum ada dokumen</h5>
-                        <p class="document-description mb-0">Dokumen untuk role Anda belum tersedia.</p>
+                        <div class="doc-card-header">
+                            <div class="doc-type-icon {{ $typeClass }}">
+                                <i class="bx {{ $iconClass }}"></i>
+                            </div>
+                            <div class="doc-meta-top">
+                                <div class="d-flex align-items-center gap-1 flex-wrap mb-1">
+                                    <span class="doc-badge-pill {{ $typeClass }} mb-0">{{ $typeLabel }}</span>
+                                    <span class="access-role-badge {{ $accessBadgeClass }}"><i class="bx bx-user-check"></i>{{ $accessLabel }}</span>
+                                </div>
+                                <h3 class="doc-title">{{ $document->nama_dokumen }}</h3>
+                            </div>
+                        </div>
+                        <p class="doc-desc">{{ $document->deskripsi_dokumen ?: 'Dokumen resmi PT Angkasa Pratama Sejahtera.' }}</p>
+                    </div>
+
+                    <div class="doc-card-footer">
+                        <div class="doc-file-info">
+                            <i class="bx bx-hdd"></i>
+                            <span>{{ $document->ukuran_file ?: 'File Resmi' }}</span>
+                        </div>
+                        <a href="{{ route('document.download', $document) }}" class="btn-download-doc" aria-label="Unduh {{ $document->nama_dokumen }}">
+                            <i class="bx bx-download"></i>
+                            <span>Unduh</span>
+                        </a>
                     </div>
                 </div>
+            @empty
+                <div class="empty-doc-state">
+                    <div class="empty-icon">
+                        <i class="bx bx-folder-open"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-1">Belum Ada Dokumen</h4>
+                    <p class="text-muted mb-0">Dokumen untuk kategori role Anda belum diunggah oleh Administrator.</p>
+                </div>
             @endforelse
+            
+            {{-- Search Not Found State --}}
+            <div class="empty-doc-state d-none" id="noSearchResultsState">
+                <div class="empty-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                    <i class="bx bx-search-alt"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-1">Dokumen Tidak Ditemukan</h4>
+                <p class="text-muted mb-0">Tidak ada dokumen yang cocok dengan kata kunci pencarian Anda.</p>
+            </div>
         </div>
     </div>
 @endsection
+
+@section('scripts')
+    <script>
+        function filterDocuments() {
+            const query = document.getElementById('docSearchInput').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.doc-item-card');
+            const noResultsState = document.getElementById('noSearchResultsState');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                const desc = card.getAttribute('data-desc') || '';
+
+                if (title.includes(query) || desc.includes(query)) {
+                    card.classList.remove('d-none');
+                    visibleCount++;
+                } else {
+                    card.classList.add('d-none');
+                }
+            });
+
+            const countBadge = document.getElementById('visibleDocCount');
+            if (countBadge) {
+                countBadge.textContent = visibleCount;
+            }
+
+            if (visibleCount === 0 && cards.length > 0) {
+                noResultsState.classList.remove('d-none');
+            } else {
+                noResultsState.classList.add('d-none');
+            }
+        }
+    </script>
+@endsection
+
