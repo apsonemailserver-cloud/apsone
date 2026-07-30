@@ -797,13 +797,13 @@
                 navigator.geolocation.getCurrentPosition(
                     (pos) => updateGpsUI(pos),
                     (err) => console.warn('Initial GPS fetch error:', err),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
 
                 gpsWatchId = navigator.geolocation.watchPosition(
                     (pos) => updateGpsUI(pos),
                     (err) => console.warn('Watch GPS error:', err),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             }
 
