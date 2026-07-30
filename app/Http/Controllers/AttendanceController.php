@@ -97,14 +97,29 @@ class AttendanceController extends Controller
     |--------------------------------------------------------------------------
     */
 
-        $photoData = str_replace('data:image/png;base64,', '', $request->photo);
+        $photoInput = $request->photo;
+        $photoData = preg_replace('/^data:image\/\w+;base64,/', '', $photoInput);
         $photoData = str_replace(' ', '+', $photoData);
+        $decodedData = base64_decode($photoData);
 
-        $fileName = 'attendance_' . $user->id . '_' . time() . '.png';
+        $fileName = 'attendance_' . $user->id . '_' . time() . '.jpg';
+
+        if (function_exists('imagecreatefromstring') && function_exists('imagejpeg')) {
+            $image = @imagecreatefromstring($decodedData);
+            if ($image !== false) {
+                ob_start();
+                imagejpeg($image, null, 70);
+                $compressedBinary = ob_get_clean();
+                if (!empty($compressedBinary)) {
+                    $decodedData = $compressedBinary;
+                }
+                imagedestroy($image);
+            }
+        }
 
         Storage::disk('public')->put(
             'attendance/' . $fileName,
-            base64_decode($photoData)
+            $decodedData
         );
 
         /*

@@ -134,6 +134,15 @@
             white-space: nowrap;
         }
 
+        .camera-topbar-pills {
+            display: flex;
+            gap: 0.35rem;
+            align-items: center;
+            min-width: 0;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
         .camera-status-pill {
             display: inline-flex;
             align-items: center;
@@ -433,70 +442,130 @@
             .camera-page {
                 height: 100dvh;
                 min-height: 100dvh;
-                padding: 0.6rem;
+                max-height: 100dvh;
+                padding: 0.5rem;
                 grid-template-rows: auto minmax(0, 1fr) auto;
-                gap: 0.6rem;
+                gap: 0.5rem;
             }
 
             .camera-topbar {
                 border-radius: 20px;
-                padding: 0.45rem 0.6rem;
-                gap: 0.5rem;
+                padding: 0.4rem 0.55rem;
+                gap: 0.35rem;
             }
 
             .camera-back {
-                width: 38px;
-                height: 38px;
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
                 flex-shrink: 0;
             }
 
             .camera-back i {
-                font-size: 1.15rem;
+                font-size: 1.1rem;
+            }
+
+            .camera-title {
+                min-width: 0;
+                flex: 1 1 auto;
+                max-width: clamp(100px, 30vw, 180px);
             }
 
             .camera-title small {
-                font-size: 0.65rem;
+                display: none;
             }
 
             .camera-title strong {
-                font-size: 0.88rem;
+                font-size: 0.82rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .camera-topbar-pills {
+                gap: 0.25rem;
             }
 
             .camera-status-pill {
                 display: inline-flex;
-                height: 32px;
-                padding: 0 0.6rem;
-                font-size: 0.7rem;
-                gap: 0.3rem;
+                height: 28px;
+                padding: 0 0.45rem;
+                font-size: 0.68rem;
+                gap: 0.22rem;
                 flex-shrink: 0;
+                white-space: nowrap;
+                max-width: clamp(85px, 22vw, 130px);
+            }
+
+            .camera-status-pill span {
+                display: inline-block;
+                max-width: clamp(65px, 17vw, 100px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             .camera-status-pill i {
-                font-size: 0.9rem;
+                font-size: 0.82rem;
             }
 
             .camera-stage {
-                border-radius: 24px;
+                border-radius: 22px;
+            }
+
+            .camera-loader {
+                padding: 0.75rem;
+            }
+
+            .loader-card {
+                width: min(320px, calc(100% - 0.5rem));
+                padding: 1.1rem 0.85rem;
+                border-radius: 20px;
+            }
+
+            .loader-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.4rem;
+                margin-bottom: 0.65rem;
+            }
+
+            .loader-card strong {
+                font-size: 0.92rem;
+            }
+
+            .loader-card span {
+                font-size: 0.76rem;
+                margin-top: 0.25rem;
+                line-height: 1.45;
             }
 
             .face-guide {
-                width: min(52vw, 200px);
+                width: min(52vw, 190px);
             }
 
             .camera-hint {
-                bottom: 0.65rem;
-                width: calc(100% - 1.2rem);
-                padding: 0.5rem 0.75rem;
-                border-radius: 14px;
-                font-size: 0.75rem;
-                gap: 0.4rem;
+                bottom: 0.6rem;
+                width: calc(100% - 1rem);
+                max-width: calc(100% - 1rem);
+                padding: 0.45rem 0.65rem;
+                border-radius: 16px;
+                font-size: clamp(0.68rem, 2.6vw, 0.78rem);
+                line-height: 1.3;
+                gap: 0.35rem;
+            }
+
+            .camera-hint span {
+                white-space: normal;
+                word-break: break-word;
+                text-align: center;
             }
 
             .camera-bottom-card {
                 grid-template-columns: 1fr;
-                border-radius: 22px;
-                padding: 0.65rem 0.85rem;
-                gap: 0.5rem;
+                border-radius: 20px;
+                padding: 0.55rem 0.75rem;
+                gap: 0.4rem;
             }
 
             .camera-meta {
@@ -505,7 +574,7 @@
             }
 
             .camera-meta strong {
-                font-size: 0.88rem;
+                font-size: 0.85rem;
             }
 
             .camera-meta span {
@@ -515,9 +584,56 @@
             .camera-submit {
                 width: 100%;
                 min-width: 0;
-                height: 46px;
+                height: 44px;
                 border-radius: 14px;
-                font-size: 0.88rem;
+                font-size: 0.86rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .camera-page {
+                padding: 0.4rem;
+                gap: 0.4rem;
+            }
+
+            .camera-topbar {
+                padding: 0.35rem 0.45rem;
+                gap: 0.25rem;
+            }
+
+            .camera-back {
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+            }
+
+            .camera-title {
+                max-width: 95px;
+            }
+
+            .camera-title strong {
+                font-size: 0.78rem;
+            }
+
+            .camera-status-pill {
+                height: 26px;
+                padding: 0 0.38rem;
+                font-size: 0.63rem;
+                gap: 0.18rem;
+                max-width: 105px;
+            }
+
+            .camera-status-pill span {
+                max-width: 60px;
+            }
+
+            .camera-status-pill i {
+                font-size: 0.76rem;
+            }
+
+            .loader-card {
+                width: min(290px, calc(100% - 0.4rem));
+                padding: 0.95rem 0.75rem;
             }
         }
     </style>
@@ -539,9 +655,15 @@
                 <small>Attendance Verification</small>
                 <strong>{{ $actionTitle }} - {{ $user->fullname ?? 'Staff APS' }}</strong>
             </div>
-            <div class="camera-status-pill" id="cameraStatus">
-                <i class="bx bx-camera"></i>
-                <span>Menyiapkan kamera</span>
+            <div class="camera-topbar-pills">
+                <div class="camera-status-pill" id="cameraStatus">
+                    <i class="bx bx-camera"></i>
+                    <span>Kamera...</span>
+                </div>
+                <div class="camera-status-pill" id="gpsStatusPill" title="Akurasi GPS">
+                    <i class="bx bx-target-lock"></i>
+                    <span id="gpsStatusText">GPS...</span>
+                </div>
             </div>
         </header>
 
@@ -571,7 +693,9 @@
 
             <div class="camera-meta">
                 <strong>{{ $actionTitle }} Sekarang</strong>
-                <span>{{ $actionSub }}</span>
+                <span id="gpsInfoText">
+                    <i class="bx bx-map-pin"></i> Mengunci lokasi GPS...
+                </span>
             </div>
             <button type="submit" id="btnSubmit" class="camera-submit" disabled>
                 <i class="bx {{ $isCheckOut ? 'bx-log-out' : 'bx-log-in' }}"></i>
@@ -616,6 +740,9 @@
             const loaderTitle = document.getElementById('loaderTitle');
             const loaderText = document.getElementById('loaderText');
             const cameraStatus = document.getElementById('cameraStatus');
+            const gpsStatusPill = document.getElementById('gpsStatusPill');
+            const gpsStatusText = document.getElementById('gpsStatusText');
+            const gpsInfoText = document.getElementById('gpsInfoText');
             const faceGuide = document.querySelector('.face-guide');
             const hintText = document.querySelector('.camera-hint span');
 
@@ -623,6 +750,62 @@
             let isModelReady = false;
             let blazefaceModel = null;
             let nativeDetector = null;
+            let cachedPosition = null;
+            let gpsWatchId = null;
+
+            if (gpsStatusPill) gpsStatusPill.addEventListener('click', requestFreshGpsLocation);
+            if (gpsInfoText) gpsInfoText.addEventListener('click', requestFreshGpsLocation);
+
+            function updateGpsUI(position) {
+                cachedPosition = position;
+                const accuracy = Math.round(position.coords.accuracy);
+
+                const latInput = document.getElementById('latitude');
+                const lngInput = document.getElementById('longitude');
+                if (latInput) latInput.value = position.coords.latitude;
+                if (lngInput) lngInput.value = position.coords.longitude;
+
+                if (gpsStatusText) {
+                    gpsStatusText.innerHTML = `GPS ${accuracy}m`;
+                    if (accuracy <= 25) {
+                        if (gpsStatusPill) gpsStatusPill.className = 'camera-status-pill is-success';
+                    } else if (accuracy <= 60) {
+                        if (gpsStatusPill) gpsStatusPill.className = 'camera-status-pill';
+                    } else {
+                        if (gpsStatusPill) gpsStatusPill.className = 'camera-status-pill is-warning';
+                    }
+                }
+
+                if (gpsInfoText) {
+                    gpsInfoText.innerHTML = `<i class="bx bx-map-pin"></i> Akurasi GPS: <b>${accuracy} meter</b>`;
+                }
+            }
+
+            function requestFreshGpsLocation() {
+                if (gpsStatusText) gpsStatusText.innerHTML = 'Memuat...';
+                if (gpsInfoText) gpsInfoText.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Memperbarui lokasi GPS...';
+
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => updateGpsUI(pos),
+                    (err) => console.warn('GPS refresh error:', err),
+                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                );
+            }
+
+            // Immediately start GPS pre-warming on page load
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => updateGpsUI(pos),
+                    (err) => console.warn('Initial GPS fetch error:', err),
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }
+                );
+
+                gpsWatchId = navigator.geolocation.watchPosition(
+                    (pos) => updateGpsUI(pos),
+                    (err) => console.warn('Watch GPS error:', err),
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }
+                );
+            }
 
             const setStatus = (icon, text) => {
                 if (cameraStatus) {
@@ -666,7 +849,7 @@
                 }
             };
 
-            setStatus('bx-loader-alt bx-spin', 'Memuat AI Deteksi Wajah...');
+            setStatus('bx-loader-alt bx-spin', 'Memuat AI...');
 
             // Load BlazeFace AI Neural Model
             if (typeof blazeface !== 'undefined') {
@@ -913,21 +1096,22 @@
                     return;
                 }
 
-                Swal.fire({
-                    title: 'Mengambil lokasi',
-                    text: 'Mohon tunggu, sistem sedang memverifikasi GPS Anda.',
-                    allowOutsideClick: false,
-                    confirmButtonColor: '#2f80ed',
-                    didOpen: () => Swal.showLoading()
-                });
-
-                const handleSuccess = (position) => {
+                const processFormSubmission = (position) => {
                     const context = canvas.getContext('2d');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    const maxDim = 720;
+                    let w = video.videoWidth || 720;
+                    let h = video.videoHeight || 540;
+                    if (w > maxDim) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
 
-                    photoInput.value = canvas.toDataURL('image/png');
+                    context.drawImage(video, 0, 0, w, h);
+
+                    photoInput.value = canvas.toDataURL('image/jpeg', 0.70);
                     document.getElementById('latitude').value = position.coords.latitude;
                     document.getElementById('longitude').value = position.coords.longitude;
 
@@ -943,10 +1127,10 @@
                         message = 'Aktifkan izin lokasi di pengaturan browser untuk melakukan absensi.';
                     } else if (error.code === error.POSITION_UNAVAILABLE) {
                         title = 'Sinyal GPS Lemah';
-                        message = 'Lokasi tidak dapat ditentukan. Pastikan GPS dan koneksi internet Anda aktif, atau coba di area yang lebih terbuka.';
+                        message = 'Lokasi tidak dapat ditentukan. Pastikan GPS dan koneksi internet Anda aktif.';
                     } else if (error.code === error.TIMEOUT) {
                         title = 'Waktu Permintaan Habis';
-                        message = 'Gagal mendapatkan lokasi tepat waktu. Silakan coba klik tombol Absen In lagi.';
+                        message = 'Gagal mendapatkan lokasi tepat waktu. Pastikan GPS dan koneksi internet Anda aktif.';
                     }
 
                     Swal.fire({
@@ -957,23 +1141,36 @@
                     });
                 };
 
-                navigator.geolocation.getCurrentPosition(handleSuccess, function(error) {
-                    if (error.code === error.PERMISSION_DENIED) {
-                        handleFailure(error);
-                    } else {
-                        navigator.geolocation.getCurrentPosition(handleSuccess, function(error2) {
-                            handleFailure(error2);
-                        }, {
-                            enableHighAccuracy: false,
-                            timeout: 10000,
-                            maximumAge: 10000
-                        });
-                    }
-                }, {
-                    enableHighAccuracy: true,
-                    timeout: 6000,
-                    maximumAge: 0
+                // INSTANT SUBMIT IF PRE-WARMED POSITION IS READY (0-SEC LAG)
+                if (cachedPosition) {
+                    processFormSubmission(cachedPosition);
+                    return;
+                }
+
+                // FALLBACK IF GPS IS STILL LOADING COLD
+                Swal.fire({
+                    title: 'Mengambil lokasi',
+                    text: 'Mohon tunggu sejenak, sistem sedang mengunci GPS Anda...',
+                    allowOutsideClick: false,
+                    confirmButtonColor: '#2f80ed',
+                    didOpen: () => Swal.showLoading()
                 });
+
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => processFormSubmission(pos),
+                    (error) => {
+                        if (error.code === error.PERMISSION_DENIED) {
+                            handleFailure(error);
+                        } else {
+                            navigator.geolocation.getCurrentPosition(
+                                (pos2) => processFormSubmission(pos2),
+                                (error2) => handleFailure(error2),
+                                { enableHighAccuracy: false, timeout: 8000, maximumAge: 10000 }
+                            );
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
             });
         });
     </script>
