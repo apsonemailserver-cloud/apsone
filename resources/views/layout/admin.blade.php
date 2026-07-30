@@ -3427,24 +3427,30 @@
             box-shadow: none !important;
         }
 
-        .topbar-theme-switch {
+        .topbar-theme-switch,
+        .topbar-notification-switch {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.22rem;
-            height: 48px;
-            width: 48px;
-            padding: 0.24rem;
+            height: 42px;
+            width: 42px;
+            min-width: 42px;
+            max-width: 42px;
+            padding: 0.18rem;
             border: 1px solid #e6edf5;
             border-radius: 999px;
             background: #eef2f8;
             flex: 0 0 auto;
+            position: relative;
         }
 
-        .topbar-theme-option {
-            height: 38px;
-            width: 38px;
-            min-width: 38px;
+        .topbar-theme-option,
+        .topbar-notification-btn {
+            height: 34px;
+            width: 34px;
+            min-width: 34px;
+            max-width: 34px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -3453,58 +3459,31 @@
             border-radius: 999px;
             background: transparent;
             color: #64748b;
-            font-size: 0.74rem;
-            font-weight: 700;
-            transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-        }
-
-        .topbar-theme-option i {
             font-size: 1.05rem;
-        }
-
-        .topbar-theme-toggle {
-            min-width: 38px;
-        }
-
-        .topbar-theme-option.is-active {
-            background: #ffffff;
-            color: #2f80ed;
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
-        }
-
-        .topbar-notification-switch {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            height: 48px;
-            width: 48px;
-            padding: 0.24rem;
-            border: 1px solid #e6edf5;
-            border-radius: 999px;
-            background: #eef2f8;
-            flex: 0 0 auto;
-            position: relative;
-        }
-
-        .topbar-notification-btn {
-            height: 38px;
-            width: 38px;
-            min-width: 38px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            border: 0;
-            border-radius: 999px;
-            background: #ffffff;
-            color: #64748b;
-            font-size: 1.1rem;
+            font-weight: 700;
             transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
             position: relative;
             cursor: pointer;
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
         }
 
+        .topbar-theme-option i,
+        .topbar-notification-btn i {
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+
+        .topbar-theme-toggle {
+            min-width: 34px;
+        }
+
+        .topbar-theme-option.is-active,
+        .topbar-notification-btn {
+            background: #ffffff;
+            color: #64748b;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        .topbar-theme-option.is-active:hover,
         .topbar-notification-btn:hover {
             color: #2f80ed;
         }
@@ -3626,6 +3605,7 @@
 
         html.aps-dark .topbar-search-trigger,
         html.aps-dark .topbar-theme-switch,
+        html.aps-dark .topbar-notification-switch,
         html.aps-dark #custom-sidebar-toggle,
         html.aps-dark .dropdown-user .topbar-user-chip.nav-link,
         html.aps-dark .dropdown-menu,
@@ -3791,30 +3771,23 @@
                 padding: 0.42rem !important;
             }
 
-            .topbar-theme-switch {
-                height: 44px;
-                width: 44px;
-                padding: 0.2rem;
-            }
-
-            .topbar-theme-option {
-                width: 34px;
-                min-width: 34px;
-                height: 34px;
-                padding: 0;
-            }
-
+            .topbar-theme-switch,
             .topbar-notification-switch {
-                height: 44px;
-                width: 44px;
-                padding: 0.2rem;
+                height: 38px;
+                width: 38px;
+                min-width: 38px;
+                max-width: 38px;
+                padding: 0.15rem;
             }
 
+            .topbar-theme-option,
             .topbar-notification-btn {
-                width: 34px;
-                min-width: 34px;
-                height: 34px;
+                width: 30px;
+                min-width: 30px;
+                max-width: 30px;
+                height: 30px;
                 padding: 0;
+                font-size: 0.95rem;
             }
         }
 
@@ -4006,16 +3979,22 @@
                 font-size: 0.74rem !important;
             }
 
-            .topbar-theme-switch {
-                height: 40px !important;
-                width: 40px !important;
+            .topbar-theme-switch,
+            .topbar-notification-switch {
+                height: 38px !important;
+                width: 38px !important;
+                min-width: 38px !important;
+                max-width: 38px !important;
                 flex: 0 0 auto !important;
             }
 
-            .topbar-theme-option {
+            .topbar-theme-option,
+            .topbar-notification-btn {
                 width: 30px !important;
                 min-width: 30px !important;
+                max-width: 30px !important;
                 height: 30px !important;
+                font-size: 0.95rem !important;
             }
 
             .topbar-user-mini-avatar {
@@ -4508,13 +4487,15 @@
         }
 
         html:not(.aps-dark) #layout-navbar .topbar-search-trigger,
-        html:not(.aps-dark) #layout-navbar .topbar-theme-switch {
+        html:not(.aps-dark) #layout-navbar .topbar-theme-switch,
+        html:not(.aps-dark) #layout-navbar .topbar-notification-switch {
             background: #f9fafb !important;
             background-color: #f9fafb !important;
             background-image: none !important;
         }
 
         html:not(.aps-dark) #layout-navbar .topbar-theme-option.is-active,
+        html:not(.aps-dark) #layout-navbar .topbar-notification-btn,
         html:not(.aps-dark) #layout-navbar .topbar-user-chip,
         html:not(.aps-dark) #layout-navbar #custom-sidebar-toggle,
         html:not(.aps-dark) #layout-navbar .topbar-search-trigger kbd {
@@ -4525,6 +4506,7 @@
 
         html:not(.aps-dark) #layout-navbar .topbar-search-trigger,
         html:not(.aps-dark) #layout-navbar .topbar-theme-switch,
+        html:not(.aps-dark) #layout-navbar .topbar-notification-switch,
         html:not(.aps-dark) #layout-navbar .topbar-user-chip,
         html:not(.aps-dark) #layout-navbar #custom-sidebar-toggle {
             border-color: #eef2f7 !important;
@@ -4548,22 +4530,29 @@
         }
 
         html:not(.aps-dark) #layout-navbar .topbar-search-trigger,
-        html:not(.aps-dark) #layout-navbar .topbar-theme-switch {
+        html:not(.aps-dark) #layout-navbar .topbar-theme-switch,
+        html:not(.aps-dark) #layout-navbar .topbar-notification-switch {
             background: #f5f7fb !important;
             background-color: #f5f7fb !important;
         }
 
-        #layout-navbar .topbar-theme-switch {
+        #layout-navbar .topbar-theme-switch,
+        #layout-navbar .topbar-notification-switch {
             height: 42px !important;
             width: 42px !important;
+            min-width: 42px !important;
+            max-width: 42px !important;
             padding: 0.18rem !important;
         }
 
-        #layout-navbar .topbar-theme-option {
+        #layout-navbar .topbar-theme-option,
+        #layout-navbar .topbar-notification-btn {
             height: 34px !important;
             width: 34px !important;
             min-width: 34px !important;
+            max-width: 34px !important;
             padding: 0 !important;
+            font-size: 1.05rem !important;
         }
 
         #layout-navbar .topbar-theme-toggle {
@@ -4620,16 +4609,23 @@
                 height: 30px !important;
             }
 
-            #layout-navbar .topbar-theme-switch {
+            #layout-navbar .topbar-theme-switch,
+            #layout-navbar .topbar-notification-switch {
                 height: 38px !important;
                 width: 38px !important;
+                min-width: 38px !important;
+                max-width: 38px !important;
+                padding: 0.15rem !important;
             }
 
-            #layout-navbar .topbar-theme-option {
-                width: 29px !important;
-                min-width: 29px !important;
-                height: 29px !important;
+            #layout-navbar .topbar-theme-option,
+            #layout-navbar .topbar-notification-btn {
+                width: 30px !important;
+                min-width: 30px !important;
+                max-width: 30px !important;
+                height: 30px !important;
                 padding: 0 !important;
+                font-size: 0.95rem !important;
             }
         }
 
