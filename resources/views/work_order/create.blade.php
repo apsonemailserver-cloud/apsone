@@ -603,16 +603,32 @@
                     success: function(response) {
                         if (response.success && response.flights && response.flights.length > 0) {
                             window.__activeFlights = response.flights;
-                            let html = '<option value="">-- Pilih Flight Berdasarkan Station (' + response.flights.length + ' Flight Arrival ' + (response.source || 'Flightradar24') + ') --</option>';
+                            let html = '<option value="">-- Pilih Jadwal Penerbangan (Kedatangan) --</option>';
                             response.flights.forEach(function(item, idx) {
-                                const exFlight = item.ex_flight || item.flight_number || '-';
-                                const toFlight = (item.to_flight && item.to_flight !== '-') ? ` ➔ To: ${item.to_flight}` : '';
-                                const reg = item.aircraft_reg || item.registasi || '-';
-                                const airline = (item.airline && item.airline !== 'Airlines') ? ` (${item.airline})` : '';
-                                const origin = (item.origin && item.origin !== '-') ? ` | Dari: ${item.origin}` : '';
-                                const arr = item.start_time || item.arrival || '-';
+                                const ex = item.ex_flight || item.flight_number || '';
+                                const to = (item.to_flight && item.to_flight !== '-') ? ` / ${item.to_flight}` : '';
+                                const flightNo = `${ex}${to}`;
+                                const reg = item.aircraft_reg || item.registasi || '';
+                                const regStr = reg ? ` (${reg})` : '';
 
-                                html += `<option value="${idx}">Ex: ${exFlight}${toFlight} | Reg: ${reg}${airline}${origin} | Est Arrival: ${arr}</option>`;
+                                let origin = item.origin || '';
+                                if (origin === '-') origin = '';
+                                origin = origin
+                                    .replace(/ International Airport/gi, '')
+                                    .replace(/ Airport/gi, '')
+                                    .replace(/ Syamsudin Noor/gi, '')
+                                    .replace(/ Adisumarmo/gi, '')
+                                    .replace(/ Minangkabau/gi, '')
+                                    .replace(/ Soekarno-Hatta/gi, '')
+                                    .replace(/ Changi/gi, '')
+                                    .replace(/ Juanda/gi, '')
+                                    .replace(/ Ngurah Rai/gi, '')
+                                    .trim();
+                                const originStr = origin ? ` - ${origin}` : '';
+                                const arr = item.start_time || item.arrival || '';
+                                const timeStr = arr ? ` [${arr}]` : '';
+
+                                html += `<option value="${idx}">${flightNo}${regStr}${originStr}${timeStr}</option>`;
                             });
                             $combo.html(html);
 
