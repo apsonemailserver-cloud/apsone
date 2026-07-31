@@ -663,3 +663,34 @@ html.aps-dark .text-success {
     color: #10b981 !important;
     font-weight: 700 !important;
 }
+
+/* ============================================================
+   DARK MODE LEAFLET MAP VISIBILITY & STYLING REFINEMENTS
+   ============================================================ */
+html.aps-dark .leaflet-tile-pane {
+    filter: none !important;
+}
+
+html.aps-dark .leaflet-container {
+    background: #0b1329 !important;
+}
+
+html.aps-dark .leaflet-control-zoom a,
+html.aps-dark .leaflet-bar a {
+    background-color: #1e293b !important;
+    color: #38bdf8 !important;
+    border-color: #334155 !important;
+}
+
+html.aps-dark .leaflet-control-zoom a:hover,
+html.aps-dark .leaflet-bar a:hover {
+    background-color: #334155 !important;
+    color: #60a5fa !important;
+}
+
+html.aps-dark .station-map-chip {
+    background: rgba(15, 23, 42, 0.88) !important;
+    color: #38bdf8 !important;
+    border: 1px solid #334155 !important;
+    backdrop-filter: blur(8px) !important;
+}

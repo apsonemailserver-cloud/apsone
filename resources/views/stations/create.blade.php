@@ -978,11 +978,11 @@
         }
 
         function getTileUrl() {
-            return isDarkMode() ? DARK_TILES : GOOGLE_ROADS;
+            return GOOGLE_ROADS;
         }
 
         function getSubdomains() {
-            return isDarkMode() ? 'abcd' : '0123';
+            return '0123';
         }
 
         function initMap(lat, lng) {
