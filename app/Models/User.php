@@ -154,9 +154,14 @@ class User extends Authenticatable
         return $this->hasMany(Overtime::class);
     }
 
-    // Relasi ke Hasil Kerja (Work Results)
+    // Relasi ke Work Orders
+    public function workOrders()
+    {
+        return $this->belongsToMany(WorkOrder::class, 'work_order_user', 'user_id', 'work_order_id');
+    }
+
     public function workResults()
     {
-        return $this->belongsToMany(WorkResult::class, 'work_result_user', 'user_id', 'work_result_id');
+        return $this->workOrders();
     }
 }

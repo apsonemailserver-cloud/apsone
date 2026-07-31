@@ -9,6 +9,7 @@ use App\Models\Leave;
 use App\Models\Schedule;
 use App\Models\Station;
 use App\Models\User;
+use App\Models\WorkOrder;
 use App\Models\WorkResult;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -268,7 +269,7 @@ class HomeController extends Controller
         $totalWoThisMonth = 0;
 
         if ($showManagementDashboard) {
-            $woQuery = WorkResult::query();
+            $woQuery = WorkOrder::query();
             
             if ($user->hasRole('Admin')) {
                 if ($selectedStation !== 'All') {
@@ -290,11 +291,11 @@ class HomeController extends Controller
                 ->get();
         }
 
-        $pendingWorkResultsCount = WorkResult::query()
+        $pendingWorkResultsCount = WorkOrder::query()
             ->whereMonth('date', Carbon::today()->month)
             ->whereYear('date', Carbon::today()->year)
             ->when(!$user->hasRole('Admin'), function($q) use ($user) {
-                if ($user->hasRole(WorkResult::LEADER_ROLES)) {
+                if ($user->hasRole(WorkOrder::LEADER_ROLES)) {
                     $q->where('submitted_by', $user->id);
                 } else {
                     $q->whereHas('users', fn($sq) => $sq->where('users.id', $user->id));
@@ -372,7 +373,7 @@ class HomeController extends Controller
             ->orderBy('arrival')
             ->get();
 
-        $personalWorkResultsLastMonth = WorkResult::with(['users', 'submittedBy'])
+        $personalWorkResultsLastMonth = WorkOrder::with(['users', 'submittedBy'])
             ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
             ->whereBetween('date', [$monthStart->toDateString(), $today->toDateString()])
             ->orderByRaw("CASE WHEN photo_path IS NULL OR photo_path = '' THEN 0 ELSE 1 END ASC")
@@ -415,7 +416,7 @@ class HomeController extends Controller
             ->get()
             ->keyBy(fn (Schedule $schedule) => Carbon::parse($schedule->date)->toDateString());
 
-        $personalWorkResults = WorkResult::with(['users', 'submittedBy'])
+        $personalWorkResults = WorkOrder::with(['users', 'submittedBy'])
             ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
             ->orderByRaw("CASE WHEN photo_path IS NULL OR photo_path = '' THEN 0 ELSE 1 END ASC")
             ->orderBy('date', 'desc')
