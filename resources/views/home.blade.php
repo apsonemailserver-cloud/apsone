@@ -1667,13 +1667,9 @@
                             <span class="line-series-item"><span class="line-series-dot compare"></span>Rata-rata</span>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="{{ route('work_results.index') }}" class="btn btn-sm btn-outline-primary"><i class="bx bx-list-ul me-1"></i> Data WO</a>
-                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
-                            <a href="{{ route('work_results.create') }}" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i> Input WO</a>
-                        @endif
-                        <span class="chart-period-select">7 Hari</span>
-                    </div>
+                    <span class="chart-period-select">
+                        7 Hari
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="chart-canvas-wrapper">
