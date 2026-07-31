@@ -482,6 +482,12 @@ class WorkResultController extends Controller
     {
         try {
             $workResult = WorkResult::findOrFail($id);
+
+            if (!empty($workResult->photo_path)) {
+                Alert::error('Gagal Hapus', 'Data pekerjaan yang sudah berstatus SELESAI tidak dapat dihapus.');
+                return redirect()->route('work_results.index');
+            }
+
             if ($workResult->photo_path && Storage::disk('public')->exists($workResult->photo_path)) {
                 Storage::disk('public')->delete($workResult->photo_path);
             }

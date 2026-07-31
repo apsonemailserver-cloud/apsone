@@ -212,11 +212,11 @@
                                                         </button>
                                                     @endif
                                                 @endif
-                                                @if(auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) && $item->submitted_by === auth()->id()))
+                                                @if(empty($item->photo_path) && (auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) && $item->submitted_by === auth()->id())))
                                                     <form action="{{ route('work_results.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="button" class="action-btn action-delete btn-delete" title="Hapus Data">
+                                                        <button type="button" class="action-btn action-delete btn-delete" title="Hapus Data Pekerjaan">
                                                             <i class="bx bx-trash"></i>
                                                         </button>
                                                     </form>
