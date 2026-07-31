@@ -627,3 +627,35 @@ html.aps-dark .stat-card .stat-icon {
     background: transparent !important;
     box-shadow: none !important;
 }
+
+/* ============================================================
+   DARK MODE PROFILE PAGE TEXT VISIBILITY & CONTRAST FIX
+   ============================================================ */
+html.aps-dark .profile-info-item .info-label,
+html.aps-dark .info-tile .info-label,
+html.aps-dark .profile-page .info-label {
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+}
+
+html.aps-dark .profile-info-item .info-value,
+html.aps-dark .info-tile .info-value,
+html.aps-dark .profile-page .info-value,
+html.aps-dark .profile-info-item span:not(.info-label):not(.badge) {
+    color: #f1f5f9 !important;
+    font-weight: 600 !important;
+}
+
+html.aps-dark .profile-info-item .info-value.text-danger,
+html.aps-dark .info-tile .info-value.text-danger,
+html.aps-dark .profile-page .info-value.text-danger {
+    color: #f87171 !important;
+    font-weight: 700 !important;
+}
+
+html.aps-dark .profile-info-item .info-value.text-success,
+html.aps-dark .info-tile .info-value.text-success,
+html.aps-dark .profile-page .info-value.text-success {
+    color: #34d399 !important;
+    font-weight: 700 !important;
+}
