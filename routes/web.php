@@ -21,6 +21,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\WorkResultController;
 use App\Models\Blacklist;
 
 /*
@@ -218,6 +219,19 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     Route::post('/announcements/{id}/read', [AnnouncementController::class, 'markAsRead'])->name('announcements.read');
     Route::post('/announcements/mark-all-read', [AnnouncementController::class, 'markAllRead'])->name('announcements.mark_all_read');
+
+    // --- WORK RESULTS (PEKERJAAN) ---
+    Route::get('/work-results', [WorkResultController::class, 'index'])->name('work_results.index');
+    Route::get('/work-results/create', [WorkResultController::class, 'create'])->name('work_results.create');
+    Route::get('/work-results/template', [WorkResultController::class, 'downloadTemplate'])->name('work_results.template');
+    Route::post('/work-results/store', [WorkResultController::class, 'store'])->name('work_results.store');
+    Route::post('/work-results/fetch-flight-data', [WorkResultController::class, 'fetchFlightData'])->name('work_results.fetch_flight_data');
+    Route::post('/work-results/import', [WorkResultController::class, 'import'])->name('work_results.import');
+    Route::get('/work-results/export/pdf', [WorkResultController::class, 'exportPdf'])->name('work_results.export.pdf');
+    Route::get('/work-results/{id}/export-pdf', [WorkResultController::class, 'exportSinglePdf'])->name('work_results.export_single_pdf');
+    Route::post('/work-results/{id}/upload-photo', [WorkResultController::class, 'uploadPhoto'])->name('work_results.upload_photo');
+    Route::get('/work-results/{id}', [WorkResultController::class, 'show'])->name('work_results.show');
+    Route::delete('/work-results/{id}', [WorkResultController::class, 'destroy'])->name('work_results.destroy');
 
     // --- BANTUAN & LAINNYA ---
     Route::view('/faq', 'faq')->name('faq');
