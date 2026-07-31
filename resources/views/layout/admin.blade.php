@@ -41,6 +41,104 @@
     @yield('styles')
     <!-- pjax-page-styles-end -->
     <style>
+        /* --- BRAND PRIMARY COLOR OVERRIDE (BLUE #2f80ed) --- */
+        :root {
+            --bs-primary: #2f80ed !important;
+            --bs-primary-rgb: 47, 128, 237 !important;
+        }
+
+        .btn-primary {
+            background-color: #2f80ed !important;
+            border-color: #2f80ed !important;
+            color: #ffffff !important;
+        }
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+            background-color: #1d6ed8 !important;
+            border-color: #1d6ed8 !important;
+            color: #ffffff !important;
+        }
+
+        .btn-outline-primary {
+            color: #2f80ed !important;
+            border-color: #2f80ed !important;
+        }
+        .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+            background-color: #2f80ed !important;
+            border-color: #2f80ed !important;
+            color: #ffffff !important;
+        }
+
+        .btn-label-primary {
+            background-color: #e8f1fd !important;
+            color: #2f80ed !important;
+            border-color: transparent !important;
+        }
+        .btn-label-primary:hover, .btn-label-primary:focus, .btn-label-primary:active {
+            background-color: #2f80ed !important;
+            color: #ffffff !important;
+        }
+
+        .bg-label-primary {
+            background-color: #e8f1fd !important;
+            color: #1d6ed8 !important;
+        }
+
+        .text-primary {
+            color: #2f80ed !important;
+        }
+
+        .bg-primary {
+            background-color: #2f80ed !important;
+        }
+
+        /* --- STAT CARDS GRADIENT OVERRIDES --- */
+        .stat-card {
+            border-radius: 12px !important;
+            border: none !important;
+            color: #ffffff !important;
+            position: relative;
+            overflow: hidden;
+            min-height: 76px;
+            box-shadow: 0 10px 24px rgba(47, 128, 237, 0.12) !important;
+        }
+
+        .stat-card-primary {
+            background: linear-gradient(135deg, #2F80ED 0%, #2368C8 64%, #174EA6 100%) !important;
+        }
+
+        .stat-card-success {
+            background: linear-gradient(135deg, #10B981 0%, #0EA5E9 100%) !important;
+        }
+
+        .stat-card-info {
+            background: linear-gradient(135deg, #2563EB 0%, #2F80ED 54%, #38BDF8 100%) !important;
+        }
+
+        .stat-card .stat-title {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 0.68rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .stat-card .stat-value {
+            color: #ffffff !important;
+            font-size: 1.45rem;
+            font-weight: 750;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .stat-card .stat-icon {
+            color: rgba(255, 255, 255, 0.3) !important;
+            position: absolute;
+            right: 14px;
+            bottom: 12px;
+            font-size: 2.2rem;
+        }
+
         /* --- KUSTOMISASI SIDEBAR SESUAI KRITERIA --- */
 
         /* 1. Posisi Tetap (Persistent) & Ukuran Proporsional */
@@ -5937,6 +6035,30 @@
                                 </li>
                             @endif
 
+                        </ul>
+                    </li>
+
+                    {{-- MENU PEKERJAAN --}}
+                    <li class="menu-item {{ request()->routeIs('work_results.*') ? 'active open' : '' }}">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons ti ti-plane-arrival"></i>
+                            <div data-i18n="Pekerjaan">Pekerjaan</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item {{ request()->routeIs('work_results.index') ? 'active' : '' }}">
+                                <a href="{{ route('work_results.index') }}" class="menu-link">
+                                    <i class="menu-icon tf-icons ti ti-list-details"></i>
+                                    <div data-i18n="Data Pekerjaan">Data Pekerjaan</div>
+                                </a>
+                            </li>
+                            @if (Auth::user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                <li class="menu-item {{ request()->routeIs('work_results.create') ? 'active' : '' }}">
+                                    <a href="{{ route('work_results.create') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-file-plus"></i>
+                                        <div data-i18n="Input Pekerjaan">Input Pekerjaan</div>
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     </li>
 

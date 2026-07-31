@@ -359,5 +359,29 @@ class StaffDashboardTest extends TestCase
             $table->string('status');
             $table->timestamps();
         });
+
+        Schema::create('work_results', function (Blueprint $table) {
+            $table->id();
+            $table->date('date');
+            $table->string('station');
+            $table->string('aircraft_reg');
+            $table->string('ex_flight')->nullable();
+            $table->string('to_flight')->nullable();
+            $table->string('parking_stand');
+            $table->string('wo_number');
+            $table->time('start_time');
+            $table->time('end_time');
+            $table->string('photo_path')->nullable();
+            $table->string('type');
+            $table->string('submitted_by', 20)->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('work_result_user', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('work_result_id');
+            $table->string('user_id', 20);
+            $table->timestamps();
+        });
     }
 }

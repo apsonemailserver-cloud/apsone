@@ -17,9 +17,11 @@ class Flights extends Model
      * @var array
      */
     protected $fillable = [
+        'station',
         'airline',
         'flight_number',
         'registasi',
+        'type',
         'arrival',
         'time_count',
         'status',

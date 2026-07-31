@@ -9,6 +9,7 @@ use App\Models\Leave;
 use App\Models\Schedule;
 use App\Models\Station;
 use App\Models\User;
+use App\Models\WorkResult;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -73,7 +74,7 @@ class HomeController extends Controller
 
         // 1. Data Penerbangan sesuai periode dashboard
         $today = Carbon::today();
-        $flightsQuery = Flights::query();
+        $flightsQuery = Flights::with(['details.schedule.user']);
         if ($showManagementDashboard) {
             $flightsQuery->whereDate('created_at', $today);
         } else {
@@ -254,11 +255,54 @@ class HomeController extends Controller
         }
 
         // Data Monitoring Station (Untuk Widget Kartu-Kartu Station)
-        // Kita tampilkan semua station di widget bawah, tapi Dashboard utama mengikuti filter dropdown
         $allStations = !empty($listStations) ? $listStations : Station::where('is_active', 1)->get();
         $stationStats = User::select('station', DB::raw('count(*) as total'))
             ->groupBy('station')
             ->pluck('total', 'station');
+
+        // =================================================================
+        // BAGIAN 4B: WORK RESULTS STATS (BARU)
+        // =================================================================
+        $recentWorkResults = collect();
+        $totalWoToday = 0;
+        $totalWoThisMonth = 0;
+
+        if ($showManagementDashboard) {
+            $woQuery = WorkResult::query();
+            
+            if ($user->hasRole('Admin')) {
+                if ($selectedStation !== 'All') {
+                    $woQuery->where('station', $selectedStation);
+                }
+            } else {
+                $woQuery->where('submitted_by', $user->id);
+            }
+
+            $totalWoToday = (clone $woQuery)->whereDate('date', Carbon::today())->count();
+            $totalWoThisMonth = (clone $woQuery)->whereMonth('date', Carbon::today()->month)
+                                               ->whereYear('date', Carbon::today()->year)->count();
+            
+            $recentWorkResults = $woQuery->with(['users', 'submittedBy'])
+                ->orderByRaw("CASE WHEN photo_path IS NULL OR photo_path = '' THEN 0 ELSE 1 END ASC")
+                ->orderBy('date', 'desc')
+                ->orderBy('start_time', 'desc')
+                ->take(5)
+                ->get();
+        }
+
+        $pendingWorkResultsCount = WorkResult::query()
+            ->whereMonth('date', Carbon::today()->month)
+            ->whereYear('date', Carbon::today()->year)
+            ->when(!$user->hasRole('Admin'), function($q) use ($user) {
+                if ($user->hasRole(WorkResult::LEADER_ROLES)) {
+                    $q->where('submitted_by', $user->id);
+                } else {
+                    $q->whereHas('users', fn($sq) => $sq->where('users.id', $user->id));
+                }
+            })
+            ->when($user->hasRole('Admin') && isset($selectedStation) && $selectedStation !== 'All', fn($q) => $q->where('station', $selectedStation))
+            ->where(fn($q) => $q->whereNull('photo_path')->orWhere('photo_path', ''))
+            ->count();
 
         // =================================================================
         // BAGIAN 5: RETURN VIEW
@@ -294,32 +338,52 @@ class HomeController extends Controller
 
             // Monitoring Station Widget
             'allStations',
-            'stationStats'
+            'stationStats',
+
+            // Work Results (Pekerjaan) Stats
+            'recentWorkResults',
+            'totalWoToday',
+            'totalWoThisMonth',
+            'pendingWorkResultsCount'
         ));
     }
 
-    private function staffDashboardData(User $user): array
+    /**
+     * Internal Helper: Generate Data Dashboard Staff
+     */
+    private function staffDashboardData(User $user)
     {
         $today = Carbon::today();
-        $monthStart = $today->copy()->subDays(29);
+        $monthStart = $today->copy()->startOfMonth();
+
         $monthStartOfDay = $monthStart->copy()->startOfDay();
         $todayEndOfDay = $today->copy()->endOfDay();
 
-        $assignedFlights = Flights::with('details.schedule.user')
+        $historyDates = collect();
+        for ($i = 0; $i < 7; $i++) {
+            $historyDates->push($today->copy()->subDays($i)->toDateString());
+        }
+
+        $assignedFlights = Flights::whereHas(
+            'details.schedule',
+            fn ($query) => $query->where('user_id', $user->id)
+        )
             ->whereBetween('created_at', [$monthStartOfDay, $todayEndOfDay])
-            ->whereHas(
-                'details.schedule',
-                fn ($query) => $query->where('user_id', $user->id)
-            )
             ->orderBy('arrival')
+            ->get();
+
+        $personalWorkResultsLastMonth = WorkResult::with(['users', 'submittedBy'])
+            ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
+            ->whereBetween('date', [$monthStart->toDateString(), $today->toDateString()])
+            ->orderByRaw("CASE WHEN photo_path IS NULL OR photo_path = '' THEN 0 ELSE 1 END ASC")
+            ->orderBy('date', 'desc')
+            ->orderBy('start_time', 'desc')
             ->get();
 
         $scheduledDates = Schedule::where('user_id', $user->id)
             ->whereBetween('date', [$monthStart->toDateString(), $today->toDateString()])
             ->pluck('date')
-            ->map(fn ($date) => Carbon::parse($date)->toDateString())
-            ->unique()
-            ->values();
+            ->map(fn ($date) => Carbon::parse($date)->toDateString());
 
         $attendedDates = Attendance::where('user_id', $user->id)
             ->whereNotNull('check_in_time')
@@ -327,29 +391,23 @@ class HomeController extends Controller
                 $monthStartOfDay,
                 $todayEndOfDay,
             ])
-            ->get(['check_in_time'])
-            ->map(fn (Attendance $attendance) => Carbon::parse($attendance->check_in_time)->toDateString())
+            ->pluck('check_in_time')
+            ->map(fn ($time) => Carbon::parse($time)->toDateString())
             ->unique()
-            ->toBase()
-            ->intersect($scheduledDates);
+            ->values();
 
-        $personalAttendancePercentage = $scheduledDates->isEmpty()
-            ? 0
-            : round(($attendedDates->count() / $scheduledDates->count()) * 100, 2);
+        $totalScheduled = $scheduledDates->count();
+        $totalAttended = $attendedDates->intersect($scheduledDates)->count();
+
+        $personalAttendancePercentage = $totalScheduled > 0
+            ? round(($totalAttended / $totalScheduled) * 100, 2)
+            : 0;
 
         $personalAttendanceHistory = Attendance::with('station')
             ->where('user_id', $user->id)
-            ->whereBetween('check_in_time', [
-                $today->copy()->subDays(6)->startOfDay(),
-                $todayEndOfDay,
-            ])
-            ->orderByDesc('check_in_time')
+            ->whereIn(\Illuminate\Support\Facades\DB::raw('DATE(check_in_time)'), $historyDates)
+            ->orderBy('check_in_time', 'desc')
             ->get();
-
-        $historyDates = $personalAttendanceHistory
-            ->filter(fn (Attendance $attendance) => $attendance->check_in_time)
-            ->map(fn (Attendance $attendance) => Carbon::parse($attendance->check_in_time)->toDateString())
-            ->unique();
 
         $personalSchedules = Schedule::with('shift')
             ->where('user_id', $user->id)
@@ -357,15 +415,31 @@ class HomeController extends Controller
             ->get()
             ->keyBy(fn (Schedule $schedule) => Carbon::parse($schedule->date)->toDateString());
 
+        $personalWorkResults = WorkResult::with(['users', 'submittedBy'])
+            ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
+            ->orderByRaw("CASE WHEN photo_path IS NULL OR photo_path = '' THEN 0 ELSE 1 END ASC")
+            ->orderBy('date', 'desc')
+            ->orderBy('start_time', 'desc')
+            ->take(5)
+            ->get();
+
+        $pendingWorkResultsCount = $personalWorkResultsLastMonth
+            ->filter(fn($wo) => empty($wo->photo_path))
+            ->count();
+
+        $totalAssignments = $personalWorkResultsLastMonth->count() + $assignedFlights->count();
+        $totalCompleted = $personalWorkResultsLastMonth->count() + $assignedFlights->where('status', true)->count();
+
         return [
             'assignedFlights' => $assignedFlights,
+            'personalWorkResultsLastMonth' => $personalWorkResultsLastMonth,
             'personalAttendanceHistory' => $personalAttendanceHistory,
             'personalSchedules' => $personalSchedules,
             'personalAttendancePercentage' => $personalAttendancePercentage,
-            'personalAssignmentsLastMonth' => $assignedFlights->count(),
-            'personalCompletedFlightsLastMonth' => $assignedFlights
-                ->where('status', true)
-                ->count(),
+            'personalAssignmentsLastMonth' => $totalAssignments,
+            'personalCompletedFlightsLastMonth' => $totalCompleted,
+            'personalWorkResults' => $personalWorkResults,
+            'pendingWorkResultsCount' => $pendingWorkResultsCount,
         ];
     }
 

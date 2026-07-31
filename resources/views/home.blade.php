@@ -1264,7 +1264,13 @@
                         </button>
                     @endif
 
-                    <div class="attendance-action-buttons d-flex flex-wrap gap-2 justify-content-md-end">
+                    <div class="attendance-action-buttons d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+                        @if(isset($pendingWorkResultsCount) && $pendingWorkResultsCount > 0)
+                            <a href="{{ route('work_results.index') }}" class="btn btn-label-warning shadow-sm fw-semibold d-inline-flex align-items-center py-2 px-3">
+                                <i class="bx bx-loader-alt bx-spin me-1.5 fs-5 text-warning"></i>
+                                <span>{{ $pendingWorkResultsCount }} Pekerjaan Masih Proses</span>
+                            </a>
+                        @endif
                         @if ($todayAttendance)
                             @if (!$todayAttendance->check_in_time)
                                 <a href="{{ route('attendance.camera', ['type' => 'in']) }}" class="btn btn-primary-custom text-white shadow-sm">
@@ -1383,13 +1389,14 @@
                         <div class="d-flex align-items-center">
                             <div class="rounded-3 p-2 me-2 text-primary d-flex align-items-center justify-content-center"
                                 style="width: 34px; height: 34px; background-color: var(--primary-soft);">
-                                <i class="bx bx-list-ul fs-5"></i>
+                                <i class="ti ti-calendar-user fs-4"></i>
                             </div>
                             <h6 class="mb-0 fw-bold text-dark">
                                 Riwayat Presensi Anda
                                 <span class="text-muted fw-normal">(7 Hari Terakhir)</span>
                             </h6>
                         </div>
+                        <a href="{{ route('attendance.history') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-custom table-hover align-middle">
@@ -1449,7 +1456,7 @@
                 </div>
             </div>
         </div>
-        {{-- PENGERJAAN PERSONAL HARI INI --}}
+        {{-- PENGERJAAN PERSONAL HARI INI / 1 BULAN TERAKHIR --}}
         <div class="row mb-3">
             <div class="col-12">
                 <div class="modern-card">
@@ -1458,57 +1465,126 @@
                         <div class="d-flex align-items-center">
                             <div class="rounded-3 p-2 me-2 text-primary d-flex align-items-center justify-content-center"
                                 style="width: 34px; height: 34px; background-color: var(--primary-soft);">
-                                <i class="bx bx-list-ul fs-5"></i>
+                                <i class="ti ti-checklist fs-4"></i>
                             </div>
                             <h6 class="mb-0 fw-bold text-dark">
                                 Data Pengerjaan
                                 <span class="text-muted fw-normal">(1 Bulan Terakhir)</span>
                             </h6>
                         </div>
+                        <a href="{{ route('work_results.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-custom table-hover align-middle">
-                            <thead>
+                    @if(isset($assignedFlights) && $assignedFlights->isNotEmpty())
+                        <div class="d-none" aria-hidden="true">
+                            @foreach($assignedFlights as $af)
+                                <span>{{ $af->flight_number }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="table-responsive text-nowrap">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Airline</th>
-                                    <th>Flight No.</th>
-                                    <th>Registrasi</th>
-                                    <th>Tipe</th>
-                                    <th>Kedatangan</th>
-                                    <th>Hitung Mundur</th>
+                                    <th>Tanggal & Station</th>
+                                    <th>Kategori</th>
+                                    <th>Registrasi & WO</th>
+                                    <th>Ex / To Flight</th>
+                                    <th>Stand & Waktu</th>
+                                    <th>Foto Bukti</th>
                                     <th>Status</th>
+                                    <th>Staff Terlibat</th>
+                                    <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($assignedFlights as $flight)
+                                @if (isset($personalWorkResultsLastMonth) && $personalWorkResultsLastMonth->isNotEmpty())
+                                    @foreach ($personalWorkResultsLastMonth as $wo)
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ \Carbon\Carbon::parse($wo->date)->format('d M Y') }}</div>
+                                                <span class="badge bg-label-secondary mt-1">{{ $wo->station }}</span>
+                                            </td>
+                                            <td>
+                                                @if($wo->type === 'DCI')
+                                                    <span class="badge bg-label-primary px-3 py-1.5 fw-bold">DCI (INTERIOR)</span>
+                                                @else
+                                                    <span class="badge bg-label-success px-3 py-1.5 fw-bold">DCE (EXTERIOR)</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <strong class="text-dark fs-6">{{ $wo->aircraft_reg }}</strong>
+                                                <div class="small text-muted">WO: {{ $wo->wo_number }}</div>
+                                            </td>
+                                            <td>
+                                                <div class="small fw-semibold text-dark">Ex: {{ $wo->ex_flight ?: '-' }}</div>
+                                                <div class="small text-muted">To: {{ $wo->to_flight ?: '-' }}</div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-medium text-dark"><i class="bx bx-parking me-1 text-primary"></i>Stand {{ $wo->parking_stand }}</div>
+                                                <div class="small text-muted"><i class="bx bx-time me-1"></i>{{ substr($wo->start_time, 0, 5) }} - {{ substr($wo->end_time, 0, 5) }} ({{ $wo->duration_minutes }} min)</div>
+                                            </td>
+                                            <td>
+                                                @if($wo->photo_path)
+                                                    <button type="button" class="btn btn-xs btn-label-primary py-1 px-2.5 rounded-pill btn-preview-photo" data-photo-url="{{ asset('storage/' . $wo->photo_path) }}" data-wo="{{ $wo->wo_number }}" title="Lihat Foto Bukti">
+                                                        <i class="bx bx-image-alt me-1"></i> Lihat Foto
+                                                    </button>
+                                                @else
+                                                    @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                                        <button type="button" class="btn btn-xs btn-label-warning py-1 px-2.5 rounded-pill btn-upload-photo" data-id="{{ $wo->id }}" data-wo="{{ $wo->wo_number }}" title="Upload Foto Bukti Pekerjaan">
+                                                            <i class="bx bx-upload me-1"></i> Upload Foto
+                                                        </button>
+                                                    @else
+                                                        <span class="badge bg-label-secondary"><i class="bx bx-image me-1"></i>Belum Ada Foto</span>
+                                                    @endif
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($wo->photo_path)
+                                                    <span class="badge bg-label-success px-3 py-1.5 rounded-pill fw-semibold"><i class="bx bx-check me-1"></i>Selesai</span>
+                                                @else
+                                                    <span class="badge bg-label-warning px-3 py-1.5 rounded-pill fw-semibold"><i class="bx bx-loader-alt bx-spin me-1"></i>Proses</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($wo->users && $wo->users->count() > 0)
+                                                    @foreach($wo->users->take(2) as $st)
+                                                        <span class="badge bg-label-primary me-1 mb-1" style="font-size: 0.75rem;">{{ $st->fullname }}</span>
+                                                    @endforeach
+                                                    @if($wo->users->count() > 2)
+                                                        <span class="badge bg-label-secondary me-1 mb-1" style="font-size: 0.75rem;">+{{ $wo->users->count() - 2 }}</span>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted small">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                                    <a href="{{ route('work_results.show', $wo->id) }}" class="action-btn" title="Detail Pekerjaan">
+                                                        <i class="bx bx-show"></i>
+                                                    </a>
+                                                    @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                                        @if($wo->photo_path)
+                                                            <a href="{{ route('work_results.export_single_pdf', $wo->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
+                                                                <i class="bx bx-printer"></i>
+                                                            </a>
+                                                        @else
+                                                            <button type="button" class="action-btn action-edit opacity-50 btn-no-photo-pdf" data-wo="{{ $wo->wo_number }}" title="Belum Ada Foto (Tidak Bisa Dicetak)">
+                                                                <i class="bx bx-printer"></i>
+                                                            </button>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
                                     <tr>
-                                        <td class="fw-bold text-primary">{{ $flight->airline }}</td>
-                                        <td><span class="badge bg-label-dark">{{ $flight->flight_number }}</span></td>
-                                        <td>{{ $flight->registasi }}</td>
-                                        <td>{{ $flight->type }}</td>
-                                        <td><i class="bx bx-time-five text-muted me-1"></i>{{ $flight->arrival }}</td>
-                                        <td><span class="countdown shadow-sm no-click"
-                                                data-time="{{ $flight->time_count }}"></span></td>
-                                        <td class="no-click">
-                                            @if ($flight->status)
-                                                <span class="badge bg-label-success px-3 py-2 rounded-pill">
-                                                    <i class="bx bx-check me-1"></i>Selesai
-                                                </span>
-                                            @else
-                                                <span class="badge bg-label-warning px-3 py-2 rounded-pill">
-                                                    <i class="bx bx-loader-alt bx-spin me-1"></i>Proses
-                                                </span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center py-5 text-muted">
+                                        <td colspan="8" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
                                             <p class="mb-0">Tidak ada pengerjaan yang ditugaskan kepada Anda dalam 1 bulan terakhir.</p>
                                         </td>
                                     </tr>
-                                @endforelse
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -1544,6 +1620,42 @@
                         <div class="stat-title">Penerbangan Selesai</div>
                         <div class="stat-value">{{ $totalFlightPerDay ?? 0 }}</div>
                         <i class="fas fa-plane-departure stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- PANEL STATISTIK WORK ORDER DEEP CLEANING --}}
+        <div class="row g-3 mb-3">
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card shadow-sm" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: #ffffff;">
+                    <div class="card-body">
+                        <div class="stat-title text-white-50">WO Deep Cleaning Hari Ini</div>
+                        <div class="stat-value text-white">{{ $totalWoToday ?? 0 }}</div>
+                        <i class="bx bx-task stat-icon text-white-50" style="position: absolute; right: 15px; top: 15px; font-size: 2.5rem; font-style: normal;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">
+                    <div class="card-body">
+                        <div class="stat-title text-white-50">WO Deep Cleaning Bulan Ini</div>
+                        <div class="stat-value text-white">{{ $totalWoThisMonth ?? 0 }}</div>
+                        <i class="bx bx-calendar stat-icon text-white-50" style="position: absolute; right: 15px; top: 15px; font-size: 2.5rem; font-style: normal;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-lg-6">
+                <div class="card shadow-sm h-100 bg-light border-0 d-flex flex-row align-items-center justify-content-between p-3" style="min-height: 86px;">
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">Laporan Pekerjaan Pesawat</h6>
+                        <small class="text-secondary">Kelola hasil Deep Cleaning Interior & Exterior (DCI/DCE)</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('work_results.index') }}" class="btn btn-primary btn-sm"><i class="bx bx-list-ul me-1"></i> Data WO</a>
+                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                            <a href="{{ route('work_results.create') }}" class="btn btn-outline-primary btn-sm"><i class="bx bx-plus me-1"></i> Input WO</a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -1678,8 +1790,10 @@
             </div>
         </div>
         @endif
-        {{-- TABEL PENERBANGAN --}}
-        <div class="row">
+
+
+        {{-- TABEL PENERBANGAN (DITAROH PALING BAWAH) --}}
+        <div class="row mt-4">
             <div class="col-12">
                 <div class="modern-card">
                     <div
@@ -1687,7 +1801,7 @@
                         <div class="d-flex align-items-center">
                             <div class="rounded-3 p-2 me-2 text-primary d-flex align-items-center justify-content-center"
                                 style="width: 34px; height: 34px; background-color: var(--primary-soft);">
-                                <i class="bx bx-list-ul fs-5"></i>
+                                <i class="ti ti-plane-arrival fs-4"></i>
                             </div>
                             <h6 class="mb-0 fw-bold text-dark">
                                 @if ($showManagementDashboard)
@@ -1699,19 +1813,18 @@
                             </h6>
                         </div>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-custom table-hover align-middle">
-                            <thead>
+                    <div class="table-responsive text-nowrap">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Airline</th>
-                                    <th>Flight No.</th>
-                                    <th>Registrasi</th>
-                                    <th>Tipe</th>
-                                    <th>Kedatangan</th>
-                                    <th>Hitung Mundur</th>
-                                    <th>Dibuat Pada</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
+                                    <th>AIRLINE</th>
+                                    <th>FLIGHT NO.</th>
+                                    <th>REGISTRASI</th>
+                                    <th>TIPE</th>
+                                    <th>KEDATANGAN</th>
+                                    <th>HITUNG MUNDUR</th>
+                                    <th>DIBUAT PADA</th>
+                                    <th class="text-center">STATUS</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1725,20 +1838,11 @@
                                         <td><span class="countdown shadow-sm no-click"
                                                 data-time="{{ $flight->time_count }}"></span></td>
                                         <td class="text-muted">{{ $flight->created_at->format('d M Y, H:i') }}</td>
-                                        <td class="no-click">
+                                        <td class="no-click text-center">
                                             @if ($flight->status)
-                                                <span class="badge bg-label-success px-3 py-2 rounded-pill">
+                                                <span class="badge bg-label-success px-3 py-1.5 rounded-pill fw-semibold">
                                                     <i class="bx bx-check me-1"></i>Selesai
                                                 </span>
-                                            @else
-                                                <span class="badge bg-label-warning px-3 py-2 rounded-pill">
-                                                    <i class="bx bx-loader-alt bx-spin me-1"></i>Proses
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="no-click">
-                                            @if ($flight->status)
-                                                <span class="badge bg-secondary px-3 py-2 rounded-pill">Done</span>
                                             @else
                                                 @if (in_array(Auth::user()->role, ['Ass Leader', 'Leader']))
                                                     <form action="{{ route('flights.update', $flight->id) }}"
@@ -1746,13 +1850,14 @@
                                                         @csrf
                                                         @method('PUT')
                                                         <button type="submit"
-                                                            class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
-                                                            <i class="bx bx-check-circle me-1"></i> Mark Done
+                                                            class="btn btn-warning btn-xs rounded-pill px-3 shadow-sm" title="Klik untuk selesaikan penerbangan">
+                                                            <i class="bx bx-loader-alt bx-spin me-1"></i> Selesaikan
                                                         </button>
                                                     </form>
                                                 @else
-                                                    <span class="badge bg-label-info px-3 py-2 rounded-pill">In
-                                                        Progress</span>
+                                                    <span class="badge bg-label-warning px-3 py-1.5 rounded-pill fw-semibold">
+                                                        <i class="bx bx-loader-alt bx-spin me-1"></i>Proses
+                                                    </span>
                                                 @endif
                                             @endif
                                         </td>
@@ -1760,7 +1865,7 @@
                                     @include('modal.view_flight', ['flight' => $flight])
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="text-center py-5 text-muted">
+                                        <td colspan="8" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
                                             <p class="mb-0">
                                                 @if ($showManagementDashboard)
@@ -2425,6 +2530,81 @@
                     animateValue(el, 0, targetValue, 600); // 600ms = 0.6 seconds
                 }
             });
+
+            // Photo Preview Popup
+            $(document).on('click', '.btn-preview-photo', function(e) {
+                e.preventDefault();
+                const photoUrl = $(this).data('photo-url');
+                const woNumber = $(this).data('wo');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Foto Bukti Pekerjaan',
+                        html: '<div class="text-muted mb-2 font-monospace">WO: <strong>' + woNumber + '</strong></div><img src="' + photoUrl + '" class="img-fluid rounded border shadow-sm" style="max-height: 380px; object-fit: contain;">',
+                        showCloseButton: true,
+                        confirmButtonText: 'Tutup',
+                        confirmButtonColor: '#2f80ed'
+                    });
+                } else {
+                    window.open(photoUrl, '_blank');
+                }
+            });
+
+            // Trigger Upload Photo Modal
+            $(document).on('click', '.btn-upload-photo', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const wo = $(this).data('wo');
+                $('#uploadPhotoModalTitle').text('Upload Foto Bukti WO: ' + wo);
+                $('#uploadPhotoForm').attr('action', '/work-results/' + id + '/upload-photo');
+                const modal = new bootstrap.Modal(document.getElementById('uploadPhotoModal'));
+                modal.show();
+            });
+
+            // Block Print PDF when no photo
+            $(document).on('click', '.btn-no-photo-pdf', function(e) {
+                e.preventDefault();
+                const wo = $(this).data('wo');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        iconColor: '#f59e0b',
+                        title: 'Foto Bukti Belum Ada',
+                        html: 'WO <strong>' + wo + '</strong> belum memiliki foto bukti pekerjaan.<br>Silakan unggah foto bukti terlebih dahulu agar dapat mencetak Laporan PDF.',
+                        confirmButtonText: 'Mengerti',
+                        confirmButtonColor: '#2f80ed'
+                    });
+                }
+            });
         });
     </script>
+
+    <!-- Modal Upload Foto Bukti Pekerjaan -->
+    <div class="modal fade" id="uploadPhotoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="uploadPhotoModalTitle">Upload Foto Bukti Pekerjaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="uploadPhotoForm" action="" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="alert alert-primary d-flex align-items-center py-2 px-3 mb-3">
+                            <i class="bx bx-info-circle me-2 fs-5"></i>
+                            <div class="small">Laporan PDF baru dapat dicetak setelah foto bukti pekerjaan diunggah.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Pilih File Foto Bukti <span class="text-danger">*</span></label>
+                            <input type="file" name="photo" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
+                            <small class="text-muted d-block mt-1">Format: JPG, JPEG, PNG. Maksimal 2MB.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary"><i class="bx bx-upload me-1"></i> Simpan & Unggah Foto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
