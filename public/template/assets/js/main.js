@@ -121,4 +121,38 @@ let menu, animate;
 
   // Auto update menu collapsed/expanded based on the themeConfig
   window.Helpers.setCollapsed(true, false);
+
+  // === DESTROY PerfectScrollbar di desktop ===
+  // PS mengeset inline height pada .menu-inner yang menyebabkan
+  // ruang kosong ekstra di bawah menu saat scroll.
+  // Kita destroy PS dan biarkan native CSS scroll (overflow-y: auto)
+  // yang diatur di custom-admin.css bekerja.
+  (function destroyMenuPerfectScrollbar() {
+    var menuInstance = window.Helpers && window.Helpers.mainMenu;
+    if (menuInstance && menuInstance._scrollbar) {
+      menuInstance._scrollbar.destroy();
+      menuInstance._scrollbar = null;
+    }
+    // Bersihkan inline styles yang diset oleh PerfectScrollbar
+    var menuInner = document.querySelector('.menu-inner');
+    if (menuInner) {
+      menuInner.style.height = '';
+      menuInner.style.position = '';
+      menuInner.style.overflow = '';
+      menuInner.classList.remove('ps');
+      // Hapus elemen rail/thumb PerfectScrollbar
+      var rails = menuInner.querySelectorAll('.ps__rail-x, .ps__rail-y');
+      rails.forEach(function(r) { r.remove(); });
+    }
+    // Override manageScroll agar tidak reinit PS saat resize
+    if (menuInstance) {
+      menuInstance.manageScroll = function() {
+        var mi = document.querySelector('.menu-inner');
+        if (mi) {
+          mi.style.height = '';
+          mi.style.overflow = '';
+        }
+      };
+    }
+  })();
 })();

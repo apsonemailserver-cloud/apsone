@@ -694,3 +694,66 @@ html.aps-dark .station-map-chip {
     border: 1px solid #334155 !important;
     backdrop-filter: blur(8px) !important;
 }
+
+/* =============================================
+   SIDEBAR SCROLLABLE - DESKTOP
+   flex:0 0 auto = .menu-inner hanya setinggi konten,
+   max-height mencegah overflow viewport,
+   scroll berhenti tepat di menu paling bawah
+   ============================================= */
+@media (min-width: 1200px) {
+    #layout-menu {
+        overflow: hidden !important;
+    }
+
+    #layout-menu .menu-inner {
+        flex: 0 0 auto !important;
+        max-height: calc(100vh - 80px) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        /* Scrollbar styling - tipis dan halus */
+        scrollbar-width: thin !important;
+        scrollbar-color: rgba(0, 0, 0, 0.12) transparent !important;
+    }
+
+    #layout-menu .menu-inner::-webkit-scrollbar {
+        width: 4px !important;
+    }
+
+    #layout-menu .menu-inner::-webkit-scrollbar-track {
+        background: transparent !important;
+    }
+
+    #layout-menu .menu-inner::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.12) !important;
+        border-radius: 99px !important;
+    }
+
+    #layout-menu .menu-inner::-webkit-scrollbar-thumb:hover {
+        background: rgba(47, 128, 237, 0.3) !important;
+    }
+
+    /* Dark mode scrollbar */
+    html.aps-dark #layout-menu .menu-inner {
+        scrollbar-color: rgba(255, 255, 255, 0.12) transparent !important;
+    }
+
+    html.aps-dark #layout-menu .menu-inner::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html.aps-dark #layout-menu .menu-inner::-webkit-scrollbar-thumb:hover {
+        background: rgba(96, 165, 250, 0.35) !important;
+    }
+
+    /* Sidebar collapsed: hover state scrollable */
+    html.sidebar-collapsed #layout-menu:hover {
+        overflow: hidden !important;
+    }
+
+    html.sidebar-collapsed #layout-menu:hover .menu-inner {
+        flex: 0 0 auto !important;
+        max-height: calc(100vh - 80px) !important;
+        overflow-y: auto !important;
+    }
+}
