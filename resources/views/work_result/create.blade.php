@@ -62,7 +62,7 @@
                             {{-- No WO di-generate otomatis di background --}}
                             <input type="hidden" name="wo_number" value="{{ old('wo_number', $nextWoNumber) }}">
 
-                            {{-- SECTION 1: LOKASI & TANGGAL KERJA --}}
+                            {{-- DATA UTAMA PEKERJAAN --}}
                             <div class="row g-3 mb-4">
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">Tanggal Kerja <span class="text-danger">*</span></label>
@@ -87,34 +87,16 @@
                                 </div>
                             </div>
 
-                            {{-- SECTION 2: AUTO-FILL FLIGHT SELECTOR --}}
-                            <div class="card bg-label-primary border border-primary border-opacity-25 mb-4 shadow-sm" id="flightComboboxContainer">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center justify-content-between mb-1">
-                                        <label class="form-label fw-bold text-primary mb-0 d-flex align-items-center">
-                                            <i class="bx bx-plane-take-off fs-5 me-1.5"></i> Pilih Jadwal Flight (Auto-Fill Flightradar24)
-                                        </label>
-                                    </div>
-                                    <select id="flightCombobox" class="form-select border-primary bg-white shadow-none mt-1">
-                                        <option value="">-- Pilih Station di atas untuk memuat Jadwal Flight --</option>
-                                    </select>
-                                    <small class="text-muted d-block mt-2">
-                                        <i class="bx bx-info-circle me-1 text-primary"></i>Memilih penerbangan di atas akan otomatis mengisi <strong>Aircraft Reg</strong>, <strong>Ex/To Flight</strong>, <strong>Stand</strong>, dan <strong>Jam Kerja</strong>.
-                                    </small>
-                                </div>
-                            </div>
-
-                            {{-- SECTION 3: DETAIL PESAWAT & FLIGHT --}}
                             <div class="row g-3 mb-4">
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">Aircraft Registration <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <input type="text" class="form-control text-uppercase" id="aircraftRegInput" name="aircraft_reg" value="{{ old('aircraft_reg') }}" placeholder="e.g. PK-LGH" required>
                                         <button type="button" class="btn btn-outline-primary" id="btnFetchFlightData" title="Cari Data Flight">
-                                            <i class="bx bx-search-alt me-1"></i> Cek Data Flight
+                                            <i class="bx bx-search-alt me-1"></i> Cek Data
                                         </button>
                                     </div>
-                                    <small class="text-muted d-block mt-1" id="flightSearchStatus">Auto-fill Ex/To Flight & waktu dari Flightradar24 / Database</small>
+                                    <small class="text-muted d-block mt-1" id="flightSearchStatus"></small>
                                 </div>
 
                                 <div class="col-md-4">
@@ -128,7 +110,6 @@
                                 </div>
                             </div>
 
-                            {{-- SECTION 4: WAKTU KERJA & BUKTI FOTO --}}
                             <div class="row g-3 mb-4">
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">Start Time <span class="text-danger">*</span></label>
@@ -142,10 +123,10 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Evidence Photo <small class="text-muted">(Opsional, Maks. 2MB - Bisa diunggah nanti)</small></label>
-                                    <input type="file" class="form-control" name="photo" id="photoInput" accept="image/jpeg,image/png,image/jpg">
-                                    <div id="photoPreviewBox" class="mt-2 d-none">
-                                        <img id="photoPreview" src="" alt="Preview Foto" class="img-thumbnail" style="max-height: 100px;">
+                                    <label class="form-label fw-semibold">Evidence Photo <small class="text-muted">(Opsional, Maks. 2MB)</small></label>
+                                    <input type="file" class="form-control" id="photoInput" name="photo" accept="image/jpeg,image/png,image/jpg">
+                                    <div id="photoPreviewContainer" class="mt-2 d-none">
+                                        <img id="photoPreview" src="" alt="Preview Foto Bukti" class="rounded shadow-sm border" style="max-height: 100px; object-fit: cover;">
                                     </div>
                                 </div>
                             </div>
