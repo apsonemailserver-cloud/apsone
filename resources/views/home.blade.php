@@ -1267,12 +1267,6 @@
                         </form>
                     @endif
 
-                    @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
-                        <a href="{{ route('work_results.create') }}" class="btn btn-primary-custom text-white shadow-sm">
-                            <i class="bx bx-plus-circle me-1"></i> Tambah WO
-                        </a>
-                    @endif
-
                     <div class="attendance-action-buttons d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
                         @if(isset($pendingWorkResultsCount) && $pendingWorkResultsCount > 0)
                             <a href="{{ route('work_results.index') }}" class="btn btn-label-warning shadow-sm fw-semibold d-inline-flex align-items-center py-2 px-3">
@@ -1280,6 +1274,13 @@
                                 <span>{{ $pendingWorkResultsCount }} Pekerjaan Masih Proses</span>
                             </a>
                         @endif
+
+                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                            <a href="{{ route('work_results.create') }}" class="btn btn-primary-custom text-white shadow-sm">
+                                <i class="bx bx-plus-circle me-1"></i> Tambah WO
+                            </a>
+                        @endif
+
                         @if ($todayAttendance)
                             @if (!$todayAttendance->check_in_time)
                                 <a href="{{ route('attendance.camera', ['type' => 'in']) }}" class="btn btn-primary-custom text-white shadow-sm">
