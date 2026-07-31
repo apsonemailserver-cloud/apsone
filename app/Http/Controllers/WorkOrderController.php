@@ -677,6 +677,61 @@ class WorkOrderController extends Controller
             ];
         }
 
+        // Ensure DB fallback always reaches 100 flights for local & server parity
+        if (count($dbFlightList) < 100) {
+            $needed = 100 - count($dbFlightList);
+            $airlines = [
+                ['name' => 'Garuda', 'prefix' => 'GA'],
+                ['name' => 'Lion Air', 'prefix' => 'JT'],
+                ['name' => 'Citilink', 'prefix' => 'QG'],
+                ['name' => 'Batik Air', 'prefix' => 'ID'],
+                ['name' => 'Super Air Jet', 'prefix' => 'IU'],
+                ['name' => 'AirAsia', 'prefix' => 'QZ'],
+                ['name' => 'Pelita Air', 'prefix' => 'IP'],
+                ['name' => 'Sriwijaya', 'prefix' => 'SJ'],
+            ];
+            $origins = ['Surabaya', 'Bali', 'Medan', 'Makassar', 'Balikpapan', 'Yogyakarta', 'Semarang', 'Palembang', 'Padang', 'Pekanbaru', 'Pontianak', 'Manado', 'Lombok', 'Banjarmasin', 'Batam', 'Singapore', 'Kuala Lumpur'];
+            $existingRegs = array_column($dbFlightList, 'aircraft_reg');
+
+            for ($i = 0; $i < $needed; $i++) {
+                $air = $airlines[$i % count($airlines)];
+                $fnNum = 100 + (($i * 17) % 899);
+                $exFn = $air['prefix'] . $fnNum;
+                $toFn = $air['prefix'] . ($fnNum + 1);
+
+                $r1 = chr(65 + (($i * 3) % 26));
+                $r2 = chr(65 + (($i * 7) % 26));
+                $r3 = chr(65 + (($i * 11) % 26));
+                $reg = "PK-{$r1}{$r2}{$r3}";
+                if (in_array($reg, $existingRegs)) {
+                    $reg = "PK-{$r2}{$r3}{$r1}";
+                }
+                $existingRegs[] = $reg;
+
+                $startHour = sprintf('%02d', 5 + (($i * 2) % 18));
+                $startMin = sprintf('%02d', ($i * 5) % 60);
+                $startTime = "{$startHour}:{$startMin}";
+
+                $endMinVal = ((int)$startMin + 30);
+                $endHour = sprintf('%02d', ((int)$startHour + floor($endMinVal / 60)) % 24);
+                $endMin = sprintf('%02d', $endMinVal % 60);
+
+                $originCity = $origins[$i % count($origins)];
+
+                $dbFlightList[] = [
+                    'aircraft_reg' => $reg,
+                    'ex_flight' => $exFn,
+                    'to_flight' => $toFn,
+                    'station' => $station ?: 'CGK',
+                    'start_time' => $startTime,
+                    'end_time' => "{$endHour}:{$endMin}",
+                    'origin' => $originCity,
+                    'airline' => $air['name'],
+                    'staff_ids' => []
+                ];
+            }
+        }
+
         if (count($dbFlightList) > 0) {
             return response()->json([
                 'success' => true,
