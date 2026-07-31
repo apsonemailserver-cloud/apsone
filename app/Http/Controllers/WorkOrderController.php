@@ -596,7 +596,9 @@ class WorkOrderController extends Controller
                         $dtEnd->modify('+30 minutes');
                         $endStr = $dtEnd->format('H:i');
                     }
-                    $originName = $fl['airport']['origin']['name'] ?? ($fl['airport']['origin']['code']['iata'] ?? '-');
+                    $originName = $fl['airport']['origin']['position']['region']['city'] 
+                               ?? $fl['airport']['origin']['name'] 
+                               ?? ($fl['airport']['origin']['code']['iata'] ?? '');
 
                     if ($cleanQuery) {
                         $cleanFlight = strtoupper(str_replace([' ', '-'], '', $flightNo));
@@ -606,14 +608,14 @@ class WorkOrderController extends Controller
                     }
 
                     $frFlights[] = [
-                        'aircraft_reg' => strtoupper($reg ?: ($query ?: 'PK-LGH')),
+                        'aircraft_reg' => strtoupper($reg ?: ''),
                         'ex_flight' => strtoupper($flightNo),
                         'to_flight' => $toFlightNo,
                         'station' => $station,
                         'start_time' => $startStr,
                         'end_time' => $endStr,
-                        'origin' => $originName,
-                        'airline' => $fl['airline']['name'] ?? 'Airlines',
+                        'origin' => $originName !== '-' ? $originName : '',
+                        'airline' => ($fl['airline']['name'] ?? '') !== 'Airlines' ? ($fl['airline']['name'] ?? '') : '',
                     ];
                 }
             }
@@ -646,13 +648,16 @@ class WorkOrderController extends Controller
         $matchedFlights = $flightsQuery->orderBy('created_at', 'desc')->take(100)->get();
 
         $dbFlightList = [];
-        $sampleOrigins = ['Surabaya', 'Bali', 'Medan', 'Makassar', 'Yogyakarta', 'Singapore', 'Kuala Lumpur', 'Palembang', 'Padang', 'Balikpapan'];
 
         foreach ($matchedFlights as $f) {
-            $arrivalTime = $f->arrival ? substr($f->arrival, 0, 5) : '14:30';
-            $parts = explode(':', $arrivalTime);
-            $startH = isset($parts[0]) ? (int)$parts[0] : 14;
-            $startM = isset($parts[1]) ? (int)$parts[1] : 30;
+            $arrivalTime = $f->arrival ? substr($f->arrival, 0, 5) : '';
+            $startH = 14;
+            $startM = 30;
+            if ($arrivalTime) {
+                $parts = explode(':', $arrivalTime);
+                $startH = isset($parts[0]) ? (int)$parts[0] : 14;
+                $startM = isset($parts[1]) ? (int)$parts[1] : 30;
+            }
 
             $totalMin = $startH * 60 + $startM + 30;
             $endH = sprintf('%02d', floor($totalMin / 60) % 24);
@@ -667,78 +672,18 @@ class WorkOrderController extends Controller
                 }
             }
 
-            $originVal = ($f->origin && $f->origin !== '-') ? $f->origin : '';
-            if (!$originVal) {
-                $originVal = $sampleOrigins[abs(crc32($f->flight_number ?: $f->registasi ?: 'CGK')) % count($sampleOrigins)];
-            }
-
             $dbFlightList[] = [
-                'aircraft_reg' => strtoupper($f->registasi ?: ($query ?: 'PK-LGH')),
-                'ex_flight' => $f->flight_number ?: '-',
-                'to_flight' => '-',
-                'station' => $f->station ?: ($station ?: 'CGK'),
-                'arrival' => $f->arrival ?: '14:30:00',
-                'start_time' => sprintf('%02d:%02d', $startH, $startM),
+                'aircraft_reg' => strtoupper($f->registasi ?: ''),
+                'ex_flight' => $f->flight_number ?: '',
+                'to_flight' => $f->to_flight ?: '',
+                'station' => $f->station ?: ($station ?: ''),
+                'arrival' => $f->arrival ?: '',
+                'start_time' => $arrivalTime ?: sprintf('%02d:%02d', $startH, $startM),
                 'end_time' => sprintf('%s:%s', $endH, $endM),
-                'airline' => $f->airline ?: 'Airlines',
-                'origin' => $originVal,
+                'airline' => ($f->airline && $f->airline !== 'Airlines') ? $f->airline : '',
+                'origin' => ($f->origin && $f->origin !== '-') ? $f->origin : '',
                 'staff_ids' => $staffIds
             ];
-        }
-
-        // Ensure DB fallback always reaches 100 flights for local & server parity
-        if (count($dbFlightList) < 100) {
-            $needed = 100 - count($dbFlightList);
-            $airlines = [
-                ['name' => 'Garuda', 'prefix' => 'GA'],
-                ['name' => 'Lion Air', 'prefix' => 'JT'],
-                ['name' => 'Citilink', 'prefix' => 'QG'],
-                ['name' => 'Batik Air', 'prefix' => 'ID'],
-                ['name' => 'Super Air Jet', 'prefix' => 'IU'],
-                ['name' => 'AirAsia', 'prefix' => 'QZ'],
-                ['name' => 'Pelita Air', 'prefix' => 'IP'],
-                ['name' => 'Sriwijaya', 'prefix' => 'SJ'],
-            ];
-            $origins = ['Surabaya', 'Bali', 'Medan', 'Makassar', 'Balikpapan', 'Yogyakarta', 'Semarang', 'Palembang', 'Padang', 'Pekanbaru', 'Pontianak', 'Manado', 'Lombok', 'Banjarmasin', 'Batam', 'Singapore', 'Kuala Lumpur'];
-            $existingRegs = array_column($dbFlightList, 'aircraft_reg');
-
-            for ($i = 0; $i < $needed; $i++) {
-                $air = $airlines[$i % count($airlines)];
-                $fnNum = 100 + (($i * 17) % 899);
-                $exFn = $air['prefix'] . $fnNum;
-                $toFn = $air['prefix'] . ($fnNum + 1);
-
-                $r1 = chr(65 + (($i * 3) % 26));
-                $r2 = chr(65 + (($i * 7) % 26));
-                $r3 = chr(65 + (($i * 11) % 26));
-                $reg = "PK-{$r1}{$r2}{$r3}";
-                if (in_array($reg, $existingRegs)) {
-                    $reg = "PK-{$r2}{$r3}{$r1}";
-                }
-                $existingRegs[] = $reg;
-
-                $startHour = sprintf('%02d', 5 + (($i * 2) % 18));
-                $startMin = sprintf('%02d', ($i * 5) % 60);
-                $startTime = "{$startHour}:{$startMin}";
-
-                $endMinVal = ((int)$startMin + 30);
-                $endHour = sprintf('%02d', ((int)$startHour + floor($endMinVal / 60)) % 24);
-                $endMin = sprintf('%02d', $endMinVal % 60);
-
-                $originCity = $origins[$i % count($origins)];
-
-                $dbFlightList[] = [
-                    'aircraft_reg' => $reg,
-                    'ex_flight' => $exFn,
-                    'to_flight' => $toFn,
-                    'station' => $station ?: 'CGK',
-                    'start_time' => $startTime,
-                    'end_time' => "{$endHour}:{$endMin}",
-                    'origin' => $originCity,
-                    'airline' => $air['name'],
-                    'staff_ids' => []
-                ];
-            }
         }
 
         if (count($dbFlightList) > 0) {
