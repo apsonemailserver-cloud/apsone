@@ -603,12 +603,16 @@
                     success: function(response) {
                         if (response.success && response.flights && response.flights.length > 0) {
                             window.__activeFlights = response.flights;
-                            let html = '<option value="">-- Pilih Flight Berdasarkan Station (' + response.flights.length + ' Flight Arrival Flightradar24) --</option>';
+                            let html = '<option value="">-- Pilih Flight Berdasarkan Station (' + response.flights.length + ' Flight Arrival ' + (response.source || 'Flightradar24') + ') --</option>';
                             response.flights.forEach(function(item, idx) {
-                                const flightNo = item.ex_flight || item.flight_number || '-';
+                                const exFlight = item.ex_flight || item.flight_number || '-';
+                                const toFlight = (item.to_flight && item.to_flight !== '-') ? ` ➔ To: ${item.to_flight}` : '';
                                 const reg = item.aircraft_reg || item.registasi || '-';
+                                const airline = (item.airline && item.airline !== 'Airlines') ? ` (${item.airline})` : '';
+                                const origin = (item.origin && item.origin !== '-') ? ` | Dari: ${item.origin}` : '';
                                 const arr = item.start_time || item.arrival || '-';
-                                html += `<option value="${idx}">${flightNo} - ${reg} | Est Arrival: ${arr}</option>`;
+
+                                html += `<option value="${idx}">Ex: ${exFlight}${toFlight} | Reg: ${reg}${airline}${origin} | Est Arrival: ${arr}</option>`;
                             });
                             $combo.html(html);
 

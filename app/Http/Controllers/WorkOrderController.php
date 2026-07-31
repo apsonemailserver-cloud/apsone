@@ -645,6 +645,8 @@ class WorkOrderController extends Controller
                 'arrival' => $f->arrival ?: '14:30:00',
                 'start_time' => sprintf('%02d:%02d', $startH, $startM),
                 'end_time' => sprintf('%s:%s', $endH, $endM),
+                'airline' => $f->airline ?: 'Airlines',
+                'origin' => '-',
                 'staff_ids' => $staffIds
             ];
         }
