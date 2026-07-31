@@ -592,87 +592,176 @@
                 $combo.empty().html('<option value="" selected>⏳ Memuat daftar flight untuk station ' + (stationCode || 'terpilih') + '...</option>');
                 $status.removeClass('text-success text-danger').addClass('text-muted').text('Sedang memuat...');
 
-                $.ajax({
-                    url: "{{ route('work_orders.fetch_flight_data') }}",
-                    type: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        station: stationCode,
-                        aircraft_reg: queryReg
-                    },
-                    success: function(response) {
-                        if (response.success && response.flights && response.flights.length > 0) {
-                            window.__activeFlights = response.flights;
-                            let html = '<option value="">-- Pilih Jadwal Penerbangan (Kedatangan) --</option>';
-                            response.flights.forEach(function(item, idx) {
-                                const ex = item.ex_flight || item.flight_number || '';
-                                const to = (item.to_flight && item.to_flight !== '-') ? ` / ${item.to_flight}` : '';
-                                const flightNo = `${ex}${to}`;
-                                const reg = item.aircraft_reg || item.registasi || '';
-                                
-                                let airline = item.airline || '';
-                                if (!airline || airline === 'Airlines') {
-                                    if (/^(MH|MAS)/i.test(ex)) airline = 'Malaysia Airlines';
-                                    else if (/^(QZ|AK|FD|D7)/i.test(ex)) airline = 'AirAsia';
-                                    else if (/^(JT|LNI)/i.test(ex)) airline = 'Lion Air';
-                                    else if (/^(GA|GIA)/i.test(ex)) airline = 'Garuda';
-                                    else if (/^(QG|CTV)/i.test(ex)) airline = 'Citilink';
-                                    else if (/^(ID|BTK)/i.test(ex)) airline = 'Batik Air';
-                                    else if (/^(SJ|IN)/i.test(ex)) airline = 'Sriwijaya';
-                                    else if (/^(SQ|SIA)/i.test(ex)) airline = 'Singapore Airlines';
-                                    else if (/^(8B|TGW)/i.test(ex)) airline = 'TransNusa';
-                                }
-                                airline = airline.replace(' Indonesia', '').replace(' Airlines', '').trim();
+                // Helper: parse & render flights array into combobox
+                function renderFlights(flights, source) {
+                    window.__activeFlights = flights;
+                    let html = '<option value="">-- Pilih Jadwal Penerbangan (Kedatangan) --</option>';
+                    flights.forEach(function(item, idx) {
+                        const ex = item.ex_flight || item.flight_number || '';
+                        const to = (item.to_flight && item.to_flight !== '-') ? ` / ${item.to_flight}` : '';
+                        const flightNo = `${ex}${to}`;
+                        const reg = item.aircraft_reg || item.registasi || '';
 
-                                let detailStr = '';
-                                if (reg && airline) detailStr = ` (${reg} - ${airline})`;
-                                else if (reg) detailStr = ` (${reg})`;
-                                else if (airline) detailStr = ` (${airline})`;
-
-                                let origin = item.origin || '';
-                                if (origin === '-') origin = '';
-                                origin = origin
-                                    .replace(/ International Airport/gi, '')
-                                    .replace(/ Airport/gi, '')
-                                    .replace(/ Syamsudin Noor/gi, '')
-                                    .replace(/ Adisumarmo/gi, '')
-                                    .replace(/ Minangkabau/gi, '')
-                                    .replace(/ Soekarno-Hatta/gi, '')
-                                    .replace(/ Changi/gi, '')
-                                    .replace(/ Juanda/gi, '')
-                                    .replace(/ Ngurah Rai/gi, '')
-                                    .trim();
-                                const originStr = origin ? ` - ${origin}` : '';
-                                const arr = item.start_time || item.arrival || '';
-                                const timeStr = arr ? ` [${arr}]` : '';
-
-                                html += `<option value="${idx}">${flightNo}${detailStr}${originStr}${timeStr}</option>`;
-                            });
-                            $combo.html(html);
-
-                            // If searching specifically for a reg or autoSelectFirst requested, auto-select & populate first result
-                            if ((queryReg || autoSelectFirst) && response.flights[0]) {
-                                $combo.val('0');
-                                const comboEl = document.getElementById('flightCombobox');
-                                if (comboEl) comboEl.selectedIndex = 1; // 1 because index 0 is placeholder option
-                                window.populateFlightData(response.flights[0]);
-                            } else {
-                                $combo.val('');
-                                const comboEl = document.getElementById('flightCombobox');
-                                if (comboEl) comboEl.selectedIndex = 0;
-                            }
-
-                            $status.removeClass('text-muted text-danger').addClass('text-success')
-                                .text('✅ ' + response.flights.length + ' flight berhasil dimuat dari ' + (response.source || 'Flightradar24') + '. Data berhasil terisi.');
-                        } else {
-                            $combo.html('<option value="" selected>-- Tidak ada jadwal arrival khusus di Flightradar24 untuk station ini --</option>');
-                            $status.removeClass('text-success').addClass('text-muted').text('Tidak ada data flight.');
+                        let airline = item.airline || '';
+                        if (!airline || airline === 'Airlines') {
+                            if (/^(MH|MAS)/i.test(ex)) airline = 'Malaysia Airlines';
+                            else if (/^(QZ|AK|FD|D7)/i.test(ex)) airline = 'AirAsia';
+                            else if (/^(JT|LNI)/i.test(ex)) airline = 'Lion Air';
+                            else if (/^(GA|GIA)/i.test(ex)) airline = 'Garuda';
+                            else if (/^(QG|CTV)/i.test(ex)) airline = 'Citilink';
+                            else if (/^(ID|BTK)/i.test(ex)) airline = 'Batik Air';
+                            else if (/^(SJ|IN)/i.test(ex)) airline = 'Sriwijaya';
+                            else if (/^(SQ|SIA)/i.test(ex)) airline = 'Singapore Airlines';
+                            else if (/^(8B|TGW)/i.test(ex)) airline = 'TransNusa';
                         }
-                    },
-                    error: function() {
-                        $combo.html('<option value="" selected>-- Isian Manual atau Pilih Station Kembali --</option>');
-                        $status.removeClass('text-success').addClass('text-danger').text('Gagal memuat data flight.');
+                        airline = airline.replace(' Indonesia', '').replace(' Airlines', '').trim();
+
+                        let detailStr = '';
+                        if (reg && airline) detailStr = ` (${reg} - ${airline})`;
+                        else if (reg) detailStr = ` (${reg})`;
+                        else if (airline) detailStr = ` (${airline})`;
+
+                        let origin = item.origin || '';
+                        if (origin === '-') origin = '';
+                        origin = origin
+                            .replace(/ International Airport/gi, '')
+                            .replace(/ Airport/gi, '')
+                            .replace(/ Syamsudin Noor/gi, '')
+                            .replace(/ Adisumarmo/gi, '')
+                            .replace(/ Minangkabau/gi, '')
+                            .replace(/ Soekarno-Hatta/gi, '')
+                            .replace(/ Changi/gi, '')
+                            .replace(/ Juanda/gi, '')
+                            .replace(/ Ngurah Rai/gi, '')
+                            .trim();
+                        const originStr = origin ? ` - ${origin}` : '';
+                        const arr = item.start_time || item.arrival || '';
+                        const timeStr = arr ? ` [${arr}]` : '';
+
+                        html += `<option value="${idx}">${flightNo}${detailStr}${originStr}${timeStr}</option>`;
+                    });
+                    $combo.html(html);
+
+                    if ((queryReg || autoSelectFirst) && flights[0]) {
+                        $combo.val('0');
+                        const comboEl = document.getElementById('flightCombobox');
+                        if (comboEl) comboEl.selectedIndex = 1;
+                        window.populateFlightData(flights[0]);
+                    } else {
+                        $combo.val('');
+                        const comboEl = document.getElementById('flightCombobox');
+                        if (comboEl) comboEl.selectedIndex = 0;
                     }
+
+                    $status.removeClass('text-muted text-danger').addClass('text-success')
+                        .text('✅ ' + flights.length + ' flight berhasil dimuat dari ' + source + '. Data berhasil terisi.');
+                }
+
+                // Helper: call our PHP backend as fallback
+                function loadFromServer() {
+                    $.ajax({
+                        url: "{{ route('work_orders.fetch_flight_data') }}",
+                        type: "POST",
+                        data: { _token: "{{ csrf_token() }}", station: stationCode, aircraft_reg: queryReg },
+                        success: function(response) {
+                            if (response.success && response.flights && response.flights.length > 0) {
+                                renderFlights(response.flights, response.source || 'Database Sistem');
+                            } else {
+                                $combo.html('<option value="" selected>-- Tidak ada jadwal arrival untuk station ini --</option>');
+                                $status.removeClass('text-success').addClass('text-muted').text('Tidak ada data flight.');
+                            }
+                        },
+                        error: function() {
+                            $combo.html('<option value="" selected>-- Isian Manual atau Pilih Station Kembali --</option>');
+                            $status.removeClass('text-success').addClass('text-danger').text('Gagal memuat data flight.');
+                        }
+                    });
+                }
+
+                // Step 1: Try calling Flightradar24 directly from browser
+                // This bypasses server IP blocking (Cloudflare) since the request comes from the user's own browser
+                const stationLower = (stationCode || 'cgk').toLowerCase();
+                const frUrl = `https://api.flightradar24.com/common/v1/airport.json?code=${stationLower}&plugin[]=&plugin-setting[schedule][mode]=arrivals&limit=100`;
+
+                fetch(frUrl, {
+                    headers: {
+                        'Accept': 'application/json, text/plain, */*',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                    }
+                }).then(function(res) {
+                    if (!res.ok) throw new Error('FR24 HTTP ' + res.status);
+                    return res.json();
+                }).then(function(json) {
+                    const arrivalsData = (json?.result?.response?.airport?.pluginData?.schedule?.arrivals?.data) || [];
+                    if (arrivalsData.length === 0) throw new Error('no arrivals');
+
+                    // Also fetch departures to get to_flight
+                    const depUrl = `https://api.flightradar24.com/common/v1/airport.json?code=${stationLower}&plugin[]=&plugin-setting[schedule][mode]=departures&limit=100`;
+                    return fetch(depUrl, { headers: { 'Accept': 'application/json' } })
+                        .then(r => r.ok ? r.json() : {})
+                        .then(function(depJson) {
+                            const depData = depJson?.result?.response?.airport?.pluginData?.schedule?.departures?.data || [];
+                            const depMap = {};
+                            depData.forEach(function(d) {
+                                const dFl = d.flight || {};
+                                const dReg = (dFl.aircraft?.registration || '').toUpperCase().replace(/[-\s]/g, '');
+                                const dNum = dFl.identification?.number?.default || '';
+                                if (dReg && dNum) depMap[dReg] = dNum.toUpperCase();
+                            });
+
+                            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                            const flights = [];
+                            arrivalsData.forEach(function(item) {
+                                const fl = item.flight || {};
+                                const reg = fl.aircraft?.registration || '';
+                                const flightNo = fl.identification?.number?.default || fl.identification?.callsign || '';
+                                const ts = fl.time?.real?.arrival || fl.time?.estimated?.arrival || fl.time?.scheduled?.arrival;
+
+                                const cleanReg = reg.toUpperCase().replace(/[-\s]/g, '');
+                                const toFlight = depMap[cleanReg] || '';
+
+                                let startStr = '', endStr = '';
+                                if (ts) {
+                                    const d = new Date(ts * 1000);
+                                    startStr = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
+                                    const dEnd = new Date((ts + 1800) * 1000);
+                                    endStr = dEnd.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
+                                }
+
+                                const originCity = fl.airport?.origin?.position?.region?.city
+                                    || fl.airport?.origin?.name
+                                    || fl.airport?.origin?.code?.iata
+                                    || '';
+                                const airlineName = fl.airline?.name || '';
+
+                                if (queryReg) {
+                                    const q = queryReg.toUpperCase().replace(/[-\s]/g, '');
+                                    const r = cleanReg;
+                                    const f = flightNo.toUpperCase().replace(/[-\s]/g, '');
+                                    if (!r.includes(q) && !f.includes(q)) return;
+                                }
+
+                                flights.push({
+                                    aircraft_reg: reg.toUpperCase(),
+                                    ex_flight: flightNo.toUpperCase(),
+                                    to_flight: toFlight,
+                                    station: stationCode,
+                                    start_time: startStr,
+                                    end_time: endStr,
+                                    origin: originCity,
+                                    airline: airlineName,
+                                });
+                            });
+
+                            if (flights.length > 0) {
+                                renderFlights(flights, 'Flightradar24 Live');
+                            } else {
+                                loadFromServer();
+                            }
+                        });
+                }).catch(function(err) {
+                    // Browser fetch blocked (CORS / network error) — fall back to server
+                    loadFromServer();
                 });
             };
 
