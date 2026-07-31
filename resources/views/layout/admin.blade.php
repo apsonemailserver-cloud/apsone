@@ -22,8 +22,8 @@
 
     <link rel="stylesheet" href="{{ asset('template/') }}/assets/vendor/fonts/boxicons.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <link rel="stylesheet" href="{{ asset('template/') }}/assets/vendor/css/core.css"
         class="template-customizer-core-css" />
@@ -6556,6 +6556,7 @@
         <div class="layout-overlay" id="custom-layout-overlay"></div>
     </div>
     <script src="{{ asset('template/') }}/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('template/') }}/assets/vendor/libs/popper/popper.js"></script>
     <script src="{{ asset('template/') }}/assets/vendor/js/bootstrap.js"></script>
     <script src="{{ asset('template/') }}/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>

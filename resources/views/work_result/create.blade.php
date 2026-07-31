@@ -642,7 +642,10 @@
             // Inisialisasi Select2 & Auto-load Combobox
             function initWorkResultPage() {
                 const $staffSelect = $('#staffMembers');
-                if ($staffSelect.length && !$staffSelect.hasClass('select2-hidden-accessible')) {
+                if ($staffSelect.length && typeof $.fn.select2 === 'function') {
+                    if ($staffSelect.hasClass('select2-hidden-accessible')) {
+                        $staffSelect.select2('destroy');
+                    }
                     $staffSelect.select2({
                         placeholder: '-- Cari & Pilih Staff Berdasarkan Nama / NIK --',
                         allowClear: true,
