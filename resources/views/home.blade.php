@@ -102,6 +102,16 @@
             box-shadow: 0 10px 24px rgba(37, 99, 235, 0.16) !important;
         }
 
+        .stat-card-warning {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            box-shadow: 0 10px 24px rgba(245, 158, 11, 0.16) !important;
+        }
+
+        .stat-card-purple {
+            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+            box-shadow: 0 10px 24px rgba(99, 102, 241, 0.16) !important;
+        }
+
         .stat-card .stat-title {
             font-size: 0.68rem;
             font-weight: 600;
@@ -1257,11 +1267,10 @@
                         </form>
                     @endif
 
-                    @if (in_array(Auth::user()->role, ['Admin', 'SPV Apron', 'SPV Bge']))
-                        <button type="button" class="btn btn-primary-custom text-white shadow-sm" data-bs-toggle="modal"
-                            data-bs-target="#addFlightModal">
-                            <i class="bx bx-plus-circle me-1"></i> Tambah Flight
-                        </button>
+                    @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                        <a href="{{ route('work_results.create') }}" class="btn btn-primary-custom text-white shadow-sm">
+                            <i class="bx bx-plus-circle me-1"></i> Tambah WO
+                        </a>
                     @endif
 
                     <div class="attendance-action-buttons d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
@@ -1595,8 +1604,8 @@
 
         @if ($showManagementDashboard)
         {{-- PANEL STATISTIK UTAMA --}}
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-4 col-lg">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+            <div class="col">
                 <div class="card stat-card stat-card-primary shadow-sm h-100">
                     <div class="card-body p-3">
                         <div class="stat-title">Total Staff GLOBAL</div>
@@ -1605,7 +1614,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg">
+            <div class="col">
                 <div class="card stat-card stat-card-success shadow-sm h-100">
                     <div class="card-body p-3">
                         <div class="stat-title">Staff Bertugas</div>
@@ -1614,7 +1623,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg">
+            <div class="col">
                 <div class="card stat-card stat-card-info shadow-sm h-100">
                     <div class="card-body p-3">
                         <div class="stat-title">Penerbangan Selesai</div>
@@ -1623,7 +1632,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-6 col-lg">
+            <div class="col">
                 <div class="card stat-card stat-card-warning shadow-sm h-100">
                     <div class="card-body p-3">
                         <div class="stat-title">WO Hari Ini</div>
@@ -1632,8 +1641,8 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg">
-                <div class="card stat-card stat-card-primary shadow-sm h-100">
+            <div class="col">
+                <div class="card stat-card stat-card-purple shadow-sm h-100">
                     <div class="card-body p-3">
                         <div class="stat-title">WO Bulan Ini</div>
                         <div class="stat-value">{{ $totalWoThisMonth ?? 0 }}</div>
