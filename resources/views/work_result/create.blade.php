@@ -1,6 +1,6 @@
 @extends('layout.admin')
 
-@section('title', 'Input Pekerjaan')
+@section('title', 'Create Work Order')
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -9,14 +9,14 @@
         {{-- Header dengan Breadcrumb --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
             <div>
-                <h4 class="fw-bold mb-1 text-dark">Input Pekerjaan</h4>
-                <p class="text-muted mb-0 small">Pencatatan pembersihan pesawat (Deep Cleaning Interior & Exterior)</p>
+                <h4 class="fw-bold mb-1 text-dark">Create Work Order</h4>
+                <p class="text-muted mb-0 small">Aircraft deep cleaning record form (Deep Cleaning Interior & Exterior)</p>
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('work_results.index') }}">Pekerjaan</a></li>
-                    <li class="breadcrumb-item active">Input Pekerjaan</li>
+                    <li class="breadcrumb-item"><a href="{{ route('work_results.index') }}">Work Order</a></li>
+                    <li class="breadcrumb-item active">Create Work Order</li>
                 </ol>
             </nav>
         </div>
@@ -24,7 +24,7 @@
         {{-- Alert Validasi Error --}}
         @if ($errors->any())
             <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                <h6 class="alert-heading fw-bold mb-1"><i class="bx bx-error-circle me-1"></i>Terjadi Kesalahan Validasi:</h6>
+                <h6 class="alert-heading fw-bold mb-1"><i class="bx bx-error-circle me-1"></i>Validation Error:</h6>
                 <ul class="mb-0 ps-3">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -49,9 +49,9 @@
                     <div class="card-header border-bottom py-3 d-flex align-items-center justify-content-between bg-white">
                         <div>
                             <h5 class="card-title text-dark fw-bold mb-0">
-                                <i class="bx bx-plus-circle text-primary me-2"></i>Form Input Pekerjaan
+                                <i class="bx bx-plus-circle text-primary me-2"></i>Work Order Form
                             </h5>
-                            <p class="mb-0 mt-1 small text-muted">Input pencatatan pembersihan pesawat (Deep Cleaning Interior & Exterior)</p>
+                            <p class="mb-0 mt-1 small text-muted">Input aircraft deep cleaning details (Deep Cleaning Interior & Exterior)</p>
                         </div>
                     </div>
 

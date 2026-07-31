@@ -1,6 +1,6 @@
 @extends('layout.admin')
 
-@section('title', 'Data Pekerjaan')
+@section('title', 'Work Orders')
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -9,13 +9,13 @@
         {{-- Header dengan Breadcrumb & Action --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
             <div>
-                <h4 class="fw-bold mb-1 text-dark">Data Pekerjaan</h4>
-                <p class="text-secondary mb-0 small">Monitoring hasil pembersihan pesawat (Deep Cleaning Interior & Exterior)</p>
+                <h4 class="fw-bold mb-1 text-dark">Work Orders</h4>
+                <p class="text-secondary mb-0 small">Monitoring aircraft deep cleaning work order results (DCI & DCE)</p>
             </div>
             <div class="d-flex align-items-center gap-2">
                 @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
                     <a href="{{ route('work_results.create') }}" class="btn btn-primary">
-                        <i class="bx bx-plus-circle me-1"></i> Input Pekerjaan Baru
+                        <i class="bx bx-plus-circle me-1"></i> Create Work Order
                     </a>
                 @endif
                 @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
@@ -42,7 +42,7 @@
                         <div class="col-md-2">
                             <label class="form-label fw-semibold text-dark">STATION</label>
                             <select name="station" class="form-select">
-                                <option value="All">-- Semua Station --</option>
+                                <option value="All">-- All Stations --</option>
                                 @foreach($stations as $st)
                                     <option value="{{ $st->code }}" {{ request('station') == $st->code ? 'selected' : '' }}>
                                         {{ $st->code }} - {{ $st->name }}
@@ -53,26 +53,26 @@
                     @endif
 
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-dark">KATEGORI (TYPE)</label>
+                        <label class="form-label fw-semibold text-dark">TYPE</label>
                         <select name="type" class="form-select">
-                            <option value="">-- Semua Type --</option>
+                            <option value="">-- All Types --</option>
                             <option value="DCI" {{ request('type') == 'DCI' ? 'selected' : '' }}>DCI (Interior)</option>
-                            <option value="DCE" {{ request('type') == 'DCE' ? 'selected' : '' }}>DCE (Eksterior)</option>
+                            <option value="DCE" {{ request('type') == 'DCE' ? 'selected' : '' }}>DCE (Exterior)</option>
                         </select>
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-dark">TANGGAL AWAL</label>
+                        <label class="form-label fw-semibold text-dark">START DATE</label>
                         <input type="date" name="date_from" class="form-control" value="{{ request('date_from', $dateFrom ?? \Carbon\Carbon::now()->startOfMonth()->toDateString()) }}">
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-dark">TANGGAL AKHIR</label>
+                        <label class="form-label fw-semibold text-dark">END DATE</label>
                         <input type="date" name="date_to" class="form-control" value="{{ request('date_to', $dateTo ?? \Carbon\Carbon::now()->endOfMonth()->toDateString()) }}">
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-dark">CARI DATA</label>
+                        <label class="form-label fw-semibold text-dark">SEARCH DATA</label>
                         <input type="text" name="search" class="form-control" placeholder="Reg / WO / Flight..." value="{{ request('search') }}">
                     </div>
 
@@ -94,7 +94,7 @@
         <div class="card shadow-sm">
             <div class="card-header border-bottom bg-white d-flex align-items-center justify-content-between py-3">
                 <h5 class="card-title text-dark fw-bold mb-0">
-                    <i class="bx bx-list-ul text-primary me-2"></i>Daftar Laporan Pekerjaan
+                    <i class="bx bx-list-ul text-primary me-2"></i>Work Order List
                 </h5>
                 <span class="badge bg-label-primary rounded-pill px-3 py-2 font-monospace">TOTAL: {{ $workResults->total() }} DATA</span>
             </div>
@@ -103,8 +103,8 @@
                 @if($workResults->isEmpty())
                     <div class="text-center py-5 text-muted">
                         <i class="bx bx-folder-open fs-1 mb-2 text-secondary d-block"></i>
-                        <p class="mb-1 fw-bold text-dark">Belum Ada Data Pekerjaan</p>
-                        <small class="text-secondary">Silakan klik "Input Pekerjaan Baru" untuk menambahkan data pekerjaan.</small>
+                        <p class="mb-1 fw-bold text-dark">No Work Orders Found</p>
+                        <small class="text-secondary">Click "Create Work Order" to add a new record.</small>
                     </div>
                 @else
                     <div class="table-responsive text-nowrap">
@@ -112,16 +112,16 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th>Tanggal & Station</th>
-                                    <th>Kategori</th>
-                                    <th>Registrasi & WO</th>
-                                    <th>Ex / To Flight</th>
-                                    <th>Stand & Waktu</th>
-                                    <th>Foto Bukti</th>
-                                    <th>Status</th>
-                                    <th>Leader</th>
-                                    <th>Staff Terlibat</th>
-                                    <th class="text-center" width="10%">Aksi</th>
+                                    <th>DATE & STATION</th>
+                                    <th>CATEGORY</th>
+                                    <th>REGISTRATION & WO</th>
+                                    <th>EX / TO FLIGHT</th>
+                                    <th>STAND & TIME</th>
+                                    <th>EVIDENCE PHOTO</th>
+                                    <th>STATUS</th>
+                                    <th>LEADER</th>
+                                    <th>STAFF ON DUTY</th>
+                                    <th class="text-center" width="10%">ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>

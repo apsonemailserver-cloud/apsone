@@ -6038,24 +6038,24 @@
                         </ul>
                     </li>
 
-                    {{-- MENU PEKERJAAN --}}
+                    {{-- MENU WORK ORDER --}}
                     <li class="menu-item {{ request()->routeIs('work_results.*') ? 'active open' : '' }}">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons ti ti-plane-arrival"></i>
-                            <div data-i18n="Pekerjaan">Pekerjaan</div>
+                            <div data-i18n="Work Order">Work Order</div>
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item {{ request()->routeIs('work_results.index') ? 'active' : '' }}">
                                 <a href="{{ route('work_results.index') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-list-details"></i>
-                                    <div data-i18n="Data Pekerjaan">Data Pekerjaan</div>
+                                    <div data-i18n="Work Orders">Work Orders</div>
                                 </a>
                             </li>
                             @if (Auth::user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
                                 <li class="menu-item {{ request()->routeIs('work_results.create') ? 'active' : '' }}">
                                     <a href="{{ route('work_results.create') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-plus"></i>
-                                        <div data-i18n="Input Pekerjaan">Input Pekerjaan</div>
+                                        <div data-i18n="Input Work Order">Input Work Order</div>
                                     </a>
                                 </li>
                             @endif
