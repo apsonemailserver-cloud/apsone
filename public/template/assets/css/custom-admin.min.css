@@ -525,3 +525,25 @@ html.aps-dark #layout-menu .menu-sub {
         border-radius: 50% !important;
     }
 }
+
+/* ============================================================
+   COLLAPSED / MINIMIZED SIDEBAR HOVER SUBMENU TREE LINE FIX
+   ============================================================ */
+html.sidebar-collapsed #layout-menu:hover .menu-sub,
+html.sidebar-collapsed.sidebar-peeking #layout-menu .menu-sub {
+    position: relative !important;
+    border-left: 2px solid #e2e8f0 !important;
+    margin-left: 35px !important;
+    padding-left: 0 !important;
+}
+
+html.sidebar-collapsed #layout-menu:hover .menu-sub .menu-item > .menu-link,
+html.sidebar-collapsed.sidebar-peeking #layout-menu .menu-sub .menu-item > .menu-link {
+    margin-left: 10px !important;
+    width: calc(100% - 24px) !important;
+}
+
+html.aps-dark.sidebar-collapsed #layout-menu:hover .menu-sub,
+html.aps-dark.sidebar-collapsed.sidebar-peeking #layout-menu .menu-sub {
+    border-left-color: rgba(148, 163, 184, 0.3) !important;
+}
