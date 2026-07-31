@@ -615,7 +615,7 @@ class WorkOrderController extends Controller
             });
         }
 
-        $matchedFlights = $flightsQuery->orderBy('created_at', 'desc')->take(20)->get();
+        $matchedFlights = $flightsQuery->orderBy('created_at', 'desc')->take(100)->get();
 
         $dbFlightList = [];
         foreach ($matchedFlights as $f) {
