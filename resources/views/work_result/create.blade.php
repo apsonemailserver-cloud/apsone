@@ -62,14 +62,14 @@
                             {{-- No WO di-generate otomatis di background --}}
                             <input type="hidden" name="wo_number" value="{{ old('wo_number', $nextWoNumber) }}">
 
-                            {{-- DATA UTAMA PEKERJAAN --}}
+                            {{-- FORM GRID PEKERJAAN & AUTO-FILL FLIGHT --}}
                             <div class="row g-3 mb-4">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label fw-semibold">Tanggal Kerja <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="date" value="{{ old('date', date('Y-m-d')) }}" required>
                                 </div>
 
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label fw-semibold">Station <span class="text-danger">*</span></label>
                                     <select name="station" id="stationInput" class="form-select" required>
                                         <option value="">-- Pilih Station --</option>
@@ -81,30 +81,39 @@
                                     </select>
                                 </div>
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-semibold">Parking Stand <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="parking_stand" value="{{ old('parking_stand') }}" placeholder="e.g. A12" required>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold text-primary">
+                                        <i class="bx bx-plane-take-off me-1"></i> Pilih Jadwal Flight <small class="text-muted">(Auto-Fill Flightradar24)</small>
+                                    </label>
+                                    <select id="flightCombobox" class="form-select border-primary bg-white shadow-none">
+                                        <option value="">-- Pilih Station Dulu --</option>
+                                    </select>
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label fw-semibold">Aircraft Registration <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <input type="text" class="form-control text-uppercase" id="aircraftRegInput" name="aircraft_reg" value="{{ old('aircraft_reg') }}" placeholder="e.g. PK-LGH" required>
                                         <button type="button" class="btn btn-outline-primary" id="btnFetchFlightData" title="Cari Data Flight">
-                                            <i class="bx bx-search-alt me-1"></i> Cek Data
+                                            <i class="bx bx-search-alt"></i>
                                         </button>
                                     </div>
                                     <small class="text-muted d-block mt-1" id="flightSearchStatus"></small>
                                 </div>
 
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Parking Stand <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="parking_stand" value="{{ old('parking_stand') }}" placeholder="e.g. A12" required>
+                                </div>
+
+                                <div class="col-md-3">
                                     <label class="form-label fw-semibold">Ex Flight <small class="text-muted">(Default: -)</small></label>
                                     <input type="text" class="form-control" id="exFlightInput" name="ex_flight" value="{{ old('ex_flight') }}" placeholder="e.g. JT 371 atau -">
                                 </div>
 
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label class="form-label fw-semibold">To Flight <small class="text-muted">(Default: -)</small></label>
                                     <input type="text" class="form-control" id="toFlightInput" name="to_flight" value="{{ old('to_flight') }}" placeholder="e.g. JT 202 atau -">
                                 </div>
