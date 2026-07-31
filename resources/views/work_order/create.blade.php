@@ -608,8 +608,7 @@
                                 const flightNo = item.ex_flight || item.flight_number || '-';
                                 const reg = item.aircraft_reg || item.registasi || '-';
                                 const arr = item.start_time || item.arrival || '-';
-                                const origin = item.origin ? (' [Dari: ' + item.origin + ']') : '';
-                                html += `<option value="${idx}">${flightNo} - ${reg}${origin} | Est Arrival: ${arr}</option>`;
+                                html += `<option value="${idx}">${flightNo} - ${reg} | Est Arrival: ${arr}</option>`;
                             });
                             $combo.html(html);
 
