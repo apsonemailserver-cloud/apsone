@@ -510,20 +510,46 @@ class WorkOrderController extends Controller
 
         try {
             $stationLower = strtolower($station);
-            
-            $ch1 = curl_init("https://api.flightradar24.com/common/v1/airport.json?code={$stationLower}&plugin[]=&plugin-setting[schedule][mode]=arrivals&limit=100");
-            curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch1, CURLOPT_TIMEOUT, 5);
-            curl_setopt($ch1, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-            $responseArr = curl_exec($ch1);
-            curl_close($ch1);
 
-            $ch2 = curl_init("https://api.flightradar24.com/common/v1/airport.json?code={$stationLower}&plugin[]=&plugin-setting[schedule][mode]=departures&limit=100");
-            curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch2, CURLOPT_TIMEOUT, 5);
-            curl_setopt($ch2, CURLOPT_USERAGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-            $responseDep = curl_exec($ch2);
-            curl_close($ch2);
+            $fetchUrl = function($url) {
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT        => 10,
+                    CURLOPT_CONNECTTIMEOUT => 5,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_SSL_VERIFYHOST => false,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_USERAGENT      => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                    CURLOPT_HTTPHEADER     => [
+                        'Accept: application/json',
+                        'Accept-Language: en-US,en;q=0.9',
+                        'Cache-Control: no-cache'
+                    ]
+                ]);
+                $output = curl_exec($ch);
+                curl_close($ch);
+
+                if (!$output) {
+                    $opts = [
+                        'http' => [
+                            'method' => 'GET',
+                            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: application/json\r\n",
+                            'timeout' => 10
+                        ],
+                        'ssl' => [
+                            'verify_peer' => false,
+                            'verify_peer_name' => false
+                        ]
+                    ];
+                    $context = stream_context_create($opts);
+                    $output = @file_get_contents($url, false, $context);
+                }
+                return $output;
+            };
+
+            $responseArr = $fetchUrl("https://api.flightradar24.com/common/v1/airport.json?code={$stationLower}&plugin[]=&plugin-setting[schedule][mode]=arrivals&limit=100");
+            $responseDep = $fetchUrl("https://api.flightradar24.com/common/v1/airport.json?code={$stationLower}&plugin[]=&plugin-setting[schedule][mode]=departures&limit=100");
 
             $depMap = [];
             if ($responseDep) {
