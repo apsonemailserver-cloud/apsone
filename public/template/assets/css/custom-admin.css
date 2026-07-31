@@ -309,3 +309,219 @@ html.aps-dark .select2-container--default .select2-selection--multiple .select2-
     padding: 9px 16px !important;
     font-size: 0.86rem !important;
 }
+
+/* Submenu Vertical Hierarchy Line */
+#layout-menu .menu-sub {
+    position: relative !important;
+    border-left: 2px solid #e2e8f0 !important;
+    margin-left: 35px !important;
+    padding-left: 0 !important;
+}
+
+#layout-menu .menu-sub .menu-item > .menu-link {
+    margin-left: 10px !important;
+    width: calc(100% - 24px) !important;
+}
+
+html.aps-dark #layout-menu .menu-sub {
+    border-left-color: #24324a !important;
+}
+
+/* ============================================================
+   DARK MODE SIDEBAR REFINEMENT (HIGH CONTRAST & VISIBILITY)
+   ============================================================ */
+
+/* 1. Dark Mode Sidebar Container & Brand Logo */
+html.aps-dark #layout-menu,
+html.aps-dark #layout-menu .app-brand {
+    background-color: #111c31 !important;
+    border-color: #24324a !important;
+}
+
+/* 2. Menu Section Headers (MENU, ADMINISTRATOR, GENERAL) */
+html.aps-dark #layout-menu .menu-header-text {
+    color: #94a3b8 !important;
+    font-weight: 700 !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.06em !important;
+}
+
+/* 3. Unselected Normal Menu Item Text & Icons (High Contrast Readability) */
+html.aps-dark #layout-menu .menu-inner .menu-item > .menu-link {
+    color: #e2e8f0 !important;
+    font-weight: 500 !important;
+}
+
+html.aps-dark #layout-menu .menu-link .menu-icon {
+    color: #cbd5e1 !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.aps-dark #layout-menu .sidebar-time #tanggalSekarang,
+html.aps-dark #layout-menu .sidebar-time .menu-icon {
+    color: #cbd5e1 !important;
+}
+
+/* 4. Hover State in Dark Mode (Bright, Clear Contrast) */
+html.aps-dark #layout-menu .menu-inner .menu-item > .menu-link:hover,
+html.aps-dark #layout-menu .menu-inner .menu-item > .menu-link:focus {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+}
+
+html.aps-dark #layout-menu .menu-inner .menu-item > .menu-link:hover .menu-icon {
+    background-color: rgba(47, 128, 237, 0.35) !important;
+    color: #ffffff !important;
+}
+
+/* 5. Parent Dropdown Header when Open / Expanded in Dark Mode */
+html.aps-dark #layout-menu .menu-inner > .menu-item.open > .menu-link.menu-toggle,
+html.aps-dark #layout-menu .menu-inner > .menu-item.active > .menu-link.menu-toggle,
+html.aps-dark .bg-menu-theme .menu-inner > .menu-item.open > .menu-link.menu-toggle,
+html.aps-dark .bg-menu-theme .menu-inner > .menu-item.active > .menu-link.menu-toggle {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #38bdf8 !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+
+html.aps-dark #layout-menu .menu-inner > .menu-item.open > .menu-link.menu-toggle .menu-icon,
+html.aps-dark #layout-menu .menu-inner > .menu-item.active > .menu-link.menu-toggle .menu-icon {
+    background-color: #2f80ed !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(47, 128, 237, 0.35) !important;
+}
+
+html.aps-dark #layout-menu .menu-inner > .menu-item.open > .menu-link.menu-toggle div,
+html.aps-dark #layout-menu .menu-inner > .menu-item.active > .menu-link.menu-toggle div {
+    color: #38bdf8 !important;
+}
+
+/* 6. Sub-Menu Hover & Active States in Dark Mode (High Contrast & Visible) */
+html.aps-dark #layout-menu .menu-sub .menu-item > .menu-link:hover {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+}
+
+html.aps-dark #layout-menu .menu-sub .menu-item > .menu-link:hover .menu-icon {
+    background-color: rgba(47, 128, 237, 0.35) !important;
+    color: #ffffff !important;
+}
+
+html.aps-dark #layout-menu .menu-sub .menu-item.active > .menu-link,
+html.aps-dark #layout-menu .menu-sub .menu-item.active > .menu-link:hover,
+html.aps-dark .bg-menu-theme .menu-sub .menu-item.active > .menu-link,
+html.aps-dark #layout-menu .menu-inner > .menu-item.active:not(.open) > .menu-link {
+    background: linear-gradient(135deg, #2f80ed 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 14px rgba(47, 128, 237, 0.45) !important;
+}
+
+html.aps-dark #layout-menu .menu-sub .menu-item.active > .menu-link .menu-icon,
+html.aps-dark #layout-menu .menu-sub .menu-item.active > .menu-link:hover .menu-icon,
+html.aps-dark #layout-menu .menu-inner > .menu-item.active:not(.open) > .menu-link .menu-icon {
+    background-color: rgba(255, 255, 255, 0.22) !important;
+    color: #ffffff !important;
+}
+
+html.aps-dark #layout-menu .menu-sub .menu-item.active > .menu-link div,
+html.aps-dark #layout-menu .menu-sub .menu-item.active > .menu-link:hover div,
+html.aps-dark #layout-menu .menu-inner > .menu-item.active:not(.open) > .menu-link div {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #ffffff !important;
+}
+
+/* 7. Sub-menu Vertical Tree Line in Dark Mode */
+html.aps-dark #layout-menu .menu-sub {
+    border-left-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+/* ============================================================
+   MOBILE TOPBAR SYMMETRY & HAMBURGER TOGGLE CENTER ALIGNMENT
+   ============================================================ */
+@media (max-width: 767.98px) {
+    #layout-navbar .aps-topbar {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.4rem !important;
+        min-height: 52px !important;
+        padding: 4px 6px !important;
+    }
+
+    #layout-navbar .aps-topbar .navbar-nav {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 38px !important;
+    }
+
+    #layout-navbar #custom-sidebar-toggle {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        flex-shrink: 0 !important;
+    }
+
+    #layout-navbar #custom-sidebar-toggle i {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    #layout-navbar .topbar-search-trigger {
+        height: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+        margin: 0 !important;
+    }
+
+    #layout-navbar .topbar-theme-switch,
+    #layout-navbar .topbar-notification-switch {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+    }
+
+    #layout-navbar .dropdown-user .topbar-user-chip.nav-link {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+    }
+}
