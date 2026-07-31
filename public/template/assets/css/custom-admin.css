@@ -641,21 +641,25 @@ html.aps-dark .profile-page .info-label {
 html.aps-dark .profile-info-item .info-value,
 html.aps-dark .info-tile .info-value,
 html.aps-dark .profile-page .info-value,
-html.aps-dark .profile-info-item span:not(.info-label):not(.badge) {
+html.aps-dark .profile-info-item span:not(.info-label):not(.badge):not(.text-danger):not(.text-success):not(.text-warning) {
     color: #f1f5f9 !important;
     font-weight: 600 !important;
 }
 
 html.aps-dark .profile-info-item .info-value.text-danger,
 html.aps-dark .info-tile .info-value.text-danger,
-html.aps-dark .profile-page .info-value.text-danger {
-    color: #f87171 !important;
+html.aps-dark .profile-page .info-value.text-danger,
+html.aps-dark .profile-info-item span.text-danger,
+html.aps-dark .text-danger {
+    color: #ef4444 !important;
     font-weight: 700 !important;
 }
 
 html.aps-dark .profile-info-item .info-value.text-success,
 html.aps-dark .info-tile .info-value.text-success,
-html.aps-dark .profile-page .info-value.text-success {
-    color: #34d399 !important;
+html.aps-dark .profile-page .info-value.text-success,
+html.aps-dark .profile-info-item span.text-success,
+html.aps-dark .text-success {
+    color: #10b981 !important;
     font-weight: 700 !important;
 }
