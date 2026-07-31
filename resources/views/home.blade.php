@@ -1625,37 +1625,50 @@
             </div>
         </div>
 
-        {{-- PANEL STATISTIK WORK ORDER DEEP CLEANING --}}
-        <div class="row g-3 mb-3">
-            <div class="col-md-6 col-lg-3">
-                <div class="card stat-card shadow-sm" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: #ffffff;">
+        {{-- PANEL WORK ORDER DEEP CLEANING --}}
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card stat-card-primary shadow-sm h-100">
                     <div class="card-body">
-                        <div class="stat-title text-white-50">WO Deep Cleaning Hari Ini</div>
-                        <div class="stat-value text-white">{{ $totalWoToday ?? 0 }}</div>
-                        <i class="bx bx-task stat-icon text-white-50" style="position: absolute; right: 15px; top: 15px; font-size: 2.5rem; font-style: normal;"></i>
+                        <div class="stat-title">WO Deep Cleaning (Hari Ini)</div>
+                        <div class="stat-value">{{ $totalWoToday ?? 0 }}</div>
+                        <i class="fas fa-clipboard-check stat-icon"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="card stat-card shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">
+
+            <div class="col-md-3">
+                <div class="card stat-card stat-card-success shadow-sm h-100">
                     <div class="card-body">
-                        <div class="stat-title text-white-50">WO Deep Cleaning Bulan Ini</div>
-                        <div class="stat-value text-white">{{ $totalWoThisMonth ?? 0 }}</div>
-                        <i class="bx bx-calendar stat-icon text-white-50" style="position: absolute; right: 15px; top: 15px; font-size: 2.5rem; font-style: normal;"></i>
+                        <div class="stat-title">WO Deep Cleaning (Bulan Ini)</div>
+                        <div class="stat-value">{{ $totalWoThisMonth ?? 0 }}</div>
+                        <i class="fas fa-calendar-alt stat-icon"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-12 col-lg-6">
-                <div class="card shadow-sm h-100 bg-light border-0 d-flex flex-row align-items-center justify-content-between p-3" style="min-height: 86px;">
-                    <div>
-                        <h6 class="fw-bold mb-1 text-dark">Laporan Pekerjaan Pesawat</h6>
-                        <small class="text-secondary">Kelola hasil Deep Cleaning Interior & Exterior (DCI/DCE)</small>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('work_results.index') }}" class="btn btn-primary btn-sm"><i class="bx bx-list-ul me-1"></i> Data WO</a>
-                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
-                            <a href="{{ route('work_results.create') }}" class="btn btn-outline-primary btn-sm"><i class="bx bx-plus me-1"></i> Input WO</a>
-                        @endif
+
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100 border-0 bg-white">
+                    <div class="card-body d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 py-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge bg-label-primary p-2 rounded-circle">
+                                    <i class="ti ti-plane-arrival fs-5"></i>
+                                </span>
+                                <h6 class="fw-bold mb-0 text-dark">Aircraft Deep Cleaning Reports</h6>
+                            </div>
+                            <small class="text-muted">Manage & monitor Deep Cleaning Interior (DCI) & Exterior (DCE)</small>
+                        </div>
+                        <div class="d-flex gap-2 w-100 w-sm-auto">
+                            <a href="{{ route('work_results.index') }}" class="btn btn-primary btn-sm flex-fill flex-sm-grow-0">
+                                <i class="bx bx-list-ul me-1"></i> All Work Orders
+                            </a>
+                            @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                <a href="{{ route('work_results.create') }}" class="btn btn-outline-primary btn-sm flex-fill flex-sm-grow-0">
+                                    <i class="bx bx-plus me-1"></i> Create WO
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
