@@ -88,16 +88,18 @@
                             </div>
 
                             {{-- SECTION 2: AUTO-FILL FLIGHT SELECTOR --}}
-                            <div class="card bg-light border border-primary border-opacity-25 mb-4 shadow-none" id="flightComboboxContainer">
+                            <div class="card bg-label-primary border border-primary border-opacity-25 mb-4 shadow-sm" id="flightComboboxContainer">
                                 <div class="card-body p-3">
-                                    <label class="form-label fw-bold text-primary mb-1">
-                                        <i class="bx bx-plane-take-off me-1"></i> Pilih Jadwal Flight (Auto-Fill Flightradar24)
-                                    </label>
-                                    <select id="flightCombobox" class="form-select border-primary bg-white">
-                                        <option value="">-- Pilih Station Dulu atau Ketik Registrasi --</option>
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <label class="form-label fw-bold text-primary mb-0 d-flex align-items-center">
+                                            <i class="bx bx-plane-take-off fs-5 me-1.5"></i> Pilih Jadwal Flight (Auto-Fill Flightradar24)
+                                        </label>
+                                    </div>
+                                    <select id="flightCombobox" class="form-select border-primary bg-white shadow-none mt-1">
+                                        <option value="">-- Pilih Station di atas untuk memuat Jadwal Flight --</option>
                                     </select>
-                                    <small class="text-muted d-block mt-1">
-                                        <i class="bx bx-info-circle me-1"></i>Memilih flight di combobox ini akan langsung mengisi otomatis data pesawat & waktu.
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="bx bx-info-circle me-1 text-primary"></i>Memilih penerbangan di atas akan otomatis mengisi <strong>Aircraft Reg</strong>, <strong>Ex/To Flight</strong>, <strong>Stand</strong>, dan <strong>Jam Kerja</strong>.
                                     </small>
                                 </div>
                             </div>

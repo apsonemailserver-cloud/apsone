@@ -237,3 +237,19 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/faq', 'faq')->name('faq');
     Route::view('/kebijakan-privasi', 'kebijakan')->name('kebijakan');
 });
+
+// --- STORAGE FILE FALLBACK (Fix 404 on production server if php artisan storage:link is missing) ---
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+    if (!file_exists($fullPath)) {
+        $fullPath = public_path('storage/' . $path);
+    }
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+    $mime = mime_content_type($fullPath) ?: 'image/jpeg';
+    return response()->file($fullPath, [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('path', '.*')->name('storage.fallback');
