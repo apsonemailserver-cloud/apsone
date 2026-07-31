@@ -9,6 +9,7 @@ use App\Models\Leave;
 use App\Models\Schedule;
 use App\Models\Station;
 use App\Models\User;
+use App\Models\WorkResult;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -254,11 +255,39 @@ class HomeController extends Controller
         }
 
         // Data Monitoring Station (Untuk Widget Kartu-Kartu Station)
-        // Kita tampilkan semua station di widget bawah, tapi Dashboard utama mengikuti filter dropdown
         $allStations = !empty($listStations) ? $listStations : Station::where('is_active', 1)->get();
         $stationStats = User::select('station', DB::raw('count(*) as total'))
             ->groupBy('station')
             ->pluck('total', 'station');
+
+        // =================================================================
+        // BAGIAN 4B: WORK RESULTS STATS (BARU)
+        // =================================================================
+        $recentWorkResults = collect();
+        $totalWoToday = 0;
+        $totalWoThisMonth = 0;
+
+        if ($showManagementDashboard) {
+            $woQuery = WorkResult::query();
+            
+            if ($user->hasRole('Admin')) {
+                if ($selectedStation !== 'All') {
+                    $woQuery->where('station', $selectedStation);
+                }
+            } else {
+                $woQuery->where('submitted_by', $user->id);
+            }
+
+            $totalWoToday = (clone $woQuery)->whereDate('date', Carbon::today())->count();
+            $totalWoThisMonth = (clone $woQuery)->whereMonth('date', Carbon::today()->month)
+                                               ->whereYear('date', Carbon::today()->year)->count();
+            
+            $recentWorkResults = $woQuery->with(['users', 'submittedBy'])
+                ->orderBy('date', 'desc')
+                ->orderBy('start_time', 'desc')
+                ->take(5)
+                ->get();
+        }
 
         // =================================================================
         // BAGIAN 5: RETURN VIEW
@@ -294,7 +323,12 @@ class HomeController extends Controller
 
             // Monitoring Station Widget
             'allStations',
-            'stationStats'
+            'stationStats',
+
+            // Work Results (Pekerjaan) Stats
+            'recentWorkResults',
+            'totalWoToday',
+            'totalWoThisMonth'
         ));
     }
 
@@ -312,6 +346,13 @@ class HomeController extends Controller
                 fn ($query) => $query->where('user_id', $user->id)
             )
             ->orderBy('arrival')
+            ->get();
+
+        $personalWorkResultsLastMonth = WorkResult::with(['users', 'submittedBy'])
+            ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
+            ->whereBetween('date', [$monthStart->toDateString(), $today->toDateString()])
+            ->orderBy('date', 'desc')
+            ->orderBy('start_time', 'desc')
             ->get();
 
         $scheduledDates = Schedule::where('user_id', $user->id)
@@ -357,15 +398,25 @@ class HomeController extends Controller
             ->get()
             ->keyBy(fn (Schedule $schedule) => Carbon::parse($schedule->date)->toDateString());
 
+        $personalWorkResults = WorkResult::with(['users', 'submittedBy'])
+            ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
+            ->orderBy('date', 'desc')
+            ->orderBy('start_time', 'desc')
+            ->take(5)
+            ->get();
+
+        $totalAssignments = $personalWorkResultsLastMonth->count() + $assignedFlights->count();
+        $totalCompleted = $personalWorkResultsLastMonth->count() + $assignedFlights->where('status', true)->count();
+
         return [
             'assignedFlights' => $assignedFlights,
+            'personalWorkResultsLastMonth' => $personalWorkResultsLastMonth,
             'personalAttendanceHistory' => $personalAttendanceHistory,
             'personalSchedules' => $personalSchedules,
             'personalAttendancePercentage' => $personalAttendancePercentage,
-            'personalAssignmentsLastMonth' => $assignedFlights->count(),
-            'personalCompletedFlightsLastMonth' => $assignedFlights
-                ->where('status', true)
-                ->count(),
+            'personalAssignmentsLastMonth' => $totalAssignments,
+            'personalCompletedFlightsLastMonth' => $totalCompleted,
+            'personalWorkResults' => $personalWorkResults,
         ];
     }
 

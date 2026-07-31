@@ -153,4 +153,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Overtime::class);
     }
+
+    // Relasi ke Hasil Kerja (Work Results)
+    public function workResults()
+    {
+        return $this->belongsToMany(WorkResult::class, 'work_result_user', 'user_id', 'work_result_id');
+    }
 }

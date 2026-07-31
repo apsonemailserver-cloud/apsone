@@ -1480,35 +1480,73 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($assignedFlights as $flight)
-                                    <tr>
-                                        <td class="fw-bold text-primary">{{ $flight->airline }}</td>
-                                        <td><span class="badge bg-label-dark">{{ $flight->flight_number }}</span></td>
-                                        <td>{{ $flight->registasi }}</td>
-                                        <td>{{ $flight->type }}</td>
-                                        <td><i class="bx bx-time-five text-muted me-1"></i>{{ $flight->arrival }}</td>
-                                        <td><span class="countdown shadow-sm no-click"
-                                                data-time="{{ $flight->time_count }}"></span></td>
-                                        <td class="no-click">
-                                            @if ($flight->status)
-                                                <span class="badge bg-label-success px-3 py-2 rounded-pill">
-                                                    <i class="bx bx-check me-1"></i>Selesai
-                                                </span>
-                                            @else
-                                                <span class="badge bg-label-warning px-3 py-2 rounded-pill">
-                                                    <i class="bx bx-loader-alt bx-spin me-1"></i>Proses
-                                                </span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
+                                @php
+                                    $hasWorkResults = isset($personalWorkResultsLastMonth) && $personalWorkResultsLastMonth->isNotEmpty();
+                                    $hasFlights = isset($assignedFlights) && $assignedFlights->isNotEmpty();
+                                @endphp
+
+                                @if ($hasWorkResults || $hasFlights)
+                                    {{-- Data Pekerjaan (Work Orders / Deep Cleaning) --}}
+                                    @if ($hasWorkResults)
+                                        @foreach ($personalWorkResultsLastMonth as $wo)
+                                            <tr>
+                                                <td class="fw-bold text-primary">
+                                                    <span class="badge bg-label-primary font-monospace me-1">{{ $wo->type }}</span>
+                                                    {{ $wo->wo_number }}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-label-dark">Ex: {{ $wo->ex_flight }}</span>
+                                                    <span class="badge bg-label-secondary ms-1">To: {{ $wo->to_flight }}</span>
+                                                </td>
+                                                <td class="font-monospace fw-bold">{{ $wo->aircraft_reg }}</td>
+                                                <td><span class="badge bg-label-info">{{ $wo->type }}</span></td>
+                                                <td>
+                                                    <div class="small fw-semibold text-dark"><i class="bx bx-parking me-1 text-primary"></i>Stand {{ $wo->parking_stand }}</div>
+                                                    <div class="small text-muted"><i class="bx bx-time me-1"></i>{{ substr($wo->start_time, 0, 5) }} - {{ substr($wo->end_time, 0, 5) }}</div>
+                                                </td>
+                                                <td>{{ \Carbon\Carbon::parse($wo->date)->format('d M Y') }}</td>
+                                                <td class="no-click">
+                                                    <span class="badge bg-label-success px-3 py-2 rounded-pill">
+                                                        <i class="bx bx-check me-1"></i>Selesai
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
+
+                                    {{-- Data Flights (Assignment Penanganan) --}}
+                                    @if ($hasFlights)
+                                        @foreach ($assignedFlights as $flight)
+                                            <tr>
+                                                <td class="fw-bold text-primary">{{ $flight->airline }}</td>
+                                                <td><span class="badge bg-label-dark">{{ $flight->flight_number }}</span></td>
+                                                <td>{{ $flight->registasi }}</td>
+                                                <td>{{ $flight->type }}</td>
+                                                <td><i class="bx bx-time-five text-muted me-1"></i>{{ $flight->arrival }}</td>
+                                                <td><span class="countdown shadow-sm no-click"
+                                                        data-time="{{ $flight->time_count }}"></span></td>
+                                                <td class="no-click">
+                                                    @if ($flight->status)
+                                                        <span class="badge bg-label-success px-3 py-2 rounded-pill">
+                                                            <i class="bx bx-check me-1"></i>Selesai
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-label-warning px-3 py-2 rounded-pill">
+                                                            <i class="bx bx-loader-alt bx-spin me-1"></i>Proses
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
+                                @else
                                     <tr>
                                         <td colspan="7" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
                                             <p class="mb-0">Tidak ada pengerjaan yang ditugaskan kepada Anda dalam 1 bulan terakhir.</p>
                                         </td>
                                     </tr>
-                                @endforelse
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -1544,6 +1582,42 @@
                         <div class="stat-title">Penerbangan Selesai</div>
                         <div class="stat-value">{{ $totalFlightPerDay ?? 0 }}</div>
                         <i class="fas fa-plane-departure stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- PANEL STATISTIK WORK ORDER DEEP CLEANING --}}
+        <div class="row g-3 mb-3">
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card shadow-sm" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: #ffffff;">
+                    <div class="card-body">
+                        <div class="stat-title text-white-50">WO Deep Cleaning Hari Ini</div>
+                        <div class="stat-value text-white">{{ $totalWoToday ?? 0 }}</div>
+                        <i class="bx bx-task stat-icon text-white-50" style="position: absolute; right: 15px; top: 15px; font-size: 2.5rem; font-style: normal;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card stat-card shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff;">
+                    <div class="card-body">
+                        <div class="stat-title text-white-50">WO Deep Cleaning Bulan Ini</div>
+                        <div class="stat-value text-white">{{ $totalWoThisMonth ?? 0 }}</div>
+                        <i class="bx bx-calendar stat-icon text-white-50" style="position: absolute; right: 15px; top: 15px; font-size: 2.5rem; font-style: normal;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-lg-6">
+                <div class="card shadow-sm h-100 bg-light border-0 d-flex flex-row align-items-center justify-content-between p-3" style="min-height: 86px;">
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">Laporan Pekerjaan Pesawat</h6>
+                        <small class="text-secondary">Kelola hasil Deep Cleaning Interior & Exterior (DCI/DCE)</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('work_results.index') }}" class="btn btn-primary btn-sm"><i class="bx bx-list-ul me-1"></i> Data WO</a>
+                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                            <a href="{{ route('work_results.create') }}" class="btn btn-outline-primary btn-sm"><i class="bx bx-plus me-1"></i> Input WO</a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -1769,6 +1843,127 @@
                                                     Tidak ada data penerbangan dalam 7 hari terakhir.
                                                 @endif
                                             </p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+        </div>
+
+        {{-- LAPORAN HASIL PEKERJAAN DEEP CLEANING (DCI/DCE) --}}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="modern-card">
+                    <div class="card-header chart-header d-flex justify-content-between align-items-center pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-3 p-2 me-2 text-primary d-flex align-items-center justify-content-center"
+                                style="width: 34px; height: 34px; background-color: var(--primary-soft);">
+                                <i class="bx bx-task fs-5"></i>
+                            </div>
+                            <h6 class="mb-0 fw-bold text-dark">
+                                @if ($showManagementDashboard)
+                                    Hasil Pekerjaan Deep Cleaning Terbaru
+                                @else
+                                    Hasil Pekerjaan Deep Cleaning Saya
+                                @endif
+                                <span class="text-muted fw-normal">(5 Terbaru)</span>
+                            </h6>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            @if ($showManagementDashboard)
+                                @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                    <a href="{{ route('work_results.create') }}" class="btn btn-sm btn-primary">
+                                        <i class="bx bx-plus me-1"></i> Input WO
+                                    </a>
+                                @endif
+                            @endif
+                            <a href="{{ route('work_results.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal & Station</th>
+                                    <th>No. WO</th>
+                                    <th>Kategori</th>
+                                    <th>Registrasi</th>
+                                    <th>Flight Ex/To</th>
+                                    <th>Stand & Waktu</th>
+                                    @if ($showManagementDashboard)
+                                        <th>Leader</th>
+                                    @endif
+                                    <th>Staff Terlibat</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $wos = $showManagementDashboard ? $recentWorkResults : ($personalWorkResults ?? collect());
+                                @endphp
+                                @forelse ($wos as $wo)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">{{ \Carbon\Carbon::parse($wo->date)->format('d M Y') }}</div>
+                                            <span class="badge bg-label-secondary font-monospace" style="font-size: 0.75rem; padding: 2px 6px;">{{ $wo->station }}</span>
+                                        </td>
+                                        <td><span class="badge bg-label-secondary font-monospace">{{ $wo->wo_number }}</span></td>
+                                        <td>
+                                            @if($wo->type === 'DCI')
+                                                <span class="badge bg-label-primary font-monospace">DCI</span>
+                                            @else
+                                                <span class="badge bg-label-success font-monospace">DCE</span>
+                                            @endif
+                                        </td>
+                                        <td class="fw-bold text-dark font-monospace">{{ $wo->aircraft_reg }}</td>
+                                        <td>
+                                            <div class="small fw-semibold text-dark">Ex: {{ $wo->ex_flight }}</div>
+                                            <div class="small text-muted">To: {{ $wo->to_flight }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-medium text-dark"><i class="bx bx-parking me-1 text-primary"></i>Stand {{ $wo->parking_stand }}</div>
+                                            <div class="small text-muted"><i class="bx bx-time me-1"></i>{{ substr($wo->start_time, 0, 5) }} - {{ substr($wo->end_time, 0, 5) }}</div>
+                                        </td>
+                                        @if ($showManagementDashboard)
+                                            <td>
+                                                <div class="fw-semibold text-dark">{{ $wo->submittedBy ? $wo->submittedBy->fullname : '-' }}</div>
+                                            </td>
+                                        @endif
+                                        <td>
+                                            @if($wo->users && $wo->users->count() > 0)
+                                                @foreach($wo->users->take(2) as $st)
+                                                    <span class="badge bg-label-primary me-1 mb-1 font-monospace" style="font-size: 0.75rem;">{{ $st->fullname }}</span>
+                                                @endforeach
+                                                @if($wo->users->count() > 2)
+                                                    <span class="badge bg-label-secondary me-1 mb-1 font-monospace" style="font-size: 0.75rem;">+{{ $wo->users->count() - 2 }}</span>
+                                                @endif
+                                            @else
+                                                <span class="text-muted small">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                                <a href="{{ route('work_results.show', $wo->id) }}" class="action-btn" title="Detail Pekerjaan">
+                                                    <i class="bx bx-show"></i>
+                                                </a>
+                                                @if($wo->photo_path)
+                                                    <a href="{{ route('work_results.export_single_pdf', $wo->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
+                                                        <i class="bx bx-printer"></i>
+                                                    </a>
+                                                @else
+                                                    <button type="button" class="action-btn action-edit opacity-50 btn-no-photo-pdf" data-wo="{{ $wo->wo_number }}" title="Belum Ada Foto (Tidak Bisa Dicetak)">
+                                                        <i class="bx bx-printer"></i>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="{{ $showManagementDashboard ? 9 : 8 }}" class="text-center py-4 text-muted">
+                                            <i class="bx bx-info-circle fs-2 mb-2 opacity-50"></i>
+                                            <p class="mb-0">Belum ada laporan pekerjaan Deep Cleaning.</p>
                                         </td>
                                     </tr>
                                 @endforelse

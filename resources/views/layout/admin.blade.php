@@ -5940,6 +5940,28 @@
                         </ul>
                     </li>
 
+                    {{-- MENU PEKERJAAN --}}
+                    <li class="menu-item {{ request()->routeIs('work_results.*') ? 'active open' : '' }}">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons ti ti-plane-arrival"></i>
+                            <div data-i18n="Pekerjaan">Pekerjaan</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item {{ request()->routeIs('work_results.index') ? 'active' : '' }}">
+                                <a href="{{ route('work_results.index') }}" class="menu-link">
+                                    <i class="menu-icon tf-icons ti ti-list-details"></i>
+                                    <div data-i18n="Data Pekerjaan">Data Pekerjaan</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {{ request()->routeIs('work_results.create') ? 'active' : '' }}">
+                                <a href="{{ route('work_results.create') }}" class="menu-link">
+                                    <i class="menu-icon tf-icons ti ti-file-plus"></i>
+                                    <div data-i18n="Input Pekerjaan">Input Pekerjaan</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                     @if (in_array(Auth::user()->role, ['Admin']))
                         {{-- HEADER KHUSUS ADMIN --}}
                         <li class="menu-header small text-uppercase">
