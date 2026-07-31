@@ -609,7 +609,25 @@
                                 const to = (item.to_flight && item.to_flight !== '-') ? ` / ${item.to_flight}` : '';
                                 const flightNo = `${ex}${to}`;
                                 const reg = item.aircraft_reg || item.registasi || '';
-                                const regStr = reg ? ` (${reg})` : '';
+                                
+                                let airline = item.airline || '';
+                                if (!airline || airline === 'Airlines') {
+                                    if (/^(MH|MAS)/i.test(ex)) airline = 'Malaysia Airlines';
+                                    else if (/^(QZ|AK|FD|D7)/i.test(ex)) airline = 'AirAsia';
+                                    else if (/^(JT|LNI)/i.test(ex)) airline = 'Lion Air';
+                                    else if (/^(GA|GIA)/i.test(ex)) airline = 'Garuda';
+                                    else if (/^(QG|CTV)/i.test(ex)) airline = 'Citilink';
+                                    else if (/^(ID|BTK)/i.test(ex)) airline = 'Batik Air';
+                                    else if (/^(SJ|IN)/i.test(ex)) airline = 'Sriwijaya';
+                                    else if (/^(SQ|SIA)/i.test(ex)) airline = 'Singapore Airlines';
+                                    else if (/^(8B|TGW)/i.test(ex)) airline = 'TransNusa';
+                                }
+                                airline = airline.replace(' Indonesia', '').replace(' Airlines', '').trim();
+
+                                let detailStr = '';
+                                if (reg && airline) detailStr = ` (${reg} - ${airline})`;
+                                else if (reg) detailStr = ` (${reg})`;
+                                else if (airline) detailStr = ` (${airline})`;
 
                                 let origin = item.origin || '';
                                 if (origin === '-') origin = '';
@@ -628,7 +646,7 @@
                                 const arr = item.start_time || item.arrival || '';
                                 const timeStr = arr ? ` [${arr}]` : '';
 
-                                html += `<option value="${idx}">${flightNo}${regStr}${originStr}${timeStr}</option>`;
+                                html += `<option value="${idx}">${flightNo}${detailStr}${originStr}${timeStr}</option>`;
                             });
                             $combo.html(html);
 
