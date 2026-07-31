@@ -281,13 +281,25 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            if (typeof $.fn.select2 !== 'undefined') {
-                $('.select2').select2({
-                    placeholder: '-- Pilih Role --',
-                    allowClear: true,
-                    width: '100%'
-                });
+            function initUserSelect2() {
+                if (window.jQuery && typeof window.jQuery.fn.select2 === 'function') {
+                    $('.select2').select2({
+                        placeholder: '-- Pilih Role --',
+                        allowClear: true,
+                        width: '100%'
+                    });
+                } else {
+                    if (window.jQuery && typeof window.jQuery.fn.select2 !== 'function') {
+                        if (!document.querySelector('script[src*="select2.min.js"]')) {
+                            const s2s = document.createElement('script');
+                            s2s.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+                            document.head.appendChild(s2s);
+                        }
+                    }
+                    setTimeout(initUserSelect2, 50);
+                }
             }
+            initUserSelect2();
 
             // Dynamic Superiors Filter based on Station
             const stationSelect = document.querySelector('select[name="station"]');

@@ -85,7 +85,7 @@
                                     <label class="form-label fw-semibold text-primary">
                                         <i class="bx bx-plane-take-off me-1"></i> Pilih Jadwal Flight <small class="text-muted">(Auto-Fill Flightradar24)</small>
                                     </label>
-                                    <select id="flightCombobox" class="form-select border-primary bg-white shadow-none">
+                                    <select id="flightCombobox" class="form-select border-primary shadow-none">
                                         <option value="">-- Pilih Station Dulu --</option>
                                     </select>
                                 </div>
@@ -142,33 +142,14 @@
 
                             {{-- SECTION 5: TIM STAFF PELAKSANA --}}
                             <div class="row g-3 mb-4">
-                                <div class="col-12">
+                                <div class="col-12 position-relative">
                                     <label class="form-label fw-bold">Staff Members <span class="text-danger">*</span> <small class="text-muted">(Pilih minimal 2 dan maksimal 10 staff)</small></label>
                                     <select name="staff_members[]" id="staffMembers" class="form-select select2-multiple" multiple="multiple" data-placeholder="-- Cari & Pilih Staff Berdasarkan Nama / NIK --" required>
-                                        @php
-                                            $scheduledStaffs = $staffs->filter(fn($s) => $s->is_scheduled);
-                                            $otherStaffs = $staffs->filter(fn($s) => !$s->is_scheduled);
-                                        @endphp
-
-                                        @if($scheduledStaffs->isNotEmpty())
-                                            <optgroup label="⚡ Staff Schedule Aktif (On Duty)">
-                                                @foreach($scheduledStaffs as $staff)
-                                                    <option value="{{ $staff->id }}" {{ (is_array(old('staff_members')) && in_array($staff->id, old('staff_members'))) ? 'selected' : '' }}>
-                                                        {{ $staff->fullname }} (NIK: {{ $staff->id }})
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-                                        @endif
-
-                                        @if($otherStaffs->isNotEmpty())
-                                            <optgroup label="Staff Lainnya (Station {{ auth()->user()->station ?: 'All' }})">
-                                                @foreach($otherStaffs as $staff)
-                                                    <option value="{{ $staff->id }}" {{ (is_array(old('staff_members')) && in_array($staff->id, old('staff_members'))) ? 'selected' : '' }}>
-                                                        {{ $staff->fullname }} (NIK: {{ $staff->id }})
-                                                    </option>
-                                                @endforeach
-                                            </optgroup>
-                                        @endif
+                                        @foreach($staffs as $staff)
+                                            <option value="{{ $staff->id }}" {{ (is_array(old('staff_members')) && in_array($staff->id, old('staff_members'))) ? 'selected' : '' }}>
+                                                {{ $staff->fullname }} (NIK: {{ $staff->id }})
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -247,11 +228,30 @@
         .btn-outline-primary {
             color: var(--brand-primary) !important;
             border-color: var(--brand-primary) !important;
+            background-color: transparent !important;
         }
 
         .btn-outline-primary:hover {
             background-color: var(--brand-primary) !important;
             color: #ffffff !important;
+        }
+
+        html.aps-dark .btn-outline-primary,
+        body.aps-camera-dark .btn-outline-primary,
+        [data-aps-theme="dark"] .btn-outline-primary {
+            color: #38bdf8 !important;
+            border-color: #2a3a55 !important;
+            background-color: #17233a !important;
+            background: #17233a !important;
+        }
+
+        html.aps-dark .btn-outline-primary:hover,
+        body.aps-camera-dark .btn-outline-primary:hover,
+        [data-aps-theme="dark"] .btn-outline-primary:hover {
+            background-color: #2563eb !important;
+            background: #2563eb !important;
+            color: #ffffff !important;
+            border-color: #2563eb !important;
         }
 
         /* Input Group Seamless Button Alignment Fix */
@@ -297,88 +297,7 @@
             color: #64748b !important;
         }
 
-        /* ENHANCED SELECT2 MULTISELECT COMBOBOX STYLING */
-        .select2-container--default .select2-selection--multiple {
-            background-color: #ffffff;
-            border: 1px solid #d9dee3;
-            border-radius: 8px;
-            min-height: 44px;
-            padding: 4px 8px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .select2-container--default.select2-container--focus .select2-selection--multiple {
-            border-color: var(--brand-primary) !important;
-            box-shadow: 0 0 0 0.25rem rgba(47, 128, 237, 0.2) !important;
-        }
-
-        /* Choice Badges (Selected Staff Pills) */
-        .select2-container--default .select2-selection--multiple .select2-selection__choice {
-            background-color: var(--brand-primary) !important;
-            border: none !important;
-            color: #ffffff !important;
-            border-radius: 6px !important;
-            padding: 5px 10px !important;
-            font-size: 0.85rem !important;
-            font-weight: 500 !important;
-            margin-top: 4px !important;
-            margin-bottom: 4px !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            box-shadow: 0 2px 4px rgba(47, 128, 237, 0.2) !important;
-        }
-
-        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-            color: #ffffff !important;
-            margin-right: 6px !important;
-            border: none !important;
-            font-size: 1rem !important;
-            line-height: 1 !important;
-            opacity: 0.8;
-            transition: opacity 0.15s;
-        }
-
-        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-            opacity: 1;
-            background: transparent !important;
-            color: #ffffff !important;
-        }
-
-        /* Dropdown Popup */
-        .select2-dropdown {
-            background-color: #ffffff;
-            border: 1px solid #d9dee3;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            z-index: 1055;
-        }
-
-        .select2-container--default .select2-results__group {
-            padding: 8px 12px;
-            font-weight: 700;
-            color: var(--brand-primary);
-            background-color: var(--brand-soft-blue);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .select2-results__option {
-            padding: 8px 14px;
-            font-size: 0.9rem;
-            color: #334155;
-        }
-
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: var(--brand-primary) !important;
-            color: #ffffff !important;
-        }
-
-        .select2-container--default .select2-results__option[aria-selected=true] {
-            background-color: #f1f5f9;
-            color: #64748b;
-        }
+        /* SELECT2 STYLING IS MANAGED IN CUSTOM-ADMIN.CSS */
 
         /* Dark Mode Support (html.aps-dark / body.aps-camera-dark) */
         html.aps-dark .card-header .card-title,
@@ -766,18 +685,35 @@
             };
 
             // Inisialisasi Select2 & Auto-load Combobox
-            function initWorkResultPage() {
+            function initStaffSelect2() {
+                if (typeof window.jQuery === 'undefined') {
+                    setTimeout(initStaffSelect2, 30);
+                    return;
+                }
+                const $ = window.jQuery;
                 const $staffSelect = $('#staffMembers');
-                if ($staffSelect.length && typeof $.fn.select2 === 'function') {
+                if (!$staffSelect.length) return;
+
+                if (typeof $.fn.select2 === 'function') {
                     if ($staffSelect.hasClass('select2-hidden-accessible')) {
                         $staffSelect.select2('destroy');
                     }
                     $staffSelect.select2({
                         placeholder: '-- Cari & Pilih Staff Berdasarkan Nama / NIK --',
                         allowClear: true,
-                        width: '100%'
+                        width: '100%',
+                        dropdownParent: $staffSelect.parent()
                     });
+                } else {
+                    setTimeout(initStaffSelect2, 30);
                 }
+            }
+
+            function initWorkResultPage() {
+                initStaffSelect2();
+
+                if (typeof window.jQuery === 'undefined') return;
+                const $ = window.jQuery;
 
                 // Preview Foto Bukti
                 $('#photoInput').off('change').on('change', function(e) {
