@@ -1595,80 +1595,49 @@
 
         @if ($showManagementDashboard)
         {{-- PANEL STATISTIK UTAMA --}}
-        <div class="row g-3 mb-3">
-            <div class="col-md-4">
-                <div class="card stat-card stat-card-primary shadow-sm">
-                    <div class="card-body">
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-lg">
+                <div class="card stat-card stat-card-primary shadow-sm h-100">
+                    <div class="card-body p-3">
                         <div class="stat-title">Total Staff GLOBAL</div>
                         <div class="stat-value">{{ $userCount ?? 0 }}</div>
                         <i class="fas fa-users stat-icon"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card stat-card stat-card-success shadow-sm">
-                    <div class="card-body">
+            <div class="col-6 col-md-4 col-lg">
+                <div class="card stat-card stat-card-success shadow-sm h-100">
+                    <div class="card-body p-3">
                         <div class="stat-title">Staff Bertugas</div>
                         <div class="stat-value">{{ $workingManpowers ?? 0 }}</div>
                         <i class="fas fa-user-check stat-icon"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card stat-card stat-card-info shadow-sm">
-                    <div class="card-body">
+            <div class="col-6 col-md-4 col-lg">
+                <div class="card stat-card stat-card-info shadow-sm h-100">
+                    <div class="card-body p-3">
                         <div class="stat-title">Penerbangan Selesai</div>
                         <div class="stat-value">{{ $totalFlightPerDay ?? 0 }}</div>
                         <i class="fas fa-plane-departure stat-icon"></i>
                     </div>
                 </div>
             </div>
-        </div>
-
-        {{-- PANEL WORK ORDER DEEP CLEANING --}}
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="card stat-card stat-card-primary shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="stat-title">WO Deep Cleaning (Hari Ini)</div>
+            <div class="col-6 col-md-6 col-lg">
+                <div class="card stat-card stat-card-warning shadow-sm h-100">
+                    <div class="card-body p-3">
+                        <div class="stat-title">WO Hari Ini</div>
                         <div class="stat-value">{{ $totalWoToday ?? 0 }}</div>
                         <i class="fas fa-clipboard-check stat-icon"></i>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-3">
-                <div class="card stat-card stat-card-success shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="stat-title">WO Deep Cleaning (Bulan Ini)</div>
+            <div class="col-12 col-md-6 col-lg">
+                <div class="card stat-card stat-card-primary shadow-sm h-100">
+                    <div class="card-body p-3">
+                        <div class="stat-title">WO Bulan Ini</div>
                         <div class="stat-value">{{ $totalWoThisMonth ?? 0 }}</div>
                         <i class="fas fa-calendar-alt stat-icon"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card shadow-sm h-100 border-0 bg-white">
-                    <div class="card-body d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 py-3">
-                        <div>
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="badge bg-label-primary p-2 rounded-circle">
-                                    <i class="ti ti-plane-arrival fs-5"></i>
-                                </span>
-                                <h6 class="fw-bold mb-0 text-dark">Aircraft Deep Cleaning Reports</h6>
-                            </div>
-                            <small class="text-muted">Manage & monitor Deep Cleaning Interior (DCI) & Exterior (DCE)</small>
-                        </div>
-                        <div class="d-flex gap-2 w-100 w-sm-auto">
-                            <a href="{{ route('work_results.index') }}" class="btn btn-primary btn-sm flex-fill flex-sm-grow-0">
-                                <i class="bx bx-list-ul me-1"></i> All Work Orders
-                            </a>
-                            @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
-                                <a href="{{ route('work_results.create') }}" class="btn btn-outline-primary btn-sm flex-fill flex-sm-grow-0">
-                                    <i class="bx bx-plus me-1"></i> Create WO
-                                </a>
-                            @endif
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1688,9 +1657,13 @@
                             <span class="line-series-item"><span class="line-series-dot compare"></span>Rata-rata</span>
                         </div>
                     </div>
-                    <span class="chart-period-select">
-                        7 Hari
-                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('work_results.index') }}" class="btn btn-sm btn-outline-primary"><i class="bx bx-list-ul me-1"></i> Data WO</a>
+                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                            <a href="{{ route('work_results.create') }}" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i> Input WO</a>
+                        @endif
+                        <span class="chart-period-select">7 Hari</span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="chart-canvas-wrapper">
