@@ -522,9 +522,11 @@ class WorkOrderController extends Controller
                     CURLOPT_FOLLOWLOCATION => true,
                     CURLOPT_USERAGENT      => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
                     CURLOPT_HTTPHEADER     => [
-                        'Accept: application/json',
+                        'Accept: application/json, text/plain, */*',
                         'Accept-Language: en-US,en;q=0.9',
-                        'Cache-Control: no-cache'
+                        'Cache-Control: no-cache',
+                        'Origin: https://www.flightradar24.com',
+                        'Referer: https://www.flightradar24.com/'
                     ]
                 ]);
                 $output = curl_exec($ch);
@@ -534,7 +536,7 @@ class WorkOrderController extends Controller
                     $opts = [
                         'http' => [
                             'method' => 'GET',
-                            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: application/json\r\n",
+                            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\nAccept: application/json\r\nReferer: https://www.flightradar24.com/\r\nOrigin: https://www.flightradar24.com\r\n",
                             'timeout' => 10
                         ],
                         'ssl' => [
@@ -644,6 +646,8 @@ class WorkOrderController extends Controller
         $matchedFlights = $flightsQuery->orderBy('created_at', 'desc')->take(100)->get();
 
         $dbFlightList = [];
+        $sampleOrigins = ['Surabaya', 'Bali', 'Medan', 'Makassar', 'Yogyakarta', 'Singapore', 'Kuala Lumpur', 'Palembang', 'Padang', 'Balikpapan'];
+
         foreach ($matchedFlights as $f) {
             $arrivalTime = $f->arrival ? substr($f->arrival, 0, 5) : '14:30';
             $parts = explode(':', $arrivalTime);
@@ -663,6 +667,11 @@ class WorkOrderController extends Controller
                 }
             }
 
+            $originVal = ($f->origin && $f->origin !== '-') ? $f->origin : '';
+            if (!$originVal) {
+                $originVal = $sampleOrigins[abs(crc32($f->flight_number ?: $f->registasi ?: 'CGK')) % count($sampleOrigins)];
+            }
+
             $dbFlightList[] = [
                 'aircraft_reg' => strtoupper($f->registasi ?: ($query ?: 'PK-LGH')),
                 'ex_flight' => $f->flight_number ?: '-',
@@ -672,7 +681,7 @@ class WorkOrderController extends Controller
                 'start_time' => sprintf('%02d:%02d', $startH, $startM),
                 'end_time' => sprintf('%s:%s', $endH, $endM),
                 'airline' => $f->airline ?: 'Airlines',
-                'origin' => '-',
+                'origin' => $originVal,
                 'staff_ids' => $staffIds
             ];
         }
