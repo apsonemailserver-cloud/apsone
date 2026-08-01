@@ -150,37 +150,12 @@
                     </li>
 
                     @if (Auth::user()->canAccess('shift', 'view'))
-                    @if (Auth::user()->canAccess('shift', 'create'))
-                    {{-- Admin Station: Shift dengan submenu Create --}}
-                    <li class="menu-item {{ request()->routeIs('shift.*') ? 'active open' : '' }}">
-                        <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
-                            <i class="menu-icon tf-icons ti ti-clock"></i>
-                            <div data-i18n="Shift">Shift</div>
-                        </a>
-                        <ul class="menu-sub">
-                            <li class="menu-item {{ request()->routeIs('shift.index') ? 'active' : '' }}">
-                                <a href="{{ route('shift.index') }}" class="menu-link">
-                                    <i class="menu-icon tf-icons ti ti-list"></i>
-                                    <div data-i18n="Shift List">Shift List</div>
-                                </a>
-                            </li>
-                            <li class="menu-item {{ request()->routeIs('shift.create') ? 'active' : '' }}">
-                                <a href="{{ route('shift.create') }}" class="menu-link">
-                                    <i class="menu-icon tf-icons ti ti-circle-plus"></i>
-                                    <div data-i18n="Create Shift">Create Shift</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @else
-                    {{-- HOAS / regular user: Shift view only --}}
                     <li class="menu-item {{ request()->routeIs('shift.*') ? 'active' : '' }}">
                         <a href="{{ route('shift.index') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-clock"></i>
                             <div data-i18n="Shift">Shift</div>
                         </a>
                     </li>
-                    @endif
                     @endif
 
 

@@ -22,9 +22,7 @@ class UserController extends Controller
 
     public function index(): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $search = request('search');
 
@@ -47,9 +45,7 @@ class UserController extends Controller
 
     public function indexApron(): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $search = request('search');
 
@@ -69,9 +65,7 @@ class UserController extends Controller
 
     public function indexBGE(): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $search = request('search');
 
@@ -91,9 +85,7 @@ class UserController extends Controller
 
     public function indexOffice(): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $search = request('search');
 
@@ -120,9 +112,7 @@ class UserController extends Controller
 
     public function show(User $user, Request $request): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $page = $request->get('page', 1);
 
         return view('user.show', compact('user', 'page'));
@@ -130,9 +120,7 @@ class UserController extends Controller
 
     public function create(): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'create'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $stations = Station::where('is_active', 1)
             ->orderBy('code', 'ASC')
             ->get();
@@ -320,9 +308,7 @@ class UserController extends Controller
 
     public function edit(User $user, Request $request): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $page = $request->get('page', 1);
         $redirectTo = $request->get('redirect_to', url()->previous());
         if (empty($redirectTo) || $redirectTo === $request->url()) {
@@ -378,9 +364,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'delete'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         try {
             $user->delete();
@@ -400,9 +384,7 @@ class UserController extends Controller
     // =================================================================
     public function kontrak(Request $request): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
 
@@ -419,7 +401,7 @@ class UserController extends Controller
         if ($request->has('station') && $request->station != null) {
             $query->where('station', $request->station);
         }
-        if (Auth::user()->role !== 'Admin') {
+        if (! Auth::user()->isAdmin()) {
             $query->where('station', Auth::user()->station);
         }
 
@@ -432,9 +414,7 @@ class UserController extends Controller
 
     public function KontrakEdit($id, Request $request): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $user = User::findOrFail($id);
         $page = $request->get('page', 1);
 
@@ -475,9 +455,7 @@ class UserController extends Controller
     // =================================================================
     public function pas(Request $request): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
         $query = User::query();
@@ -493,7 +471,7 @@ class UserController extends Controller
         if ($request->has('station') && $request->station != null) {
             $query->where('station', $request->station);
         }
-        if (Auth::user()->role !== 'Admin') {
+        if (! Auth::user()->isAdmin()) {
             $query->where('station', Auth::user()->station);
         }
 
@@ -506,9 +484,7 @@ class UserController extends Controller
 
     public function PASEdit($id)
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $user = User::findOrFail($id);
 
         return view('user.pas_edit', compact('user'));
@@ -538,9 +514,7 @@ class UserController extends Controller
     // =================================================================
     public function tim(Request $request): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
         $query = User::query();
@@ -556,7 +530,7 @@ class UserController extends Controller
         if ($request->has('station') && $request->station != null) {
             $query->where('station', $request->station);
         }
-        if (Auth::user()->role !== 'Admin') {
+        if (! Auth::user()->isAdmin()) {
             $query->where('station', Auth::user()->station);
         }
 
@@ -570,9 +544,7 @@ class UserController extends Controller
 
     public function TIMEdit($id)
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $user = User::findOrFail($id);
 
         return view('user.tim_edit', compact('user'));
@@ -687,9 +659,7 @@ class UserController extends Controller
     // --- Training & Sertifikat Admin ---
     public function indexAdmin(Request $request): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'Head Of Airport Service'])) {
-            abort(403);
-        }
+        abort_unless(Auth::user()->canAccess('training', 'view'), 403);
 
         $query = Certificate::with('user');
         if ($request->has('search')) {
@@ -708,10 +678,8 @@ class UserController extends Controller
     // (Sudah diringkas agar tidak terlalu panjang, tapi tetap ada)
     public function createCertificate(): View
     {
-        if (! in_array(Auth::user()->role, ['Admin', 'Head Of Airport Service'])) {
-            abort(403);
-        }
-        $users = User::whereIn('role', ['USER', 'ASS LEADER', 'Head Of Airport Service', 'LEADER'])->orderBy('fullname', 'asc')->get();
+        abort_unless(Auth::user()->canAccess('training', 'create'), 403);
+        $users = User::all()->sortBy('fullname');
 
         return view('admin.certificates.create', compact('users'));
     }

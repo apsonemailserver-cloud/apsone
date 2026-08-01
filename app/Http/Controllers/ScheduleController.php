@@ -74,24 +74,30 @@ class ScheduleController extends Controller
 
     public function autoCreate()
     {
-        if (!in_array(Auth::user()->role, ['SPV Bge', 'SPV Apron', 'Admin'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('schedule', 'create'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         @set_time_limit(300);
 
         try {
             $startDate = Carbon::now()->startOfMonth();
             $endDate   = Carbon::now()->endOfMonth();
-            $roleSpv = Auth::user()->role;
-            $rolePorters = [];
+            $user      = Auth::user();
 
-            if ($roleSpv === 'SPV Bge') {
-                $rolePorters = ['Porter Bge'];
-            } elseif ($roleSpv === 'SPV Apron') {
-                $rolePorters = ['Porter Apron'];
-            } elseif ($roleSpv === 'Admin') {
-                $rolePorters = ['Porter Bge', 'Porter Apron'];
+            // Tentukan role porter berdasarkan station user
+            // Admin bisa generate semua, non-admin hanya stationnya
+            $rolePorters = ['Porter Bge', 'Porter Apron'];
+            if (! $user->isAdmin()) {
+                // Filter porter berdasarkan station yang sama
+                $rolePorters = DB::table('users')
+                    ->where('station', $user->station)
+                    ->whereIn('role', ['Porter Bge', 'Porter Apron'])
+                    ->pluck('role')
+                    ->unique()
+                    ->values()
+                    ->toArray();
+                if (empty($rolePorters)) {
+                    $rolePorters = ['Porter Bge', 'Porter Apron'];
+                }
             }
 
             $rolePorterLabel = implode(' & ', $rolePorters);
@@ -421,19 +427,21 @@ class ScheduleController extends Controller
 
     public function show(): View
     {
-        if (!in_array(Auth::user()->role, ['SPV Bge', 'Ass Leader Bge', 'Leader Bge', 'SPV Apron', 'Ass Leader Apron', 'Leader Apron', 'Admin'])) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-        }
+        abort_unless(Auth::user()->canAccess('schedule', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
-        $roleSpv = Auth::user()->role;
-        $rolePorter = null;
+        $authUser   = Auth::user();
+        $rolePorter = $authUser->isAdmin() ? 'Porter' : null;
 
-        if ($roleSpv === 'SPV Bge' || $roleSpv === 'Ass Leader Bge' || $roleSpv === 'Leader Bge') {
-            $rolePorter = 'Porter Bge';
-        } elseif ($roleSpv === 'SPV Apron' || $roleSpv === 'Ass Leader Apron' || $roleSpv === 'Leader Apron') {
-            $rolePorter = 'Porter Apron';
-        } elseif ($roleSpv === 'Admin') {
-            $rolePorter = 'Porter';
+        // Jika bukan admin, deteksi porter berdasarkan station
+        if (! $authUser->isAdmin()) {
+            $porterRoles = DB::table('users')
+                ->where('station', $authUser->station)
+                ->whereIn('role', ['Porter Bge', 'Porter Apron'])
+                ->pluck('role')
+                ->unique()
+                ->values()
+                ->toArray();
+            $rolePorter = implode('|', $porterRoles) ?: 'Porter';
         }
 
         $search = request('search');

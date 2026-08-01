@@ -73,22 +73,25 @@ class HomeController extends Controller
         // BAGIAN 1: MENGAMBIL DATA UTAMA (DENGAN FILTER)
         // =================================================================
 
-        // 1. Data Penerbangan sesuai periode dashboard
+        // 1. Data Penerbangan / Work Orders sesuai periode dashboard
         $today = Carbon::today();
-        $flightsQuery = Flights::with(['details.schedule.user']);
         if ($showManagementDashboard) {
-            $flightsQuery->whereDate('created_at', $today);
+            $flightsQuery = WorkOrder::with(['users', 'submittedBy'])->whereDate('date', $today);
+            if ($selectedStation !== 'All') {
+                $flightsQuery->where('station', $selectedStation);
+            }
+            $flights = $flightsQuery->get();
         } else {
-            $flightsQuery->whereBetween('created_at', [
-                $today->copy()->subDays(6)->startOfDay(),
-                $today->copy()->endOfDay(),
-            ]);
+            $flightsQuery = Flights::with(['details.schedule.user'])
+                ->whereBetween('created_at', [
+                    $today->copy()->subDays(6)->startOfDay(),
+                    $today->copy()->endOfDay(),
+                ]);
+            if ($selectedStation !== 'All') {
+                $flightsQuery->where('station', $selectedStation);
+            }
+            $flights = $flightsQuery->get();
         }
-
-        if ($selectedStation !== 'All') {
-            $flightsQuery->where('station', $selectedStation);
-        }
-        $flights = $flightsQuery->get();
 
         if (! $showManagementDashboard) {
             return view('home', [
@@ -102,7 +105,7 @@ class HomeController extends Controller
         }
 
         // 2. Total Penerbangan Selesai Hari Ini
-        $totalFlightQuery = Flights::where('status', true)->whereDate('created_at', Carbon::today());
+        $totalFlightQuery = WorkOrder::whereDate('date', Carbon::today());
         if ($selectedStation !== 'All') {
             $totalFlightQuery->where('station', $selectedStation);
         }
@@ -118,16 +121,15 @@ class HomeController extends Controller
         }
         $userKehadiranCount = $userKehadiranQuery->count();
 
-        // 4. Staff Sedang Bekerja (Working Manpower via Flight Details)
-        $workingQuery = DB::table('flight_details')
-            ->join('flights', 'flight_details.flight_id', '=', 'flights.id')
-            ->where('flights.status', 0)
-            ->whereDate('flights.created_at', Carbon::today());
+        // 4. Staff Sedang Bekerja (Working Manpower via Assignments)
+        $workingQuery = DB::table('assignment_user')
+            ->join('assignments', 'assignment_user.assignment_id', '=', 'assignments.id')
+            ->whereDate('assignments.date', Carbon::today());
 
         if ($selectedStation !== 'All') {
-            $workingQuery->where('flights.station', $selectedStation);
+            $workingQuery->where('assignments.station', $selectedStation);
         }
-        $workingManpowers = $workingQuery->count();
+        $workingManpowers = $workingQuery->distinct('assignment_user.user_id')->count('assignment_user.user_id');
 
         // =================================================================
         // BAGIAN 2: MENYIAPKAN DATA UNTUK INFO CARD
@@ -182,13 +184,13 @@ class HomeController extends Controller
         $chartStartDate = Carbon::now()->subDays(6)->startOfDay();
         $chartEndDate = Carbon::now()->endOfDay();
 
-        // 1. Batch query daily flights (1 query instead of 7)
-        $dailyFlightQ = Flights::select(DB::raw('DATE(created_at) as date_key'), DB::raw('count(*) as total'))
-            ->whereBetween('created_at', [$chartStartDate, $chartEndDate]);
+        // 1. Batch query daily flights / assignments (1 query instead of 7)
+        $dailyFlightQ = WorkOrder::select(DB::raw('date as date_key'), DB::raw('count(*) as total'))
+            ->whereBetween('date', [$chartStartDate->toDateString(), $chartEndDate->toDateString()]);
         if ($selectedStation !== 'All') {
             $dailyFlightQ->where('station', $selectedStation);
         }
-        $dailyFlightCounts = $dailyFlightQ->groupBy(DB::raw('DATE(created_at)'))
+        $dailyFlightCounts = $dailyFlightQ->groupBy('date')
             ->pluck('total', 'date_key');
 
         // 2. Batch query daily leaves for Sakit & Tahunan (1 query instead of 14)

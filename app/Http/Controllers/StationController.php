@@ -72,10 +72,7 @@ class StationController extends Controller
     // Menampilkan Daftar Station
     public function index()
     {
-        // Pengecekan Admin
-        if (Auth::user()->role !== 'Admin') {
-            abort(403, 'Akses Ditolak');
-        }
+        abort_unless(Auth::user()->canAccess('station', 'view'), 403, 'Akses Ditolak');
 
         $perPage = request()->input('per_page', 10);
         $stations = Station::paginate($perPage)->withQueryString();
@@ -85,10 +82,7 @@ class StationController extends Controller
     // Proses Ganti Status ON/OFF
     public function toggleStatus($id)
     {
-        // Pengecekan Admin
-        if (Auth::user()->role !== 'Admin') {
-            abort(403, 'Akses Ditolak');
-        }
+        abort_unless(Auth::user()->canAccess('station', 'edit'), 403, 'Akses Ditolak');
 
         $station = Station::findOrFail($id);
 

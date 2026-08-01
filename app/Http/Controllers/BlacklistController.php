@@ -16,7 +16,7 @@ class BlacklistController extends Controller
     // Tampilkan Daftar Blacklist
     public function index(Request $request)
     {
-        if (Auth::user()->role !== 'Admin') { abort(403); }
+        abort_unless(Auth::user()->canAccess('blacklist', 'view'), 403);
 
         $query = Blacklist::query();
 
@@ -35,9 +35,7 @@ class BlacklistController extends Controller
     // PROSES BAN USER (DARI HALAMAN USER / MONITOR STATION)
     public function store(Request $request)
     {
-        if (strtoupper((string) Auth::user()->role) !== 'ADMIN') {
-            abort(403);
-        }
+        abort_unless(Auth::user()->canAccess('blacklist', 'create'), 403);
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -95,7 +93,7 @@ class BlacklistController extends Controller
     // Hapus dari Blacklist (Jika ternyata salah paham/banding diterima)
     public function destroy($id)
     {
-        if (Auth::user()->role !== 'Admin') { abort(403); }
+        abort_unless(Auth::user()->canAccess('blacklist', 'delete'), 403);
 
         Blacklist::destroy($id);
         Alert::success('Berhasil', 'Data dihapus dari daftar hitam.');

@@ -31,14 +31,16 @@ class LeaveController extends Controller
             ->where('users.station', $user->station)
             ->latest(); // Eager load relasi user
 
-        if (!in_array($user->role, ['Leader Bge', 'Leader Apron', 'Ass Leader Apron', 'Ass Leader Bge', 'Admin', 'SPV', 'Head Of Airport Service'])) {
+        // Hanya yang punya akses leave.approve yang bisa melihat semua data
+        $canApprove = $user->canAccess('leave', 'approve');
+
+        // Jika tidak punya akses approve, redirect atau tampilkan data sendiri saja
+        if (!$canApprove) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
         // Jika bukan admin/atasan, hanya tampilkan data miliknya
-        if (!in_array($user->role, ['Leader Bge', 'Leader Apron', 'Ass Leader Apron', 'Ass Leader Bge', 'Admin', 'SPV', 'Head Of Airport Service'])) {
-            $query->where('user_id', $user->id);
-        }
+        // (canApprove sudah true di sini, jadi tampilkan semua)
         if ($user->station == 'Ho') {
             $query->orWhere('leaves.status', 'pending');
         }
@@ -71,11 +73,11 @@ class LeaveController extends Controller
             ->where('users.station', $user->station)
             ->latest(); // Eager load relasi user
 
-        // Jika bukan admin/atasan, hanya tampilkan data miliknya
-        if (!in_array($user->role, ['Leader Bge', 'Leader Apron', 'Ass Leader Apron', 'Ass Leader Bge', 'Admin', 'SPV',  'Head Of Airport Service'])) {
+        // Jika tidak punya akses approve/view semua, hanya tampilkan miliknya
+        if (!$user->canAccess('leave', 'approve')) {
             $query->where('user_id', $user->id);
         }
-        if ($user->role == 'Head Of Airport Service') {
+        if ($user->canAccess('leave', 'approve') && $user->station === 'Ho') {
             $query->orWhere('leaves.status', 'pending');
         }
 
@@ -226,11 +228,11 @@ class LeaveController extends Controller
 
         $status = '';
 
-        if ($user->role === 'Admin') {
+        if ($user->isAdmin()) {
             $status = 'approved';
-        } else if ($user->role === 'Porter Bge') {
+        } else if ($user->hasRole('Porter Bge')) {
             $status = 'pending Bge';
-        } else if ($user->role === 'Porter Apron') {
+        } else if ($user->hasRole('Porter Apron')) {
             $status = 'pending Apron';
         } else {
             $status = 'pending';

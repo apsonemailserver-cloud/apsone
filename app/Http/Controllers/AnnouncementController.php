@@ -48,9 +48,7 @@ class AnnouncementController extends Controller
 
     public function create()
     {
-        if (strtolower((string) Auth::user()->role) !== 'admin') {
-            abort(403, 'Akses ditolak.');
-        }
+        abort_unless(Auth::user()->canAccess('announcement', 'create'), 403, 'Akses ditolak.');
 
         $stations = Station::where('is_active', 1)->orderBy('code')->get();
         return view('announcements.create', compact('stations'));
@@ -58,9 +56,7 @@ class AnnouncementController extends Controller
 
     public function store(Request $request)
     {
-        if (strtolower((string) Auth::user()->role) !== 'admin') {
-            abort(403, 'Akses ditolak.');
-        }
+        abort_unless(Auth::user()->canAccess('announcement', 'create'), 403, 'Akses ditolak.');
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -112,9 +108,7 @@ class AnnouncementController extends Controller
 
     public function edit($id)
     {
-        if (strtolower((string) Auth::user()->role) !== 'admin') {
-            abort(403, 'Akses ditolak.');
-        }
+        abort_unless(Auth::user()->canAccess('announcement', 'edit'), 403, 'Akses ditolak.');
 
         $announcement = Announcement::findOrFail($id);
         $stations = Station::where('is_active', 1)->orderBy('code')->get();
@@ -123,9 +117,7 @@ class AnnouncementController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (strtolower((string) Auth::user()->role) !== 'admin') {
-            abort(403, 'Akses ditolak.');
-        }
+        abort_unless(Auth::user()->canAccess('announcement', 'edit'), 403, 'Akses ditolak.');
 
         $announcement = Announcement::findOrFail($id);
 
@@ -151,9 +143,7 @@ class AnnouncementController extends Controller
 
     public function destroy($id)
     {
-        if (strtolower((string) Auth::user()->role) !== 'admin') {
-            abort(403, 'Akses ditolak.');
-        }
+        abort_unless(Auth::user()->canAccess('announcement', 'delete'), 403, 'Akses ditolak.');
 
         $announcement = Announcement::findOrFail($id);
         $announcement->delete();

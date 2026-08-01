@@ -75,10 +75,8 @@ class OvertimeController extends Controller
     {
         $user = Auth::user();
 
-        // Security Check: Hanya Admin/Leader yg boleh masuk
-        if (!in_array($user->role, ['Admin', 'LEADER', 'Head Of Airport Service', 'ASS LEADER'])) {
-            abort(403);
-        }
+        // Security Check: Hanya yg punya overtime.approve yg boleh masuk
+        abort_unless(Auth::user()->canAccess('overtime', 'approve'), 403);
 
         $query = Overtime::with('user')->where('status', 'Pending');
 
@@ -91,7 +89,7 @@ class OvertimeController extends Controller
         }
 
         // Filter Station
-        if ($user->role == 'Admin') {
+        if ($user->isAdmin()) {
             if ($request->filled('station')) {
                 $query->whereHas('user', function($q) use ($request) {
                     $q->where('station', $request->station);
@@ -177,7 +175,7 @@ class OvertimeController extends Controller
     // ==========================================
     public function report(Request $request)
     {
-        if (Auth::user()->role !== 'Admin') { abort(403); }
+        abort_unless(Auth::user()->canAccess('overtime', 'export'), 403);
 
         $query = Overtime::with('user')->where('status', 'Approved');
         $search = $request->input('search');
@@ -211,7 +209,7 @@ class OvertimeController extends Controller
 
     public function exportExcel(Request $request)
     {
-        if (Auth::user()->role !== 'Admin') { abort(403); }
+        abort_unless(Auth::user()->canAccess('overtime', 'export'), 403);
 
         $query = Overtime::with('user')->where('status', 'Approved');
         $search = $request->input('search');

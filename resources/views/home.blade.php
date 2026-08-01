@@ -604,16 +604,16 @@
                             <tbody>
                                 @forelse ($flights as $flight)
                                     <tr class="clickable-row" data-target="#viewFlightModal{{ $flight->id }}">
-                                        <td class="fw-bold text-primary">{{ $flight->airline }}</td>
-                                        <td><span class="badge bg-label-dark">{{ $flight->flight_number }}</span></td>
-                                        <td>{{ $flight->registasi }}</td>
-                                        <td>{{ $flight->type }}</td>
-                                        <td><i class="bx bx-time-five text-muted me-1"></i>{{ $flight->arrival }}</td>
+                                        <td class="fw-bold text-primary">{{ $flight->airline ?? ($flight->station ?? '-') }}</td>
+                                        <td><span class="badge bg-label-dark">{{ $flight->flight_number ?? ($flight->ex_flight . ($flight->to_flight ? ' / ' . $flight->to_flight : '')) }}</span></td>
+                                        <td>{{ $flight->registasi ?? ($flight->aircraft_reg ?? '-') }}</td>
+                                        <td>{{ $flight->type ?? '-' }}</td>
+                                        <td><i class="bx bx-time-five text-muted me-1"></i>{{ $flight->arrival ?? ($flight->start_time ?? '-') }}</td>
                                         <td><span class="countdown shadow-sm no-click"
-                                                data-time="{{ $flight->time_count }}"></span></td>
-                                        <td class="text-muted">{{ $flight->created_at->format('d M Y, H:i') }}</td>
+                                                data-time="{{ $flight->time_count ?? '' }}"></span></td>
+                                        <td class="text-muted">{{ $flight->created_at ? $flight->created_at->format('d M Y, H:i') : '-' }}</td>
                                         <td class="no-click text-center">
-                                            @if ($flight->status)
+                                            @if ($flight->status ?? (!empty($flight->photo_path)))
                                                 <span class="badge bg-label-success px-3 py-1.5 rounded-pill fw-semibold">
                                                     <i class="bx bx-check me-1"></i>Selesai
                                                 </span>

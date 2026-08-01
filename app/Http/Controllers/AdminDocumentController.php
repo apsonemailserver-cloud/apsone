@@ -107,9 +107,7 @@ class AdminDocumentController extends Controller
 
     private function ensureAdmin(): void
     {
-        if (Auth::user()->role !== 'Admin') {
-            abort(403);
-        }
+        abort_unless(Auth::user()->canAccess('document', 'view'), 403);
     }
 
     private function availableRoles(): array

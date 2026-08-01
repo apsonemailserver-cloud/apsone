@@ -45,7 +45,7 @@ class StaffController extends Controller
         }
 
         // 5. Jika bukan Admin, paksa station sendiri
-        if (Auth::user()->role !== 'Admin') {
+        if (! Auth::user()->isAdmin()) {
             $query->where('station', Auth::user()->station);
         }
 
@@ -65,9 +65,7 @@ class StaffController extends Controller
     public function export(Request $request)
     {
         // Cek Keamanan
-        if (Auth::user()->role !== 'Admin') {
-            abort(403);
-        }
+        abort_unless(Auth::user()->canAccess('user', 'export'), 403);
 
         $station = $request->station ?? null;
         $fileName = 'staff_data_' . ($station ? $station : 'global') . '_' . date('Y-m-d') . '.csv';
@@ -80,7 +78,7 @@ class StaffController extends Controller
     // =================================================================
    public function import(Request $request)
 {
-    if (Auth::user()->role !== 'Admin') {
+    if (! Auth::user()->canAccess('user', 'create')) {
         abort(403);
     }
 
@@ -111,9 +109,7 @@ class StaffController extends Controller
     // =================================================================
     public function template()
     {
-        if (Auth::user()->role !== 'Admin') {
-            abort(403);
-        }
+        abort_unless(Auth::user()->canAccess('user', 'export'), 403);
 
         // Header CSV yang dibutuhkan
         $headers = [
@@ -186,9 +182,7 @@ class StaffController extends Controller
     // =================================================================
     public function toggleStatus($id)
     {
-        if (Auth::user()->role !== 'Admin') {
-            abort(403);
-        }
+        abort_unless(Auth::user()->canAccess('user', 'edit'), 403);
 
         // Mencegah Admin menonaktifkan dirinya sendiri
         if ($id == Auth::user()->id) {

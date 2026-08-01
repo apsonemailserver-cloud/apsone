@@ -333,8 +333,6 @@ class AttendanceCorrectionController extends Controller
 
     private function isAdmin(User $user): bool
     {
-        $roles = array_map('trim', explode(',', (string) $user->role));
-
-        return in_array('Admin', $roles, true);
+        return $user->isAdmin();
     }
 }
