@@ -116,20 +116,7 @@ class WorkOrderController extends Controller
         }
         $availableFlights = $flightQuery->orderBy('created_at', 'desc')->take(30)->get();
 
-        $currentYear = date('Y');
-        $prefix = "WO-{$currentYear}-";
-        $latestWorkOrder = WorkOrder::where('wo_number', 'like', "{$prefix}%")
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $nextSequence = 1;
-        if ($latestWorkOrder && preg_match('/WO-\d{4}-(\d+)/', $latestWorkOrder->wo_number, $matches)) {
-            $nextSequence = ((int) $matches[1]) + 1;
-        }
-
-        $nextWoNumber = sprintf('WO-%s-%03d', $currentYear, $nextSequence);
-
-        return view('work_order.create', compact('stations', 'staffs', 'availableFlights', 'nextWoNumber'));
+        return view('work_order.create', compact('stations', 'staffs', 'availableFlights'));
     }
 
     /**
@@ -178,13 +165,10 @@ class WorkOrderController extends Controller
                 $photoPath = $request->file('photo')->store('work_orders', 'public');
             }
 
-            $woNumber = $request->wo_number;
-            if (!$woNumber) {
-                $currentYear = date('Y');
-                $lastRecord = WorkOrder::whereYear('created_at', $currentYear)->orderBy('id', 'desc')->first();
-                $nextSeq = $lastRecord ? ($lastRecord->id + 1) : 1;
-                $woNumber = sprintf('WO-%s-%03d', $currentYear, $nextSeq);
-            }
+            // WO number is user-provided and optional; null if left blank
+            $woNumber = !empty(trim((string) $request->wo_number))
+                ? strtoupper(trim($request->wo_number))
+                : null;
 
             $workOrder = WorkOrder::create([
                 'date'         => $request->date,

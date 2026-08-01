@@ -64,14 +64,24 @@
                         <form action="{{ route('work_orders.store') }}" method="POST" enctype="multipart/form-data" id="workResultForm">
                             @csrf
 
-                            {{-- No WO di-generate otomatis di background --}}
-                            <input type="hidden" name="wo_number" value="{{ old('wo_number', $nextWoNumber) }}">
 
                             {{-- FORM GRID PEKERJAAN & AUTO-FILL FLIGHT --}}
                             <div class="row g-3 mb-4">
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Tanggal Kerja <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="date" value="{{ old('date', date('Y-m-d')) }}" required>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">No. WO <small class="text-muted">(Opsional)</small></label>
+                                    <input type="text"
+                                           class="form-control text-uppercase"
+                                           name="wo_number"
+                                           id="woNumberInput"
+                                           value="{{ old('wo_number') }}"
+                                           placeholder="e.g. WO-2026-001"
+                                           maxlength="100">
+                                    <small class="text-muted d-block mt-1">Kosongkan jika tidak ada WO</small>
                                 </div>
 
                                 <div class="col-md-3">
@@ -86,7 +96,7 @@
                                     </select>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label fw-semibold text-primary">
                                         <i class="bx bx-plane-take-off me-1"></i> Pilih Jadwal Flight <small class="text-muted">(Auto-Fill Flightradar24)</small>
                                     </label>

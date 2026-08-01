@@ -11,14 +11,9 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class ShiftController extends Controller
 {
-    private function canManageShifts(): bool
-    {
-        return in_array(strtolower((string) Auth::user()->role), ['admin', 'ass leader', 'Head Of Airport Service', 'leader']);
-    }
-
     public function index(): View
     {
-        if (! $this->canManageShifts()) {
+        if (! Auth::user()->canAccess('shift', 'view')) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
         $perPage = request()->input('per_page', 30);
@@ -29,7 +24,7 @@ class ShiftController extends Controller
 
     public function create(): View
     {
-        if (! $this->canManageShifts()) {
+        if (! Auth::user()->canAccess('shift', 'create')) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
@@ -70,7 +65,7 @@ class ShiftController extends Controller
 
     public function edit(Shift $shift): View
     {
-        if (! $this->canManageShifts()) {
+        if (! Auth::user()->canAccess('shift', 'create')) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
@@ -117,7 +112,7 @@ class ShiftController extends Controller
 
     public function destroy(Shift $shift)
     {
-        if (! $this->canManageShifts()) {
+        if (! Auth::user()->canAccess('shift', 'create')) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
