@@ -8,14 +8,19 @@
 
         {{-- Header dengan Breadcrumb --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
-            <div>
-                <h4 class="fw-bold mb-1 text-dark">Create Assignment</h4>
-                <p class="text-muted mb-0 small">Aircraft deep cleaning record form (Deep Cleaning Interior & Exterior)</p>
+            <div class="d-flex align-items-center">
+                <a href="{{ route('work_results.index') }}" class="btn btn-icon btn-outline-secondary me-3 rounded-circle shadow-xs" title="Back to Assignment List">
+                    <i class="ti ti-arrow-left fs-4"></i>
+                </a>
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">Create Assignment</h4>
+                    <p class="text-muted mb-0 small">Aircraft deep cleaning record form (Deep Cleaning Interior & Exterior)</p>
+                </div>
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('work_orders.index') }}">Assignment</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('work_results.index') }}">Assignment</a></li>
                     <li class="breadcrumb-item active">Create Assignment</li>
                 </ol>
             </nav>

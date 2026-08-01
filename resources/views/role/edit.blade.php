@@ -265,7 +265,8 @@
         padding-bottom: 2rem;
     }
 
-    .dark-style .role-access-page {
+    .dark-style .role-access-page,
+    .aps-dark .role-access-page {
         --ra-surface: #152137;
         --ra-surface-muted: #101a2c;
         --ra-surface-hover: #1b2942;
@@ -585,7 +586,8 @@
         min-height: 31px;
     }
     .employee-filter__button.is-active { background: var(--ra-surface); box-shadow: 0 1px 4px rgba(35, 51, 80, .1); color: var(--ra-text); }
-    .dark-style .employee-filter__button.is-active { box-shadow: 0 1px 5px rgba(0, 0, 0, .28); }
+    .dark-style .employee-filter__button.is-active,
+    .aps-dark .employee-filter__button.is-active { box-shadow: 0 1px 5px rgba(0, 0, 0, .28); }
     .employee-search { width: 100%; }
     .employee-list-container { max-height: 520px; overflow-y: auto; padding: .45rem .55rem; scrollbar-width: thin; scrollbar-color: var(--ra-border-strong) transparent; }
     .employee-item-row {
@@ -667,7 +669,7 @@
         .role-access-header { align-items: flex-start; flex-direction: column; }
         .full-access-note { width: 100%; }
         .matrix-toolbar { align-items: stretch; flex-direction: column; }
-        .matrix-search { max-width: none; width: 100%; }
+        .matrix-search { flex: 0 0 auto; max-width: none; width: 100%; }
         .matrix-toolbar__actions { display: grid; grid-template-columns: 1fr 1fr; }
         .permission-section__columns { display: none; }
         .permission-section__header { align-items: flex-start; }
@@ -731,7 +733,7 @@
                 const button = row.querySelector('.btn-select-module-all');
                 if (button) {
                     button.setAttribute('aria-pressed', allSelected ? 'true' : 'false');
-                    button.textContent = allSelected ? 'Hapus' : 'Pilih';
+                    button.textContent = allSelected ? 'Reset' : 'Semua';
                 }
             });
         }

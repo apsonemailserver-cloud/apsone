@@ -1,9 +1,16 @@
 @extends('layout.admin')
 
 @section('content')
-<h4 class="fw-bold py-3 mb-4">
-    <span class="text-muted fw-light">Training /</span> Tambah Sertifikat Training Baru
-</h4>
+<div class="d-flex align-items-center mb-4">
+    <a href="{{ route('admin.training.certificates.index') }}" class="btn btn-icon btn-outline-secondary me-3 rounded-circle shadow-xs" title="Back to Training List">
+        <i class="ti ti-arrow-left fs-4"></i>
+    </a>
+    <div>
+        <h4 class="fw-bold mb-0 text-dark">
+            <span class="text-muted fw-light">Training /</span> Tambah Sertifikat Training Baru
+        </h4>
+    </div>
+</div>
 
 <div class="card mb-4">
     <h5 class="card-header">Formulir Tambah Sertifikat</h5>
