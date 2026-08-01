@@ -495,13 +495,14 @@ class AttendanceController extends Controller
 
     public function export(Request $request)
     {
-        if (! $request->filled('month')) {
-            return redirect()->back()->with('error', 'Pilih periode terlebih dahulu.');
+        $month = $request->input('month', date('Y-m'));
+        if (empty($month)) {
+            $month = date('Y-m');
         }
 
         try {
             // ===== PARSE PERIODE =====
-            $period = \Carbon\Carbon::parse($request->month . '-01');
+            $period = \Carbon\Carbon::parse($month . '-01');
             $startDate = $period->copy()->startOfMonth();
             $endDate = $period->copy()->endOfMonth();
 

@@ -62,7 +62,11 @@
                             <i class="bx bx-filter-alt me-1"></i>Filter
                         </button>
                     </form>
-                    <a href="{{ route('attendance.export', request()->only(['month', 'station_id', 'role', 'user_name'])) }}" class="btn btn-success" style="height: 40px; display: inline-flex; align-items: center; white-space: nowrap;">
+                    @php
+                        $exportParams = request()->only(['station_id', 'role', 'user_name']);
+                        $exportParams['month'] = request('month', date('Y-m'));
+                    @endphp
+                    <a href="{{ route('attendance.export', $exportParams) }}" class="btn btn-success" style="height: 40px; display: inline-flex; align-items: center; white-space: nowrap;">
                         <i class="bx bx-download me-1"></i>Export Excel
                     </a>
                 </div>
