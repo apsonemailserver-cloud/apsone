@@ -117,8 +117,15 @@ class LeaveController extends Controller
     public function laporan(Request $request)
     {
         $authUser = Auth::user();
-
         $year = $request->year ?? date('Y');
+
+        \Log::info('Leave Laporan Request details:', [
+            'url' => $request->fullUrl(),
+            'user' => $authUser ? $authUser->id : null,
+            'role' => $authUser ? $authUser->role : null,
+            'station_param' => $request->station,
+            'all' => $request->all()
+        ]);
 
         // Ambil data leaves join users (pemohon, approver, rejector)
         $query = \App\Models\Leave::join('users as u', 'leaves.user_id', '=', 'u.id')
@@ -133,7 +140,16 @@ class LeaveController extends Controller
                 'approved.fullname as user_approve',
                 'rejected.fullname as user_rejected'
             )
-            ->orderBy('leaves.created_at', 'asc');
+            ->orderBy('leaves.created_at', 'desc');
+
+        // Access Scoping: Admin & Head / HO have full access across all stations
+        $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
+
+        if ($request->filled('station')) {
+            $query->where('u.station', $request->station);
+        } elseif (!$isFullAccess && $authUser->station) {
+            $query->where('u.station', $authUser->station);
+        }
 
         if ($request->filled('user_name')) {
             $query->where(function ($q) use ($request) {
@@ -145,12 +161,16 @@ class LeaveController extends Controller
         $perPage = $request->input('per_page', 10);
         $leaves = $query->paginate($perPage)->withQueryString();
 
-        return view('leaves.laporan', compact('leaves'));
+        $stations = \App\Models\Station::where('is_active', 1)->orderBy('name', 'asc')->get();
+        $userStation = !$isFullAccess ? $authUser->station : null;
+
+        return view('leaves.laporan', compact('leaves', 'stations', 'userStation', 'isFullAccess'));
     }
 
     public function export(Request $request)
     {
         try {
+            $authUser = Auth::user();
             $year = $request->input('year', date('Y'));
 
             // Build query with joins to get full data matching the laporan view
@@ -169,6 +189,14 @@ class LeaveController extends Controller
                 ->orderBy('u.fullname')
                 ->orderBy('leaves.start_date');
 
+            $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
+
+            if ($request->filled('station')) {
+                $query->where('u.station', $request->station);
+            } elseif (!$isFullAccess && $authUser->station) {
+                $query->where('u.station', $authUser->station);
+            }
+
             // Optional: filter by specific user
             if ($request->filled('user_name')) {
                 $query->where(function ($q) use ($request) {
@@ -183,8 +211,9 @@ class LeaveController extends Controller
                 return redirect()->back()->with('warning', 'Tidak ada data pengajuan cuti untuk dicetak pada tahun ' . $year);
             }
 
+            $stationLabel = $request->filled('station') ? '_' . $request->station : '';
             $userLabel = $request->filled('user_name') ? '_' . preg_replace('/[^A-Za-z0-9]/', '_', $request->user_name) : '_Semua';
-            $fileName = 'Laporan_Cuti' . $userLabel . '_' . $year . '.xlsx';
+            $fileName = 'Laporan_Cuti' . $stationLabel . $userLabel . '_' . $year . '.xlsx';
 
             return \Maatwebsite\Excel\Facades\Excel::download(
                 new \App\Exports\LeavesReportExport($leaves),

@@ -21,6 +21,17 @@
                                 <label class="form-label">Tahun</label>
                                 <input type="number" name="year" class="form-control" value="{{ request('year', date('Y')) }}" style="min-width: 100px;">
                             </div>
+                            <div>
+                                <label class="form-label">Station</label>
+                                <select name="station" class="form-select" style="min-width: 170px;" {{ !$isFullAccess ? 'disabled' : '' }}>
+                                    <option value="">Semua Station</option>
+                                    @foreach ($stations as $st)
+                                    <option value="{{ $st->code }}" {{ request('station', $userStation) == $st->code ? 'selected' : '' }}>
+                                        {{ $st->name }} ({{ $st->code }})
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="dt-search">
                                 <i class="bx bx-search search-icon"></i>
                                 <input type="text" name="user_name" class="form-control" placeholder="Cari NIP atau Nama..." value="{{ request('user_name') }}">
@@ -31,7 +42,7 @@
                             <a href="{{ route('leaves.laporan') }}" class="btn btn-outline-secondary" style="height: 40px; display:inline-flex; align-items:center;">Reset</a>
                         </div>
                         <div class="dt-actions">
-                            <a href="{{ route('leaves.export', request()->only(['year', 'user_name'])) }}" class="btn btn-success" style="height: 40px; display: inline-flex; align-items: center;">
+                            <a href="{{ route('leaves.export', request()->only(['year', 'station', 'user_name'])) }}" class="btn btn-success" style="height: 40px; display: inline-flex; align-items: center;">
                                 <i class="bx bx-spreadsheet me-1"></i>Export Excel
                             </a>
                         </div>
