@@ -761,11 +761,108 @@ html.aps-dark .station-map-chip {
 /* ─────────────────────────────────────────────────────────────
    GLOBAL DARK MODE SYSTEM IMPROVEMENTS (html.aps-dark)
    ───────────────────────────────────────────────────────────── */
+/* 1. Modals & Popups */
+html.aps-dark .modal-content {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.aps-dark .modal-header {
+    border-bottom: 1px solid #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.aps-dark .modal-title {
+    color: #f8fafc !important;
+    font-weight: 600 !important;
+}
+
+html.aps-dark .modal-body {
+    color: #e2e8f0 !important;
+}
+
+html.aps-dark .modal-body strong,
+html.aps-dark .modal-body b,
+html.aps-dark .modal-body label {
+    color: #f8fafc !important;
+}
+
+html.aps-dark .modal-footer {
+    border-top: 1px solid #334155 !important;
+}
+
+html.aps-dark .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+    opacity: 0.8 !important;
+}
+html.aps-dark .btn-close:hover {
+    opacity: 1 !important;
+}
+
+/* 2. SweetAlert2 Popups */
+html.aps-dark .swal2-popup {
+    background: #1e293b !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+    border-radius: 1rem !important;
+}
+
+html.aps-dark .swal2-title {
+    color: #f8fafc !important;
+}
+
+html.aps-dark .swal2-html-container {
+    color: #cbd5e1 !important;
+}
+
+html.aps-dark .swal2-content,
+html.aps-dark .swal2-text {
+    color: #cbd5e1 !important;
+}
+
+html.aps-dark .swal2-input,
+html.aps-dark .swal2-textarea {
+    background-color: #0f172a !important;
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;
+    border-radius: 0.5rem !important;
+}
+
+html.aps-dark .swal2-input:focus,
+html.aps-dark .swal2-textarea:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+html.aps-dark .swal2-validation-message {
+    background: #334155 !important;
+    color: #fca5a5 !important;
+}
+
+/* 3. Buttons & Secondary Actions */
+html.aps-dark .btn-secondary,
+html.aps-dark .btn-label-secondary {
+    background-color: #334155 !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.aps-dark .btn-secondary:hover,
+html.aps-dark .btn-label-secondary:hover {
+    background-color: #475569 !important;
+    border-color: #475569 !important;
+    color: #ffffff !important;
+}
+
 html.aps-dark .btn-outline-secondary {
     background-color: rgba(255, 255, 255, 0.06) !important;
     border-color: rgba(255, 255, 255, 0.22) !important;
     color: #cbd5e1 !important;
 }
+
 html.aps-dark .btn-outline-secondary:hover {
     background-color: rgba(255, 255, 255, 0.15) !important;
     border-color: rgba(255, 255, 255, 0.38) !important;
@@ -778,6 +875,7 @@ html.aps-dark .btn-success {
     color: #ffffff !important;
     box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
 }
+
 html.aps-dark .btn-success:hover {
     background-color: #047857 !important;
     border-color: #047857 !important;
@@ -789,21 +887,110 @@ html.aps-dark .btn-outline-danger {
     border-color: #ef4444 !important;
     color: #fca5a5 !important;
 }
+
 html.aps-dark .btn-outline-danger:hover {
     background-color: #ef4444 !important;
     border-color: #ef4444 !important;
     color: #ffffff !important;
 }
 
-/* Table and Badges Dark Mode */
+/* 4. Dropdowns & Select2 */
+html.aps-dark .dropdown-menu {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.aps-dark .dropdown-item {
+    color: #cbd5e1 !important;
+}
+
+html.aps-dark .dropdown-item:hover,
+html.aps-dark .dropdown-item:focus {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+}
+
+html.aps-dark .dropdown-divider {
+    border-top-color: #334155 !important;
+}
+
+html.aps-dark .select2-dropdown {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html.aps-dark .select2-container--default .select2-selection--single,
+html.aps-dark .select2-container--default .select2-selection--multiple {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.aps-dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #f8fafc !important;
+}
+
+html.aps-dark .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+/* 5. Forms & Inputs */
+html.aps-dark .form-control,
+html.aps-dark .form-select {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.aps-dark .form-control::placeholder {
+    color: #64748b !important;
+}
+
+html.aps-dark .form-control:focus,
+html.aps-dark .form-select:focus {
+    background-color: #0f172a !important;
+    border-color: #3b82f6 !important;
+    color: #f8fafc !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+}
+
+html.aps-dark .form-label,
+html.aps-dark .col-form-label {
+    color: #cbd5e1 !important;
+}
+
+html.aps-dark .input-group-text {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+/* 6. Cards, Tables, Badges & Pagination */
+html.aps-dark .card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.aps-dark .card-header,
+html.aps-dark .card-footer {
+    border-color: #334155 !important;
+    background-color: transparent !important;
+}
+
 html.aps-dark .table th {
     color: #94a3b8 !important;
     border-bottom-color: rgba(255, 255, 255, 0.08) !important;
 }
+
 html.aps-dark .table td {
     color: #cbd5e1 !important;
     border-bottom-color: rgba(255, 255, 255, 0.08) !important;
 }
+
 html.aps-dark .table td strong {
     color: #f8fafc !important;
 }
@@ -813,18 +1000,82 @@ html.aps-dark .status-badge.status-pending {
     color: #fcd34d !important;
     border: 1px solid rgba(245, 158, 11, 0.3) !important;
 }
+
 html.aps-dark .status-badge.status-approved {
     background: rgba(16, 185, 129, 0.18) !important;
     color: #6ee7b7 !important;
     border: 1px solid rgba(16, 185, 129, 0.3) !important;
 }
+
 html.aps-dark .status-badge.status-rejected {
     background: rgba(239, 68, 68, 0.18) !important;
     color: #fca5a5 !important;
     border: 1px solid rgba(239, 68, 68, 0.3) !important;
 }
+
 html.aps-dark .status-badge.status-canceled {
     background: rgba(100, 116, 139, 0.18) !important;
     color: #94a3b8 !important;
     border: 1px solid rgba(100, 116, 139, 0.3) !important;
+}
+
+/* Badge bg-label Dark Mode Contrast Fixes */
+html.aps-dark .badge.bg-label-secondary,
+html.aps-dark .bg-label-secondary {
+    background-color: rgba(241, 245, 249, 0.16) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+
+html.aps-dark .badge.bg-label-primary,
+html.aps-dark .bg-label-primary {
+    background-color: rgba(59, 130, 246, 0.22) !important;
+    color: #93c5fd !important;
+    border: 1px solid rgba(59, 130, 246, 0.35) !important;
+}
+
+html.aps-dark .badge.bg-label-info,
+html.aps-dark .bg-label-info {
+    background-color: rgba(6, 182, 212, 0.22) !important;
+    color: #67e8f9 !important;
+    border: 1px solid rgba(6, 182, 212, 0.35) !important;
+}
+
+html.aps-dark .badge.bg-label-warning,
+html.aps-dark .bg-label-warning {
+    background-color: rgba(245, 158, 11, 0.22) !important;
+    color: #fde047 !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}
+
+html.aps-dark .badge.bg-label-danger,
+html.aps-dark .bg-label-danger {
+    background-color: rgba(239, 68, 68, 0.22) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+}
+
+html.aps-dark .badge.bg-label-success,
+html.aps-dark .bg-label-success {
+    background-color: rgba(16, 185, 129, 0.22) !important;
+    color: #6ee7b7 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+
+html.aps-dark .pagination .page-link {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html.aps-dark .pagination .page-item.active .page-link {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+html.aps-dark .pagination .page-item.disabled .page-link {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #64748b !important;
 }
