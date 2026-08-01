@@ -67,42 +67,40 @@ class StaffController extends Controller
         // Cek Keamanan
         abort_unless(Auth::user()->canAccess('user', 'export'), 403);
 
-        $station = $request->station ?? null;
-        $fileName = 'staff_data_' . ($station ? $station : 'global') . '_' . date('Y-m-d') . '.csv';
+        try {
+            $station = $request->station ?? null;
+            $fileName = 'staff_data_' . ($station ? $station : 'global') . '_' . date('Y-m-d') . '.csv';
 
-        return Excel::download(new StaffExport($station), $fileName);
+            return Excel::download(new StaffExport($station), $fileName);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengunduh data staff: ' . $e->getMessage());
+        }
     }
 
     // =================================================================
     // 3. IMPORT DATA DARI CSV
     // =================================================================
-   public function import(Request $request)
-{
-    if (! Auth::user()->canAccess('user', 'create')) {
-        abort(403);
-    }
+    public function import(Request $request)
+    {
+        if (! Auth::user()->canAccess('user', 'create')) {
+            abort(403);
+        }
 
-    $request->validate([
-        'file' => 'required|mimes:csv,txt,xlsx'
-    ]);
-
-    try {
-        // Import Excel
-        Excel::import(new StaffImport, $request->file('file'));
-
-        Alert::success('Berhasil', 'Data Staff berhasil diimpor!');
-    } catch (\Exception $e) {
-        // Dump semua info error
-        dd([
-            'message' => $e->getMessage(),
-            'file'    => $e->getFile(),
-            'line'    => $e->getLine(),
-            'trace'   => $e->getTraceAsString()
+        $request->validate([
+            'file' => 'required|mimes:csv,txt,xlsx'
         ]);
-    }
 
-    return back();
-}
+        try {
+            // Import Excel
+            Excel::import(new StaffImport, $request->file('file'));
+
+            Alert::success('Berhasil', 'Data Staff berhasil diimpor!');
+        } catch (\Exception $e) {
+            Alert::error('Gagal Import', 'Terjadi kesalahan saat impor data staff: ' . $e->getMessage());
+        }
+
+        return back();
+    }
 
     // =================================================================
     // 4. DOWNLOAD TEMPLATE CSV (Agar format upload benar)

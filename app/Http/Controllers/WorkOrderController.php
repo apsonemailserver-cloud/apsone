@@ -286,68 +286,79 @@ class WorkOrderController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $user = auth()->user();
-        if (!$user->hasRole(WorkOrder::LEADER_ROLES)) {
-            abort(403, 'Akses ditolak. Staff hanya memiliki hak akses untuk melihat data pekerjaan.');
-        }
-
-        $query = WorkOrder::with(['users', 'submittedBy']);
-
-        if ($user->hasRole('Admin')) {
-            if ($request->filled('station') && $request->station !== 'All') {
-                $query->where('station', $request->station);
+        try {
+            ini_set('memory_limit', '1024M');
+            $user = auth()->user();
+            if (!$user->hasRole(WorkOrder::LEADER_ROLES)) {
+                abort(403, 'Akses ditolak. Staff hanya memiliki hak akses untuk melihat data pekerjaan.');
             }
-        } elseif ($user->hasRole(WorkOrder::LEADER_ROLES)) {
-            $query->where('submitted_by', $user->id);
-        } else {
-            $query->whereHas('users', fn($q) => $q->where('users.id', $user->id));
+
+            $query = WorkOrder::with(['users', 'submittedBy']);
+
+            if ($user->hasRole('Admin')) {
+                if ($request->filled('station') && $request->station !== 'All') {
+                    $query->where('station', $request->station);
+                }
+            } elseif ($user->hasRole(WorkOrder::LEADER_ROLES)) {
+                $query->where('submitted_by', $user->id);
+            } else {
+                $query->whereHas('users', fn($q) => $q->where('users.id', $user->id));
+            }
+
+            if ($request->filled('date_from')) {
+                $query->whereDate('date', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $query->whereDate('date', '<=', $request->date_to);
+            }
+            if ($request->filled('type') && in_array($request->type, ['DCI', 'DCE'])) {
+                $query->where('type', $request->type);
+            }
+
+            $workOrders = $query->orderBy('date', 'asc')->orderBy('start_time', 'asc')->get();
+            $workResults = $workOrders;
+
+            if ($workOrders->isEmpty()) {
+                Alert::warning('Data Kosong', 'Tidak ada data Assignment / WO yang dapat diexport PDF untuk kriteria ini.');
+                return redirect()->back();
+            }
+
+            $stationLabel = $request->filled('station') && $request->station !== 'All'
+                ? $request->station
+                : 'Semua Station';
+
+            $periodLabel = '';
+            if ($request->filled('date_from') && $request->filled('date_to')) {
+                $periodLabel = \Carbon\Carbon::parse($request->date_from)->translatedFormat('d M Y')
+                    . ' s/d ' . \Carbon\Carbon::parse($request->date_to)->translatedFormat('d M Y');
+            } elseif ($request->filled('date_from')) {
+                $periodLabel = 'Mulai ' . \Carbon\Carbon::parse($request->date_from)->translatedFormat('d M Y');
+            } else {
+                $periodLabel = 'Semua Periode';
+            }
+
+            $logoPath = public_path('storage/photo/JAS Airport Services.png');
+            $base64Logo = '';
+            if (file_exists($logoPath)) {
+                $base64Logo = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            }
+
+            $pdfView = view()->exists('work_order.pdf') ? 'work_order.pdf' : 'work_result.pdf';
+            $pdf = Pdf::loadView($pdfView, compact(
+                'workOrders',
+                'workResults',
+                'stationLabel',
+                'periodLabel',
+                'base64Logo',
+                'user'
+            ))->setPaper('a4', 'landscape');
+
+            $filename = 'Laporan-WO-' . str_replace(' ', '-', $stationLabel) . '-' . now()->format('Ymd-His') . '.pdf';
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            Alert::error('Export Gagal', 'Terjadi kesalahan saat mengunduh PDF: ' . $e->getMessage());
+            return redirect()->back();
         }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('date', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('date', '<=', $request->date_to);
-        }
-        if ($request->filled('type') && in_array($request->type, ['DCI', 'DCE'])) {
-            $query->where('type', $request->type);
-        }
-
-        $workOrders = $query->orderBy('date', 'asc')->orderBy('start_time', 'asc')->get();
-        $workResults = $workOrders;
-
-        $stationLabel = $request->filled('station') && $request->station !== 'All'
-            ? $request->station
-            : 'Semua Station';
-
-        $periodLabel = '';
-        if ($request->filled('date_from') && $request->filled('date_to')) {
-            $periodLabel = \Carbon\Carbon::parse($request->date_from)->translatedFormat('d M Y')
-                . ' s/d ' . \Carbon\Carbon::parse($request->date_to)->translatedFormat('d M Y');
-        } elseif ($request->filled('date_from')) {
-            $periodLabel = 'Mulai ' . \Carbon\Carbon::parse($request->date_from)->translatedFormat('d M Y');
-        } else {
-            $periodLabel = 'Semua Periode';
-        }
-
-        $logoPath = public_path('storage/photo/JAS Airport Services.png');
-        $base64Logo = '';
-        if (file_exists($logoPath)) {
-            $base64Logo = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
-        }
-
-        $pdfView = view()->exists('work_order.pdf') ? 'work_order.pdf' : 'work_result.pdf';
-        $pdf = Pdf::loadView($pdfView, compact(
-            'workOrders',
-            'workResults',
-            'stationLabel',
-            'periodLabel',
-            'base64Logo',
-            'user'
-        ))->setPaper('a4', 'landscape');
-
-        $filename = 'Laporan-WO-' . str_replace(' ', '-', $stationLabel) . '-' . now()->format('Ymd-His') . '.pdf';
-        return $pdf->download($filename);
     }
 
     /**
@@ -355,47 +366,52 @@ class WorkOrderController extends Controller
      */
     public function exportSinglePdf($id)
     {
-        $user = auth()->user();
-        if (!$user->hasRole(WorkOrder::LEADER_ROLES)) {
-            abort(403, 'Akses ditolak. Staff hanya memiliki hak akses untuk melihat data pekerjaan.');
-        }
+        try {
+            $user = auth()->user();
+            if (!$user->hasRole(WorkOrder::LEADER_ROLES)) {
+                abort(403, 'Akses ditolak. Staff hanya memiliki hak akses untuk melihat data pekerjaan.');
+            }
 
-        $workOrder = WorkOrder::with(['users', 'submittedBy'])->findOrFail($id);
-        $workResult = $workOrder;
+            $workOrder = WorkOrder::with(['users', 'submittedBy'])->findOrFail($id);
+            $workResult = $workOrder;
 
-        if (!$workOrder->photo_path) {
-            Alert::error('Cetak Gagal', 'Laporan PDF tidak dapat dicetak karena foto bukti pekerjaan belum diunggah.');
+            if (!$workOrder->photo_path) {
+                Alert::error('Cetak Gagal', 'Laporan PDF tidak dapat dicetak karena foto bukti pekerjaan belum diunggah.');
+                return redirect()->back();
+            }
+
+            $logoPath = public_path('storage/aps_mini.png');
+            if (!file_exists($logoPath)) {
+                $logoPath = storage_path('app/public/aps_mini.png');
+            }
+            $base64Logo = '';
+            if (file_exists($logoPath)) {
+                $mime = mime_content_type($logoPath) ?: 'image/png';
+                $base64Logo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+            }
+
+            $base64Photo = '';
+            if ($workOrder->photo_path) {
+                $fullPhotoPath = storage_path('app/public/' . $workOrder->photo_path);
+                if (!file_exists($fullPhotoPath)) {
+                    $fullPhotoPath = public_path('storage/' . $workOrder->photo_path);
+                }
+                if (file_exists($fullPhotoPath)) {
+                    $mime = mime_content_type($fullPhotoPath) ?: 'image/jpeg';
+                    $base64Photo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPhotoPath));
+                }
+            }
+
+            $singlePdfView = view()->exists('work_order.single_pdf') ? 'work_order.single_pdf' : 'work_result.single_pdf';
+            $pdf = Pdf::loadView($singlePdfView, compact('workOrder', 'workResult', 'base64Logo', 'base64Photo'))
+                ->setPaper('a4', 'portrait');
+
+            $filename = 'Hardcopy-WO-' . $workOrder->wo_number . '-' . str_replace(' ', '-', $workOrder->aircraft_reg) . '.pdf';
+            return $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Alert::error('Export Gagal', 'Terjadi kesalahan saat mengunduh PDF WO: ' . $e->getMessage());
             return redirect()->back();
         }
-
-        $logoPath = public_path('storage/aps_mini.png');
-        if (!file_exists($logoPath)) {
-            $logoPath = storage_path('app/public/aps_mini.png');
-        }
-        $base64Logo = '';
-        if (file_exists($logoPath)) {
-            $mime = mime_content_type($logoPath) ?: 'image/png';
-            $base64Logo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
-        }
-
-        $base64Photo = '';
-        if ($workOrder->photo_path) {
-            $fullPhotoPath = storage_path('app/public/' . $workOrder->photo_path);
-            if (!file_exists($fullPhotoPath)) {
-                $fullPhotoPath = public_path('storage/' . $workOrder->photo_path);
-            }
-            if (file_exists($fullPhotoPath)) {
-                $mime = mime_content_type($fullPhotoPath) ?: 'image/jpeg';
-                $base64Photo = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPhotoPath));
-            }
-        }
-
-        $singlePdfView = view()->exists('work_order.single_pdf') ? 'work_order.single_pdf' : 'work_result.single_pdf';
-        $pdf = Pdf::loadView($singlePdfView, compact('workOrder', 'workResult', 'base64Logo', 'base64Photo'))
-            ->setPaper('a4', 'portrait');
-
-        $filename = 'Hardcopy-WO-' . $workOrder->wo_number . '-' . str_replace(' ', '-', $workOrder->aircraft_reg) . '.pdf';
-        return $pdf->stream($filename);
     }
 
     /**

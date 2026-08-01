@@ -2121,6 +2121,40 @@
                 window.location.href = targetUrl;
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('error'))
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: {!! json_encode(session('error')) !!},
+                        confirmButtonText: 'OK'
+                    });
+                }
+            @endif
+            @if(session('success'))
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: {!! json_encode(session('success')) !!},
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+            @endif
+            @if(session('warning'))
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Perhatian',
+                        text: {!! json_encode(session('warning')) !!},
+                        confirmButtonText: 'OK'
+                    });
+                }
+            @endif
+        });
     </script>
 </body>
 

@@ -150,41 +150,49 @@ class LeaveController extends Controller
 
     public function export(Request $request)
     {
-        $year = $request->input('year', date('Y'));
+        try {
+            $year = $request->input('year', date('Y'));
 
-        // Build query with joins to get full data matching the laporan view
-        $query = \App\Models\Leave::join('users as u', 'leaves.user_id', '=', 'u.id')
-            ->leftJoin('users as approved', 'leaves.approved_by', '=', 'approved.id')
-            ->leftJoin('users as rejected', 'leaves.rejected_by', '=', 'rejected.id')
-            ->whereYear('leaves.start_date', $year)
-            ->select(
-                'leaves.*',
-                'u.id as user_nip',
-                'u.fullname as user_leave',
-                'u.station as station',
-                'approved.fullname as user_approve',
-                'rejected.fullname as user_rejected'
-            )
-            ->orderBy('u.fullname')
-            ->orderBy('leaves.start_date');
+            // Build query with joins to get full data matching the laporan view
+            $query = \App\Models\Leave::join('users as u', 'leaves.user_id', '=', 'u.id')
+                ->leftJoin('users as approved', 'leaves.approved_by', '=', 'approved.id')
+                ->leftJoin('users as rejected', 'leaves.rejected_by', '=', 'rejected.id')
+                ->whereYear('leaves.start_date', $year)
+                ->select(
+                    'leaves.*',
+                    'u.id as user_nip',
+                    'u.fullname as user_leave',
+                    'u.station as station',
+                    'approved.fullname as user_approve',
+                    'rejected.fullname as user_rejected'
+                )
+                ->orderBy('u.fullname')
+                ->orderBy('leaves.start_date');
 
-        // Optional: filter by specific user
-        if ($request->filled('user_name')) {
-            $query->where(function ($q) use ($request) {
-                $q->whereRaw("CAST(u.id AS CHAR) LIKE ?", ["%{$request->user_name}%"])
-                  ->orWhere('u.fullname', 'LIKE', "%{$request->user_name}%");
-            });
+            // Optional: filter by specific user
+            if ($request->filled('user_name')) {
+                $query->where(function ($q) use ($request) {
+                    $q->whereRaw("CAST(u.id AS CHAR) LIKE ?", ["%{$request->user_name}%"])
+                      ->orWhere('u.fullname', 'LIKE', "%{$request->user_name}%");
+                });
+            }
+
+            $leaves = $query->get();
+
+            if ($leaves->isEmpty()) {
+                return redirect()->back()->with('warning', 'Tidak ada data pengajuan cuti untuk dicetak pada tahun ' . $year);
+            }
+
+            $userLabel = $request->filled('user_name') ? '_' . preg_replace('/[^A-Za-z0-9]/', '_', $request->user_name) : '_Semua';
+            $fileName = 'Laporan_Cuti' . $userLabel . '_' . $year . '.xlsx';
+
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\LeavesReportExport($leaves),
+                $fileName
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengunduh data cuti: ' . $e->getMessage());
         }
-
-        $leaves = $query->get();
-
-        $userLabel = $request->filled('user_name') ? '_' . preg_replace('/[^A-Za-z0-9]/', '_', $request->user_name) : '_Semua';
-        $fileName = 'Laporan_Cuti' . $userLabel . '_' . $year . '.xlsx';
-
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\LeavesReportExport($leaves),
-            $fileName
-        );
     }
 
     /**

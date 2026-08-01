@@ -211,28 +211,36 @@ class OvertimeController extends Controller
     {
         abort_unless(Auth::user()->canAccess('overtime', 'export'), 403);
 
-        $query = Overtime::with('user')->where('status', 'Approved');
-        $search = $request->input('search');
+        try {
+            $query = Overtime::with('user')->where('status', 'Approved');
+            $search = $request->input('search');
 
-        if ($search) {
-            $query->whereHas('user', function($q) use ($search) {
-                $q->where('fullname', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%");
-            });
+            if ($search) {
+                $query->whereHas('user', function($q) use ($search) {
+                    $q->where('fullname', 'like', "%{$search}%")
+                      ->orWhere('id', 'like', "%{$search}%");
+                });
+            }
+
+            if ($request->has('station') && $request->station != null) {
+                $query->whereHas('user', function($q) use ($request) {
+                    $q->where('station', $request->station);
+                });
+            }
+            
+            if ($request->date_start && $request->date_end) {
+                $query->whereBetween('date', [$request->date_start, $request->date_end]);
+            }
+
+            $overtimes = $query->latest()->get();
+
+            if ($overtimes->isEmpty()) {
+                return redirect()->back()->with('warning', 'Tidak ada data lembur yang disetujui untuk diexport.');
+            }
+
+            return Excel::download(new OvertimeReportExport($overtimes), 'Laporan_Lembur_'.date('YmdHis').'.xlsx');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengunduh laporan lembur: ' . $e->getMessage());
         }
-
-        if ($request->has('station') && $request->station != null) {
-            $query->whereHas('user', function($q) use ($request) {
-                $q->where('station', $request->station);
-            });
-        }
-        
-        if ($request->date_start && $request->date_end) {
-            $query->whereBetween('date', [$request->date_start, $request->date_end]);
-        }
-
-        $overtimes = $query->latest()->get();
-
-        return Excel::download(new OvertimeReportExport($overtimes), 'Laporan_Lembur_'.date('YmdHis').'.xlsx');
     }
 }
