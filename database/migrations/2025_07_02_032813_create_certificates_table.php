@@ -13,15 +13,12 @@ return new class extends Migration
     {
         Schema::create('certificates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('safety_management_system')->nullable();
-            $table->string('human_factors')->nullable();
-            $table->string('ramp_safety_airside_safety')->nullable();
-            $table->string('dangerous_goods_regulations')->nullable();
-            $table->string('aviation_security_awareness')->nullable();
-            $table->string('airport_emergency_plan')->nullable();
-            $table->string('ground_support_equipment_operation')->nullable();
-            $table->string('basic_first_aid')->nullable();
+            $table->string('user_id', 20);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('certificate_name')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->string('certificate_file')->nullable();
             $table->timestamps();
         });
     }

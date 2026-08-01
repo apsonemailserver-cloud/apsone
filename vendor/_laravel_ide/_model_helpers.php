@@ -1642,22 +1642,6 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $basic_first_aid_expired
-     * @property string|null $basic_first_aid_registered
-     * @property string|null $ground_support_equipment_operation_expired
-     * @property string|null $ground_support_equipment_operation_registered
-     * @property string|null $airport_emergency_plan_expired
-     * @property string|null $airport_emergency_plan_registered
-     * @property string|null $aviation_security_awareness_expired
-     * @property string|null $aviation_security_awareness_registered
-     * @property string|null $dangerous_goods_regulations_expired
-     * @property string|null $dangerous_goods_regulations_registered
-     * @property string|null $ramp_safety_airside_safety_expired
-     * @property string|null $ramp_safety_airside_safety_registered
-     * @property string|null $human_factors_expired
-     * @property string|null $human_factors_registered
-     * @property string|null $safety_management_system_expired
-     * @property string|null $safety_management_system_registered
      * @property string|null $certificate_file
      * @property \Illuminate\Support\Carbon|null $end_date
      * @property \Illuminate\Support\Carbon|null $start_date
@@ -1675,22 +1659,6 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereStartDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereEndDate($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereCertificateFile($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereSafetyManagementSystemRegistered($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereSafetyManagementSystemExpired($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereHumanFactorsRegistered($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereHumanFactorsExpired($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereRampSafetyAirsideSafetyRegistered($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereRampSafetyAirsideSafetyExpired($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereDangerousGoodsRegulationsRegistered($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereDangerousGoodsRegulationsExpired($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereAviationSecurityAwarenessRegistered($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereAviationSecurityAwarenessExpired($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereAirportEmergencyPlanRegistered($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereAirportEmergencyPlanExpired($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereGroundSupportEquipmentOperationRegistered($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereGroundSupportEquipmentOperationExpired($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereBasicFirstAidRegistered($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereBasicFirstAidExpired($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate newModelQuery()
