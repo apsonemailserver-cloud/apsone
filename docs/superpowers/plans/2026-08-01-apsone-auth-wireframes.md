@@ -27,15 +27,15 @@
 - Consumes: Approved wireframe specification.
 - Produces: Four top-level frame IDs used by later tasks.
 
-- [ ] **Step 1: Inspect the target Figma page**
+- [x] **Step 1: Inspect the target Figma page**
 
 Return the page name, existing top-level children, and available fonts without mutating the canvas.
 
-- [ ] **Step 2: Create four 1440 × 900 frames**
+- [x] **Step 2: Create four 1440 × 900 frames**
 
 Create frames named `01 — Login`, `02 — Forgot Password`, `03 — Verify OTP`, and `04 — New Password`, positioned with a 160 px horizontal gap.
 
-- [ ] **Step 3: Verify wrapper geometry**
+- [x] **Step 3: Verify wrapper geometry**
 
 Return every created node ID and confirm dimensions and positions.
 
@@ -48,15 +48,15 @@ Return every created node ID and confirm dimensions and positions.
 - Consumes: Frame IDs from Task 1.
 - Produces: Completed Login and Forgot Password wireframes.
 
-- [ ] **Step 1: Build Login structure**
+- [x] **Step 1: Build Login structure**
 
 Add a utility header, centered form panel, NIP and password controls, dark Login button, forgot-password action, and wireframe footer.
 
-- [ ] **Step 2: Build Forgot Password structure**
+- [x] **Step 2: Build Forgot Password structure**
 
 Add the shared header, a three-step recovery indicator with step 1 active, NIP field, Send OTP button, back-to-login action, and footer.
 
-- [ ] **Step 3: Validate content and node bounds**
+- [x] **Step 3: Validate content and node bounds**
 
 Return all created node IDs and screen summary.
 
@@ -69,15 +69,15 @@ Return all created node IDs and screen summary.
 - Consumes: Frame IDs from Task 1 and the shared visual language from Task 2.
 - Produces: Completed OTP Verification and Create New Password wireframes.
 
-- [ ] **Step 1: Build OTP Verification structure**
+- [x] **Step 1: Build OTP Verification structure**
 
 Add the shared header, step 2 active, neutral OTP-sent message, NIP summary, OTP field, Verify OTP button, back action, and footer.
 
-- [ ] **Step 2: Build Create New Password structure**
+- [x] **Step 2: Build Create New Password structure**
 
 Add the shared header, step 3 active, neutral verification-success message, two password fields, Save Password button, back action, and footer.
 
-- [ ] **Step 3: Validate content and node bounds**
+- [x] **Step 3: Validate content and node bounds**
 
 Return all created node IDs and screen summary.
 
@@ -90,18 +90,18 @@ Return all created node IDs and screen summary.
 - Consumes: Four completed screen frames.
 - Produces: Verified editable Figma wireframes and file URL.
 
-- [ ] **Step 1: Capture a screenshot of each screen**
+- [x] **Step 1: Capture a screenshot of each screen**
 
 Render each top-level frame for visual inspection.
 
-- [ ] **Step 2: Check monochrome fidelity and consistency**
+- [x] **Step 2: Check monochrome fidelity and consistency**
 
 Confirm no non-neutral colors, clipping, overflow, overlap, or missing labels.
 
-- [ ] **Step 3: Apply any required corrections**
+- [x] **Step 3: Apply any required corrections**
 
 Correct only issues found during inspection and return all mutated node IDs.
 
-- [ ] **Step 4: Report the final Figma link**
+- [x] **Step 4: Report the final Figma link**
 
 Provide `https://www.figma.com/design/LUwE7rbkNsbTtHwblL9ODv` after verification.
