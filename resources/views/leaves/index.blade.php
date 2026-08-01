@@ -2,18 +2,42 @@
 
 @section('styles')
 <style>
+    .btn-detail-pill {
+        background: #ffffff !important;
+        color: #475569 !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 9999px !important;
+        padding: 0.38rem 1.15rem !important;
+        font-size: 0.8125rem !important;
+        font-weight: 500 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.18s ease !important;
+        cursor: pointer;
+        text-decoration: none !important;
+        line-height: 1.2 !important;
+        box-shadow: none !important;
+    }
+    .btn-detail-pill:hover {
+        background: #f8fafc !important;
+        color: #1e293b !important;
+        border-color: #cbd5e1 !important;
+    }
+
     .btn-approve-pill {
         background: #00a66c !important;
         color: #ffffff !important;
         border: none !important;
         border-radius: 9999px !important;
-        padding: 0.45rem 1.15rem !important;
+        padding: 0.42rem 1.15rem !important;
         font-size: 0.8125rem !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
         display: inline-flex !important;
         align-items: center !important;
+        justify-content: center !important;
         gap: 0.35rem !important;
-        box-shadow: 0 4px 12px rgba(0, 166, 108, 0.22) !important;
+        box-shadow: 0 4px 14px rgba(0, 166, 108, 0.24) !important;
         transition: all 0.18s ease !important;
         cursor: pointer;
         text-decoration: none !important;
@@ -23,19 +47,20 @@
         background: #008f5d !important;
         color: #ffffff !important;
         transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(0, 166, 108, 0.32) !important;
+        box-shadow: 0 6px 18px rgba(0, 166, 108, 0.35) !important;
     }
 
     .btn-reject-pill {
         background: #ffffff !important;
         color: #ef4444 !important;
-        border: 1.5px solid #ef4444 !important;
+        border: 1.2px solid #ff7a7a !important;
         border-radius: 9999px !important;
-        padding: 0.4rem 1.15rem !important;
+        padding: 0.38rem 1.15rem !important;
         font-size: 0.8125rem !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
         display: inline-flex !important;
         align-items: center !important;
+        justify-content: center !important;
         gap: 0.35rem !important;
         transition: all 0.18s ease !important;
         cursor: pointer;
@@ -43,7 +68,7 @@
         line-height: 1.2 !important;
     }
     .btn-reject-pill:hover {
-        background: #fef2f2 !important;
+        background: #fff5f5 !important;
         color: #dc2626 !important;
         border-color: #dc2626 !important;
         transform: translateY(-1px);
@@ -137,7 +162,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
+                                        <button type="button" class="btn-detail-pill" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
                                             Detail
                                         </button>
 
