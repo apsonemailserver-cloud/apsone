@@ -15,33 +15,12 @@ class AdminDocumentController extends Controller
 {
     public function index(Request $request)
     {
-        $this->ensureAdmin();
-
-        $documents = Document::with(['creator', 'updater'])
-            ->when($request->input('search'), function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('nama_dokumen', 'like', "%{$search}%")
-                        ->orWhere('deskripsi_dokumen', 'like', "%{$search}%")
-                        ->orWhere('nama_file', 'like', "%{$search}%")
-                        ->orWhere('role_akses_dokumen', 'like', "%{$search}%");
-                });
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        return view('document.admin.index', [
-            'documents' => $documents,
-        ]);
+        return redirect()->route('document');
     }
 
     public function create()
     {
-        $this->ensureAdmin();
-
-        return view('document.admin.create', [
-            'availableRoles' => $this->availableRoles(),
-        ]);
+        return redirect()->route('document');
     }
 
     public function store(Request $request)
@@ -58,17 +37,12 @@ class AdminDocumentController extends Controller
 
         Alert::success('Berhasil', 'Dokumen berhasil ditambahkan.');
 
-        return redirect()->route('admin.documents.index');
+        return redirect()->route('document');
     }
 
     public function edit(Document $document)
     {
-        $this->ensureAdmin();
-
-        return view('document.admin.edit', [
-            'document' => $document,
-            'availableRoles' => $this->availableRoles(),
-        ]);
+        return redirect()->route('document');
     }
 
     public function update(Request $request, Document $document)
@@ -90,7 +64,7 @@ class AdminDocumentController extends Controller
 
         Alert::success('Berhasil', 'Dokumen berhasil diperbarui.');
 
-        return redirect()->route('admin.documents.index');
+        return redirect()->route('document');
     }
 
     public function destroy(Document $document)
@@ -102,8 +76,9 @@ class AdminDocumentController extends Controller
 
         Alert::success('Berhasil', 'Dokumen berhasil dihapus.');
 
-        return redirect()->route('admin.documents.index');
+        return redirect()->route('document');
     }
+
 
     private function ensureAdmin(): void
     {

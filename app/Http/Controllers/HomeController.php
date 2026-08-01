@@ -489,24 +489,42 @@ class HomeController extends Controller
 
     public function document(): View
     {
-        $role = Auth::user()->role;
-        $visibleDocuments = Document::query()
-            ->orderBy('nama_dokumen')
-            ->get()
-            ->filter(fn (Document $document) => $document->isVisibleForRole($role))
-            ->values();
+        $user = Auth::user();
+        $canManage = $user->isAdmin() || $user->canAccess('document', 'create') || $user->canAccess('document', 'edit');
+
+        if ($canManage) {
+            $visibleDocuments = Document::query()->orderBy('nama_dokumen')->get();
+        } else {
+            $visibleDocuments = Document::query()
+                ->orderBy('nama_dokumen')
+                ->get()
+                ->filter(fn (Document $document) => $document->isVisibleForRole($user->role))
+                ->values();
+        }
 
         $totalDocuments = $visibleDocuments->count();
         $allRoleDocuments = $visibleDocuments->filter(fn (Document $document) => $document->isAllRoleAccess())->count();
         $adminDocuments = $visibleDocuments->filter(fn (Document $document) => $document->hasRoleAccess('Admin'))->count();
         $managerDocuments = $visibleDocuments->filter(fn (Document $document) => $document->hasAnyRoleAccess(Document::managerRoles()))->count();
 
+        $availableRoles = User::query()
+            ->whereNotNull('role')
+            ->select('role')
+            ->distinct()
+            ->orderBy('role')
+            ->pluck('role')
+            ->filter()
+            ->values()
+            ->all();
+
         return view('document', compact(
             'visibleDocuments',
             'totalDocuments',
             'allRoleDocuments',
             'adminDocuments',
-            'managerDocuments'
+            'managerDocuments',
+            'availableRoles',
+            'canManage'
         ));
     }
 

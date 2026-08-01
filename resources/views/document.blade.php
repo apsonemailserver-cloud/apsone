@@ -647,21 +647,17 @@
         </div>
 
         {{-- Live Search & Counter Bar --}}
+        {{-- Live Search & Counter Bar --}}
         <div class="filter-bar">
             <div class="search-box">
                 <i class="bx bx-search"></i>
                 <input type="text" id="docSearchInput" placeholder="Cari nama atau deskripsi dokumen..." onkeyup="filterDocuments()">
             </div>
             <div class="d-flex align-items-center gap-2">
-                @if (Auth::user()?->role === 'Admin' || Auth::user()->hasPermission('document.edit'))
-                    <a href="{{ route('admin.documents.index') }}" class="btn btn-sm btn-outline-primary fw-bold">
-                        <i class="bx bx-cog me-1"></i>Manajemen Dokumen
-                    </a>
-                @endif
-                @if (Auth::user()?->role === 'Admin' || Auth::user()->hasPermission('document.create'))
-                    <a href="{{ route('admin.documents.create') }}" class="btn btn-sm btn-primary fw-bold">
+                @if ($canManage)
+                    <button type="button" class="btn btn-sm btn-primary fw-bold px-3.5 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addDocumentModal">
                         <i class="bx bx-plus me-1"></i>Tambah Dokumen
-                    </a>
+                    </button>
                 @endif
                 <div class="doc-counter-badge">
                     <i class="bx bx-folder"></i>
@@ -737,10 +733,29 @@
                             <i class="bx bx-hdd"></i>
                             <span>{{ $document->ukuran_file ?: 'File Resmi' }}</span>
                         </div>
-                        <a href="{{ route('document.download', $document) }}" class="btn-download-doc" aria-label="Unduh {{ $document->nama_dokumen }}">
-                            <i class="bx bx-download"></i>
-                            <span>Unduh</span>
-                        </a>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('document.download', $document) }}" class="btn-download-doc" aria-label="Unduh {{ $document->nama_dokumen }}">
+                                <i class="bx bx-download"></i>
+                                <span>Unduh</span>
+                            </a>
+                            @if ($canManage)
+                                <button type="button" class="btn btn-sm btn-icon btn-label-warning rounded-circle btn-edit-doc" 
+                                    data-id="{{ $document->id }}" 
+                                    data-title="{{ $document->nama_dokumen }}" 
+                                    data-desc="{{ $document->deskripsi_dokumen }}" 
+                                    data-roles='@json($document->role_access_values)'
+                                    title="Edit Dokumen">
+                                    <i class="bx bx-edit"></i>
+                                </button>
+                                <form action="{{ route('admin.documents.destroy', $document) }}" method="POST" class="d-inline delete-document-form">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" class="btn btn-sm btn-icon btn-label-danger rounded-circle btn-delete-doc" title="Hapus Dokumen">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @empty
@@ -763,9 +778,121 @@
             </div>
         </div>
     </div>
+
+    @if ($canManage)
+        <!-- Modal Tambah Dokumen -->
+        <div class="modal fade" id="addDocumentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header border-bottom">
+                        <h5 class="modal-title fw-bold text-dark"><i class="bx bx-folder-plus text-primary me-2"></i>Tambah Dokumen Baru</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ route('admin.documents.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark">Nama Dokumen <span class="text-danger">*</span></label>
+                                <input type="text" name="nama_dokumen" class="form-control" placeholder="Contoh: Formulir Perpanjangan Pas Bandara" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark">Deskripsi Dokumen <span class="text-danger">*</span></label>
+                                <textarea name="deskripsi_dokumen" class="form-control" rows="3" placeholder="Jelaskan secara singkat mengenai dokumen ini..." required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark">File Dokumen <span class="text-danger">*</span></label>
+                                <input type="file" name="document_file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" required>
+                                <small class="text-muted d-block mt-1">Format: PDF, Word, Excel, JPG, PNG. Maksimal 10MB.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark mb-2">Akses Role Dokumen <span class="text-danger">*</span></label>
+                                <div class="card p-3 border shadow-none bg-light">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input role-checkbox-all" type="checkbox" name="role_akses_dokumen[]" value="all" id="addRoleAll" checked>
+                                        <label class="form-check-label fw-bold text-primary" for="addRoleAll">Semua Role (All Staff)</label>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div class="row g-2">
+                                        @foreach ($availableRoles as $r)
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input role-checkbox-item" type="checkbox" name="role_akses_dokumen[]" value="{{ $r }}" id="addRole_{{ Str::slug($r) }}">
+                                                    <label class="form-check-label small text-dark" for="addRole_{{ Str::slug($r) }}">{{ $r }}</label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary"><i class="bx bx-upload me-1"></i>Simpan & Unggah Dokumen</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Edit Dokumen -->
+        <div class="modal fade" id="editDocumentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header border-bottom">
+                        <h5 class="modal-title fw-bold text-dark"><i class="bx bx-edit text-warning me-2"></i>Edit Dokumen</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="editDocumentForm" action="" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark">Nama Dokumen <span class="text-danger">*</span></label>
+                                <input type="text" name="nama_dokumen" id="edit_nama_dokumen" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark">Deskripsi Dokumen <span class="text-danger">*</span></label>
+                                <textarea name="deskripsi_dokumen" id="edit_deskripsi_dokumen" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark">Ganti File Dokumen (Opsional)</label>
+                                <input type="file" name="document_file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                <small class="text-muted d-block mt-1">Kosongkan jika tidak ingin mengganti file lama.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-dark mb-2">Akses Role Dokumen <span class="text-danger">*</span></label>
+                                <div class="card p-3 border shadow-none bg-light">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input edit-role-checkbox-all" type="checkbox" name="role_akses_dokumen[]" value="all" id="editRoleAll">
+                                        <label class="form-check-label fw-bold text-primary" for="editRoleAll">Semua Role (All Staff)</label>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div class="row g-2">
+                                        @foreach ($availableRoles as $r)
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input edit-role-checkbox-item" type="checkbox" name="role_akses_dokumen[]" value="{{ $r }}" id="editRole_{{ Str::slug($r) }}">
+                                                    <label class="form-check-label small text-dark" for="editRole_{{ Str::slug($r) }}">{{ $r }}</label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary"><i class="bx bx-check me-1"></i>Simpan Perubahan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function filterDocuments() {
             const query = document.getElementById('docSearchInput').value.toLowerCase().trim();
@@ -796,6 +923,88 @@
                 noResultsState.classList.add('d-none');
             }
         }
+
+        $(document).ready(function() {
+            // Checkbox 'Semua Role' logic in Add Modal
+            $('.role-checkbox-all').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('.role-checkbox-item').prop('checked', false);
+                }
+            });
+            $('.role-checkbox-item').on('change', function() {
+                if ($('.role-checkbox-item:checked').length > 0) {
+                    $('.role-checkbox-all').prop('checked', false);
+                } else {
+                    $('.role-checkbox-all').prop('checked', true);
+                }
+            });
+
+            // Checkbox 'Semua Role' logic in Edit Modal
+            $('.edit-role-checkbox-all').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('.edit-role-checkbox-item').prop('checked', false);
+                }
+            });
+            $('.edit-role-checkbox-item').on('change', function() {
+                if ($('.edit-role-checkbox-item:checked').length > 0) {
+                    $('.edit-role-checkbox-all').prop('checked', false);
+                } else {
+                    $('.edit-role-checkbox-all').prop('checked', true);
+                }
+            });
+
+            // Trigger Edit Modal
+            $(document).on('click', '.btn-edit-doc', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const title = $(this).data('title');
+                const desc = $(this).data('desc');
+                const roles = $(this).data('roles') || [];
+
+                $('#edit_nama_dokumen').val(title);
+                $('#edit_deskripsi_dokumen').val(desc);
+                $('#editDocumentForm').attr('action', '/admin/documents/' + id);
+
+                // Populate checkboxes
+                $('.edit-role-checkbox-all').prop('checked', false);
+                $('.edit-role-checkbox-item').prop('checked', false);
+
+                if (roles.includes('all') || roles.length === 0) {
+                    $('.edit-role-checkbox-all').prop('checked', true);
+                } else {
+                    roles.forEach(r => {
+                        $('.edit-role-checkbox-item[value="' + r + '"]').prop('checked', true);
+                    });
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('editDocumentModal'));
+                modal.show();
+            });
+
+            // Delete Confirmation
+            $(document).on('click', '.btn-delete-doc', function(e) {
+                e.preventDefault();
+                const form = $(this).closest('form');
+                Swal.fire({
+                    title: 'Hapus Dokumen?',
+                    text: 'Dokumen yang dihapus tidak dapat dikembalikan lagi.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-danger me-2',
+                        cancelButton: 'btn btn-outline-secondary'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
     </script>
 @endsection
+
 
