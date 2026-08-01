@@ -34,10 +34,31 @@ class AttendanceController extends Controller
         return view('attendance.index', compact('todayAttendance', 'todaySchedule', 'user'));
     }
 
-    // AttendanceController.php
     public function camera(Request $request)
     {
         $type = $request->query('type', 'in'); // in / out
+        $user = Auth::user();
+        $today = Carbon::today()->toDateString();
+
+        $todayAttendance = Attendance::where('user_id', $user->id)
+            ->whereDate('check_in_time', $today)
+            ->first();
+
+        if ($type === 'out') {
+            if (!$todayAttendance) {
+                return redirect()->route('attendance.index')
+                    ->with('error', 'Anda belum check-in hari ini. Silakan check-in terlebih dahulu.');
+            }
+            if ($todayAttendance->check_out_time) {
+                return redirect()->route('attendance.index')
+                    ->with('error', 'Anda sudah check-out hari ini.');
+            }
+        } else {
+            if ($todayAttendance) {
+                return redirect()->route('attendance.index')
+                    ->with('error', 'Anda sudah check-in hari ini.');
+            }
+        }
 
         return view('attendance.camera', compact('type'));
     }
