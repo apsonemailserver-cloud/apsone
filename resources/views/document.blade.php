@@ -324,18 +324,25 @@
             color: var(--doc-text-muted);
         }
 
+        .document-page .doc-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+
         .document-page .btn-download-doc {
             display: inline-flex;
             align-items: center;
-            gap: 0.45rem;
-            padding: 0.55rem 1.1rem;
-            border-radius: 0.75rem;
+            gap: 0.4rem;
+            padding: 0.48rem 0.95rem;
+            border-radius: 0.65rem;
             background: var(--doc-primary);
             color: #ffffff;
-            font-size: 0.825rem;
+            font-size: 0.8rem;
             font-weight: 700;
             text-decoration: none;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+            box-shadow: 0 3px 10px rgba(47, 128, 237, 0.2);
             transition: all 0.2s ease;
         }
 
@@ -343,17 +350,56 @@
             background: var(--doc-primary-hover);
             color: #ffffff;
             transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.32);
+            box-shadow: 0 5px 14px rgba(47, 128, 237, 0.3);
         }
 
-        .document-page .btn-download-doc i {
-            font-size: 1.05rem;
-            transition: transform 0.2s ease;
+        .document-page .btn-card-edit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            padding: 0.48rem 0.75rem;
+            border-radius: 0.65rem;
+            background: rgba(245, 158, 11, 0.12);
+            color: #d97706;
+            font-size: 0.775rem;
+            font-weight: 700;
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
 
-        .document-page .btn-download-doc:hover i {
-            transform: translateY(2px);
+        .document-page .btn-card-edit:hover {
+            background: #f59e0b;
+            color: #ffffff;
+            border-color: #f59e0b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
         }
+
+        .document-page .btn-card-delete {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 33px;
+            height: 33px;
+            border-radius: 0.65rem;
+            background: rgba(239, 68, 68, 0.12);
+            color: #dc2626;
+            font-size: 0.95rem;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .document-page .btn-card-delete:hover {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #ef4444;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
 
         /* Empty State */
         .document-page .empty-doc-state {
@@ -733,29 +779,31 @@
                             <i class="bx bx-hdd"></i>
                             <span>{{ $document->ukuran_file ?: 'File Resmi' }}</span>
                         </div>
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="doc-card-actions">
                             <a href="{{ route('document.download', $document) }}" class="btn-download-doc" aria-label="Unduh {{ $document->nama_dokumen }}">
                                 <i class="bx bx-download"></i>
                                 <span>Unduh</span>
                             </a>
                             @if ($canManage)
-                                <button type="button" class="btn btn-sm btn-icon btn-label-warning rounded-circle btn-edit-doc" 
+                                <button type="button" class="btn-card-edit btn-edit-doc" 
                                     data-id="{{ $document->id }}" 
                                     data-title="{{ $document->nama_dokumen }}" 
                                     data-desc="{{ $document->deskripsi_dokumen }}" 
                                     data-roles='@json($document->role_access_values)'
                                     title="Edit Dokumen">
-                                    <i class="bx bx-edit"></i>
+                                    <i class="bx bx-edit-alt"></i>
+                                    <span>Edit</span>
                                 </button>
                                 <form action="{{ route('admin.documents.destroy', $document) }}" method="POST" class="d-inline delete-document-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" class="btn btn-sm btn-icon btn-label-danger rounded-circle btn-delete-doc" title="Hapus Dokumen">
+                                    <button type="button" class="btn-card-delete btn-delete-doc" title="Hapus Dokumen">
                                         <i class="bx bx-trash"></i>
                                     </button>
                                 </form>
                             @endif
                         </div>
+
                     </div>
                 </div>
             @empty
