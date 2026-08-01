@@ -327,76 +327,65 @@
         .document-page .doc-card-actions {
             display: flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.5rem;
         }
 
-        .document-page .btn-download-doc {
+        .document-page .btn-icon-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 0.75rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            padding: 0.32rem 0.65rem;
-            border-radius: 0.5rem;
-            background: var(--doc-primary);
-            color: #ffffff;
-            font-size: 0.75rem;
-            font-weight: 600;
+            justify-content: center;
+            font-size: 1.15rem;
+            transition: all 0.2s ease;
             text-decoration: none;
-            box-shadow: 0 2px 5px rgba(47, 128, 237, 0.18);
-            transition: all 0.2s ease;
+            cursor: pointer;
+            padding: 0;
         }
 
-        .document-page .btn-download-doc:hover {
-            background: var(--doc-primary-hover);
+        /* 1. Unduh / View (Blue pastel) */
+        .document-page .btn-icon-action.btn-action-download {
+            background: #eef6ff;
+            border: 1.5px solid #bfdbfe;
+            color: #2563eb;
+        }
+        .document-page .btn-icon-action.btn-action-download:hover {
+            background: #2563eb;
+            border-color: #2563eb;
             color: #ffffff;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(47, 128, 237, 0.28);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
         }
 
-        .document-page .btn-card-edit {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 27px;
-            height: 27px;
-            border-radius: 0.5rem;
-            background: rgba(245, 158, 11, 0.1);
+        /* 2. Edit (Amber pastel) */
+        .document-page .btn-icon-action.btn-action-edit {
+            background: #fffbe6;
+            border: 1.5px solid #fde68a;
             color: #d97706;
-            font-size: 0.825rem;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            padding: 0;
         }
-
-        .document-page .btn-card-edit:hover {
+        .document-page .btn-icon-action.btn-action-edit:hover {
             background: #f59e0b;
-            color: #ffffff;
             border-color: #f59e0b;
-            transform: translateY(-1px);
-        }
-
-        .document-page .btn-card-delete {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 27px;
-            height: 27px;
-            border-radius: 0.5rem;
-            background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
-            font-size: 0.85rem;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            padding: 0;
-        }
-
-        .document-page .btn-card-delete:hover {
-            background: #ef4444;
             color: #ffffff;
-            border-color: #ef4444;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
         }
+
+        /* 3. Delete (Red pastel) */
+        .document-page .btn-icon-action.btn-action-delete {
+            background: #fef2f2;
+            border: 1.5px solid #fecaca;
+            color: #dc2626;
+        }
+        .document-page .btn-icon-action.btn-action-delete:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+        }
+
 
 
 
@@ -779,12 +768,11 @@
                             <span>{{ $document->ukuran_file ?: 'File Resmi' }}</span>
                         </div>
                         <div class="doc-card-actions">
-                            <a href="{{ route('document.download', $document) }}" class="btn-download-doc" aria-label="Unduh {{ $document->nama_dokumen }}">
+                            <a href="{{ route('document.download', $document) }}" class="btn-icon-action btn-action-download" title="Unduh Dokumen" aria-label="Unduh {{ $document->nama_dokumen }}">
                                 <i class="bx bx-download"></i>
-                                <span>Unduh</span>
                             </a>
                             @if ($canManage)
-                                <button type="button" class="btn-card-edit btn-edit-doc" 
+                                <button type="button" class="btn-icon-action btn-action-edit btn-edit-doc" 
                                     data-id="{{ $document->id }}" 
                                     data-title="{{ $document->nama_dokumen }}" 
                                     data-desc="{{ $document->deskripsi_dokumen }}" 
@@ -795,12 +783,13 @@
                                 <form action="{{ route('admin.documents.destroy', $document) }}" method="POST" class="d-inline delete-document-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" class="btn-card-delete btn-delete-doc" title="Hapus Dokumen">
+                                    <button type="button" class="btn-icon-action btn-action-delete btn-delete-doc" title="Hapus Dokumen">
                                         <i class="bx bx-trash"></i>
                                     </button>
                                 </form>
                             @endif
                         </div>
+
 
                     </div>
                 </div>
