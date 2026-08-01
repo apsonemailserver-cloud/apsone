@@ -20,4 +20,25 @@ class Station extends Model
         'radius',    // Radius absensi (meter)
         'role',      // Role-role di station
     ];
+
+    public function isRoleAllowed(User $user): bool
+    {
+        if ($user->hasRole(['Admin', 'Head Of Airport Service'])) {
+            return true;
+        }
+
+        if (empty($this->role)) {
+            return true;
+        }
+
+        $allowedRoles = array_filter(array_map('trim', explode(',', (string) $this->role)));
+
+        if (empty($allowedRoles)) {
+            return true;
+        }
+
+        $userRoles = array_filter(array_map('trim', explode(',', (string) $user->role)));
+
+        return count(array_intersect($userRoles, $allowedRoles)) > 0;
+    }
 }

@@ -17,16 +17,7 @@ class StationController extends Controller
     // =================================================================
     private function availableRoles(): array
     {
-        return User::query()
-            ->whereNotNull('role')
-            ->where('role', '!=', '')
-            ->select('role')
-            ->distinct()
-            ->orderBy('role')
-            ->pluck('role')
-            ->filter()
-            ->values()
-            ->all();
+        return \App\Models\Role::orderBy('name', 'asc')->pluck('name')->toArray();
     }
 
     public function create()

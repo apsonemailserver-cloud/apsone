@@ -71,6 +71,10 @@ class AttendanceController extends Controller
             return back()->with('error', 'Station Anda sedang dinonaktifkan.');
         }
 
+        if (!$station->isRoleAllowed($user)) {
+            return back()->with('error', "Role Anda ('{$user->role}') belum di-mapping untuk presensi di Station {$station->name} ({$station->code}).");
+        }
+
         $targetLat = $station->latitude;
         $targetLong = $station->longitude;
 
@@ -186,16 +190,7 @@ class AttendanceController extends Controller
         $now = Carbon::now();
         $today = $now->format('Y-m-d');
 
-        // 1. Cek apakah sudah absen hari ini
-        $existingCheckIn = Attendance::where('user_id', $user->id)
-            ->whereDate('check_in_time', $today)
-            ->first();
-
-        if ($existingCheckIn) {
-            return response()->json(['success' => false, 'message' => 'Anda sudah melakukan Check-in hari ini.']);
-        }
-
-        // 2. Ambil Station User dari Database
+        // 1. Ambil Station User dari Database
         $station = Station::where('code', $user->station)->first();
 
         if (!$station) {
@@ -210,6 +205,22 @@ class AttendanceController extends Controller
                 'success' => false,
                 'message' => "Station '{$station->name}' sedang dinonaktifkan."
             ]);
+        }
+
+        if (!$station->isRoleAllowed($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => "Role Anda ('{$user->role}') belum di-mapping untuk presensi di Station {$station->name} ({$station->code})."
+            ]);
+        }
+
+        // 2. Cek apakah sudah absen hari ini
+        $existingCheckIn = Attendance::where('user_id', $user->id)
+            ->whereDate('check_in_time', $today)
+            ->first();
+
+        if ($existingCheckIn) {
+            return response()->json(['success' => false, 'message' => 'Anda sudah melakukan Check-in hari ini.']);
         }
 
         // Ambil Koordinat Target & Radius

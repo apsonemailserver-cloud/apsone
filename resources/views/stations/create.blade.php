@@ -738,16 +738,7 @@
                                     </div>
                                     <div class="multiselect-options-list js-multiselect-options">
                                         @php
-                                            $allRoles = $availableRoles ?? \App\Models\User::query()
-                                                ->whereNotNull('role')
-                                                ->where('role', '!=', '')
-                                                ->select('role')
-                                                ->distinct()
-                                                ->orderBy('role')
-                                                ->pluck('role')
-                                                ->filter()
-                                                ->values()
-                                                ->all();
+                                            $allRoles = $availableRoles ?? \App\Models\Role::orderBy('name', 'asc')->pluck('name')->toArray();
                                             $stationRoles = old('role', []);
                                             if (!is_array($stationRoles)) {
                                                 $stationRoles = explode(',', (string)$stationRoles);
