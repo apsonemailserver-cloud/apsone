@@ -414,6 +414,9 @@ class LeaveController extends Controller
             $leave->rejected_by = Auth::id();
             $leave->approved_by = null;
             $leave->approved_at = null;
+            if ($request->filled('manager_comment')) {
+                $leave->manager_comment = $request->manager_comment;
+            }
         } else {
             $leave->rejected_by = null;
         }
@@ -422,17 +425,22 @@ class LeaveController extends Controller
 
         // Kirim email pemberitahuan status keputusan ke pemohon
         if ($leave->user) {
+            $emailDetails = [
+                'Jenis Cuti'      => $leave->leave_type,
+                'Tanggal Mulai'   => Carbon::parse($leave->start_date)->translatedFormat('d F Y'),
+                'Tanggal Selesai' => Carbon::parse($leave->end_date)->translatedFormat('d F Y'),
+                'Total Hari'      => $leave->total_days . ' Hari',
+                'Status'          => str_contains(strtolower($status), 'approved') ? 'Disetujui (Approved)' : 'Ditolak (Rejected)',
+            ];
+            if (str_starts_with($status, 'rejected') && $leave->manager_comment) {
+                $emailDetails['Alasan Penolakan'] = $leave->manager_comment;
+            }
+
             RequestNotificationMailService::sendDecisionEmail(
                 $leave->user,
                 'Cuti (' . $leave->leave_type . ')',
                 $status,
-                [
-                    'Jenis Cuti'      => $leave->leave_type,
-                    'Tanggal Mulai'   => Carbon::parse($leave->start_date)->translatedFormat('d F Y'),
-                    'Tanggal Selesai' => Carbon::parse($leave->end_date)->translatedFormat('d F Y'),
-                    'Total Hari'      => $leave->total_days . ' Hari',
-                    'Status'          => str_contains(strtolower($status), 'approved') ? 'Disetujui (Approved)' : 'Ditolak (Rejected)',
-                ],
+                $emailDetails,
                 Auth::user()->fullname
             );
         }

@@ -256,14 +256,18 @@
                     title: 'Setujui Pengajuan Cuti?',
                     html: `Apakah Anda yakin ingin menyetujui pengajuan <strong>${leaveType}</strong> dari <strong>${userName}</strong>?`,
                     icon: 'question',
+                    iconColor: '#10b981',
                     showCancelButton: true,
-                    confirmButtonText: '<i class="ti ti-check me-1"></i>Ya, Setujui',
+                    confirmButtonText: '✓ Ya, Setujui',
                     cancelButtonText: 'Batal',
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#94a3b8',
                     customClass: {
-                        confirmButton: 'btn btn-primary me-2',
-                        cancelButton: 'btn btn-outline-secondary'
+                        confirmButton: 'btn btn-success me-2',
+                        cancelButton: 'btn btn-label-secondary'
                     },
-                    buttonsStyling: false
+                    buttonsStyling: false,
+                    reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();
@@ -279,18 +283,58 @@
 
                 Swal.fire({
                     title: 'Tolak Pengajuan Cuti?',
-                    html: `Apakah Anda yakin ingin menolak pengajuan <strong>${leaveType}</strong> dari <strong>${userName}</strong>?`,
+                    html: `
+                        <div style="background:#fef2f2; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
+                            <div style="margin-bottom:0.75rem; display:flex; align-items:flex-start; gap:0.75rem;">
+                                <span style="flex-shrink:0; background:#fecaca; color:#dc2626; border-radius:999px; padding:0.15rem 0.65rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px;">Staff</span>
+                                <span style="font-weight:600; color:#111827; font-size:0.9375rem;">${userName}</span>
+                            </div>
+                            <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                                <span style="flex-shrink:0; background:#fecaca; color:#dc2626; border-radius:999px; padding:0.15rem 0.5rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px;">Cuti</span>
+                                <span style="font-weight:500; color:#374151; font-size:0.875rem;">${leaveType}</span>
+                            </div>
+                        </div>
+                        <div style="text-align:left; margin-top:1rem;">
+                            <label for="swal-leave-rejection-reason" style="display:block; font-weight:600; font-size:0.875rem; color:#374151; margin-bottom:0.35rem;">
+                                Alasan Penolakan <span style="color:#dc2626;">*</span>
+                            </label>
+                            <textarea id="swal-leave-rejection-reason" class="form-control" placeholder="Tuliskan alasan penolakan di sini..." style="width:100%; border-radius:0.5rem; border:1px solid #cbd5e1; padding:0.6rem 0.75rem; font-size:0.875rem; min-height:80px; resize:vertical;"></textarea>
+                            <div id="swal-leave-rejection-error" style="color:#dc2626; font-size:0.8rem; margin-top:0.35rem; display:none;">Alasan penolakan wajib diisi.</div>
+                        </div>
+                    `,
                     icon: 'warning',
+                    iconColor: '#ef4444',
                     showCancelButton: true,
-                    confirmButtonText: '<i class="ti ti-x me-1"></i>Ya, Tolak',
+                    confirmButtonText: '✕ Ya, Tolak',
                     cancelButtonText: 'Batal',
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
                     customClass: {
                         confirmButton: 'btn btn-danger me-2',
-                        cancelButton: 'btn btn-outline-secondary'
+                        cancelButton: 'btn btn-label-secondary'
                     },
-                    buttonsStyling: false
+                    buttonsStyling: false,
+                    reverseButtons: true,
+                    preConfirm: () => {
+                        const reasonInput = document.getElementById('swal-leave-rejection-reason');
+                        const errorDiv = document.getElementById('swal-leave-rejection-error');
+                        const reason = reasonInput ? reasonInput.value.trim() : '';
+
+                        if (!reason) {
+                            if (errorDiv) errorDiv.style.display = 'block';
+                            if (reasonInput) reasonInput.style.borderColor = '#dc2626';
+                            return false;
+                        }
+                        return reason;
+                    }
                 }).then((result) => {
-                    if (result.isConfirmed) {
+                    if (result.isConfirmed && result.value) {
+                        let commentInput = form.find('input[name="manager_comment"]');
+                        if (commentInput.length === 0) {
+                            form.append(`<input type="hidden" name="manager_comment" value="${result.value}">`);
+                        } else {
+                            commentInput.val(result.value);
+                        }
                         form.submit();
                     }
                 });
