@@ -1,5 +1,100 @@
 @extends('layout.admin')
 
+@section('styles')
+<style>
+    /* Dark Mode Styling Enhancements */
+    html.aps-dark .card {
+        background-color: #1a2332 !important;
+        border-color: #2b3b5a !important;
+    }
+
+    html.aps-dark .table th {
+        color: #94a3b8 !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html.aps-dark .table td {
+        color: #cbd5e1 !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html.aps-dark .table td strong {
+        color: #f8fafc !important;
+    }
+
+    html.aps-dark .status-badge.status-pending {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fcd34d !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+
+    html.aps-dark .status-badge.status-approved {
+        background: rgba(16, 185, 129, 0.18) !important;
+        color: #6ee7b7 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    }
+
+    html.aps-dark .status-badge.status-rejected {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #fca5a5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    }
+
+    html.aps-dark .status-badge.status-canceled {
+        background: rgba(100, 116, 139, 0.18) !important;
+        color: #94a3b8 !important;
+        border: 1px solid rgba(100, 116, 139, 0.3) !important;
+    }
+
+    html.aps-dark .btn-outline-secondary {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.22) !important;
+        color: #cbd5e1 !important;
+    }
+
+    html.aps-dark .btn-outline-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.38) !important;
+        color: #ffffff !important;
+    }
+
+    html.aps-dark .btn-success {
+        background-color: #059669 !important;
+        border-color: #059669 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
+    }
+
+    html.aps-dark .btn-success:hover {
+        background-color: #047857 !important;
+        border-color: #047857 !important;
+        color: #ffffff !important;
+    }
+
+    html.aps-dark .btn-outline-danger {
+        background-color: rgba(239, 68, 68, 0.12) !important;
+        border-color: #ef4444 !important;
+        color: #fca5a5 !important;
+    }
+
+    html.aps-dark .btn-outline-danger:hover {
+        background-color: #ef4444 !important;
+        border-color: #ef4444 !important;
+        color: #ffffff !important;
+    }
+
+    html.aps-dark .dt-search input {
+        background-color: #0f172a !important;
+        border-color: #2b3b5a !important;
+        color: #f8fafc !important;
+    }
+
+    html.aps-dark .dt-search .search-icon {
+        color: #94a3b8 !important;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="py-4">
