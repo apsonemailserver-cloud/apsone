@@ -418,7 +418,7 @@
             <div class="col">
                 <div class="card stat-card stat-card-warning shadow-sm h-100">
                     <div class="card-body p-3">
-                        <div class="stat-title">WO Hari Ini</div>
+                        <div class="stat-title">Assignment Hari Ini</div>
                         <div class="stat-value">{{ $totalWoToday ?? 0 }}</div>
                         <i class="fas fa-clipboard-check stat-icon"></i>
                     </div>
@@ -427,7 +427,7 @@
             <div class="col">
                 <div class="card stat-card stat-card-purple shadow-sm h-100">
                     <div class="card-body p-3">
-                        <div class="stat-title">WO Bulan Ini</div>
+                        <div class="stat-title">Assignment Bulan Ini</div>
                         <div class="stat-value">{{ $totalWoThisMonth ?? 0 }}</div>
                         <i class="fas fa-calendar-alt stat-icon"></i>
                     </div>
@@ -566,7 +566,8 @@
         @endif
 
 
-        {{-- TABEL PENERBANGAN (DITAROH PALING BAWAH) --}}
+        {{-- TABEL PENERBANGAN (DITAROH PALING BAWAH - KHUSUS MANAGEMENT) --}}
+        @if ($showManagementDashboard)
         <div class="row mt-4">
             <div class="col-12">
                 <div class="modern-card">
@@ -578,12 +579,7 @@
                                 <i class="ti ti-plane-arrival fs-4"></i>
                             </div>
                             <h2 class="h6 mb-0 fw-bold text-dark">
-                                @if ($showManagementDashboard)
-                                    Data Penerbangan Hari Ini
-                                @else
-                                    Data Penerbangan
-                                    <span class="text-muted fw-normal">(7 Hari Terakhir)</span>
-                                @endif
+                                Data Penerbangan Hari Ini
                             </h2>
                         </div>
                     </div>
@@ -656,11 +652,7 @@
                                         <td colspan="8" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
                                             <p class="mb-0">
-                                                @if ($showManagementDashboard)
-                                                    Tidak ada data penerbangan untuk hari ini.
-                                                @else
-                                                    Tidak ada data penerbangan dalam 7 hari terakhir.
-                                                @endif
+                                                Tidak ada data penerbangan untuk hari ini.
                                             </p>
                                         </td>
                                     </tr>
@@ -671,6 +663,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     @include('modal.add_flight')

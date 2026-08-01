@@ -273,12 +273,16 @@ class HomeController extends Controller
         if ($showManagementDashboard) {
             $woQuery = WorkOrder::query();
             
-            if ($user->hasRole('Admin')) {
+            $isFullAccess = $user->hasRole(['Admin', 'Head Of Airport Service']) || ($user->station === 'Ho');
+
+            if ($isFullAccess) {
                 if ($selectedStation !== 'All') {
                     $woQuery->where('station', $selectedStation);
                 }
-            } else {
-                $woQuery->where('submitted_by', $user->id);
+            } elseif ($selectedStation !== 'All' && !empty($selectedStation)) {
+                $woQuery->where('station', $selectedStation);
+            } elseif (!empty($user->station)) {
+                $woQuery->where('station', $user->station);
             }
 
             $totalWoToday = (clone $woQuery)->whereDate('date', Carbon::today())->count();
