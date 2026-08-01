@@ -33,8 +33,6 @@ class AdminMenuSmokeTest extends TestCase
             'Jadwal Hari Ini' => route('schedule.now'),
             'Data Schedule' => route('schedule.index'),
             'Create Update Schedule' => route('schedule.view'),
-            'Schedule Freelance' => route('schedule.freelances'),
-            'Tambah Freelance' => route('freelance.create'),
             'Shift' => route('shift.index'),
             'Shift Create' => route('shift.create'),
             'Absensi Hari Ini' => route('attendance.index'),

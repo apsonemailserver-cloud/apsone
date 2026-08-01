@@ -130,11 +130,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/schedule/show', [ScheduleController::class, 'show'])->name('schedule.view');
     Route::resource('schedule', ScheduleController::class)->only(['index', 'edit']);
 
-    // Freelance Schedule
-    Route::get('/schedule-freelances', [ScheduleController::class, 'freelances'])->name('schedule.freelances');
-    Route::get('/schedule-freelance-create', [ScheduleController::class, 'freelanceCreate'])->name('freelance.create');
-    Route::post('/schedule-freelance-create', [ScheduleController::class, 'store'])->name('freelance.store');
-
     // --- SHIFTS ---
     Route::resource('shift', ShiftController::class)->except(['show']);
 

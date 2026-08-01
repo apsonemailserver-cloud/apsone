@@ -423,38 +423,6 @@ INSERT INTO `flights` VALUES (13,'CGK','tess','123','312','Widebody','07:53:00',
 UNLOCK TABLES;
 
 --
--- Table structure for table `freelances`
---
-
-DROP TABLE IF EXISTS `freelances`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `freelances` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone` varchar(255) DEFAULT NULL,
-  `role` varchar(255) DEFAULT NULL,
-  `join_date` date DEFAULT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `freelances_email_unique` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `freelances`
---
-
-LOCK TABLES `freelances` WRITE;
-/*!40000 ALTER TABLE `freelances` DISABLE KEYS */;
-INSERT INTO `freelances` VALUES (1,'Muhammad Farid Al Jabbar','faridjabbar666@gmail.com',NULL,'Freelance',NULL,1,'2025-09-19 02:06:39','2025-09-19 02:06:39');
-/*!40000 ALTER TABLE `freelances` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `job_batches`
 --
 
@@ -572,7 +540,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -581,7 +549,7 @@ CREATE TABLE `migrations` (
 
 LOCK TABLES `migrations` WRITE;
 /*!40000 ALTER TABLE `migrations` DISABLE KEYS */;
-INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2025_03_19_001420_create_shifts_table',1),(5,'2025_03_20_123910_create_schedules_table',1),(6,'2025_03_29_073910_create_schedule_details_table',1),(7,'2025_04_08_131918_create_menus_table',1),(8,'2025_04_08_131933_create_user_menus_table',1),(9,'2025_04_13_133323_create_flights_table',1),(10,'2025_06_02_120649_create_flight_details_table',1),(11,'2025_06_20_011215_create_leaves_table',1),(12,'2025_06_20_025537_add_number_of_days_to_leaves_table',1),(13,'2025_06_21_011924_add_missing_columns_to_leaves_table',1),(15,'2025_07_05_224820_create_attendances_table',1),(16,'2025_07_10_035753_update_users_table',1),(17,'2025_07_11_035734_add_status_to_attendances_table',2),(19,'2025_09_19_085955_create_freelances_table',4),(20,'2025_07_02_032813_create_certificates_table',5),(21,'2026_02_03_045807_create_stations_table',6),(22,'2026_02_03_095153_add_is_active_to_users_table',7),(23,'2026_02_03_100135_create_blacklists_table',8),(24,'2026_02_03_102700_add_tim_columns_to_users_table',9),(25,'2026_02_04_031240_create_overtimes_table',10),(26,'2026_04_28_074515_add_generic_columns_to_certificates_table',11),(27,'2026_05_02_111825_add_missing_columns_to_certificates_table',11),(28,'2026_05_27_081600_backfill_approved_leave_approvals',11),(29,'2026_05_27_090000_add_missing_coordinates_to_stations_table',11),(30,'2026_05_28_080500_create_documents_table',11),(31,'2026_05_28_084300_update_documents_role_access_for_multiple_roles',11),(32,'2026_05_30_180912_add_radius_to_stations_table',11),(33,'2026_07_26_120000_add_station_id_to_attendances_table',11),(34,'2026_07_26_120100_create_attendance_corrections_table',12),(35,'2026_07_27_000000_add_role_to_stations_table',12),(36,'2026_07_28_000000_create_announcements_table',12),(37,'2026_07_28_000001_create_announcement_reads_table',12),(38,'2026_07_28_100000_modify_user_id_in_schedules_table',13),(39,'2026_07_28_200000_modify_nik_in_blacklists_table',14),(40,'2026_07_28_120000_add_rejection_reason_to_attendance_corrections_table',15),(41,'2026_07_28_130000_add_rejection_reason_to_overtimes_table',16),(42,'2026_07_31_100000_create_work_results_table',17),(43,'2026_07_31_100100_create_work_result_user_table',17),(44,'2026_07_31_200000_add_submitted_by_to_work_results_table',17),(45,'2026_07_31_300000_rename_work_results_to_work_orders',17),(46,'2026_08_01_180000_drop_unused_menus_tables',17),(47,'2026_08_01_190000_create_roles_and_permissions_tables',18);
+INSERT INTO `migrations` VALUES (1,'0001_01_01_000000_create_users_table',1),(2,'0001_01_01_000001_create_cache_table',1),(3,'0001_01_01_000002_create_jobs_table',1),(4,'2025_03_19_001420_create_shifts_table',1),(5,'2025_03_20_123910_create_schedules_table',1),(6,'2025_03_29_073910_create_schedule_details_table',1),(7,'2025_04_08_131918_create_menus_table',1),(8,'2025_04_08_131933_create_user_menus_table',1),(9,'2025_04_13_133323_create_flights_table',1),(10,'2025_06_02_120649_create_flight_details_table',1),(11,'2025_06_20_011215_create_leaves_table',1),(12,'2025_06_20_025537_add_number_of_days_to_leaves_table',1),(13,'2025_06_21_011924_add_missing_columns_to_leaves_table',1),(15,'2025_07_05_224820_create_attendances_table',1),(16,'2025_07_10_035753_update_users_table',1),(17,'2025_07_11_035734_add_status_to_attendances_table',2),(19,'2025_09_19_085955_create_freelances_table',4),(20,'2025_07_02_032813_create_certificates_table',5),(21,'2026_02_03_045807_create_stations_table',6),(22,'2026_02_03_095153_add_is_active_to_users_table',7),(23,'2026_02_03_100135_create_blacklists_table',8),(24,'2026_02_03_102700_add_tim_columns_to_users_table',9),(25,'2026_02_04_031240_create_overtimes_table',10),(26,'2026_04_28_074515_add_generic_columns_to_certificates_table',11),(27,'2026_05_02_111825_add_missing_columns_to_certificates_table',11),(28,'2026_05_27_081600_backfill_approved_leave_approvals',11),(29,'2026_05_27_090000_add_missing_coordinates_to_stations_table',11),(30,'2026_05_28_080500_create_documents_table',11),(31,'2026_05_28_084300_update_documents_role_access_for_multiple_roles',11),(32,'2026_05_30_180912_add_radius_to_stations_table',11),(33,'2026_07_26_120000_add_station_id_to_attendances_table',11),(34,'2026_07_26_120100_create_attendance_corrections_table',12),(35,'2026_07_27_000000_add_role_to_stations_table',12),(36,'2026_07_28_000000_create_announcements_table',12),(37,'2026_07_28_000001_create_announcement_reads_table',12),(38,'2026_07_28_100000_modify_user_id_in_schedules_table',13),(39,'2026_07_28_200000_modify_nik_in_blacklists_table',14),(40,'2026_07_28_120000_add_rejection_reason_to_attendance_corrections_table',15),(41,'2026_07_28_130000_add_rejection_reason_to_overtimes_table',16),(42,'2026_07_31_100000_create_work_results_table',17),(43,'2026_07_31_100100_create_work_result_user_table',17),(44,'2026_07_31_200000_add_submitted_by_to_work_results_table',17),(45,'2026_07_31_300000_rename_work_results_to_work_orders',17),(46,'2026_08_01_180000_drop_unused_menus_tables',17),(47,'2026_08_01_190000_create_roles_and_permissions_tables',18),(48,'2026_08_01_200000_drop_freelances_table',19);
 /*!40000 ALTER TABLE `migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -818,7 +786,7 @@ CREATE TABLE `sessions` (
 
 LOCK TABLES `sessions` WRITE;
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
-INSERT INTO `sessions` VALUES ('vLxui3B640zzQgfYZpElJoB1vrrSXewk1fP0lPlb','2207004','127.0.0.1','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36','YTo1OntzOjY6Il90b2tlbiI7czo0MDoiS3ZmNmJWelk4UUQweVNSZkRxT2xMcXU3OXA5a1JQUlFDcEhxTXd2NyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozNDoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3dvcmstcmVzdWx0cyI7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjM0OiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvcm9sZXMvMS9lZGl0Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO3M6NzoiMjIwNzAwNCI7fQ==',1785582856);
+INSERT INTO `sessions` VALUES ('vLxui3B640zzQgfYZpElJoB1vrrSXewk1fP0lPlb','2207004','127.0.0.1','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36','YTo1OntzOjY6Il90b2tlbiI7czo0MDoiS3ZmNmJWelk4UUQweVNSZkRxT2xMcXU3OXA5a1JQUlFDcEhxTXd2NyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozNDoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3dvcmstcmVzdWx0cyI7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjM0OiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvcm9sZXMvMS9lZGl0Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO3M6NzoiMjIwNzAwNCI7fQ==',1785582973);
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1026,4 +994,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-01 18:14:55
+-- Dump completed on 2026-08-01 18:19:41

@@ -119,7 +119,7 @@
                         </a>
                     </li>
 
-                    <li class="menu-item {{ request()->is('schedule*') || request()->routeIs('schedule.*') || request()->routeIs('freelance.*') ? 'active open' : '' }}">
+                    <li class="menu-item {{ request()->is('schedule*') || request()->routeIs('schedule.*') ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-calendar-week"></i>
                             <div data-i18n="Schedule">Schedule</div>

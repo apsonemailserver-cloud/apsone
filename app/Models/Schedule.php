@@ -24,11 +24,6 @@ class Schedule extends Model
         return $this->belongsTo(Shift::class);
     }
 
-    public function freelance()
-    {
-        return $this->belongsTo(Freelance::class, 'user_id');
-    }
-
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

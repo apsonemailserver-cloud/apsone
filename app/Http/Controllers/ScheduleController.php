@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Freelance;
 use App\Models\User;
 use App\Models\Schedule;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +41,7 @@ class ScheduleController extends Controller
         $today = Carbon::today();
         $nowTime = Carbon::now('Asia/Jakarta')->format('H:i:s');
 
-        $schedules = Schedule::with('shift', 'user', 'freelance')
+        $schedules = Schedule::with('shift', 'user')
             ->whereDate('date', $today)
             ->get();
 
@@ -450,53 +449,6 @@ class ScheduleController extends Controller
         return view('schedule.show', [
             'user' => $user,
         ]);
-    }
-
-    public function freelances(): View
-    {
-        $search = request('search');
-
-        $freelance = Freelance::where('role', '=', 'Freelance')->when($search, function ($query, $search) {
-            return $query->where('name', 'like', "%{$search}%")
-                ->orWhere('id', 'like', "%{$search}%");
-        })
-            ->orderBy('name', 'asc')
-            ->paginate(request()->input('per_page', 10))
-            ->withQueryString();
-
-
-        return view('schedule.freelance.freelances', [
-            'user' => $freelance,
-        ]);
-    }
-
-    public function freelanceCreate(): View
-    {
-        return view('schedule.freelance.create');
-    }
-
-    public function store(Request $request)
-    {
-
-        $request->validate([
-            'fullname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-        ]);
-
-        try {
-            $freelance = new Freelance();
-            $freelance->name = $request->fullname;
-            $freelance->email = $request->email;
-            $freelance->role = 'Freelance';
-
-            $freelance->save();
-
-            Alert::success('Success', 'User berhasil ditambahkan.');
-            return redirect()->route('schedule.freelances');
-        } catch (\Exception $e) {
-            Alert::error('Gagal', 'Terjadi kesalahan: ' . $e->getMessage());
-            return back()->withInput();
-        }
     }
 
     public function edit(Request $request, $id)
