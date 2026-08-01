@@ -25,24 +25,38 @@ class LeaveController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $query = Leave::with('user')
-            ->select('leaves.*')
-            ->join('users', 'users.id', '=', 'leaves.user_id')
-            ->where('users.station', $user->station)
-            ->latest(); // Eager load relasi user
 
-        // Hanya yang punya akses leave.approve yang bisa melihat semua data
-        $canApprove = $user->canAccess('leave', 'approve');
-
-        // Jika tidak punya akses approve, redirect atau tampilkan data sendiri saja
-        if (!$canApprove) {
+        // Hanya yang punya akses leave.approve atau Admin yang bisa melihat daftar approval
+        if (!$user->canAccess('leave', 'approve') && !$user->isAdmin()) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        // Jika bukan admin/atasan, hanya tampilkan data miliknya
-        // (canApprove sudah true di sini, jadi tampilkan semua)
-        if ($user->station == 'Ho') {
-            $query->orWhere('leaves.status', 'pending');
+        $query = Leave::with('user')
+            ->select('leaves.*')
+            ->join('users', 'users.id', '=', 'leaves.user_id')
+            ->latest('leaves.created_at');
+
+        $userRole = $user->role ?? '';
+
+        // Halaman Approval HANYA menampilkan pengajuan yang MASIH MENUNGGU PERSETUJUAN (Pending)
+        if ($user->isAdmin()) {
+            // Admin dapat melihat semua pengajuan pending
+            $query->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
+        } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
+            // Head of Airport Service / HO dapat melihat pengajuan pending
+            $query->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
+        } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+            // Leader / SPV BGE melihat pengajuan pending BGE di station miliknya
+            $query->where('users.station', $user->station)
+                  ->whereIn('leaves.status', ['pending Bge', 'pending']);
+        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+            // Leader / SPV Apron melihat pengajuan pending Apron di station miliknya
+            $query->where('users.station', $user->station)
+                  ->whereIn('leaves.status', ['pending Apron', 'pending']);
+        } else {
+            // Atasan/Supervisor lain hanya melihat pengajuan pending di station miliknya
+            $query->where('users.station', $user->station)
+                  ->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
         }
 
         // Search Filter
@@ -54,7 +68,7 @@ class LeaveController extends Controller
             });
         }
 
-        $leaves = $query->paginate(10)->withQueryString(); // Paginasi data
+        $leaves = $query->paginate(10)->withQueryString();
 
         // --- Logika Perhitungan Sisa Cuti ---
         $annualLeaveUsage = $this->annualLeaveUsage($user->id);
