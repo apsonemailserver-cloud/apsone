@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -135,7 +135,7 @@ class RolePermissionTest extends TestCase
         $targetUser = User::factory()->create(['role' => 'Staff']);
 
         $response = $this->actingAs($admin)->postJson(route('roles.toggle-user', $role->id), [
-            'user_id' => $targetUser->id
+            'user_id' => $targetUser->id,
         ]);
 
         $response->assertStatus(200);
