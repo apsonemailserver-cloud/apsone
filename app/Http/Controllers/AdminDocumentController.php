@@ -20,7 +20,11 @@ class AdminDocumentController extends Controller
 
     public function create()
     {
-        return redirect()->route('document');
+        $this->ensureAdmin();
+
+        return view('document.admin.create', [
+            'availableRoles' => $this->availableRoles(),
+        ]);
     }
 
     public function store(Request $request)
@@ -42,8 +46,14 @@ class AdminDocumentController extends Controller
 
     public function edit(Document $document)
     {
-        return redirect()->route('document');
+        $this->ensureAdmin();
+
+        return view('document.admin.edit', [
+            'document' => $document,
+            'availableRoles' => $this->availableRoles(),
+        ]);
     }
+
 
     public function update(Request $request, Document $document)
     {

@@ -15,7 +15,7 @@
                 </h4>
                 <p class="text-muted mb-0">Perbarui metadata dokumen atau ganti file unduhan.</p>
             </div>
-            <a href="{{ route('admin.documents.index') }}" class="btn btn-label-secondary">
+            <a href="{{ route('document') }}" class="btn btn-label-secondary">
                 <i class="ti ti-arrow-left me-1"></i>Kembali
             </a>
         </div>

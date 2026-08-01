@@ -139,7 +139,7 @@
                     <button type="submit" class="btn btn-primary btn-lg shadow-sm w-100">
                         <i class="ti ti-device-floppy me-1 fs-5"></i>{{ $submitLabel }}
                     </button>
-                    <a href="{{ route('admin.documents.index') }}" class="btn btn-label-secondary w-100">
+                    <a href="{{ route('document') }}" class="btn btn-label-secondary w-100">
                         Batal
                     </a>
                 </div>
