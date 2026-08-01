@@ -645,7 +645,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('stations.update', $station->id) }}" method="POST">
+                    <form id="stationForm" action="{{ route('stations.update', $station->id) }}" method="POST">
                         @csrf
 
                         <div class="station-location-grid mb-3">
@@ -750,7 +750,7 @@
                                         @foreach($allRoles as $r)
                                             @php $isChecked = in_array($r, $stationRoles); @endphp
                                             <label class="multiselect-option-item {{ $isChecked ? 'selected' : '' }}" data-label="{{ strtolower($r) }}">
-                                                <input type="checkbox" name="role[]" value="{{ $r }}" {{ $isChecked ? 'checked' : '' }} class="js-option-checkbox" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
+                                                <input type="checkbox" name="role[]" value="{{ $r }}" form="stationForm" {{ $isChecked ? 'checked' : '' }} class="js-option-checkbox" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
                                                 <span class="custom-checkbox-box">
                                                     <i class="ti ti-check"></i>
                                                 </span>
@@ -825,6 +825,13 @@
 
             // ── Portal: move dropdown to <body> to escape overflow:hidden ──
             document.body.appendChild(dropdown);
+
+            const form = wrapper.closest('form') || document.getElementById('stationForm');
+            if (form) {
+                form.addEventListener('submit', function () {
+                    wrapper.appendChild(dropdown);
+                });
+            }
 
             let isOpen = false;
 

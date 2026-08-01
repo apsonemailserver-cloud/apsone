@@ -99,8 +99,12 @@ class StationController extends Controller
     }
 
     // Proses Ubah Station
-    public function update(Request $request, Station $station)
+    public function update(Request $request, $station)
     {
+        if (!$station instanceof Station) {
+            $station = Station::findOrFail($station);
+        }
+
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',

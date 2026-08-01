@@ -120,4 +120,35 @@ class StationRoleMappingAttendanceTest extends TestCase
 
         $this->assertTrue($station->isRoleAllowed($adminUser));
     }
+
+    public function test_updating_station_roles_saves_to_database(): void
+    {
+        $adminUser = User::create([
+            'id' => '9999',
+            'name' => 'Admin User 2',
+            'role' => 'Admin',
+            'station' => 'CGK',
+            'is_active' => 1,
+        ]);
+
+        $station = Station::create([
+            'code' => 'CGK',
+            'name' => 'Jakarta (Soekarno-Hatta)',
+            'is_active' => true,
+            'latitude' => -6.1256,
+            'longitude' => 106.6558,
+            'radius' => 5000,
+            'role' => null,
+        ]);
+
+        $response = $this->actingAs($adminUser)->post(route('stations.update', $station->id), [
+            'latitude' => -6.1256,
+            'longitude' => 106.6558,
+            'radius' => 5000,
+            'role' => ['Porter Bge', 'Leader Apron'],
+        ]);
+
+        $response->assertRedirect(route('stations.index'));
+        $this->assertSame('Porter Bge, Leader Apron', $station->fresh()->role);
+    }
 }
