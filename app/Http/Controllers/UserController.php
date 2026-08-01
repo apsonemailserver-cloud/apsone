@@ -534,8 +534,14 @@ class UserController extends Controller
             $query->where('station', Auth::user()->station);
         }
 
-        // Hanya tampilkan yang punya data TIM Expired
-        $query->whereNotNull('tim_expired');
+        // Hanya tampilkan yang punya data TIM (nomor TIM atau TIM Expired)
+        $query->where(function ($q) {
+            $q->where(function ($sq) {
+                $sq->whereNotNull('tim_expired')->where('tim_expired', '!=', '');
+            })->orWhere(function ($sq) {
+                $sq->whereNotNull('tim_number')->where('tim_number', '!=', '');
+            });
+        });
         $perPage = $request->input('per_page', 20);
         $users = $query->orderBy('tim_expired', 'ASC')->paginate($perPage)->withQueryString();
 

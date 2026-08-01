@@ -269,6 +269,26 @@ class SampleDataSeeder extends Seeder
             ]);
         }
 
+        $this->command->info('6. Generating TIM Bandara records...');
+
+        $timEligibleUsers = User::whereIn('role', ['Driver', 'Leader Apron', 'Ass Leader Apron', 'Porter Apron', 'Controller'])->get();
+        if ($timEligibleUsers->isEmpty()) {
+            $timEligibleUsers = $users->take(40);
+        }
+
+        foreach ($timEligibleUsers as $idx => $tUser) {
+            $regDate = Carbon::create(2025, rand(1, 12), rand(1, 28));
+            // Mix of upcoming expirations (within 30-90 days) and normal future dates
+            $expireDays = ($idx % 3 === 0) ? rand(10, 25) : (($idx % 3 === 1) ? rand(31, 55) : rand(90, 365));
+            $expDate = Carbon::today()->addDays($expireDays);
+
+            $tUser->update([
+                'tim_number' => 'TIM-' . $tUser->station . '-' . str_pad(rand(100, 9999), 5, '0', STR_PAD_LEFT),
+                'tim_registered' => $regDate->toDateString(),
+                'tim_expired' => $expDate->toDateString(),
+            ]);
+        }
+
         $this->command->info('Sample data generation completed successfully!');
     }
 }
