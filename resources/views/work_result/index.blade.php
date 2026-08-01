@@ -135,8 +135,16 @@
                                         <td>
                                             @if($item->type === 'DCI')
                                                 <span class="badge bg-label-primary px-3 py-1.5 font-monospace fw-bold">DCI (INTERIOR)</span>
-                                            @else
+                                            @elseif($item->type === 'DCE')
                                                 <span class="badge bg-label-success px-3 py-1.5 font-monospace fw-bold">DCE (EXTERIOR)</span>
+                                            @elseif($item->type === 'PDI')
+                                                <span class="badge bg-label-info px-3 py-1.5 font-monospace fw-bold">PDI</span>
+                                            @elseif($item->type === 'Transit')
+                                                <span class="badge bg-label-warning px-3 py-1.5 font-monospace fw-bold">TRANSIT</span>
+                                            @elseif($item->type === 'RON')
+                                                <span class="badge bg-label-dark px-3 py-1.5 font-monospace fw-bold">RON</span>
+                                            @else
+                                                <span class="badge bg-label-secondary px-3 py-1.5 font-monospace fw-bold">{{ strtoupper($item->type ?? '-') }}</span>
                                             @endif
                                         </td>
                                         <td>
@@ -230,8 +238,8 @@
                     </div>
 
                     {{-- Pagination --}}
-                    <div class="d-flex justify-content-end mt-4">
-                        {{ $workResults->links() }}
+                    <div class="mt-4">
+                        {{ $workResults->links('vendor.pagination.custom') }}
                     </div>
                 @endif
             </div>
