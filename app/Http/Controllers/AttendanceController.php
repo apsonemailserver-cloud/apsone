@@ -347,10 +347,17 @@ class AttendanceController extends Controller
 
     public function reportsIndex(Request $request)
     {
+        $authUser = Auth::user();
+        $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
+
         $attendances = collect();
         $message = null;
 
-        $stations = Station::where('is_active', 1)->get();
+        if ($isFullAccess) {
+            $stations = Station::where('is_active', 1)->get();
+        } else {
+            $stations = Station::where('is_active', 1)->where('code', $authUser->station)->get();
+        }
 
         $selectedMonth = $request->filled('month') ? $request->input('month') : Carbon::now()->format('Y-m');
 
@@ -372,6 +379,8 @@ class AttendanceController extends Controller
 
                 if ($request->filled('station_id')) {
                     $queryUser->where('station', $request->station_id);
+                } elseif (!$isFullAccess && $authUser->station) {
+                    $queryUser->where('station', $authUser->station);
                 }
 
                 if ($request->filled('role')) {
@@ -411,7 +420,6 @@ class AttendanceController extends Controller
                         ->groupBy(fn($item) => \Carbon\Carbon::parse($item->date)->toDateString());
 
                     // ===== LEAVE (CUTI) DATA =====
-                    // Ambil semua cuti approved user dalam periode ini
                     $leaveData = Leave::where('user_id', $user->id)
                         ->where('status', 'approved')
                         ->where(function ($q) use ($startDate, $endDate) {
@@ -423,18 +431,6 @@ class AttendanceController extends Controller
                               });
                         })
                         ->get();
-
-                    // Buat kumpulan tanggal-tanggal yang masuk dalam cuti
-                    $leaveDates = collect();
-                    foreach ($leaveData as $leave) {
-                        $leaveStart = Carbon::parse($leave->start_date);
-                        $leaveEnd   = Carbon::parse($leave->end_date);
-                        $leaveCursor = $leaveStart->copy();
-                        while ($leaveCursor->lte($leaveEnd)) {
-                            $leaveDates->put($leaveCursor->toDateString(), $leave);
-                            $leaveCursor->addDay();
-                        }
-                    }
 
                     // ===== CORRECTION DATA =====
                     $correctionData = \App\Models\AttendanceCorrection::where('user_id', $user->id)
@@ -450,7 +446,12 @@ class AttendanceController extends Controller
 
                         $attendancesForDate = $attData->get($dateStr) ?? collect();
                         $schedulesForDate = $scheduleData->get($dateStr) ?? collect();
-                        $leaveForDate = $leaveDates->get($dateStr);
+                        $leaveForDate = $leaveData->first(fn($leave) => 
+                            \Carbon\Carbon::parse($dateStr)->between(
+                                \Carbon\Carbon::parse($leave->start_date),
+                                \Carbon\Carbon::parse($leave->end_date)
+                            )
+                        );
                         $correctionForDate = $correctionData->get($dateStr);
 
                         if ($schedulesForDate->isEmpty()) {
@@ -490,11 +491,16 @@ class AttendanceController extends Controller
             'Leader Aircraft Interior Exterior Cleaning', 'Leader Porter Apron', 'Controller', 'Quality Control'
         ];
 
-        return view('attendance.report', compact('attendances', 'message', 'stations', 'roles'));
+        $userStation = !$isFullAccess ? $authUser->station : null;
+
+        return view('attendance.report', compact('attendances', 'message', 'stations', 'roles', 'isFullAccess', 'userStation'));
     }
 
     public function export(Request $request)
     {
+        $authUser = Auth::user();
+        $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
+
         $month = $request->input('month', date('Y-m'));
         if (empty($month)) {
             $month = date('Y-m');
@@ -518,6 +524,8 @@ class AttendanceController extends Controller
 
             if ($request->filled('station_id')) {
                 $queryUser->where('station', $request->station_id);
+            } elseif (!$isFullAccess && $authUser->station) {
+                $queryUser->where('station', $authUser->station);
             }
 
             if ($request->filled('role')) {
@@ -525,7 +533,7 @@ class AttendanceController extends Controller
             }
 
             if (! $request->filled('user_name') && ! $request->filled('station_id') && ! $request->filled('role')) {
-                $users = collect([Auth::user()]);
+                $users = collect([$authUser]);
             } else {
                 $users = $queryUser->orderBy('fullname')->get();
             }
@@ -534,6 +542,9 @@ class AttendanceController extends Controller
             $stationName = 'Semua_Station';
             if ($request->filled('station_id')) {
                 $st = \App\Models\Station::where('code', $request->station_id)->first();
+                if ($st) $stationName = str_replace(' ', '_', $st->name);
+            } elseif (!$isFullAccess && $authUser->station) {
+                $st = \App\Models\Station::where('code', $authUser->station)->first();
                 if ($st) $stationName = str_replace(' ', '_', $st->name);
             }
 

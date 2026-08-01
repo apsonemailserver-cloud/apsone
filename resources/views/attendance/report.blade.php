@@ -34,10 +34,10 @@
                         </div>
                         <div>
                             <label class="form-label">Station</label>
-                            <select name="station_id" class="form-select" style="min-width: 180px;">
+                            <select name="station_id" class="form-select" style="min-width: 180px;" {{ !$isFullAccess ? 'disabled' : '' }}>
                                 <option value="">Semua Station</option>
                                 @foreach ($stations as $station)
-                                <option value="{{ $station->code }}" {{ request('station_id') == $station->code ? 'selected' : '' }}>
+                                <option value="{{ $station->code }}" {{ request('station_id', $userStation) == $station->code ? 'selected' : '' }}>
                                     {{ $station->name }}
                                 </option>
                                 @endforeach
