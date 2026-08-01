@@ -338,13 +338,6 @@
                                         <div data-i18n="Training Management">Training Management</div>
                                     </a>
                                 </li>
-                                
-                                <li class="menu-item {{ request()->routeIs('admin.training.certificates.create') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.training.certificates.create') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-circle-plus"></i>
-                                        <div data-i18n="Add Certificate">Add Certificate</div>
-                                    </a>
-                                </li>
                             @else
                                 <li class="menu-item {{ request()->routeIs('my.certificates') ? 'active' : '' }}">
                                     <a href="{{ route('my.certificates') }}" class="menu-link">
