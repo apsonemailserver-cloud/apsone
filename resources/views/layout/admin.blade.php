@@ -332,7 +332,7 @@
                         </a>
                         <ul class="menu-sub">
                             @if (Auth::user()->canAccess('training', 'create') || Auth::user()->canAccess('training', 'edit'))
-                                <li class="menu-item {{ request()->routeIs('admin.training.certificates.index') ? 'active' : '' }}">
+                                <li class="menu-item {{ request()->routeIs('admin.training.certificates.*') ? 'active' : '' }}">
                                     <a href="{{ route('admin.training.certificates.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-book"></i>
                                         <div data-i18n="Training Management">Training Management</div>
@@ -355,7 +355,7 @@
                             <div data-i18n="Apply Leave">Apply Leave</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class="menu-item {{ request()->routeIs('leaves.pengajuan') ? 'active' : '' }}">
+                            <li class="menu-item {{ request()->routeIs('leaves.pengajuan') || request()->routeIs('leaves.create') ? 'active' : '' }}">
                                 <a href="{{ route('leaves.pengajuan') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-send"></i>
                                     <div data-i18n="Leave Request">Leave Request</div>

@@ -71,6 +71,29 @@ class RolePermissionTest extends TestCase
         ]);
     }
 
+    public function test_role_editor_renders_clean_matrix_controls(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'Admin',
+            'is_active' => true,
+        ]);
+        $role = Role::where('name', 'Staff')->firstOrFail();
+
+        $response = $this->actingAs($admin)->get(route('roles.edit', $role->id));
+
+        $response->assertOk();
+        $response->assertSee('role-access-page', false);
+        $response->assertSee('id="permissionSearchInput"', false);
+        $response->assertSee('id="btnSelectAll"', false);
+        $response->assertSee('id="btnUnselectAll"', false);
+        $response->assertSee('data-employee-filter="selected"', false);
+        $response->assertSee('data-employee-filter="all"', false);
+        $response->assertSee('id="employeeSearchInput"', false);
+        $response->assertSee('id="floatingPermCounter"', false);
+        $response->assertSee('Simpan Perubahan');
+        $response->assertSee('name="permissions[]"', false);
+    }
+
     public function test_user_has_permission_checks(): void
     {
         $admin = User::factory()->create(['role' => 'Admin']);

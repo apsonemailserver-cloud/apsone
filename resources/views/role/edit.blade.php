@@ -92,7 +92,9 @@
 
                 <div class="permission-sections" id="permissionSections">
                     @foreach($categories as $catName => $modList)
-                        @php($categorySlug = Str::slug($catName))
+                        @php
+                            $categorySlug = Str::slug($catName);
+                        @endphp
                         <section class="permission-section" data-category-card="{{ $categorySlug }}">
                             <header class="permission-section__header">
                                 <div class="permission-section__identity">
