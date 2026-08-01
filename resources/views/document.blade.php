@@ -331,37 +331,38 @@
         }
 
         .document-page .btn-icon-action {
-            width: 36px;
-            height: 36px;
-            border-radius: 0.75rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 0.85rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
-            transition: all 0.2s ease;
+            font-size: 1.25rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             text-decoration: none;
             cursor: pointer;
             padding: 0;
+            outline: none;
         }
 
-        /* 1. Unduh / View (Blue pastel) */
+        /* 1. Unduh (Soft Blue) */
         .document-page .btn-icon-action.btn-action-download {
-            background: #eef6ff;
-            border: 1.5px solid #bfdbfe;
-            color: #2563eb;
+            background: #ebf4ff;
+            border: 2px solid #c3ddfd;
+            color: #1d63ed;
         }
         .document-page .btn-icon-action.btn-action-download:hover {
-            background: #2563eb;
-            border-color: #2563eb;
+            background: #1d63ed;
+            border-color: #1d63ed;
             color: #ffffff;
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 6px 14px rgba(29, 99, 237, 0.28);
         }
 
-        /* 2. Edit (Amber pastel) */
+        /* 2. Edit (Soft Amber) */
         .document-page .btn-icon-action.btn-action-edit {
-            background: #fffbe6;
-            border: 1.5px solid #fde68a;
+            background: #fff8eb;
+            border: 2px solid #fce3b5;
             color: #d97706;
         }
         .document-page .btn-icon-action.btn-action-edit:hover {
@@ -369,22 +370,23 @@
             border-color: #f59e0b;
             color: #ffffff;
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+            box-shadow: 0 6px 14px rgba(245, 158, 11, 0.28);
         }
 
-        /* 3. Delete (Red pastel) */
+        /* 3. Delete (Soft Red) */
         .document-page .btn-icon-action.btn-action-delete {
-            background: #fef2f2;
-            border: 1.5px solid #fecaca;
-            color: #dc2626;
+            background: #fff0f0;
+            border: 2px solid #fcc8c8;
+            color: #e11d48;
         }
         .document-page .btn-icon-action.btn-action-delete:hover {
-            background: #ef4444;
-            border-color: #ef4444;
+            background: #e11d48;
+            border-color: #e11d48;
             color: #ffffff;
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+            box-shadow: 0 6px 14px rgba(225, 29, 72, 0.28);
         }
+
 
 
 
@@ -607,10 +609,44 @@
             border-color: rgba(134, 239, 172, 0.35) !important;
         }
 
+        html.aps-dark .document-page .btn-icon-action.btn-action-download {
+            background: rgba(29, 99, 237, 0.16) !important;
+            border: 2px solid rgba(147, 197, 253, 0.4) !important;
+            color: #93c5fd !important;
+        }
+        html.aps-dark .document-page .btn-icon-action.btn-action-download:hover {
+            background: #1d63ed !important;
+            border-color: #1d63ed !important;
+            color: #ffffff !important;
+        }
+
+        html.aps-dark .document-page .btn-icon-action.btn-action-edit {
+            background: rgba(245, 158, 11, 0.16) !important;
+            border: 2px solid rgba(253, 224, 71, 0.4) !important;
+            color: #fde047 !important;
+        }
+        html.aps-dark .document-page .btn-icon-action.btn-action-edit:hover {
+            background: #f59e0b !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+
+        html.aps-dark .document-page .btn-icon-action.btn-action-delete {
+            background: rgba(225, 29, 72, 0.16) !important;
+            border: 2px solid rgba(252, 165, 165, 0.4) !important;
+            color: #fca5a5 !important;
+        }
+        html.aps-dark .document-page .btn-icon-action.btn-action-delete:hover {
+            background: #e11d48 !important;
+            border-color: #e11d48 !important;
+            color: #ffffff !important;
+        }
+
         html.aps-dark .document-page .empty-doc-state {
             background: #111c31 !important;
             border-color: #24324a !important;
         }
+
 
         html.aps-dark .document-page .empty-doc-state h4 {
             color: #f8fafc !important;
