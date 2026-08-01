@@ -44,10 +44,12 @@
     @yield('styles')
     <!-- pjax-page-styles-end -->
 
-    <!-- 4. State Management (Anti-Refresh/Flicker) -->
+    <!-- 4. State Management (Anti-Refresh/Flicker/FOUC Prevention) -->
     <script>
-        // Eksekusi LANGSUNG sebelum body dirender
+        // Eksekusi LANGSUNG sebelum body dirender untuk mencegah Flash/Layout Shift saat Refresh
         (function() {
+            document.documentElement.classList.add('no-transitions');
+
             const theme = localStorage.getItem('apsTheme') || 'light';
             document.documentElement.classList.toggle('aps-dark', theme === 'dark');
             document.documentElement.setAttribute('data-aps-theme', theme);
@@ -57,22 +59,14 @@
                 document.documentElement.classList.add('sidebar-collapsed');
             }
 
-            const originalAddEventListener = document.addEventListener.bind(document);
-            document.addEventListener = function(type, listener, options) {
-                if (type === 'DOMContentLoaded' && document.readyState !== 'loading') {
-                    window.setTimeout(function() {
-                        const event = new Event('DOMContentLoaded');
-                        if (typeof listener === 'function') {
-                            listener.call(document, event);
-                        } else if (listener && typeof listener.handleEvent === 'function') {
-                            listener.handleEvent(event);
-                        }
-                    }, 0);
-                    return;
-                }
-
-                return originalAddEventListener(type, listener, options);
-            };
+            // Hapus kelas no-transitions secara mulus setelah render awal selesai
+            window.addEventListener('DOMContentLoaded', function() {
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        document.documentElement.classList.remove('no-transitions');
+                    });
+                });
+            });
         })();
     </script>
 </head>
