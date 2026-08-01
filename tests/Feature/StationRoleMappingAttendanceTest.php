@@ -101,7 +101,7 @@ class StationRoleMappingAttendanceTest extends TestCase
         $this->assertTrue($station->isRoleAllowed($mappedUser));
     }
 
-    public function test_admin_bypasses_station_role_mapping(): void
+    public function test_unmapped_admin_is_blocked_from_check_in_if_not_in_station_roles(): void
     {
         $station = Station::create([
             'code' => 'CGK',
@@ -118,7 +118,7 @@ class StationRoleMappingAttendanceTest extends TestCase
             'is_active' => 1,
         ]);
 
-        $this->assertTrue($station->isRoleAllowed($adminUser));
+        $this->assertFalse($station->isRoleAllowed($adminUser));
     }
 
     public function test_updating_station_roles_saves_to_database(): void

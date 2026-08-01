@@ -23,10 +23,6 @@ class Station extends Model
 
     public function isRoleAllowed(User $user): bool
     {
-        if ($user->hasRole(['Admin', 'Head Of Airport Service'])) {
-            return true;
-        }
-
         if (empty($this->role)) {
             return true;
         }
