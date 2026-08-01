@@ -2,7 +2,7 @@
 
 @section('content')
 <h4 class="fw-bold py-3 mb-4">
-    <span class="text-muted fw-light">Training /</span> Edit Sertifikat Training
+    <span class="text-muted fw-light">General /</span> Edit Sertifikat Training
 </h4>
 
 <div class="card mb-4">

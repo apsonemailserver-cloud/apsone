@@ -2,7 +2,7 @@
 
 @section('content')
 <h4 class="fw-bold py-3 mb-4">
-    <span class="text-muted fw-light">Apply Leave /</span> Formulir Pengajuan Izin/Cuti
+    <span class="text-muted fw-light">General /</span> Formulir Pengajuan Izin/Cuti
 </h4>
 
 <div class="row">

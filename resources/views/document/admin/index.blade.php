@@ -11,7 +11,7 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
             <div>
                 <h4 class="fw-bold mb-1">
-                    <span class="text-muted fw-light">Dokumen /</span> Manajemen Dokumen
+                    <span class="text-muted fw-light">General /</span> Manajemen Dokumen
                 </h4>
                 <p class="text-muted mb-0">Kelola dokumen, file unduhan, dan role akses dokumen.</p>
             </div>

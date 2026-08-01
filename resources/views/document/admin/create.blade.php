@@ -11,7 +11,7 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
             <div>
                 <h4 class="fw-bold mb-1">
-                    <span class="text-muted fw-light">Dokumen /</span> Tambah Dokumen
+                    <span class="text-muted fw-light">General /</span> Tambah Dokumen
                 </h4>
                 <p class="text-muted mb-0">Upload dokumen baru dan tentukan role yang boleh mengaksesnya.</p>
             </div>

@@ -7,7 +7,7 @@
     </a>
     <div>
         <h4 class="fw-bold mb-0 text-dark">
-            <span class="text-muted fw-light">Training /</span> Tambah Sertifikat Training Baru
+            <span class="text-muted fw-light">General /</span> Tambah Sertifikat Training Baru
         </h4>
     </div>
 </div>
