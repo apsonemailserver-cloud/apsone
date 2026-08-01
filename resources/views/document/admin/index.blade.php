@@ -125,20 +125,24 @@
                                                     <i class="ti ti-download"></i>
                                                 </a>
                                             @endif
-                                            <a href="{{ route('admin.documents.edit', $document) }}" class="action-btn"
-                                                title="Edit">
-                                                <i class="ti ti-pencil"></i>
-                                            </a>
-                                            <form action="{{ route('admin.documents.destroy', $document) }}" method="POST"
-                                                id="delete-document-{{ $document->id }}" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" class="action-btn action-delete border-0"
-                                                    title="Hapus"
-                                                    onclick="confirmDeleteDocument('{{ $document->id }}')">
-                                                    <i class="ti ti-trash"></i>
-                                                </button>
-                                            </form>
+                                            @if (Auth::user()?->role === 'Admin' || Auth::user()->hasPermission('document.edit'))
+                                                <a href="{{ route('admin.documents.edit', $document) }}" class="action-btn"
+                                                    title="Edit">
+                                                    <i class="ti ti-pencil"></i>
+                                                </a>
+                                            @endif
+                                            @if (Auth::user()?->role === 'Admin' || Auth::user()->hasPermission('document.delete'))
+                                                <form action="{{ route('admin.documents.destroy', $document) }}" method="POST"
+                                                    id="delete-document-{{ $document->id }}" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="action-btn action-delete border-0"
+                                                        title="Hapus"
+                                                        onclick="confirmDeleteDocument('{{ $document->id }}')">
+                                                        <i class="ti ti-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

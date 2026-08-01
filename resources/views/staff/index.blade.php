@@ -9,11 +9,13 @@
                 <h4 class="fw-bold mb-1">Data Staff</h4>
                 <p class="text-muted mb-0" style="font-size:0.875rem;">Kelola seluruh data karyawan di semua station.</p>
             </div>
-            @if(Auth::user()->role == 'Admin')
             <div class="d-flex gap-2 flex-wrap">
+                @if(Auth::user()->canAccess('user', 'export') || Auth::user()->role === 'Admin')
                 <a href="{{ route('staff.export', ['station' => request('station')]) }}" class="btn btn-sm btn-outline-secondary">
                     <i class="ti ti-download"></i>Export CSV
                 </a>
+                @endif
+                @if(Auth::user()->canAccess('user', 'create') || Auth::user()->role === 'Admin')
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
                     <i class="ti ti-upload"></i>Import Staff
                 </button>
@@ -23,8 +25,8 @@
                 <a href="{{ route('users.create') }}" class="btn btn-sm btn-primary">
                     <i class="ti ti-user-plus"></i>Tambah Staff
                 </a>
+                @endif
             </div>
-            @endif
         </div>
 
         <div class="card">
@@ -128,15 +130,15 @@
                                         <a href="{{ route('users.userProfile', $staff->id) }}" class="action-btn" title="Detail">
                                             <i class="ti ti-eye"></i>
                                         </a>
-                                        @if(Auth::user()->role == 'Admin')
+                                        @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
                                         <a href="{{ route('users.edit', ['user' => $staff->id, 'redirect_to' => url()->full()]) }}" class="action-btn action-edit" title="Edit Staff">
                                             <i class="ti ti-pencil"></i>
                                         </a>
-                                        @if(!$isBlacklisted)
+                                        @endif
+                                        @if(!$isBlacklisted && (Auth::user()->canAccess('blacklist', 'create') || Auth::user()->role === 'Admin'))
                                         <button type="button" class="action-btn action-delete" onclick="openBanModal('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Blacklist">
                                             <i class="ti ti-ban"></i>
                                         </button>
-                                        @endif
                                         @endif
                                     </div>
                                 </td>

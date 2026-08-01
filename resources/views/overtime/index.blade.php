@@ -185,9 +185,11 @@
                         <h5 class="mb-0">Daftar Lembur</h5>
                         <p class="text-muted mb-0">Kelola riwayat pengajuan lembur Anda</p>
                     </div>
+                    @if(Auth::user()->canAccess('overtime', 'create'))
                     <a href="{{ route('overtime.create') }}" class="create-btn">
                         <i class="bx bx-plus-circle"></i> Ajukan Lembur
                     </a>
+                    @endif
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 @extends('layout.admin')
 
-@section('title', 'Work Orders')
+@section('title', 'Assignments')
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -9,16 +9,16 @@
         {{-- Header dengan Breadcrumb & Action --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
             <div>
-                <h4 class="fw-bold mb-1 text-dark">Work Orders</h4>
-                <p class="text-secondary mb-0 small">Monitoring aircraft deep cleaning work order results (DCI & DCE)</p>
+                <h4 class="fw-bold mb-1 text-dark">Assignments</h4>
+                <p class="text-secondary mb-0 small">Monitoring aircraft deep cleaning assignment results (DCI & DCE)</p>
             </div>
             <div class="d-flex align-items-center gap-2">
-                @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                @if(auth()->user()->hasPermission('assignment.create') || auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
                     <a href="{{ route('work_orders.create') }}" class="btn btn-primary">
-                        <i class="bx bx-plus me-1"></i> Tambah WO
+                        <i class="bx bx-plus me-1"></i> Tambah Assignment
                     </a>
                 @endif
-                @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                @if(auth()->user()->hasPermission('assignment.export') || auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
                     <a href="{{ route('work_orders.export.pdf', request()->query()) }}" class="btn btn-outline-secondary">
                         <i class="bx bx-download me-1"></i> Export Bulk PDF
                     </a>
@@ -94,7 +94,7 @@
         <div class="card shadow-sm">
             <div class="card-header border-bottom bg-white d-flex align-items-center justify-content-between py-3">
                 <h5 class="card-title text-dark fw-bold mb-0">
-                    <i class="bx bx-list-ul text-primary me-2"></i>Work Order List
+                    <i class="bx bx-list-ul text-primary me-2"></i>Assignment List
                 </h5>
                 <span class="badge bg-label-primary rounded-pill px-3 py-2 font-monospace">TOTAL: {{ $workResults->total() }} DATA</span>
             </div>
@@ -103,8 +103,8 @@
                 @if($workResults->isEmpty())
                     <div class="text-center py-5 text-muted">
                         <i class="bx bx-folder-open fs-1 mb-2 text-secondary d-block"></i>
-                        <p class="mb-1 fw-bold text-dark">No Work Orders Found</p>
-                        <small class="text-secondary">Click "Create Work Order" to add a new record.</small>
+                        <p class="mb-1 fw-bold text-dark">No Assignments Found</p>
+                        <small class="text-secondary">Click "Create Assignment" to add a new record.</small>
                     </div>
                 @else
                     <div class="table-responsive text-nowrap">
@@ -114,7 +114,7 @@
                                     <th width="5%">#</th>
                                     <th>DATE & STATION</th>
                                     <th>CATEGORY</th>
-                                    <th>REGISTRATION & WO</th>
+                                    <th>REGISTRATION & ASSIGNMENT</th>
                                     <th>EX / TO FLIGHT</th>
                                     <th>STAND & TIME</th>
                                     <th>EVIDENCE PHOTO</th>
@@ -201,7 +201,7 @@
                                                 <a href="{{ route('work_orders.show', $item->id) }}" class="action-btn" title="Detail Pekerjaan">
                                                     <i class="bx bx-show"></i>
                                                 </a>
-                                                @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                                @if(auth()->user()->hasPermission('assignment.export') || auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
                                                     @if($item->photo_path)
                                                         <a href="{{ route('work_orders.export_single_pdf', $item->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
                                                             <i class="bx bx-printer"></i>
@@ -212,7 +212,7 @@
                                                         </button>
                                                     @endif
                                                 @endif
-                                                @if(empty($item->photo_path) && (auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) && $item->submitted_by === auth()->id())))
+                                                @if(empty($item->photo_path) && (auth()->user()->hasPermission('assignment.delete') || auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) && $item->submitted_by === auth()->id())))
                                                     <form action="{{ route('work_orders.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
                                                         @csrf
                                                         @method('DELETE')

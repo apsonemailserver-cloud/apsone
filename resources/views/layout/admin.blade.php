@@ -137,15 +137,7 @@
                                     <div data-i18n="Data Schedule">Data Schedule</div>
                                 </a>
                             </li>
-                            @if (in_array(strtolower((string) Auth::user()->role), [
-                                    'admin',
-                                    'spv bge',
-                                    'ass leader bge',
-                                    'leader bge',
-                                    'spv apron',
-                                    'ass leader apron',
-                                    'leader apron',
-                                ]))
+                            @if (Auth::user()->canAccess('schedule', 'create') || Auth::user()->canAccess('schedule', 'edit'))
                                 <li
                                     class="menu-item {{ request()->routeIs('schedule.create') || request()->routeIs('schedule.edit') || request()->routeIs('schedule.view') || request()->routeIs('schedule.show') ? 'active' : '' }}">
                                     <a href="{{ route('schedule.view') }}" class="menu-link">
@@ -157,7 +149,7 @@
                         </ul>
                     </li>
 
-                    @if (in_array(strtolower((string) Auth::user()->role), ['admin', 'ass leader', 'Head Of Airport Service', 'leader']))
+                    @if (Auth::user()->canAccess('shift', 'view'))
                     <li class="menu-item {{ request()->routeIs('shift.*') ? 'active' : '' }}">
                         <a href="{{ route('shift.index') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-clock"></i>
@@ -184,7 +176,7 @@
                                 </a>
                             </li>
 
-                            @if (in_array(Auth::user()->role, ['Admin', 'Head Of Airport Service']))
+                            @if (Auth::user()->canAccess('attendance', 'export'))
                                 <li class="menu-item {{ request()->routeIs('attendance.reports') ? 'active' : '' }}">
                                     <a href="{{ route('attendance.reports') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
@@ -193,7 +185,7 @@
                                 </li>
                             @endif
 
-                            @if (in_array('Admin', array_map('trim', explode(',', (string) Auth::user()->role)), true) || \App\Models\User::where('manager', Auth::user()->fullname)->exists())
+                            @if (Auth::user()->canAccess('attendance', 'approve') || \App\Models\User::where('manager', Auth::user()->fullname)->exists())
                                 <li class="menu-item {{ request()->routeIs('attendance.corrections.approval') ? 'active' : '' }}">
                                     <a href="{{ route('attendance.corrections.approval') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-user-check"></i>
@@ -212,7 +204,7 @@
                             </li>
 
 
-                            @if (in_array(Auth::user()->role, ['Admin', 'LEADER', 'Head Of Airport Service', 'ASS LEADER']))
+                            @if (Auth::user()->canAccess('overtime', 'approve'))
                                 <li class="menu-item {{ request()->routeIs('overtime.approval') ? 'active' : '' }}">
                                     <a href="{{ route('overtime.approval') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-circle-check"></i>
@@ -221,7 +213,7 @@
                                 </li>
                             @endif
 
-                            @if (Auth::user()->role == 'Admin')
+                            @if (Auth::user()->canAccess('overtime', 'export'))
                                 <li class="menu-item {{ request()->routeIs('overtime.report') ? 'active' : '' }}">
                                     <a href="{{ route('overtime.report') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-chart-line"></i>
@@ -233,63 +225,65 @@
                         </ul>
                     </li>
 
-                    {{-- MENU WORK ORDER --}}
-                    <li class="menu-item {{ request()->routeIs('work_results.*') ? 'active open' : '' }}">
-                        <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
+                    {{-- MENU ASSIGNMENT --}}
+                    @if(Auth::user()->canAccess('assignment', 'view'))
+                    <li class="menu-item {{ request()->routeIs('work_results.*') || request()->routeIs('work_orders.*') ? 'active' : '' }}">
+                        <a href="{{ route('work_results.index') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-plane-arrival"></i>
-                            <div data-i18n="Work Order">Work Order</div>
+                            <div data-i18n="Assignment">Assignment</div>
                         </a>
-                        <ul class="menu-sub">
-                            <li class="menu-item {{ request()->routeIs('work_results.index') ? 'active' : '' }}">
-                                <a href="{{ route('work_results.index') }}" class="menu-link">
-                                    <i class="menu-icon tf-icons ti ti-list-details"></i>
-                                    <div data-i18n="Work Orders">Work Orders</div>
-                                </a>
-                            </li>
-                            @if (Auth::user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
-                                <li class="menu-item {{ request()->routeIs('work_results.create') ? 'active' : '' }}">
-                                    <a href="{{ route('work_results.create') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-file-plus"></i>
-                                        <div data-i18n="Input Work Order">Input Work Order</div>
-                                    </a>
-                                </li>
-                            @endif
-                        </ul>
                     </li>
+                    @endif
 
-                    @if (in_array(Auth::user()->role, ['Admin']))
+                    @if (Auth::user()->canAccess('station', 'view') || Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view'))
                         {{-- HEADER KHUSUS ADMIN --}}
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">Administrator</span>
                         </li>
 
                         {{-- MENU BARU: STATION MANAGEMENT (ON/OFF) --}}
+                        @if(Auth::user()->canAccess('station', 'view'))
                         <li class="menu-item {{ request()->routeIs('stations.*') ? 'active' : '' }}">
                             <a href="{{ route('stations.index') }}" class="menu-link">
                                 <i class="menu-icon tf-icons ti ti-building-store"></i>
                                 <div data-i18n="Manajemen Station">Manajemen Station</div>
                             </a>
                         </li>
+                        @endif
 
+                        @if(Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view'))
                         <li
-                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') || request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') || request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
+                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('roles.*') || request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') || request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') || request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
                             <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                                 <i class="menu-icon tf-icons ti ti-users"></i>
                                 <div data-i18n="User Management">User</div>
                             </a>
                             <ul class="menu-sub">
+                                @if(Auth::user()->canAccess('user', 'view'))
                                 <li class="menu-item {{ request()->routeIs('staff.*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active' : '' }}">
                                     <a href="{{ route('staff.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-device-desktop"></i>
                                         <div data-i18n="Monitor Station">Monitor Station</div>
                                     </a>
                                 </li>
+                                @endif
+                                @if(Auth::user()->canAccess('role', 'view'))
+                                <li class="menu-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                                    <a href="{{ route('roles.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-shield-lock"></i>
+                                        <div data-i18n="Hak Akses Role">Hak Akses Role</div>
+                                    </a>
+                                </li>
+                                @endif
+                                @if(Auth::user()->canAccess('blacklist', 'view'))
                                 <li class="menu-item {{ request()->routeIs('blacklist.*') ? 'active' : '' }}">
                                     <a href="{{ route('blacklist.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-user-x"></i>
                                         <div data-i18n="Blacklist"> Blacklist</div>
                                     </a>
                                 </li>
+                                @endif
+                                @if(Auth::user()->canAccess('user', 'view'))
                                 <li class="menu-item {{ request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') ? 'active' : '' }}">
                                     <a href="{{ route('users.kontrak') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
@@ -308,42 +302,28 @@
                                         <div data-i18n="TIM Bandara">TIM Bandara</div>
                                     </a>
                                 </li>
+                                @endif
                             </ul>
                         </li>
+                        @endif
                     @endif
 
                     <li class="menu-header small text-uppercase">
                         <span class="menu-header-text">General</span>
                     </li>
 
-                    <li class="menu-item {{ request()->routeIs('document') || request()->routeIs('admin.documents.*') ? 'active open' : '' }}">
-                        <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
+                    {{-- MENU DOKUMEN --}}
+                    @if(Auth::user()->canAccess('document', 'view'))
+                    @php
+                        $dokumenRoute = (Auth::user()->hasPermission('document.edit') || Auth::user()->role === 'Admin') ? route('admin.documents.index') : route('document');
+                    @endphp
+                    <li class="menu-item {{ request()->routeIs('document') || request()->routeIs('admin.documents.*') ? 'active' : '' }}">
+                        <a href="{{ $dokumenRoute }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-file-text"></i>
                             <div data-i18n="Dokumen">Dokumen</div>
                         </a>
-                        <ul class="menu-sub">
-                            <li class="menu-item {{ request()->routeIs('document') ? 'active' : '' }}">
-                                <a href="{{ route('document') }}" class="menu-link">
-                                    <i class="menu-icon tf-icons ti ti-printer"></i>
-                                    <div data-i18n="Cetak Dokumen">Cetak Dokumen</div>
-                                </a>
-                            </li>
-                            @if (Auth::user()->role === 'Admin')
-                                <li class="menu-item {{ request()->routeIs('admin.documents.index') || request()->routeIs('admin.documents.edit') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.documents.index') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-folders"></i>
-                                        <div data-i18n="Manajemen Dokumen">Manajemen Dokumen</div>
-                                    </a>
-                                </li>
-                                <li class="menu-item {{ request()->routeIs('admin.documents.create') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.documents.create') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-circle-plus"></i>
-                                        <div data-i18n="Tambah Dokumen">Tambah Dokumen</div>
-                                    </a>
-                                </li>
-                            @endif
-                        </ul>
                     </li>
+                    @endif
 
                     <li class="menu-item {{ (request()->is('training*') || request()->is('my-certificates*') || request()->routeIs('my.certificates*')) ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
@@ -351,7 +331,7 @@
                             <div data-i18n="Training">Training</div>
                         </a>
                         <ul class="menu-sub">
-                            @if (in_array(Auth::user()->role, ['Admin', 'HSE', 'Head Of Airport Service']))
+                            @if (Auth::user()->canAccess('training', 'create') || Auth::user()->canAccess('training', 'edit'))
                                 <li class="menu-item {{ request()->routeIs('admin.training.certificates.index') ? 'active' : '' }}">
                                     <a href="{{ route('admin.training.certificates.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-book"></i>
@@ -388,16 +368,15 @@
                                     <div data-i18n="Pengajuan">Pengajuan Leave</div>
                                 </a>
                             </li>
-                            @if (in_array(Auth::user()->role, [
-                                    'Admin',
-                                    'Head Of Airport Service',
-                                ]))
+                            @if (Auth::user()->canAccess('leave', 'approve'))
                                 <li class="menu-item {{ request()->routeIs('leaves.index') ? 'active' : '' }}">
                                     <a href="{{ route('leaves.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-circle-check"></i>
                                         <div data-i18n="Approval">Approval Leave</div>
                                     </a>
                                 </li>
+                            @endif
+                            @if (Auth::user()->canAccess('leave', 'export'))
                                 <li class="menu-item {{ request()->routeIs('leaves.laporan') ? 'active' : '' }}">
                                     <a href="{{ route('leaves.laporan') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
@@ -502,7 +481,6 @@
 
                     if ($currentUser->role === 'Admin') {
                         $topbarMenuLinks[] = ['label' => 'Manajemen Dokumen', 'category' => 'General', 'hint' => 'Kelola file dan akses dokumen', 'icon' => 'ti-folders', 'url' => route('admin.documents.index')];
-                        $topbarMenuLinks[] = ['label' => 'Tambah Dokumen', 'category' => 'General', 'hint' => 'Upload dokumen baru', 'icon' => 'ti-circle-plus', 'url' => route('admin.documents.create')];
                     }
 
                     if ($canManageTraining) {

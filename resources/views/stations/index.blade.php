@@ -9,9 +9,11 @@
                 <h4 class="fw-bold mb-1">Manajemen Station</h4>
                 <p class="text-muted mb-0" style="font-size:0.875rem;">Daftar dan kontrol status operasional station.</p>
             </div>
+            @if(Auth::user()->canAccess('station', 'create'))
             <a href="{{ route('stations.create') }}" class="btn btn-primary btn-sm">
                 <i class="ti ti-plus"></i> Buka Station Baru
             </a>
+            @endif
         </div>
 
         <div class="card">
@@ -65,11 +67,14 @@
 
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
+                                    @if(Auth::user()->canAccess('station', 'edit'))
                                     <a href="{{ route('stations.edit', $st->id) }}"
                                         class="btn btn-sm btn-warning">
                                         <i class="ti ti-pencil"></i> Edit
                                     </a>
+                                    @endif
 
+                                    @if(Auth::user()->canAccess('station', 'delete'))
                                     <form action="{{ route('stations.destroy', $st->id) }}"
                                         method="POST"
                                         class="d-inline"
@@ -86,6 +91,7 @@
                                             <i class="ti ti-trash"></i>
                                         </button>
                                     </form>
+                                    @endif
                                     </div>
                                 </td>
                             </tr>

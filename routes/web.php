@@ -23,6 +23,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\WorkOrderController;
 use App\Http\Controllers\WorkResultController;
+use App\Http\Controllers\RoleController;
 use App\Models\Blacklist;
 
 /*
@@ -245,7 +246,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/work-results/{id}/export-pdf', [WorkOrderController::class, 'exportSinglePdf'])->name('work_results.export_single_pdf');
     Route::post('/work-results/{id}/upload-photo', [WorkOrderController::class, 'uploadPhoto'])->name('work_results.upload_photo');
     Route::get('/work-results/{id}', [WorkOrderController::class, 'show'])->name('work_results.show');
-    Route::delete('/work-results/{id}', [WorkOrderController::class, 'destroy'])->name('work_results.destroy');
+    // --- MANAJEMEN ROLE & HAK AKSES ---
+    Route::post('/roles/{id}/toggle-user', [RoleController::class, 'toggleUserRole'])->name('roles.toggle-user');
+    Route::resource('roles', RoleController::class)->except(['show']);
 
     // --- BANTUAN & LAINNYA ---
     Route::view('/faq', 'faq')->name('faq');

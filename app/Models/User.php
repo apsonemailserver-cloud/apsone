@@ -143,10 +143,40 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'pic_id');
     }
 
-    // Helper Function
     public function isAdmin()
     {
         return $this->role === 'Admin';
+    }
+
+    public function hasPermission(string $permissionName): bool
+    {
+        if ($this->isAdmin() || $this->role === 'Admin') {
+            return true;
+        }
+
+        if (empty($this->role)) {
+            return false;
+        }
+
+        $userRoles = array_map('trim', explode(',', $this->role));
+        if (in_array('Admin', $userRoles)) {
+            return true;
+        }
+
+        try {
+            return Role::whereIn('name', $userRoles)
+                ->whereHas('permissions', function ($query) use ($permissionName) {
+                    $query->where('name', $permissionName);
+                })
+                ->exists();
+        } catch (\Throwable $e) {
+            return true;
+        }
+    }
+
+    public function canAccess(string $module, string $action = 'view'): bool
+    {
+        return $this->hasPermission("{$module}.{$action}");
     }
     // Relasi ke Lembur
     public function overtimes()

@@ -82,7 +82,7 @@ class WorkOrderTest extends TestCase
     {
         $response = $this->actingAs($this->user)->get(route('work_orders.create'));
         $response->assertStatus(200);
-        $response->assertSee('Input Work Order');
+        $response->assertSee('Create Assignment');
     }
 
     public function test_user_can_submit_work_result_as_dci(): void

@@ -168,9 +168,11 @@
                         <h5 class="mb-0">Daftar Shift</h5>
                         <p class="text-muted mb-0">Kelola semua shift yang tersedia</p>
                     </div>
+                    @if(Auth::user()->canAccess('shift', 'create'))
                     <a href="{{ route('shift.create') }}" class="create-btn">
                         <i class="ti ti-plus"></i> Create New Shift
                     </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -228,11 +230,13 @@
                                                     class="text-muted">{{ $shift->updated_at->format('d M Y, H:i') }}</small>
                                             </td>
                                             <td class="d-flex align-items-center gap-2">
-                                                @if (in_array(Auth::user()->role, ['Admin', 'ASS LEADER', 'Head Of Airport Service', 'LEADER']))
+                                                @if (Auth::user()->canAccess('shift', 'edit'))
                                                     <a href="{{ route('shift.edit', $shift->id) }}" class="action-btn action-edit"
                                                         title="Edit Shift">
                                                         <i class="ti ti-pencil"></i>
                                                     </a>
+                                                @endif
+                                                @if (Auth::user()->canAccess('shift', 'delete'))
                                                     <form action="{{ route('shift.destroy', $shift->id) }}" method="POST"
                                                         class="d-inline" id="delete-form-{{ $shift->id }}">
                                                         @csrf
@@ -243,8 +247,6 @@
                                                             <i class="ti ti-trash"></i>
                                                         </button>
                                                     </form>
-                                                @else
-                                                    <span class="badge bg-label-secondary">No Access</span>
                                                 @endif
                                             </td>
                                         </tr>

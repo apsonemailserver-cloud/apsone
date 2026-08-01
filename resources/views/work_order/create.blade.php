@@ -1,6 +1,6 @@
 @extends('layout.admin')
 
-@section('title', 'Create Work Order')
+@section('title', 'Create Assignment')
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -9,14 +9,14 @@
         {{-- Header dengan Breadcrumb --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
             <div>
-                <h4 class="fw-bold mb-1 text-dark">Create Work Order</h4>
+                <h4 class="fw-bold mb-1 text-dark">Create Assignment</h4>
                 <p class="text-muted mb-0 small">Aircraft deep cleaning record form (Deep Cleaning Interior & Exterior)</p>
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('work_orders.index') }}">Work Order</a></li>
-                    <li class="breadcrumb-item active">Create Work Order</li>
+                    <li class="breadcrumb-item"><a href="{{ route('work_orders.index') }}">Assignment</a></li>
+                    <li class="breadcrumb-item active">Create Assignment</li>
                 </ol>
             </nav>
         </div>
@@ -49,7 +49,7 @@
                     <div class="card-header border-bottom py-3 d-flex align-items-center justify-content-between bg-white">
                         <div>
                             <h5 class="card-title text-dark fw-bold mb-0">
-                                <i class="bx bx-plus-circle text-primary me-2"></i>Work Order Form
+                                <i class="bx bx-plus-circle text-primary me-2"></i>Assignment Form
                             </h5>
                             <p class="mb-0 mt-1 small text-muted">Input aircraft deep cleaning details (Deep Cleaning Interior & Exterior)</p>
                         </div>

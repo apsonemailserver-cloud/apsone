@@ -72,6 +72,7 @@
                                     </td>
                                     <td style="min-width: 220px;">{{ $correction->reason }}</td>
                                     <td>
+                                        @if(Auth::user()->canAccess('attendance', 'approve'))
                                         <div class="d-flex gap-2">
                                             <form id="approveForm-{{ $correction->id }}" action="{{ route('attendance.corrections.approve', $correction) }}" method="POST">
                                                 @csrf
@@ -87,6 +88,7 @@
                                                 </button>
                                             </form>
                                         </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

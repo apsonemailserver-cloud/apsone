@@ -147,7 +147,7 @@
             <div class="col-md-4">
                 <div class="card stat-card stat-card-primary shadow-sm">
                     <div class="card-body">
-                        <div class="stat-title">Work Orders (Last 30 Days)</div>
+                        <div class="stat-title">Assignments (Last 30 Days)</div>
                         <div class="stat-value">{{ $personalAssignmentsLastMonth }}</div>
                         <i class="fas fa-users stat-icon"></i>
                     </div>
@@ -260,7 +260,7 @@
                                 <i class="ti ti-checklist fs-4"></i>
                             </div>
                             <h2 class="h6 mb-0 fw-bold text-dark">
-                                Work Orders
+                                Assignments
                                 <span class="text-muted fw-normal">(1 Bulan Terakhir)</span>
                             </h2>
                         </div>
@@ -279,7 +279,7 @@
                                 <tr>
                                     <th>Tanggal & Station</th>
                                     <th>Kategori</th>
-                                    <th>Registrasi & WO</th>
+                                    <th>Registrasi & Assignment</th>
                                     <th>Ex / To Flight</th>
                                     <th>Stand & Waktu</th>
                                     <th>Foto Bukti</th>

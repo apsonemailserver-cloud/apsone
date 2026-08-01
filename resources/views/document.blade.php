@@ -652,9 +652,21 @@
                 <i class="bx bx-search"></i>
                 <input type="text" id="docSearchInput" placeholder="Cari nama atau deskripsi dokumen..." onkeyup="filterDocuments()">
             </div>
-            <div class="doc-counter-badge">
-                <i class="bx bx-folder"></i>
-                <span id="visibleDocCount">{{ count($visibleDocuments) }}</span> Dokumen Tersedia
+            <div class="d-flex align-items-center gap-2">
+                @if (Auth::user()?->role === 'Admin' || Auth::user()->hasPermission('document.edit'))
+                    <a href="{{ route('admin.documents.index') }}" class="btn btn-sm btn-outline-primary fw-bold">
+                        <i class="bx bx-cog me-1"></i>Manajemen Dokumen
+                    </a>
+                @endif
+                @if (Auth::user()?->role === 'Admin' || Auth::user()->hasPermission('document.create'))
+                    <a href="{{ route('admin.documents.create') }}" class="btn btn-sm btn-primary fw-bold">
+                        <i class="bx bx-plus me-1"></i>Tambah Dokumen
+                    </a>
+                @endif
+                <div class="doc-counter-badge">
+                    <i class="bx bx-folder"></i>
+                    <span id="visibleDocCount">{{ count($visibleDocuments) }}</span> Dokumen Tersedia
+                </div>
             </div>
         </div>
 

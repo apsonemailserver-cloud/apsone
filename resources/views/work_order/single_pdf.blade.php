@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Work Order {{ $workResult->wo_number }}</title>
+    <title>Assignment {{ $workResult->wo_number }}</title>
     <style>
         @page {
             margin: 20px 24px;
@@ -315,7 +315,7 @@
             </td>
             <td style="width: 40%; vertical-align: top;">
                 <div class="doc-card">
-                    <div class="doc-title">LAPORAN WORK ORDER</div>
+                    <div class="doc-title">LAPORAN ASSIGNMENT</div>
                     <div class="doc-subtitle">DEEP CLEANING {{ $workResult->type == 'DCI' ? 'INTERIOR (DCI)' : 'EXTERIOR (DCE)' }}</div>
                     <div class="wo-badge">{{ $workResult->wo_number }}</div>
                 </div>
@@ -330,7 +330,7 @@
 
     <table class="info-table">
         <tr>
-            <td class="info-label">Nomor Work Order</td>
+            <td class="info-label">Nomor Assignment</td>
             <td class="info-value font-mono">{{ $workResult->wo_number }}</td>
             <td class="info-label">Kategori Pekerjaan</td>
             <td class="info-value">

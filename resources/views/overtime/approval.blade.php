@@ -67,6 +67,7 @@
                                 </td>
                                 <td><span class="badge bg-label-primary">{{ $ot->duration }} Jam</span></td>
                                 <td>
+                                    @if(Auth::user()->canAccess('overtime', 'approve'))
                                     <div class="d-flex gap-2">
                                         <form id="approveForm-{{ $ot->id }}" action="{{ route('overtime.approve', $ot->id) }}" method="POST">
                                             @csrf
@@ -82,6 +83,7 @@
                                             </button>
                                         </form>
                                     </div>
+                                    @endif
                                 </td>
                             </tr>
                             @empty
