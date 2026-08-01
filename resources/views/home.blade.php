@@ -609,8 +609,22 @@
                                         <td>{{ $flight->registasi ?? ($flight->aircraft_reg ?? '-') }}</td>
                                         <td>{{ $flight->type ?? '-' }}</td>
                                         <td><i class="bx bx-time-five text-muted me-1"></i>{{ $flight->arrival ?? ($flight->start_time ?? '-') }}</td>
-                                        <td><span class="countdown shadow-sm no-click"
-                                                data-time="{{ $flight->time_count ?? '' }}"></span></td>
+                                        @php
+                                            $targetTime = $flight->time_count
+                                                ?: ($flight->date && ($flight->end_time || $flight->start_time)
+                                                    ? $flight->date . ' ' . ($flight->end_time ?: $flight->start_time)
+                                                    : ($flight->arrival ? ($flight->date ? $flight->date . ' ' . $flight->arrival : $flight->arrival) : null));
+                                            $isFinished = !empty($flight->status) || !empty($flight->photo_path);
+                                        @endphp
+                                        <td>
+                                            @if($isFinished)
+                                                <span class="badge bg-label-success px-2 py-1"><i class="bx bx-check me-1"></i>Selesai</span>
+                                            @elseif($targetTime)
+                                                <span class="countdown shadow-sm no-click" data-time="{{ $targetTime }}"></span>
+                                            @else
+                                                <span class="text-muted small">-</span>
+                                            @endif
+                                        </td>
                                         <td class="text-muted">{{ $flight->created_at ? $flight->created_at->format('d M Y, H:i') : '-' }}</td>
                                         <td class="no-click text-center">
                                             @if ($flight->status ?? (!empty($flight->photo_path)))
@@ -1192,24 +1206,24 @@
 
             document.querySelectorAll('.countdown').forEach(function(el) {
                 let timeData = el.getAttribute('data-time');
-                if (!timeData) return;
+                if (!timeData) {
+                    el.innerHTML = "<span class='text-muted small'>-</span>";
+                    return;
+                }
                 timeData = timeData.trim();
 
                 let targetDate;
                 
                 try {
                     if (timeData.length <= 8) {
-                        // Format: HH:mm:ss
                         const parts = timeData.split(':');
                         targetDate = new Date();
                         targetDate.setHours(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2] || 0), 0);
                     } else {
-                        // Format: YYYY-MM-DD HH:mm:ss atau YYYY-MM-DDTHH:mm:ss
                         const dateTimeParts = timeData.split(/[ T]/);
                         const dateParts = dateTimeParts[0].split(/[-/]/);
                         const timeParts = dateTimeParts[1].split(':');
                         
-                        // monthIndex di JS dimulai dari 0
                         targetDate = new Date(
                             parseInt(dateParts[0]),
                             parseInt(dateParts[1]) - 1,
@@ -1220,38 +1234,33 @@
                         );
                     }
                 } catch (e) {
-                    console.error('Failed to parse date:', timeData);
+                    el.innerHTML = "<span class='text-muted small'>-</span>";
                     return;
                 }
 
                 const countDownDate = targetDate.getTime();
-                if (isNaN(countDownDate)) return;
+                if (isNaN(countDownDate)) {
+                    el.innerHTML = "<span class='text-muted small'>-</span>";
+                    return;
+                }
 
                 const updateTimer = function() {
                     const now = new Date().getTime();
                     const distance = countDownDate - now;
                     
                     if (distance >= 0) {
-                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const hours = Math.floor(distance / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-                        let timeStr = '';
-                        if (days > 0) timeStr += `${days}h `;
-                        
                         const h = String(hours).padStart(2, '0');
                         const m = String(minutes).padStart(2, '0');
                         const s = String(seconds).padStart(2, '0');
                         
-                        timeStr += `${h}j ${m}m ${s}d`;
-                        el.innerHTML = timeStr;
+                        el.innerHTML = `<span class="badge bg-label-primary font-monospace px-2 py-1"><i class="bx bx-timer me-1"></i>${h}:${m}:${s}</span>`;
                         return true;
                     } else {
-                        el.innerHTML =
-                            "<span class='text-danger fw-bold'><i class='bx bx-error-circle me-1'></i>WAKTU HABIS</span>";
-                        el.style.background = 'transparent';
-                        el.style.padding = '0';
+                        el.innerHTML = "<span class='badge bg-label-secondary font-monospace px-2 py-1'><i class='bx bx-time me-1'></i>Lewat Waktu</span>";
                         return false;
                     }
                 };
