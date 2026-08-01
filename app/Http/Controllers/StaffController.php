@@ -21,12 +21,21 @@ class StaffController extends Controller
     // =================================================================
     public function index(Request $request)
     {
+        $authUser = Auth::user();
+        $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
         $search = $request->search;
 
         // 1. Ambil daftar station aktif
-        $stations = Station::where('is_active', 1)
-            ->orderBy('code', 'ASC')
-            ->get();
+        if ($isFullAccess) {
+            $stations = Station::where('is_active', 1)
+                ->orderBy('code', 'ASC')
+                ->get();
+        } else {
+            $stations = Station::where('is_active', 1)
+                ->where('code', $authUser->station)
+                ->orderBy('code', 'ASC')
+                ->get();
+        }
 
         // 2. Base query
         $query = User::query();
@@ -40,13 +49,12 @@ class StaffController extends Controller
         }
 
         // 4. Filter station dari tab
-        if ($request->filled('station')) {
-            $query->where('station', $request->station);
-        }
-
-        // 5. Jika bukan Admin, paksa station sendiri
-        if (! Auth::user()->isAdmin()) {
-            $query->where('station', Auth::user()->station);
+        if ($isFullAccess) {
+            if ($request->filled('station')) {
+                $query->where('station', $request->station);
+            }
+        } else {
+            $query->where('station', $authUser->station);
         }
 
         // 6. Ambil data + pagination
@@ -56,7 +64,7 @@ class StaffController extends Controller
 
         $blacklistedNiks = \App\Models\Blacklist::pluck('nik')->map(fn($val) => trim((string)$val))->toArray();
 
-        return view('staff.index', compact('staffs', 'stations', 'blacklistedNiks'));
+        return view('staff.index', compact('staffs', 'stations', 'blacklistedNiks', 'isFullAccess'));
     }
 
     // =================================================================
@@ -65,10 +73,16 @@ class StaffController extends Controller
     public function export(Request $request)
     {
         // Cek Keamanan
-        abort_unless(Auth::user()->canAccess('user', 'export'), 403);
+        $authUser = Auth::user();
+        abort_unless($authUser->canAccess('user', 'export'), 403);
+
+        $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
 
         try {
             $station = $request->station ?? null;
+            if (!$isFullAccess) {
+                $station = $authUser->station;
+            }
             $fileName = 'staff_data_' . ($station ? $station : 'global') . '_' . date('Y-m-d') . '.csv';
 
             return Excel::download(new StaffExport($station), $fileName);

@@ -34,11 +34,13 @@
             <div class="card-header" style="padding-bottom:0 !important;">
                 <div class="nav-scroller">
                     <div class="nav nav-tabs">
+                        @if ($isFullAccess)
                         <a class="nav-link {{ request('station') == null ? 'active' : '' }}" href="{{ route('staff.index') }}">
                             <i class="ti ti-world me-1"></i> Global
                         </a>
+                        @endif
                         @foreach($stations as $st)
-                        <a class="nav-link {{ request('station') == $st->code ? 'active' : '' }}" href="{{ route('staff.index', ['station' => $st->code]) }}">
+                        <a class="nav-link {{ (request('station') == $st->code || (!$isFullAccess && request('station') == null)) ? 'active' : '' }}" href="{{ route('staff.index', $isFullAccess ? ['station' => $st->code] : []) }}">
                             {{ $st->code }}
                         </a>
                         @endforeach
@@ -47,10 +49,10 @@
             </div>
 
             <div class="card-body">
-                @if(request('station'))
+                @if(request('station') || !$isFullAccess)
                 <div class="d-flex align-items-center gap-2 mb-3 pb-3" style="border-bottom: 1px solid #f3f4f6;">
                     <i class="ti ti-info-circle text-muted"></i>
-                    <small class="text-muted">Menampilkan data staff area: <strong>{{ request('station') }}</strong></small>
+                    <small class="text-muted">Menampilkan data staff area: <strong>{{ request('station', Auth::user()->station) }}</strong></small>
                 </div>
                 @endif
 
