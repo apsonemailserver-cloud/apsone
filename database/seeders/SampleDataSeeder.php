@@ -17,6 +17,14 @@ class SampleDataSeeder extends Seeder
 {
     public function run(): void
     {
+        // Truncate existing sample tables to avoid duplication when running the seeder multiple times
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Attendance::truncate();
+        Assignment::truncate();
+        Overtime::truncate();
+        Leave::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $startDate = Carbon::create(2026, 7, 25);
         $endDate = Carbon::create(2026, 8, 8);
         $today = Carbon::create(2026, 8, 1);
