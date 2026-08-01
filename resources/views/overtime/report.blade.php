@@ -29,10 +29,10 @@
                             </div>
                              <div>
                                 <label class="form-label">Station</label>
-                                <select name="station" class="form-select" style="min-width: 180px;">
+                                <select name="station" class="form-select" style="min-width: 180px;" {{ !$isFullAccess ? 'disabled' : '' }}>
                                     <option value="">Semua Station</option>
                                     @foreach ($stations as $st)
-                                    <option value="{{ $st->code }}" {{ request('station') == $st->code ? 'selected' : '' }}>
+                                    <option value="{{ $st->code }}" {{ request('station', $userStation) == $st->code ? 'selected' : '' }}>
                                         {{ $st->code }} - {{ $st->name }}
                                     </option>
                                     @endforeach

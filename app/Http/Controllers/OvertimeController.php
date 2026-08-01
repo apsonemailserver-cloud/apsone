@@ -175,7 +175,8 @@ class OvertimeController extends Controller
     // ==========================================
     public function report(Request $request)
     {
-        abort_unless(Auth::user()->canAccess('overtime', 'export'), 403);
+        $authUser = Auth::user();
+        abort_unless($authUser->canAccess('overtime', 'export'), 403);
 
         $query = Overtime::with('user')->where('status', 'Approved');
         $search = $request->input('search');
@@ -188,10 +189,16 @@ class OvertimeController extends Controller
             });
         }
 
+        $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
+
         // Filter Station
-        if ($request->has('station') && $request->station != null) {
+        if ($request->filled('station')) {
             $query->whereHas('user', function($q) use ($request) {
                 $q->where('station', $request->station);
+            });
+        } elseif (!$isFullAccess && $authUser->station) {
+            $query->whereHas('user', function($q) use ($authUser) {
+                $q->where('station', $authUser->station);
             });
         }
         
@@ -203,13 +210,21 @@ class OvertimeController extends Controller
         $overtimes = $query->latest()->paginate(20)->withQueryString();
         $totalHours = $query->sum('duration'); // Total jam untuk payroll
 
-        $stations = \App\Models\Station::where('is_active', 1)->orderBy('name', 'asc')->get();
-        return view('overtime.report', compact('overtimes', 'totalHours', 'stations'));
+        if ($isFullAccess) {
+            $stations = \App\Models\Station::where('is_active', 1)->orderBy('name', 'asc')->get();
+        } else {
+            $stations = \App\Models\Station::where('is_active', 1)->where('code', $authUser->station)->orderBy('name', 'asc')->get();
+        }
+
+        $userStation = !$isFullAccess ? $authUser->station : null;
+
+        return view('overtime.report', compact('overtimes', 'totalHours', 'stations', 'isFullAccess', 'userStation'));
     }
 
     public function exportExcel(Request $request)
     {
-        abort_unless(Auth::user()->canAccess('overtime', 'export'), 403);
+        $authUser = Auth::user();
+        abort_unless($authUser->canAccess('overtime', 'export'), 403);
 
         try {
             $query = Overtime::with('user')->where('status', 'Approved');
@@ -222,9 +237,15 @@ class OvertimeController extends Controller
                 });
             }
 
-            if ($request->has('station') && $request->station != null) {
+            $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
+
+            if ($request->filled('station')) {
                 $query->whereHas('user', function($q) use ($request) {
                     $q->where('station', $request->station);
+                });
+            } elseif (!$isFullAccess && $authUser->station) {
+                $query->whereHas('user', function($q) use ($authUser) {
+                    $q->where('station', $authUser->station);
                 });
             }
             
@@ -238,7 +259,8 @@ class OvertimeController extends Controller
                 return redirect()->back()->with('warning', 'Tidak ada data lembur yang disetujui untuk diexport.');
             }
 
-            return Excel::download(new OvertimeReportExport($overtimes), 'Laporan_Lembur_'.date('YmdHis').'.xlsx');
+            $stationLabel = $request->filled('station') ? '_' . $request->station : '';
+            return Excel::download(new OvertimeReportExport($overtimes), 'Laporan_Lembur' . $stationLabel . '_'.date('YmdHis').'.xlsx');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengunduh laporan lembur: ' . $e->getMessage());
         }
