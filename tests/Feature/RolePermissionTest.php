@@ -99,10 +99,10 @@ class RolePermissionTest extends TestCase
         $response = $this->actingAs($staff)->get(route('home'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Manajemen Station');
-        $response->assertDontSee('Hak Akses Role');
-        $response->assertDontSee('Approval Lembur');
-        $response->assertDontSee('Laporan Absensi');
+        $response->assertDontSee('Station Management');
+        $response->assertDontSee('Role & Permissions');
+        $response->assertDontSee('Overtime Approvals');
+        $response->assertDontSee('Attendance Report');
     }
 
     public function test_admin_can_toggle_user_role_assignment(): void

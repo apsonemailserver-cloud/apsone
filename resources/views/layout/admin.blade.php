@@ -128,13 +128,13 @@
                             <li class="menu-item {{ request()->routeIs('schedule.now') ? 'active' : '' }}">
                                 <a href="{{ route('schedule.now') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-calendar-check"></i>
-                                    <div data-i18n="Jadwal Hari Ini">Jadwal Hari Ini</div>
+                                    <div data-i18n="Today's Schedule">Today's Schedule</div>
                                 </a>
                             </li>
                             <li class="menu-item {{ request()->routeIs('schedule.index') ? 'active' : '' }}">
                                 <a href="{{ route('schedule.index') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-calendar"></i>
-                                    <div data-i18n="Data Schedule">Data Schedule</div>
+                                    <div data-i18n="Schedule List">Schedule List</div>
                                 </a>
                             </li>
                             @if (Auth::user()->canAccess('schedule', 'create') || Auth::user()->canAccess('schedule', 'edit'))
@@ -163,7 +163,7 @@
                         class="menu-item {{ request()->is('attendance*') || request()->is('overtime*') ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-circle-check"></i>
-                            <div data-i18n="Attendance & Lembur">Attendance</div>
+                            <div data-i18n="Attendance">Attendance</div>
                         </a>
 
                         <ul class="menu-sub">
@@ -172,7 +172,7 @@
                             <li class="menu-item {{ request()->routeIs('attendance.index') || request()->routeIs('attendance.history') || request()->routeIs('attendance.camera') || request()->routeIs('attendance.corrections.create') || request()->routeIs('attendance.corrections.store') ? 'active' : '' }}">
                                 <a href="{{ route('attendance.index') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-stopwatch"></i>
-                                    <div data-i18n="Absensi Hari Ini">Absensi Hari Ini</div>
+                                    <div data-i18n="Today's Attendance">Today's Attendance</div>
                                 </a>
                             </li>
 
@@ -180,7 +180,7 @@
                                 <li class="menu-item {{ request()->routeIs('attendance.reports') ? 'active' : '' }}">
                                     <a href="{{ route('attendance.reports') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
-                                        <div data-i18n="Laporan Absensi">Laporan Absensi</div>
+                                        <div data-i18n="Attendance Report">Attendance Report</div>
                                     </a>
                                 </li>
                             @endif
@@ -189,7 +189,7 @@
                                 <li class="menu-item {{ request()->routeIs('attendance.corrections.approval') ? 'active' : '' }}">
                                     <a href="{{ route('attendance.corrections.approval') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-user-check"></i>
-                                        <div data-i18n="Approval Koreksi Absensi">Approval Koreksi Absensi</div>
+                                        <div data-i18n="Correction Approvals">Correction Approvals</div>
                                     </a>
                                 </li>
                             @endif
@@ -199,7 +199,7 @@
                                 class="menu-item {{ request()->routeIs('overtime.index') || request()->routeIs('overtime.create') ? 'active' : '' }}">
                                 <a href="{{ route('overtime.index') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-hourglass"></i>
-                                    <div data-i18n="Lembur Saya">Lembur Saya</div>
+                                    <div data-i18n="My Overtime">My Overtime</div>
                                 </a>
                             </li>
 
@@ -208,7 +208,7 @@
                                 <li class="menu-item {{ request()->routeIs('overtime.approval') ? 'active' : '' }}">
                                     <a href="{{ route('overtime.approval') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-circle-check"></i>
-                                        <div data-i18n="Approval Lembur">Approval Lembur</div>
+                                        <div data-i18n="Overtime Approvals">Overtime Approvals</div>
                                     </a>
                                 </li>
                             @endif
@@ -217,7 +217,7 @@
                                 <li class="menu-item {{ request()->routeIs('overtime.report') ? 'active' : '' }}">
                                     <a href="{{ route('overtime.report') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-chart-line"></i>
-                                        <div data-i18n="Laporan Lembur">Laporan Lembur</div>
+                                        <div data-i18n="Overtime Report">Overtime Report</div>
                                     </a>
                                 </li>
                             @endif
@@ -246,7 +246,7 @@
                         <li class="menu-item {{ request()->routeIs('stations.*') ? 'active' : '' }}">
                             <a href="{{ route('stations.index') }}" class="menu-link">
                                 <i class="menu-icon tf-icons ti ti-building-store"></i>
-                                <div data-i18n="Manajemen Station">Manajemen Station</div>
+                                <div data-i18n="Station Management">Station Management</div>
                             </a>
                         </li>
                         @endif
@@ -256,14 +256,14 @@
                             class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('roles.*') || request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') || request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') || request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
                             <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                                 <i class="menu-icon tf-icons ti ti-users"></i>
-                                <div data-i18n="User Management">User</div>
+                                <div data-i18n="User Management">User Management</div>
                             </a>
                             <ul class="menu-sub">
                                 @if(Auth::user()->canAccess('user', 'view'))
                                 <li class="menu-item {{ request()->routeIs('staff.*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active' : '' }}">
                                     <a href="{{ route('staff.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-device-desktop"></i>
-                                        <div data-i18n="Monitor Station">Monitor Station</div>
+                                        <div data-i18n="Station Monitoring">Station Monitoring</div>
                                     </a>
                                 </li>
                                 @endif
@@ -271,7 +271,7 @@
                                 <li class="menu-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
                                     <a href="{{ route('roles.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-shield-lock"></i>
-                                        <div data-i18n="Hak Akses Role">Hak Akses Role</div>
+                                        <div data-i18n="Role & Permissions">Role & Permissions</div>
                                     </a>
                                 </li>
                                 @endif
@@ -279,7 +279,7 @@
                                 <li class="menu-item {{ request()->routeIs('blacklist.*') ? 'active' : '' }}">
                                     <a href="{{ route('blacklist.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-user-x"></i>
-                                        <div data-i18n="Blacklist"> Blacklist</div>
+                                        <div data-i18n="Blacklist Staff">Blacklist Staff</div>
                                     </a>
                                 </li>
                                 @endif
@@ -287,19 +287,19 @@
                                 <li class="menu-item {{ request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') ? 'active' : '' }}">
                                     <a href="{{ route('users.kontrak') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
-                                        <div data-i18n="Kontrak">Kontrak</div>
+                                        <div data-i18n="Contracts">Contracts</div>
                                     </a>
                                 </li>
                                 <li class="menu-item {{ request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') ? 'active' : '' }}">
                                     <a href="{{ route('users.pas') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-id"></i>
-                                        <div data-i18n="PAS Tahunan">PAS Bandara</div>
+                                        <div data-i18n="Airport PAS">Airport PAS</div>
                                     </a>
                                 </li>
                                 <li class="menu-item {{ request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') ? 'active' : '' }}">
                                     <a href="{{ route('users.tim') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-badge"></i>
-                                        <div data-i18n="TIM Bandara">TIM Bandara</div>
+                                        <div data-i18n="Airport TIM">Airport TIM</div>
                                     </a>
                                 </li>
                                 @endif
@@ -320,7 +320,7 @@
                     <li class="menu-item {{ request()->routeIs('document') || request()->routeIs('admin.documents.*') ? 'active' : '' }}">
                         <a href="{{ $dokumenRoute }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-file-text"></i>
-                            <div data-i18n="Dokumen">Dokumen</div>
+                            <div data-i18n="Documents">Documents</div>
                         </a>
                     </li>
                     @endif
@@ -335,21 +335,21 @@
                                 <li class="menu-item {{ request()->routeIs('admin.training.certificates.index') ? 'active' : '' }}">
                                     <a href="{{ route('admin.training.certificates.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-book"></i>
-                                        <div data-i18n="Manajemen">Manajemen Training</div>
+                                        <div data-i18n="Training Management">Training Management</div>
                                     </a>
                                 </li>
                                 
                                 <li class="menu-item {{ request()->routeIs('admin.training.certificates.create') ? 'active' : '' }}">
                                     <a href="{{ route('admin.training.certificates.create') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-circle-plus"></i>
-                                        <div data-i18n="Tambah">Tambah Sertifikat</div>
+                                        <div data-i18n="Add Certificate">Add Certificate</div>
                                     </a>
                                 </li>
                             @else
                                 <li class="menu-item {{ request()->routeIs('my.certificates') ? 'active' : '' }}">
                                     <a href="{{ route('my.certificates') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-certificate"></i>
-                                        <div data-i18n="Saya">Sertifikat Saya</div>
+                                        <div data-i18n="My Certificates">My Certificates</div>
                                     </a>
                                 </li>
                             @endif
@@ -359,20 +359,20 @@
                     <li class="menu-item {{ request()->is('leaves*') ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-logout-2"></i>
-                            <div data-i18n="Leave">Apply Leave</div>
+                            <div data-i18n="Apply Leave">Apply Leave</div>
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item {{ request()->routeIs('leaves.pengajuan') ? 'active' : '' }}">
                                 <a href="{{ route('leaves.pengajuan') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-send"></i>
-                                    <div data-i18n="Pengajuan">Pengajuan Leave</div>
+                                    <div data-i18n="Leave Request">Leave Request</div>
                                 </a>
                             </li>
                             @if (Auth::user()->canAccess('leave', 'approve'))
                                 <li class="menu-item {{ request()->routeIs('leaves.index') ? 'active' : '' }}">
                                     <a href="{{ route('leaves.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-circle-check"></i>
-                                        <div data-i18n="Approval">Approval Leave</div>
+                                        <div data-i18n="Leave Approvals">Leave Approvals</div>
                                     </a>
                                 </li>
                             @endif
@@ -380,7 +380,7 @@
                                 <li class="menu-item {{ request()->routeIs('leaves.laporan') ? 'active' : '' }}">
                                     <a href="{{ route('leaves.laporan') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
-                                        <div data-i18n="Laporan">Laporan Leave</div>
+                                        <div data-i18n="Leave Report">Leave Report</div>
                                     </a>
                                 </li>
                             @endif
@@ -390,7 +390,7 @@
                     <li class="menu-item {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
                         <a href="{{ route('announcements.index') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-speakerphone"></i>
-                            <div data-i18n="Pengumuman">Pengumuman</div>
+                            <div data-i18n="Announcements">Announcements</div>
                             @if(isset($unreadAnnouncementsCount) && $unreadAnnouncementsCount > 0)
                                 <span class="badge rounded-pill bg-danger ms-auto">{{ $unreadAnnouncementsCount > 99 ? '99+' : $unreadAnnouncementsCount }}</span>
                             @endif
@@ -407,7 +407,7 @@
                     <li class="menu-item {{ request()->routeIs('kebijakan') ? 'active' : '' }}">
                         <a href="{{ route('kebijakan') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-shield-check"></i>
-                            <div data-i18n="Kebijakan Privasi">Kebijakan Privasi</div>
+                            <div data-i18n="Privacy Policy">Privacy Policy</div>
                         </a>
                     </li>
 
