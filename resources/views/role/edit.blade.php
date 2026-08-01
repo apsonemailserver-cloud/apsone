@@ -260,7 +260,8 @@
         --ra-primary-soft: #eaf3ff;
         --ra-danger: #dc4c64;
         --ra-shadow: 0 10px 30px rgba(35, 51, 80, 0.06);
-        --ra-radius: 14px;
+        --ra-card-radius: var(--bs-border-radius-xl, 1rem);
+        --ra-control-radius: var(--bs-border-radius-lg, .75rem);
         color: var(--ra-text);
         padding-bottom: 2rem;
     }
@@ -341,7 +342,7 @@
         align-items: center;
         background: var(--ra-primary-soft);
         border: 1px solid color-mix(in srgb, var(--ra-primary) 28%, transparent);
-        border-radius: 12px;
+        border-radius: var(--ra-control-radius);
         color: var(--ra-primary-strong);
         display: flex;
         flex: 0 0 auto;
@@ -365,7 +366,7 @@
     .matrix-toolbar {
         background: var(--ra-surface);
         border: 1px solid var(--ra-border);
-        border-radius: var(--ra-radius);
+        border-radius: var(--ra-card-radius);
         gap: .75rem;
         justify-content: space-between;
         margin-bottom: .85rem;
@@ -429,7 +430,8 @@
     .employee-panel {
         background: var(--ra-surface);
         border: 1px solid var(--ra-border);
-        border-radius: var(--ra-radius);
+        border-radius: var(--ra-card-radius);
+        background-clip: padding-box;
         box-shadow: var(--ra-shadow);
         overflow: hidden;
     }
@@ -539,7 +541,7 @@
         align-items: center;
         background: var(--ra-surface);
         border: 1px dashed var(--ra-border-strong);
-        border-radius: var(--ra-radius);
+        border-radius: var(--ra-card-radius);
         color: var(--ra-muted);
         display: flex;
         flex-direction: column;
@@ -639,7 +641,7 @@
         background: color-mix(in srgb, var(--ra-surface) 94%, transparent);
         backdrop-filter: blur(14px);
         border: 1px solid var(--ra-border);
-        border-radius: 12px;
+        border-radius: var(--ra-card-radius);
         bottom: .75rem;
         box-shadow: var(--ra-shadow);
         justify-content: space-between;
@@ -665,7 +667,11 @@
     }
 
     @media (max-width: 767.98px) {
-        .role-access-page { padding-left: .85rem; padding-right: .85rem; }
+        .role-access-page {
+            --ra-card-radius: var(--bs-border-radius-lg, .75rem);
+            padding-left: .85rem;
+            padding-right: .85rem;
+        }
         .role-access-header { align-items: flex-start; flex-direction: column; }
         .full-access-note { width: 100%; }
         .matrix-toolbar { align-items: stretch; flex-direction: column; }

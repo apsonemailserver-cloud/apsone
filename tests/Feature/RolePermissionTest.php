@@ -92,6 +92,8 @@ class RolePermissionTest extends TestCase
         $response->assertSee('id="floatingPermCounter"', false);
         $response->assertSee('Simpan Perubahan');
         $response->assertSee('name="permissions[]"', false);
+        $response->assertSee('--ra-card-radius: var(--bs-border-radius-xl, 1rem);', false);
+        $response->assertSee('--ra-card-radius: var(--bs-border-radius-lg, .75rem);', false);
     }
 
     public function test_user_has_permission_checks(): void
