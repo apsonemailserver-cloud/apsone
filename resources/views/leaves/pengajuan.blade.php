@@ -86,9 +86,34 @@
                                     <span class="status-badge {{ $statusConfig['class'] }}">{{ $statusConfig['text'] }}</span>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
-                                        Detail
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
+                                            Detail
+                                        </button>
+                                        @php
+                                            $authUser = Auth::user();
+                                            $isOwner = (string) $leave->user_id === (string) $authUser->id;
+                                            $isAdminOrApprover = $authUser->isAdmin() || $authUser->canAccess('leave', 'approve');
+                                            $isPending = in_array($leave->status, ['pending', 'pending Apron', 'pending Bge']);
+                                            $isApproved = $leave->status === 'approved';
+
+                                            // Bawahan hanya dapat membatalkan jika status masih Menunggu.
+                                            // Atasan / Admin dapat membatalkan jika status Menunggu atau Disetujui.
+                                            $canCancel = ($isOwner && $isPending) || ($isAdminOrApprover && ($isPending || $isApproved));
+                                        @endphp
+                                        @if ($canCancel)
+                                            <form action="{{ route('leaves.cancel', $leave->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-cancel-leave" 
+                                                    data-type="{{ addslashes($leave->leave_type ?? 'Izin/Cuti') }}"
+                                                    data-status="{{ $leave->status }}"
+                                                    title="Batalkan Pengajuan">
+                                                    <i class="bx bx-x me-1"></i>Batalkan
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                             @include('leaves.partials.modal_detail', ['leave' => $leave, 'statusConfig' => $statusConfig])
@@ -112,4 +137,46 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            $(document).on('click', '.btn-cancel-leave', function(e) {
+                e.preventDefault();
+                const form = $(this).closest('form');
+                const leaveType = $(this).data('type') || 'Pengajuan';
+                const status = $(this).data('status');
+                const isApproved = status === 'approved';
+
+                let warningHtml = `Apakah Anda yakin ingin membatalkan pengajuan <strong>${leaveType}</strong> ini?`;
+                if (isApproved) {
+                    warningHtml += `<br><div class="alert alert-warning p-2 mt-2 mb-0 text-start" style="font-size:0.85rem;"><i class="bx bx-info-circle me-1"></i>Pengajuan ini sudah disetujui sebelumnya. Membatalkan akan <strong>mengembalikan sisa kuota cuti</strong> Anda.</div>`;
+                }
+
+                Swal.fire({
+                    title: 'Batalkan Pengajuan?',
+                    html: warningHtml,
+                    icon: 'warning',
+                    iconColor: '#ef4444',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Batalkan',
+                    cancelButtonText: 'Kembali',
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    customClass: {
+                        confirmButton: 'btn btn-danger me-2',
+                        cancelButton: 'btn btn-label-secondary'
+                    },
+                    buttonsStyling: false,
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

@@ -163,6 +163,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/leaves/approval', [LeaveController::class, 'index'])->name('leaves.index');
     Route::get('/leaves/laporan', [LeaveController::class, 'laporan'])->name('leaves.laporan');
     Route::patch('leaves/{leave}/status', [LeaveController::class, 'updateStatus'])->name('leaves.updateStatus');
+    Route::patch('leaves/{leave}/cancel', [LeaveController::class, 'cancel'])->name('leaves.cancel');
     Route::get('/leaves/export', [LeaveController::class, 'export'])->name('leaves.export');
 
     // --- TRAINING & CERTIFICATES ---

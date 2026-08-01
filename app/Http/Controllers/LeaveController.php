@@ -390,11 +390,41 @@ class LeaveController extends Controller
     }
 
     /**
-     * Mengubah status pengajuan (approve/reject).
+     * Membatalkan pengajuan (cancel).
+     */
+    public function cancel(Request $request, Leave $leave)
+    {
+        $user = Auth::user();
+        $isOwner = (string) $leave->user_id === (string) $user->id;
+        $isAdminOrApprover = $user->canAccess('leave', 'approve') || $user->isAdmin();
+        $isPending = in_array($leave->status, ['pending', 'pending Apron', 'pending Bge']);
+        $isApproved = $leave->status === 'approved';
+
+        // Bawahan (karyawan pemohon) hanya boleh membatalkan jika status masih Menunggu.
+        // Atasan / Admin boleh membatalkan jika status Menunggu atau Disetujui.
+        $canCancel = ($isOwner && $isPending) || ($isAdminOrApprover && ($isPending || $isApproved));
+
+        if (!$canCancel) {
+            if ($isOwner && $isApproved && !$isAdminOrApprover) {
+                Alert::warning('Peringatan', 'Pengajuan yang sudah Disetujui hanya dapat dibatalkan oleh Atasan / Admin.');
+                return redirect()->back();
+            }
+            abort(403, 'Anda tidak memiliki akses untuk membatalkan pengajuan ini.');
+        }
+
+        $leave->status = 'canceled';
+        $leave->save();
+
+        Alert::success('Berhasil', 'Pengajuan izin/cuti telah dibatalkan.');
+        return redirect()->back();
+    }
+
+    /**
+     * Mengubah status pengajuan (approve/reject/cancel).
      */
     public function updateStatus(Request $request, Leave $leave)
     {
-        $validStatuses = ['approved', 'rejected by ho', 'pending', 'rejected by leader'];
+        $validStatuses = ['approved', 'rejected by ho', 'pending', 'rejected by leader', 'canceled'];
 
         $request->validate([
             'status' => ['required', Rule::in($validStatuses)]
