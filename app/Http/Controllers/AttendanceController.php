@@ -296,6 +296,14 @@ class AttendanceController extends Controller
         // Ambil bulan dari request, default bulan ini (format YYYY-MM)
         $month = $request->input('month', Carbon::now()->format('Y-m'));
 
+        // Cek apakah bulan yang dipilih masih boleh diedit (Maksimal 1 bulan mundur dari bulan berjalan)
+        $currentMonth = Carbon::now()->startOfMonth();
+        $selectedMonthDate = Carbon::parse($month)->startOfMonth();
+        $monthsDiff = $selectedMonthDate->diffInMonths($currentMonth, false);
+
+        // Boleh edit jika $selectedMonthDate <= $currentMonth dan beda bulan <= 1 (yaitu 0 bulan ini, atau 1 bulan sebelumnya)
+        $canEditMonth = ($selectedMonthDate <= $currentMonth && $monthsDiff <= 1);
+
         $startDate = Carbon::parse($month)->startOfMonth();
         $endDate = Carbon::parse($month)->endOfMonth();
 
@@ -334,7 +342,7 @@ class AttendanceController extends Controller
             ];
         }
 
-        return view('attendance.history', compact('daysInMonth', 'month', 'user'));
+        return view('attendance.history', compact('daysInMonth', 'month', 'user', 'canEditMonth'));
     }
 
     public function reportsIndex(Request $request)

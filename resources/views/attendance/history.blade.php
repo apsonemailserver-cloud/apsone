@@ -98,11 +98,50 @@
             </nav>
         </div>
 
-        {{-- Back --}}
-        <div class="mb-3">
-            <a href="{{ route('attendance.index') }}" class="btn btn-sm btn-outline-secondary">
+        {{-- Action Bar: Back & Month Filter --}}
+        @php
+            $currentMonthCarbon = \Carbon\Carbon::parse($month);
+            $prevMonth = $currentMonthCarbon->copy()->subMonth()->format('Y-m');
+            $nextMonth = $currentMonthCarbon->copy()->addMonth()->format('Y-m');
+            $nowMonth = \Carbon\Carbon::now()->format('Y-m');
+        @endphp
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <a href="{{ route('attendance.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center" style="height: 36px; padding-left: 0.85rem; padding-right: 0.85rem;">
                 <i class="bx bx-arrow-back me-1"></i> Back
             </a>
+
+            <form method="GET" action="{{ route('attendance.history') }}" class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                <div class="d-inline-flex align-items-center gap-1">
+                    <a href="{{ route('attendance.history', ['month' => $prevMonth]) }}" 
+                       class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center p-0" 
+                       style="width: 36px; height: 36px; flex-shrink: 0;" 
+                       title="Bulan Sebelumnya">
+                        <i class="bx bx-chevron-left fs-5"></i>
+                    </a>
+
+                    <input type="month" name="month" 
+                        class="form-control form-control-sm text-center fw-semibold" 
+                        value="{{ $month }}" 
+                        onchange="this.form.submit()" 
+                        style="width: 140px !important; height: 36px; flex-shrink: 0; font-size: 0.85rem;">
+
+                    <a href="{{ route('attendance.history', ['month' => $nextMonth]) }}" 
+                       class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center p-0" 
+                       style="width: 36px; height: 36px; flex-shrink: 0;" 
+                       title="Bulan Selanjutnya">
+                        <i class="bx bx-chevron-right fs-5"></i>
+                    </a>
+                </div>
+
+                @if($month !== $nowMonth)
+                <a href="{{ route('attendance.history') }}" 
+                   class="btn btn-sm btn-primary rounded-3 px-3 fw-semibold shadow-sm d-inline-flex align-items-center justify-content-center" 
+                   style="height: 36px; white-space: nowrap; flex-shrink: 0;" 
+                   title="Kembali ke Bulan Ini">
+                    <i class="bx bx-calendar me-1 fs-6"></i> Bulan Ini
+                </a>
+                @endif
+            </form>
         </div>
 
         {{-- Card --}}
@@ -240,7 +279,7 @@
                                 <td>
                                     @if ($correction)
                                         <span class="badge {{ $statusClass }}">{{ ucfirst($correction->status) }}</span>
-                                    @elseif (!$isFuture)
+                                    @elseif (!$isFuture && ($canEditMonth ?? false))
                                         <a href="{{ route('attendance.corrections.create', $currentDate->toDateString()) }}" class="action-btn-edit" title="Edit Absensi">
                                             <i class="ti ti-pencil"></i>
                                         </a>

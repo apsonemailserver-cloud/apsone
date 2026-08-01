@@ -304,6 +304,17 @@ class AttendanceCorrectionController extends Controller
             throw ValidationException::withMessages($validator->errors()->toArray());
         }
 
+        // Cek batas pengajuan koreksi (Maksimal 1 bulan mundur dari bulan berjalan)
+        $dateMonth = Carbon::parse($date)->startOfMonth();
+        $currentMonth = Carbon::now()->startOfMonth();
+        $monthsDiff = $dateMonth->diffInMonths($currentMonth, false);
+
+        if ($dateMonth > $currentMonth || $monthsDiff > 1) {
+            throw ValidationException::withMessages([
+                'attendance_date' => 'Pengajuan koreksi absensi hanya diperbolehkan untuk bulan ini dan 1 bulan sebelumnya.',
+            ]);
+        }
+
         return $date;
     }
 
