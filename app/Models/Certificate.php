@@ -12,14 +12,23 @@ class Certificate extends Model
     use HasFactory;
 
     public const TYPES = [
-        'Dangerous Goods (DG / DGR)',
-        'Aviation Security (AVSEC)',
-        'Safety Management System (SMS)',
-        'Human Factors / Initial Human Error',
-        'Apron Movement Control (AMC)',
-        'Operator Garbarata (SKOG)',
-        'Ground Handling / SKOP2DPU',
-        'PKP-PK (Pertolongan Kecelakaan Penerbangan & Pemadam Kebakaran)',
+        'Aviation Basics',
+        'Basic Safety & Safety Management System (SMS)',
+        'Human Factors',
+        'Airside Safety',
+        'Emergency Response Basic Awareness',
+        'Duty Security Training',
+        'Dangerous Goods Function 7.4.2',
+        'Dangerous Goods Function 7.4.1',
+        'Dangerous Goods Function 7.10',
+        'Aircraft Ground Operation & Baggage handling Make up area',
+        'Security Guard (Basic)',
+        'Security Screener (Junior)',
+        'Basic Cargo for Porter',
+        'ULD Handling & Loading Training For Porter',
+        'Baggage Handling & Loading for Porter',
+        'Operator Forklift (FLT)',
+        'Aircraft Cleaning & Electrical Wiring Harness interconnect system awareness',
         'Lainnya',
     ];
 
