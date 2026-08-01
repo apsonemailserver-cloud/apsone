@@ -724,11 +724,8 @@
                         <div class="container-xxl d-flex flex-wrap justify-content-center py-3">
                             <div class="text-center">
                                 <p class="mb-0" style="font-size: 0.85rem; color: #a1acb8;">
-                                    © 2025 <span class="fw-semibold" style="color: #697a8d;">PT. Angkasa Pratama
-                                        Sejahtera</span>.
-                                    All Rights Reserved.
+                                    © 2025 <span class="fw-semibold" style="color: #697a8d;">PT. Angkasa Pratama Sejahtera</span>. All Rights Reserved. <span class="ms-1 font-monospace" style="font-size: 0.8rem; color: #a1acb8;">v 3.2</span>
                                 </p>
-                                <p class="mb-0 text-muted font-monospace mt-1" style="font-size: 0.78rem;">v 3.2</p>
                             </div>
                         </div>
                     </footer>
