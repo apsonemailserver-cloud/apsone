@@ -19,15 +19,16 @@ class SampleDataSeeder extends Seeder
     {
         // Truncate existing sample tables to avoid duplication when running the seeder multiple times
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schedule::truncate();
         Attendance::truncate();
         Assignment::truncate();
         Overtime::truncate();
         Leave::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        $startDate = Carbon::create(2026, 7, 25);
-        $endDate = Carbon::create(2026, 8, 8);
-        $today = Carbon::create(2026, 8, 1);
+        $today = Carbon::today();
+        $startDate = $today->copy()->subDays(7);
+        $endDate = $today->copy()->addDays(7);
 
         $users = User::all();
         $cgkStation = Station::where('code', 'CGK')->first();
@@ -176,8 +177,7 @@ class SampleDataSeeder extends Seeder
                     $startTime = sprintf('%02d:%02d:00', $startHour, rand(0, 59));
                     $endTime = sprintf('%02d:%02d:00', $startHour + rand(1, 2), rand(0, 59));
 
-                    // Test both filled WO numbers and NULL WO numbers!
-                    $woNumber = (rand(1, 10) > 3) ? 'WO-' . str_replace('-', '', $dateStr) . '-' . str_pad($woCounter++, 3, '0', STR_PAD_LEFT) : null;
+                    $woNumber = 'WO-' . str_replace('-', '', $dateStr) . '-' . str_pad($woCounter++, 3, '0', STR_PAD_LEFT);
                     $isPast = Carbon::parse($dateStr)->lte(Carbon::today());
                     $photoPath = ($isPast && rand(1, 10) > 3) ? 'photo/sample_wo.jpg' : null;
 
