@@ -22,21 +22,32 @@ class LoginController extends Controller
 
     public function actionlogin(Request $request)
     {
-        $request->validate([
-            'id'       => 'required|numeric',
-            'password' => 'required|min:6',
-        ]);
+        $loginValue = trim($request->input('login', $request->input('id', '')));
 
-        $credentials = $request->only('id', 'password');
-
-        if (! Auth::attempt($credentials)) {
-            return back()->with('error', 'NIP atau password salah');
+        if (empty($loginValue)) {
+            return back()->with('error', 'NIP atau Username wajib diisi.')->withInput();
         }
 
-        $user = Auth::user();
+        $request->validate([
+            'password' => 'required|min:6',
+        ], [
+            'password.required' => 'Password wajib diisi.',
+            'password.min'      => 'Password minimal 6 karakter.',
+        ]);
+
+        // Cari user berdasarkan ID (NIP / Username) atau Email
+        $user = User::where('id', $loginValue)
+            ->orWhere('email', $loginValue)
+            ->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()->with('error', 'NIP / Username atau password salah')->withInput();
+        }
+
+        Auth::login($user, $request->boolean('remember'));
 
         // paksa ganti jika masih default
-        if ($user && Hash::check('password123', $user->password)) {
+        if (Hash::check('password123', $user->password)) {
             return redirect()
                 ->route('change.password.form', ['id' => $user->id])
                 ->with('info', 'Harap ubah password default Anda.');

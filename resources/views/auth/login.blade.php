@@ -63,7 +63,7 @@
                     {{-- <span>SIAPS</span> --}}
                 </div>
                 <h4>Employee Login</h4>
-                <p>Silakan masuk dengan NIP dan password Anda.</p>
+                <p>Silakan masuk dengan NIP atau Username dan password Anda.</p>
 
                 @if ($errors->any() || session('error') || session('success'))
                     <div class="alert {{ session('success') ? 'alert-success' : 'alert-danger' }} alert-dismissible"
@@ -86,14 +86,17 @@
                 <form id="formAuthentication" class="mb-0" action="{{ route('actionlogin') }}" method="POST">
                     @csrf
                     <div class="mb-3">
-                        <label for="id" class="aps-auth-label">NIP</label>
+                        <label for="id" class="aps-auth-label">NIP / Username</label>
                         <div class="aps-auth-input">
-                            <i class="bx bx-id-card"></i>
-                            <input type="text" class="form-control @error('id') is-invalid @enderror" id="id"
-                                name="id" placeholder="Masukkan NIP Anda" autofocus required pattern="[0-9]*"
-                                value="{{ old('id') }}" />
+                            <i class="bx bx-user"></i>
+                            <input type="text" class="form-control @error('id') is-invalid @enderror @error('login') is-invalid @enderror" id="id"
+                                name="id" placeholder="Masukkan NIP atau Username Anda" autofocus required
+                                value="{{ old('id', old('login')) }}" />
                         </div>
                         @error('id')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                        @error('login')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
