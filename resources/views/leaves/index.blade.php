@@ -40,32 +40,85 @@
                         </thead>
                         <tbody>
                             @forelse ($leaves as $leave)
+                            @php
+                                $isPending = in_array($leave->status, ['pending Apron', 'pending Bge', 'pending']);
+                                $authUser = Auth::user();
+                                $userRole = $authUser->role ?? '';
+                                
+                                $canApproveThis = false;
+                                $approveStatus = 'approved';
+                                $rejectStatus = 'rejected by ho';
+
+                                if ($isPending && ($authUser->canAccess('leave', 'approve') || $authUser->isAdmin())) {
+                                    $canApproveThis = true;
+                                    if ($authUser->isAdmin() || $userRole === 'Head Of Airport Service') {
+                                        $approveStatus = 'approved';
+                                        $rejectStatus = 'rejected by ho';
+                                    } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+                                        $approveStatus = ($leave->status === 'pending Bge') ? 'pending' : 'approved';
+                                        $rejectStatus = 'rejected by leader';
+                                    } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+                                        $approveStatus = ($leave->status === 'pending Apron') ? 'pending' : 'approved';
+                                        $rejectStatus = 'rejected by leader';
+                                    } else {
+                                        $approveStatus = ($leave->status === 'pending') ? 'approved' : 'pending';
+                                        $rejectStatus = 'rejected by leader';
+                                    }
+                                }
+
+                                $statusConfig = match ($leave->status) {
+                                    'pending Apron' => ['class' => 'status-pending', 'text' => 'Menunggu Apron'],
+                                    'pending Bge' => ['class' => 'status-pending', 'text' => 'Menunggu BGE'],
+                                    'pending' => ['class' => 'status-pending', 'text' => 'Menunggu HO'],
+                                    'approved' => ['class' => 'status-approved', 'text' => 'Disetujui'],
+                                    'rejected by leader' => ['class' => 'status-rejected', 'text' => 'Ditolak Leader'],
+                                    'rejected by ho' => ['class' => 'status-rejected', 'text' => 'Ditolak HO'],
+                                    default => ['class' => 'status-canceled', 'text' => 'Dibatalkan'],
+                                };
+                            @endphp
                             <tr>
                                 <td><strong>{{ $leave->user->fullname ?? 'N/A' }}</strong></td>
                                 <td>{{ $leave->leave_type }}</td>
                                 <td>{{ \Carbon\Carbon::parse($leave->start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</td>
                                 <td>{{ $leave->total_days }}</td>
                                 <td>
-                                    @php
-                                    $statusConfig = match ($leave->status) {
-                                    'pending Apron' => ['class' => 'status-pending', 'text' => 'Menunggu'],
-                                    'pending Bge' => ['class' => 'status-pending', 'text' => 'Menunggu'],
-                                    'pending' => ['class' => 'status-pending', 'text' => 'Menunggu HO'],
-                                    'approved' => ['class' => 'status-approved', 'text' => 'Disetujui'],
-                                    'rejected by leader' => ['class' => 'status-rejected', 'text' => 'Ditolak Leader'],
-                                    'rejected by ho' => ['class' => 'status-rejected', 'text' => 'Ditolak HO'],
-                                    default => ['class' => 'status-canceled', 'text' => 'Dibatalkan'],
-                                    };
-                                    @endphp
                                     <span class="status-badge {{ $statusConfig['class'] }}">{{ $statusConfig['text'] }}</span>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
-                                        Detail
-                                    </button>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
+                                            Detail
+                                        </button>
+
+                                        @if ($canApproveThis)
+                                            <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status" value="{{ $approveStatus }}">
+                                                <button type="submit" class="action-btn action-edit" title="Setujui Pengajuan Cuti" onclick="return confirm('Apakah Anda yakin ingin menyetujui pengajuan cuti ini?')">
+                                                    <i class="ti ti-check"></i>
+                                                </button>
+                                            </form>
+
+                                            <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status" value="{{ $rejectStatus }}">
+                                                <button type="submit" class="action-btn action-delete" title="Tolak Pengajuan Cuti" onclick="return confirm('Apakah Anda yakin ingin menolak pengajuan cuti ini?')">
+                                                    <i class="ti ti-x"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
-                            @include('leaves.partials.modal_detail', ['leave' => $leave, 'statusConfig' => $statusConfig])
+                            @include('leaves.partials.modal_detail', [
+                                'leave' => $leave, 
+                                'statusConfig' => $statusConfig, 
+                                'canApproveThis' => $canApproveThis, 
+                                'approveStatus' => $approveStatus, 
+                                'rejectStatus' => $rejectStatus
+                            ])
                             @empty
                             <tr>
                                 <td colspan="6">

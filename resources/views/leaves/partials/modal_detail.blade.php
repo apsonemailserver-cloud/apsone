@@ -51,51 +51,23 @@
 
             <div class="modal-footer">
 
-                @if (Auth::user()->role == 'Leader Apron' && $leave->status == 'pending Apron')
+                @if ($canApproveThis ?? false)
                 <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" style="display:inline-block">
                     @csrf
                     @method('PATCH')
-                    <input type="hidden" name="status" value="rejected by leader">
-                    <button type="submit" class="btn btn-danger">Tolak</button>
+                    <input type="hidden" name="status" value="{{ $rejectStatus ?? 'rejected by leader' }}">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menolak pengajuan cuti ini?')">
+                        <i class="ti ti-x me-1"></i>Tolak
+                    </button>
                 </form>
 
                 <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" style="display:inline-block; margin-left:5px;">
                     @csrf
                     @method('PATCH')
-                    <input type="hidden" name="status" value="pending">
-                    <button type="submit" class="btn btn-success">Setujui</button>
-                </form>
-                @endif
-
-                @if (Auth::user()->role == 'Leader Bge' && $leave->status == 'pending Bge')
-                <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" style="display:inline-block">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="status" value="rejected by leader">
-                    <button type="submit" class="btn btn-danger">Tolak</button>
-                </form>
-
-                <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" style="display:inline-block; margin-left:5px;">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="status" value="pending">
-                    <button type="submit" class="btn btn-success">Setujui</button>
-                </form>
-                @endif
-
-                @if (Auth::user()->role == 'Head Of Airport Service' && $leave->status == 'pending')
-                <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" style="display:inline-block">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="status" value="rejected by ho">
-                    <button type="submit" class="btn btn-danger">Tolak</button>
-                </form>
-
-                <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" style="display:inline-block; margin-left:5px;">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="status" value="approved">
-                    <button type="submit" class="btn btn-success">Setujui</button>
+                    <input type="hidden" name="status" value="{{ $approveStatus ?? 'approved' }}">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Apakah Anda yakin ingin menyetujui pengajuan cuti ini?')">
+                        <i class="ti ti-check me-1"></i>Setujui
+                    </button>
                 </form>
                 @endif
 
