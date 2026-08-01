@@ -50,31 +50,6 @@
             </div>
 
             <div class="modal-footer">
-
-                @if ($canApproveThis ?? false)
-                <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" style="display:inline-block">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="status" value="{{ $rejectStatus ?? 'rejected by leader' }}">
-                    <button type="button" class="btn btn-danger btn-reject-leave" 
-                        data-name="{{ addslashes($leave->user->fullname ?? 'Karyawan') }}" 
-                        data-type="{{ addslashes($leave->leave_type ?? 'Cuti') }}">
-                        <i class="ti ti-x me-1"></i>Tolak
-                    </button>
-                </form>
-
-                <form action="{{ route('leaves.updateStatus', $leave->id) }}" method="POST" style="display:inline-block; margin-left:5px;">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="status" value="{{ $approveStatus ?? 'approved' }}">
-                    <button type="button" class="btn btn-success btn-approve-leave" 
-                        data-name="{{ addslashes($leave->user->fullname ?? 'Karyawan') }}" 
-                        data-type="{{ addslashes($leave->leave_type ?? 'Cuti') }}">
-                        <i class="ti ti-check me-1"></i>Setujui
-                    </button>
-                </form>
-                @endif
-
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     Tutup
                 </button>
