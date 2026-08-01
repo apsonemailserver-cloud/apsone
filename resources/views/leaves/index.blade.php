@@ -95,7 +95,10 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="{{ $approveStatus }}">
-                                                <button type="submit" class="action-btn action-edit" title="Setujui Pengajuan Cuti" onclick="return confirm('Apakah Anda yakin ingin menyetujui pengajuan cuti ini?')">
+                                                <button type="button" class="action-btn action-edit btn-approve-leave" 
+                                                    data-name="{{ addslashes($leave->user->fullname ?? 'Karyawan') }}" 
+                                                    data-type="{{ addslashes($leave->leave_type ?? 'Cuti') }}" 
+                                                    title="Setujui Pengajuan Cuti">
                                                     <i class="ti ti-check"></i>
                                                 </button>
                                             </form>
@@ -104,7 +107,10 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="{{ $rejectStatus }}">
-                                                <button type="submit" class="action-btn action-delete" title="Tolak Pengajuan Cuti" onclick="return confirm('Apakah Anda yakin ingin menolak pengajuan cuti ini?')">
+                                                <button type="button" class="action-btn action-delete btn-reject-leave" 
+                                                    data-name="{{ addslashes($leave->user->fullname ?? 'Karyawan') }}" 
+                                                    data-type="{{ addslashes($leave->leave_type ?? 'Cuti') }}" 
+                                                    title="Tolak Pengajuan Cuti">
                                                     <i class="ti ti-x"></i>
                                                 </button>
                                             </form>
@@ -139,4 +145,61 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            $(document).on('click', '.btn-approve-leave', function(e) {
+                e.preventDefault();
+                const form = $(this).closest('form');
+                const userName = $(this).data('name') || 'Karyawan';
+                const leaveType = $(this).data('type') || 'Cuti';
+
+                Swal.fire({
+                    title: 'Setujui Pengajuan Cuti?',
+                    html: `Apakah Anda yakin ingin menyetujui pengajuan <strong>${leaveType}</strong> dari <strong>${userName}</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="ti ti-check me-1"></i>Ya, Setujui',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-primary me-2',
+                        cancelButton: 'btn btn-outline-secondary'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+
+            $(document).on('click', '.btn-reject-leave', function(e) {
+                e.preventDefault();
+                const form = $(this).closest('form');
+                const userName = $(this).data('name') || 'Karyawan';
+                const leaveType = $(this).data('type') || 'Cuti';
+
+                Swal.fire({
+                    title: 'Tolak Pengajuan Cuti?',
+                    html: `Apakah Anda yakin ingin menolak pengajuan <strong>${leaveType}</strong> dari <strong>${userName}</strong>?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="ti ti-x me-1"></i>Ya, Tolak',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-danger me-2',
+                        cancelButton: 'btn btn-outline-secondary'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

@@ -56,7 +56,9 @@
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="status" value="{{ $rejectStatus ?? 'rejected by leader' }}">
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menolak pengajuan cuti ini?')">
+                    <button type="button" class="btn btn-danger btn-reject-leave" 
+                        data-name="{{ addslashes($leave->user->fullname ?? 'Karyawan') }}" 
+                        data-type="{{ addslashes($leave->leave_type ?? 'Cuti') }}">
                         <i class="ti ti-x me-1"></i>Tolak
                     </button>
                 </form>
@@ -65,7 +67,9 @@
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="status" value="{{ $approveStatus ?? 'approved' }}">
-                    <button type="submit" class="btn btn-success" onclick="return confirm('Apakah Anda yakin ingin menyetujui pengajuan cuti ini?')">
+                    <button type="button" class="btn btn-success btn-approve-leave" 
+                        data-name="{{ addslashes($leave->user->fullname ?? 'Karyawan') }}" 
+                        data-type="{{ addslashes($leave->leave_type ?? 'Cuti') }}">
                         <i class="ti ti-check me-1"></i>Setujui
                     </button>
                 </form>
