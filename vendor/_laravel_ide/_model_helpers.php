@@ -5,23 +5,9 @@ namespace App\Models {
 	/**
 	 * App\Models\Announcement
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $created_by
-	 * @property array|null $target_stations
-	 * @property string $content
-	 * @property string $title
-	 * @property int $id
 	 * @property-read \App\Models\User $author
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AnnouncementRead> $reads
 	 * @property-read int|null $reads_count
-	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement whereTitle($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement whereContent($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement whereTargetStations($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement whereCreatedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Announcement>|Announcement query()
@@ -326,20 +312,8 @@ namespace App\Models {
 	/**
 	 * App\Models\AnnouncementRead
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string $read_at
-	 * @property string $user_id
-	 * @property mixed $announcement_id
-	 * @property int $id
 	 * @property-read \App\Models\Announcement $announcement
 	 * @property-read \App\Models\User $user
-	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead whereAnnouncementId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead whereReadAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AnnouncementRead>|AnnouncementRead query()
@@ -643,46 +617,10 @@ namespace App\Models {
 	/**
 	 * App\Models\Attendance
 	 *
-	 * @property string|null $check_in_photo
-	 * @property string|null $check_out_photo
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $check_out_notes
-	 * @property string|null $check_in_notes
-	 * @property string|null $check_out_ip
-	 * @property string|null $check_in_ip
-	 * @property string|null $check_out_longitude
-	 * @property string|null $check_out_latitude
-	 * @property string|null $check_in_longitude
-	 * @property string|null $check_in_latitude
-	 * @property string|null $check_out_time
-	 * @property string|null $status
-	 * @property string|null $check_in_time
-	 * @property mixed $station_id
-	 * @property string $user_id
-	 * @property int $id
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\Station $station
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AttendanceCorrection> $corrections
 	 * @property-read int|null $corrections_count
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereStationId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckInTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereStatus($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckOutTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckInLatitude($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckInLongitude($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckOutLatitude($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckOutLongitude($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckInIp($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckOutIp($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckInNotes($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckOutNotes($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereUpdatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckOutPhoto($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance whereCheckInPhoto($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Attendance>|Attendance query()
@@ -986,38 +924,10 @@ namespace App\Models {
 	/**
 	 * App\Models\AttendanceCorrection
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property \Illuminate\Support\Carbon|null $decided_at
-	 * @property string|null $decided_by
-	 * @property string $status
-	 * @property string|null $rejection_reason
-	 * @property string $reason
-	 * @property \Illuminate\Support\Carbon $proposed_check_out_time
-	 * @property \Illuminate\Support\Carbon $proposed_check_in_time
-	 * @property \Illuminate\Support\Carbon $attendance_date
-	 * @property mixed $station_id
-	 * @property mixed $attendance_id
-	 * @property string $user_id
-	 * @property int $id
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\Attendance $attendance
 	 * @property-read \App\Models\Station $station
 	 * @property-read \App\Models\User $decider
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereAttendanceId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereStationId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereAttendanceDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereProposedCheckInTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereProposedCheckOutTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereReason($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereRejectionReason($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereStatus($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereDecidedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereDecidedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<AttendanceCorrection>|AttendanceCorrection query()
@@ -1321,22 +1231,6 @@ namespace App\Models {
 	/**
 	 * App\Models\Blacklist
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $banned_by
-	 * @property string|null $station
-	 * @property string $reason
-	 * @property string $fullname
-	 * @property string $nik
-	 * @property int $id
-	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist whereNik($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist whereFullname($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist whereReason($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist whereStation($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist whereBannedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Blacklist>|Blacklist query()
@@ -1640,59 +1534,11 @@ namespace App\Models {
 	/**
 	 * App\Models\Certificate
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $basic_first_aid_expired
-	 * @property string|null $basic_first_aid_registered
-	 * @property string|null $ground_support_equipment_operation_expired
-	 * @property string|null $ground_support_equipment_operation_registered
-	 * @property string|null $airport_emergency_plan_expired
-	 * @property string|null $airport_emergency_plan_registered
-	 * @property string|null $aviation_security_awareness_expired
-	 * @property string|null $aviation_security_awareness_registered
-	 * @property string|null $dangerous_goods_regulations_expired
-	 * @property string|null $dangerous_goods_regulations_registered
-	 * @property string|null $ramp_safety_airside_safety_expired
-	 * @property string|null $ramp_safety_airside_safety_registered
-	 * @property string|null $human_factors_expired
-	 * @property string|null $human_factors_registered
-	 * @property string|null $safety_management_system_expired
-	 * @property string|null $safety_management_system_registered
-	 * @property string|null $certificate_file
-	 * @property \Illuminate\Support\Carbon|null $end_date
-	 * @property \Illuminate\Support\Carbon|null $start_date
-	 * @property string|null $certificate_name
-	 * @property string $user_id
-	 * @property int $id
 	 * @property-read mixed $is_expired
 	 * @property-read mixed $is_expiring_soon
 	 * @property-read mixed $remaining_days
 	 * @property-read mixed $status
 	 * @property-read \App\Models\User $user
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereCertificateName($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereStartDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereEndDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereCertificateFile($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereSafetyManagementSystemRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereSafetyManagementSystemExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereHumanFactorsRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereHumanFactorsExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereRampSafetyAirsideSafetyRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereRampSafetyAirsideSafetyExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereDangerousGoodsRegulationsRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereDangerousGoodsRegulationsExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereAviationSecurityAwarenessRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereAviationSecurityAwarenessExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereAirportEmergencyPlanRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereAirportEmergencyPlanExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereGroundSupportEquipmentOperationRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereGroundSupportEquipmentOperationExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereBasicFirstAidRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereBasicFirstAidExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate query()
@@ -1996,33 +1842,12 @@ namespace App\Models {
 	/**
 	 * App\Models\Document
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $updated_by
-	 * @property string|null $created_by
-	 * @property string|null $ukuran_file
-	 * @property string $file_path
-	 * @property string $nama_file
-	 * @property string|null $deskripsi_dokumen
-	 * @property string $nama_dokumen
-	 * @property int $id
-	 * @property-read mixed $role_akses_dokumen
 	 * @property-read mixed $role_access_values
 	 * @property-read mixed $access_label
 	 * @property-read mixed $access_full_label
 	 * @property-read mixed $access_class
 	 * @property-read \App\Models\User $creator
 	 * @property-read \App\Models\User $updater
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereNamaDokumen($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereDeskripsiDokumen($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereNamaFile($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereFilePath($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereUkuranFile($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereCreatedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereUpdatedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document query()
@@ -2327,17 +2152,7 @@ namespace App\Models {
 	/**
 	 * App\Models\Flight_details
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property mixed $schedule_id
-	 * @property mixed $flight_id
-	 * @property int $id
 	 * @property-read \App\Models\Schedule $schedule
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details whereFlightId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details whereScheduleId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details query()
@@ -2641,30 +2456,8 @@ namespace App\Models {
 	/**
 	 * App\Models\Flights
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property bool $status
-	 * @property string $time_count
-	 * @property string $arrival
-	 * @property string $type
-	 * @property string $registasi
-	 * @property string $flight_number
-	 * @property string $airline
-	 * @property string|null $station
-	 * @property int $id
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Flight_details> $details
 	 * @property-read int|null $details_count
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereStation($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereAirline($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereFlightNumber($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereRegistasi($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereType($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereArrival($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereTimeCount($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereStatus($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Flights>|Flights query()
@@ -2968,45 +2761,11 @@ namespace App\Models {
 	/**
 	 * App\Models\Leave
 	 *
-	 * @property string|null $manager_comment
-	 * @property string|null $rejected_by
-	 * @property string|null $approved_at
-	 * @property string|null $approved_by
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $document
-	 * @property string $status
-	 * @property string|null $replacement_employee_name
-	 * @property string|null $attachment_path
-	 * @property string|null $reason
-	 * @property mixed $number_of_days
-	 * @property string $end_date
-	 * @property string $start_date
-	 * @property string $leave_type
-	 * @property string $user_id
-	 * @property int $id
 	 * @property-read mixed $total_days
 	 * @property-read \App\Models\User $user
 	 * @property-read \App\Models\User $picApprover
 	 * @property-read \App\Models\User $hoApprover
 	 * @property-read \App\Models\User $rejectedBy
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereLeaveType($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereStartDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereEndDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereNumberOfDays($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereReason($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereAttachmentPath($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereReplacementEmployeeName($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereStatus($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereDocument($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereUpdatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereApprovedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereApprovedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereRejectedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave whereManagerComment($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Leave>|Leave query()
@@ -3310,29 +3069,7 @@ namespace App\Models {
 	/**
 	 * App\Models\Overtime
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $approved_by
-	 * @property mixed $status
-	 * @property string|null $rejection_reason
-	 * @property string $description
-	 * @property string $title
-	 * @property mixed $duration
-	 * @property string $date
-	 * @property string $user_id
-	 * @property int $id
 	 * @property-read \App\Models\User $user
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereDuration($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereTitle($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereDescription($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereRejectionReason($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereStatus($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereApprovedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Overtime>|Overtime query()
@@ -3636,22 +3373,8 @@ namespace App\Models {
 	/**
 	 * App\Models\Permission
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string $label
-	 * @property string $action
-	 * @property string $module
-	 * @property string $name
-	 * @property int $id
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
 	 * @property-read int|null $roles_count
-	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission whereName($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission whereModule($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission whereAction($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission whereLabel($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Permission>|Permission query()
@@ -3955,22 +3678,8 @@ namespace App\Models {
 	/**
 	 * App\Models\Role
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property bool $is_system
-	 * @property string|null $description
-	 * @property string|null $label
-	 * @property string $name
-	 * @property int $id
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Permission> $permissions
 	 * @property-read int|null $permissions_count
-	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereName($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereLabel($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereDescription($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereIsSystem($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role query()
@@ -4274,18 +3983,8 @@ namespace App\Models {
 	/**
 	 * App\Models\Schedule
 	 *
-	 * @property bool|null $is_active
-	 * @property string $shift_id
-	 * @property string $date
-	 * @property string $user_id
-	 * @property int $id
 	 * @property-read \App\Models\Shift $shift
 	 * @property-read \App\Models\User $user
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereShiftId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereIsActive($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule query()
@@ -4589,17 +4288,7 @@ namespace App\Models {
 	/**
 	 * App\Models\Schedule_detail
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property mixed $schedule_id
-	 * @property string $user_id
-	 * @property int $id
 	 * @property-read \App\Models\Schedule $schedule
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereUserId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereScheduleId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail query()
@@ -4903,22 +4592,6 @@ namespace App\Models {
 	/**
 	 * App\Models\Shift
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property mixed $use_manpower
-	 * @property string $end_time
-	 * @property string $start_time
-	 * @property string $description
-	 * @property string $name
-	 * @property string $id
-	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereName($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereDescription($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereStartTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereEndTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereUseManpower($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift query()
@@ -5222,26 +4895,6 @@ namespace App\Models {
 	/**
 	 * App\Models\Station
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $role
-	 * @property mixed $radius
-	 * @property float|null $longitude
-	 * @property float|null $latitude
-	 * @property bool $is_active
-	 * @property string $name
-	 * @property string $code
-	 * @property int $id
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereCode($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereName($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereIsActive($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereLatitude($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereLongitude($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereRadius($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereRole($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Station>|Station query()
@@ -5545,45 +5198,44 @@ namespace App\Models {
 	/**
 	 * App\Models\User
 	 *
-	 * @property string|null $tempat_lahir
-	 * @property string|null $no_nik
-	 * @property string|null $no_kk
-	 * @property boolean $is_active
-	 * @property string|null $bpjs_kesehatan
-	 * @property string|null $bpjs_tk
-	 * @property string|null $no_hp
-	 * @property string|null $kota_domisili
-	 * @property string|null $domisili
-	 * @property string|null $pendidikan
-	 * @property string|null $alamat
-	 * @property string|null $status
-	 * @property string|null $senior_manager
-	 * @property string|null $manager
-	 * @property string|null $tanggal_lahir
-	 * @property string|null $sub_unit
-	 * @property string|null $unit
-	 * @property string|null $cluster
 	 * @property \Illuminate\Support\Carbon|null $updated_at
 	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property boolean $is_qantas
 	 * @property string|null $profile_picture
-	 * @property string $salary
-	 * @property \Illuminate\Support\Carbon|null $pas_expired
-	 * @property \Illuminate\Support\Carbon|null $pas_registered
-	 * @property \Illuminate\Support\Carbon|null $contract_end
-	 * @property \Illuminate\Support\Carbon|null $contract_start
-	 * @property \Illuminate\Support\Carbon $join_date
 	 * @property \Illuminate\Support\Carbon|null $tim_expired
 	 * @property string|null $tim_registered
 	 * @property string|null $tim_number
-	 * @property string $password
-	 * @property mixed $gender
-	 * @property string|null $phone
+	 * @property string|null $bpjs_tk
+	 * @property string|null $bpjs_kesehatan
+	 * @property \Illuminate\Support\Carbon|null $pas_expired
+	 * @property \Illuminate\Support\Carbon|null $pas_registered
 	 * @property string|null $no_pas
-	 * @property string $email
+	 * @property string|null $npwp
+	 * @property string|null $no_kk
+	 * @property string|null $no_nik
+	 * @property string|null $alamat
+	 * @property string|null $domisili
+	 * @property string|null $tempat_lahir
+	 * @property string|null $tanggal_lahir
+	 * @property string|null $pendidikan
+	 * @property string|null $phone
+	 * @property \Illuminate\Support\Carbon|null $contract_end
+	 * @property \Illuminate\Support\Carbon|null $contract_start
+	 * @property string $salary
+	 * @property \Illuminate\Support\Carbon $join_date
+	 * @property boolean $is_qantas
+	 * @property string|null $senior_manager
+	 * @property string|null $manager
+	 * @property string|null $status
+	 * @property string|null $sub_unit
+	 * @property string|null $unit
+	 * @property string|null $cluster
 	 * @property string $station
-	 * @property string|null $role
-	 * @property string $job_title
+	 * @property string $role
+	 * @property string|null $job_title
+	 * @property mixed $gender
+	 * @property boolean $is_active
+	 * @property string $password
+	 * @property string $email
 	 * @property string $fullname
 	 * @property string $id
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Leave> $leaves
@@ -5601,45 +5253,44 @@ namespace App\Models {
 	 * @property-read int|null $notifications_count
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereFullname($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereEmail($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePassword($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereIsActive($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereGender($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereJobTitle($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereRole($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereStation($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereEmail($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoPas($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePhone($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereGender($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePassword($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTimNumber($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTimRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTimExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereJoinDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereContractStart($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereContractEnd($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePasRegistered($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePasExpired($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereSalary($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereProfilePicture($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereIsQantas($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCluster($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereUnit($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereSubUnit($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTanggalLahir($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereStatus($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereManager($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereSeniorManager($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereStatus($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAlamat($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereIsQantas($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereJoinDate($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereSalary($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereContractStart($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereContractEnd($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePhone($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePendidikan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereDomisili($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereKotaDomisili($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoHp($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBpjsTk($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBpjsKesehatan($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereIsActive($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoKk($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoNik($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTanggalLahir($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTempatLahir($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereDomisili($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereAlamat($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoNik($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoKk($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNpwp($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereNoPas($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePasRegistered($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePasExpired($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBpjsKesehatan($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereBpjsTk($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTimNumber($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTimRegistered($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereTimExpired($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereProfilePicture($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<User>|User query()
@@ -5943,40 +5594,10 @@ namespace App\Models {
 	/**
 	 * App\Models\WorkOrder
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $submitted_by
-	 * @property string $type
-	 * @property string|null $photo_path
-	 * @property string $end_time
-	 * @property string $start_time
-	 * @property string $wo_number
-	 * @property string $parking_stand
-	 * @property string|null $to_flight
-	 * @property string|null $ex_flight
-	 * @property string $aircraft_reg
-	 * @property string $station
-	 * @property string $date
-	 * @property int $id
 	 * @property-read mixed $duration_minutes
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
 	 * @property-read int|null $users_count
 	 * @property-read \App\Models\User $submittedBy
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereStation($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereAircraftReg($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereExFlight($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereToFlight($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereParkingStand($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereWoNumber($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereStartTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereEndTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder wherePhotoPath($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereType($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereSubmittedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<WorkOrder>|WorkOrder query()
@@ -6280,40 +5901,10 @@ namespace App\Models {
 	/**
 	 * App\Models\WorkResult
 	 *
-	 * @property \Illuminate\Support\Carbon|null $updated_at
-	 * @property \Illuminate\Support\Carbon|null $created_at
-	 * @property string|null $submitted_by
-	 * @property string $type
-	 * @property string|null $photo_path
-	 * @property string $end_time
-	 * @property string $start_time
-	 * @property string $wo_number
-	 * @property string $parking_stand
-	 * @property string|null $to_flight
-	 * @property string|null $ex_flight
-	 * @property string $aircraft_reg
-	 * @property string $station
-	 * @property string $date
-	 * @property int $id
 	 * @property-read mixed $duration_minutes
 	 * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
 	 * @property-read int|null $users_count
 	 * @property-read \App\Models\User $submittedBy
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereId($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereDate($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereStation($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereAircraftReg($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereExFlight($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereToFlight($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereParkingStand($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereWoNumber($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereStartTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereEndTime($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult wherePhotoPath($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereType($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereSubmittedBy($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereCreatedAt($value)
-	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<WorkResult>|WorkResult query()

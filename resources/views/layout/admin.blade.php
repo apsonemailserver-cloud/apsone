@@ -728,6 +728,7 @@
                                         Sejahtera</span>.
                                     All Rights Reserved.
                                 </p>
+                                <p class="mb-0 text-muted font-monospace mt-1" style="font-size: 0.78rem;">v 3.2</p>
                             </div>
                         </div>
                     </footer>
