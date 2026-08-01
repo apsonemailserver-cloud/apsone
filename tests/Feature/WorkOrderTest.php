@@ -110,7 +110,7 @@ class WorkOrderTest extends TestCase
 
         $response->assertRedirect(route('work_orders.index'));
 
-        $this->assertDatabaseHas('work_orders', [
+        $this->assertDatabaseHas('assignments', [
             'station' => 'CGK',
             'aircraft_reg' => 'PK-LGH',
             'wo_number' => 'WO-2026-001',
@@ -197,7 +197,7 @@ class WorkOrderTest extends TestCase
         $response = $this->actingAs($this->user)->delete(route('work_orders.destroy', $workOrder->id));
         $response->assertRedirect(route('work_orders.index'));
 
-        $this->assertDatabaseMissing('work_orders', ['id' => $workOrder->id]);
+        $this->assertDatabaseMissing('assignments', ['id' => $workOrder->id]);
     }
 
     public function test_user_can_download_excel_template(): void

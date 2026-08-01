@@ -360,7 +360,7 @@ class StaffDashboardTest extends TestCase
             $table->timestamps();
         });
 
-        Schema::create('work_orders', function (Blueprint $table) {
+        Schema::create('assignments', function (Blueprint $table) {
             $table->id();
             $table->date('date');
             $table->string('station');
@@ -377,9 +377,9 @@ class StaffDashboardTest extends TestCase
             $table->timestamps();
         });
 
-        Schema::create('work_order_user', function (Blueprint $table) {
+        Schema::create('assignment_user', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('work_order_id');
+            $table->unsignedBigInteger('assignment_id');
             $table->string('user_id', 20);
             $table->timestamps();
         });

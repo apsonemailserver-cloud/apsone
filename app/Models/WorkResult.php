@@ -2,11 +2,7 @@
 
 namespace App\Models;
 
-/**
- * Class WorkResult
- * Alias for WorkOrder model to maintain backward compatibility.
- */
-class WorkResult extends WorkOrder
+class WorkResult extends Assignment
 {
-    protected $table = 'work_orders';
+    protected $table = 'assignments';
 }

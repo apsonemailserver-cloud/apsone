@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('work_order_user', function (Blueprint $table) {
+        Schema::create('assignment_user', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('work_order_id');
+            $table->unsignedBigInteger('assignment_id');
             $table->string('user_id', 20); // NIP is string in users
 
-            $table->foreign('work_order_id')->references('id')->on('work_orders')->onDelete('cascade');
+            $table->foreign('assignment_id')->references('id')->on('assignments')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('work_order_user');
+        Schema::dropIfExists('assignment_user');
     }
 };
