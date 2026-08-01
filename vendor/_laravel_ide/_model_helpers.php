@@ -3983,8 +3983,18 @@ namespace App\Models {
 	/**
 	 * App\Models\Schedule
 	 *
+	 * @property string $shift_id
+	 * @property string $date
+	 * @property bool $is_active
+	 * @property string $user_id
+	 * @property int $id
 	 * @property-read \App\Models\Shift $shift
 	 * @property-read \App\Models\User $user
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereUserId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereIsActive($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereDate($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule whereShiftId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule>|Schedule query()
@@ -4288,7 +4298,17 @@ namespace App\Models {
 	/**
 	 * App\Models\Schedule_detail
 	 *
+	 * @property \Illuminate\Support\Carbon|null $updated_at
+	 * @property \Illuminate\Support\Carbon|null $created_at
+	 * @property mixed $schedule_id
+	 * @property string $user_id
+	 * @property int $id
 	 * @property-read \App\Models\Schedule $schedule
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereUserId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereScheduleId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Schedule_detail>|Schedule_detail query()
@@ -4592,6 +4612,22 @@ namespace App\Models {
 	/**
 	 * App\Models\Shift
 	 *
+	 * @property \Illuminate\Support\Carbon|null $updated_at
+	 * @property \Illuminate\Support\Carbon|null $created_at
+	 * @property mixed $use_manpower
+	 * @property string $end_time
+	 * @property string $start_time
+	 * @property string $description
+	 * @property string $name
+	 * @property string $id
+	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereId($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereName($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereDescription($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereStartTime($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereEndTime($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereUseManpower($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereCreatedAt($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift whereUpdatedAt($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift newModelQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift newQuery()
 	 * @method static \Illuminate\Database\Eloquent\Builder<Shift>|Shift query()
