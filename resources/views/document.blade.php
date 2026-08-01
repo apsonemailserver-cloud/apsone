@@ -327,22 +327,21 @@
         .document-page .doc-card-actions {
             display: flex;
             align-items: center;
-            gap: 0.45rem;
+            gap: 0.35rem;
         }
-
 
         .document-page .btn-download-doc {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.48rem 0.95rem;
-            border-radius: 0.65rem;
+            gap: 0.35rem;
+            padding: 0.32rem 0.65rem;
+            border-radius: 0.5rem;
             background: var(--doc-primary);
             color: #ffffff;
-            font-size: 0.8rem;
-            font-weight: 700;
+            font-size: 0.75rem;
+            font-weight: 600;
             text-decoration: none;
-            box-shadow: 0 3px 10px rgba(47, 128, 237, 0.2);
+            box-shadow: 0 2px 5px rgba(47, 128, 237, 0.18);
             transition: all 0.2s ease;
         }
 
@@ -350,23 +349,23 @@
             background: var(--doc-primary-hover);
             color: #ffffff;
             transform: translateY(-1px);
-            box-shadow: 0 5px 14px rgba(47, 128, 237, 0.3);
+            box-shadow: 0 4px 10px rgba(47, 128, 237, 0.28);
         }
 
         .document-page .btn-card-edit {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.3rem;
-            padding: 0.48rem 0.75rem;
-            border-radius: 0.65rem;
-            background: rgba(245, 158, 11, 0.12);
+            width: 27px;
+            height: 27px;
+            border-radius: 0.5rem;
+            background: rgba(245, 158, 11, 0.1);
             color: #d97706;
-            font-size: 0.775rem;
-            font-weight: 700;
-            border: 1px solid rgba(245, 158, 11, 0.25);
+            font-size: 0.825rem;
+            border: 1px solid rgba(245, 158, 11, 0.2);
             transition: all 0.2s ease;
             cursor: pointer;
+            padding: 0;
         }
 
         .document-page .btn-card-edit:hover {
@@ -374,22 +373,22 @@
             color: #ffffff;
             border-color: #f59e0b;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
         }
 
         .document-page .btn-card-delete {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 33px;
-            height: 33px;
-            border-radius: 0.65rem;
-            background: rgba(239, 68, 68, 0.12);
+            width: 27px;
+            height: 27px;
+            border-radius: 0.5rem;
+            background: rgba(239, 68, 68, 0.1);
             color: #dc2626;
-            font-size: 0.95rem;
-            border: 1px solid rgba(239, 68, 68, 0.25);
+            font-size: 0.85rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
             transition: all 0.2s ease;
             cursor: pointer;
+            padding: 0;
         }
 
         .document-page .btn-card-delete:hover {
@@ -397,8 +396,8 @@
             color: #ffffff;
             border-color: #ef4444;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
+
 
 
         /* Empty State */
@@ -792,7 +791,6 @@
                                     data-roles='@json($document->role_access_values)'
                                     title="Edit Dokumen">
                                     <i class="bx bx-edit-alt"></i>
-                                    <span>Edit</span>
                                 </button>
                                 <form action="{{ route('admin.documents.destroy', $document) }}" method="POST" class="d-inline delete-document-form">
                                     @csrf
