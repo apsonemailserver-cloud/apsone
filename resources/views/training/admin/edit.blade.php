@@ -35,6 +35,20 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+            <div class="mb-3">
+                <label for="certificate_type" class="form-label">Jenis Sertifikat</label>
+                <select class="form-select @error('certificate_type') is-invalid @enderror" id="certificate_type" name="certificate_type">
+                    <option value="">-- Pilih Jenis Sertifikat --</option>
+                    @foreach (\App\Models\Certificate::TYPES as $type)
+                        <option value="{{ $type }}" {{ old('certificate_type', $certificate->certificate_type) == $type ? 'selected' : '' }}>
+                            {{ $type }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('certificate_type')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="start_date" class="form-label">Masa Berlaku Awal</label>

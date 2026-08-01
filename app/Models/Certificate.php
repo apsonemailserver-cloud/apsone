@@ -11,10 +11,23 @@ class Certificate extends Model
 {
     use HasFactory;
 
+    public const TYPES = [
+        'Dangerous Goods (DG / DGR)',
+        'Aviation Security (AVSEC)',
+        'Safety Management System (SMS)',
+        'Human Factors / Initial Human Error',
+        'Apron Movement Control (AMC)',
+        'Operator Garbarata (SKOG)',
+        'Ground Handling / SKOP2DPU',
+        'PKP-PK (Pertolongan Kecelakaan Penerbangan & Pemadam Kebakaran)',
+        'Lainnya',
+    ];
+
     protected $fillable = [
         'id',
         'user_id',
         'certificate_name',
+        'certificate_type',
         'start_date',
         'end_date',
         'certificate_file',

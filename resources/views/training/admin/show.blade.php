@@ -44,6 +44,17 @@
                             <label class="text-muted small text-uppercase fw-bold">Nama Sertifikat</label>
                             <h6 class="mt-1">{{ $certificate->certificate_name }}</h6>
                         </div>
+
+                        <div class="info-group mb-4">
+                            <label class="text-muted small text-uppercase fw-bold">Jenis Sertifikat</label>
+                            <div class="mt-1">
+                                @if ($certificate->certificate_type)
+                                    <span class="badge bg-label-info font-monospace fs-6">{{ $certificate->certificate_type }}</span>
+                                @else
+                                    <span class="text-muted small">-</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="info-group mb-4">

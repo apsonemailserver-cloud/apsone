@@ -54,6 +54,9 @@
                                     <tr class="{{ $rowClass }}">
                                         <td>
                                             <div class="fw-bold text-primary">{{ $certificate->certificate_name }}</div>
+                                            @if ($certificate->certificate_type)
+                                                <span class="badge bg-label-info font-monospace mt-1" style="font-size: 0.68rem;">{{ $certificate->certificate_type }}</span>
+                                            @endif
                                         </td>
                                         <td>{{ $certificate->start_date->format('d M Y') }}</td>
                                         <td>

@@ -1645,6 +1645,7 @@ namespace App\Models {
 	 * @property string|null $certificate_file
 	 * @property \Illuminate\Support\Carbon|null $end_date
 	 * @property \Illuminate\Support\Carbon|null $start_date
+	 * @property string|null $certificate_type
 	 * @property string|null $certificate_name
 	 * @property string $user_id
 	 * @property int $id
@@ -1656,6 +1657,7 @@ namespace App\Models {
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereUserId($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereCertificateName($value)
+	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereCertificateType($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereStartDate($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereEndDate($value)
 	 * @method static \Illuminate\Database\Eloquent\Builder<Certificate>|Certificate whereCertificateFile($value)

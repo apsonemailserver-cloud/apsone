@@ -43,6 +43,7 @@ class AdminTrainingCertificateController extends Controller
         $validatedData = $request->validate([
             'user_id' => 'required|exists:users,id',
             'certificate_name' => 'required|string|max:255',
+            'certificate_type' => 'nullable|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
@@ -98,6 +99,7 @@ class AdminTrainingCertificateController extends Controller
                 Rule::exists('users', 'id'),
             ],
             'certificate_name' => 'required|string|max:255',
+            'certificate_type' => 'nullable|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',

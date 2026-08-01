@@ -34,8 +34,23 @@
 
             <div class="mb-3">
                 <label for="certificate_name" class="form-label">Nama Sertifikat Training</label>
-                <input type="text" class="form-control @error('certificate_name') is-invalid @enderror" id="certificate_name" name="certificate_name" value="{{ old('certificate_name') }}" required>
+                <input type="text" class="form-control @error('certificate_name') is-invalid @enderror" id="certificate_name" name="certificate_name" value="{{ old('certificate_name') }}" required placeholder="Contoh: Diklat Basic AVSEC 2026">
                 @error('certificate_name')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-3">
+                <label for="certificate_type" class="form-label">Jenis Sertifikat</label>
+                <select class="form-select @error('certificate_type') is-invalid @enderror" id="certificate_type" name="certificate_type">
+                    <option value="">-- Pilih Jenis Sertifikat --</option>
+                    @foreach (\App\Models\Certificate::TYPES as $type)
+                        <option value="{{ $type }}" {{ old('certificate_type') == $type ? 'selected' : '' }}>
+                            {{ $type }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('certificate_type')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>

@@ -62,7 +62,12 @@
                                         <strong>{{ $certificate->fullname ?? 'N/A' }}</strong>
                                         <div class="small text-muted">NIP: {{ $certificate->user_id ?? 'N/A' }}</div>
                                     </td>
-                                    <td>{{ $certificate->certificate_name }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ $certificate->certificate_name }}</div>
+                                        @if ($certificate->certificate_type)
+                                            <span class="badge bg-label-info font-monospace mt-1" style="font-size: 0.68rem;">{{ $certificate->certificate_type }}</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="small text-muted">Mulai: {{ $certificate->start_date->format('d M Y') }}</div>
                                         <div class="fw-bold">Hingga: {{ $certificate->end_date->format('d M Y') }}</div>
