@@ -327,65 +327,9 @@
         .document-page .doc-card-actions {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.35rem;
         }
 
-        .document-page .btn-icon-action {
-            width: 40px;
-            height: 40px;
-            border-radius: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            text-decoration: none;
-            cursor: pointer;
-            padding: 0;
-            outline: none;
-        }
-
-        /* 1. Unduh (Soft Blue) */
-        .document-page .btn-icon-action.btn-action-download {
-            background: #ebf4ff;
-            border: 2px solid #c3ddfd;
-            color: #1d63ed;
-        }
-        .document-page .btn-icon-action.btn-action-download:hover {
-            background: #1d63ed;
-            border-color: #1d63ed;
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(29, 99, 237, 0.28);
-        }
-
-        /* 2. Edit (Soft Amber) */
-        .document-page .btn-icon-action.btn-action-edit {
-            background: #fff8eb;
-            border: 2px solid #fce3b5;
-            color: #d97706;
-        }
-        .document-page .btn-icon-action.btn-action-edit:hover {
-            background: #f59e0b;
-            border-color: #f59e0b;
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(245, 158, 11, 0.28);
-        }
-
-        /* 3. Delete (Soft Red) */
-        .document-page .btn-icon-action.btn-action-delete {
-            background: #fff0f0;
-            border: 2px solid #fcc8c8;
-            color: #e11d48;
-        }
-        .document-page .btn-icon-action.btn-action-delete:hover {
-            background: #e11d48;
-            border-color: #e11d48;
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(225, 29, 72, 0.28);
-        }
 
 
 
@@ -609,38 +553,7 @@
             border-color: rgba(134, 239, 172, 0.35) !important;
         }
 
-        html.aps-dark .document-page .btn-icon-action.btn-action-download {
-            background: rgba(29, 99, 237, 0.16) !important;
-            border: 2px solid rgba(147, 197, 253, 0.4) !important;
-            color: #93c5fd !important;
-        }
-        html.aps-dark .document-page .btn-icon-action.btn-action-download:hover {
-            background: #1d63ed !important;
-            border-color: #1d63ed !important;
-            color: #ffffff !important;
-        }
 
-        html.aps-dark .document-page .btn-icon-action.btn-action-edit {
-            background: rgba(245, 158, 11, 0.16) !important;
-            border: 2px solid rgba(253, 224, 71, 0.4) !important;
-            color: #fde047 !important;
-        }
-        html.aps-dark .document-page .btn-icon-action.btn-action-edit:hover {
-            background: #f59e0b !important;
-            border-color: #f59e0b !important;
-            color: #ffffff !important;
-        }
-
-        html.aps-dark .document-page .btn-icon-action.btn-action-delete {
-            background: rgba(225, 29, 72, 0.16) !important;
-            border: 2px solid rgba(252, 165, 165, 0.4) !important;
-            color: #fca5a5 !important;
-        }
-        html.aps-dark .document-page .btn-icon-action.btn-action-delete:hover {
-            background: #e11d48 !important;
-            border-color: #e11d48 !important;
-            color: #ffffff !important;
-        }
 
         html.aps-dark .document-page .empty-doc-state {
             background: #111c31 !important;
@@ -803,28 +716,29 @@
                             <i class="bx bx-hdd"></i>
                             <span>{{ $document->ukuran_file ?: 'File Resmi' }}</span>
                         </div>
-                        <div class="doc-card-actions">
-                            <a href="{{ route('document.download', $document) }}" class="btn-icon-action btn-action-download" title="Unduh Dokumen" aria-label="Unduh {{ $document->nama_dokumen }}">
-                                <i class="bx bx-download"></i>
+                        <div class="doc-card-actions d-flex gap-1">
+                            <a href="{{ route('document.download', $document) }}" class="action-btn" title="Unduh Dokumen" aria-label="Unduh {{ $document->nama_dokumen }}">
+                                <i class="ti ti-download"></i>
                             </a>
                             @if ($canManage)
-                                <button type="button" class="btn-icon-action btn-action-edit btn-edit-doc" 
+                                <button type="button" class="action-btn action-edit btn-edit-doc" 
                                     data-id="{{ $document->id }}" 
                                     data-title="{{ $document->nama_dokumen }}" 
                                     data-desc="{{ $document->deskripsi_dokumen }}" 
                                     data-roles='@json($document->role_access_values)'
                                     title="Edit Dokumen">
-                                    <i class="bx bx-edit-alt"></i>
+                                    <i class="ti ti-pencil"></i>
                                 </button>
                                 <form action="{{ route('admin.documents.destroy', $document) }}" method="POST" class="d-inline delete-document-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" class="btn-icon-action btn-action-delete btn-delete-doc" title="Hapus Dokumen">
-                                        <i class="bx bx-trash"></i>
+                                    <button type="button" class="action-btn action-delete btn-delete-doc" title="Hapus Dokumen">
+                                        <i class="ti ti-trash"></i>
                                     </button>
                                 </form>
                             @endif
                         </div>
+
 
 
                     </div>
