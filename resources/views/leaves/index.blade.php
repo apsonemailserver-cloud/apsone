@@ -1,5 +1,56 @@
 @extends('layout.admin')
 
+@section('styles')
+<style>
+    .btn-approve-pill {
+        background: #00a66c !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        padding: 0.45rem 1.15rem !important;
+        font-size: 0.8125rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.35rem !important;
+        box-shadow: 0 4px 12px rgba(0, 166, 108, 0.22) !important;
+        transition: all 0.18s ease !important;
+        cursor: pointer;
+        text-decoration: none !important;
+        line-height: 1.2 !important;
+    }
+    .btn-approve-pill:hover {
+        background: #008f5d !important;
+        color: #ffffff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 166, 108, 0.32) !important;
+    }
+
+    .btn-reject-pill {
+        background: #ffffff !important;
+        color: #ef4444 !important;
+        border: 1.5px solid #ef4444 !important;
+        border-radius: 9999px !important;
+        padding: 0.4rem 1.15rem !important;
+        font-size: 0.8125rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.35rem !important;
+        transition: all 0.18s ease !important;
+        cursor: pointer;
+        text-decoration: none !important;
+        line-height: 1.2 !important;
+    }
+    .btn-reject-pill:hover {
+        background: #fef2f2 !important;
+        color: #dc2626 !important;
+        border-color: #dc2626 !important;
+        transform: translateY(-1px);
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="py-4">
@@ -85,8 +136,8 @@
                                     <span class="status-badge {{ $statusConfig['class'] }}">{{ $statusConfig['text'] }}</span>
                                 </td>
                                 <td>
-                                    <div class="d-flex align-items-center gap-1">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
                                             Detail
                                         </button>
 
@@ -95,11 +146,11 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="{{ $approveStatus }}">
-                                                <button type="button" class="action-btn action-edit btn-approve-leave" 
+                                                <button type="button" class="btn-approve-pill btn-approve-leave" 
                                                     data-name="{{ addslashes($leave->user->fullname ?? 'Karyawan') }}" 
                                                     data-type="{{ addslashes($leave->leave_type ?? 'Cuti') }}" 
                                                     title="Setujui Pengajuan Cuti">
-                                                    <i class="ti ti-check"></i>
+                                                    <i class="ti ti-check"></i> Approve
                                                 </button>
                                             </form>
 
@@ -107,11 +158,11 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="{{ $rejectStatus }}">
-                                                <button type="button" class="action-btn action-delete btn-reject-leave" 
+                                                <button type="button" class="btn-reject-pill btn-reject-leave" 
                                                     data-name="{{ addslashes($leave->user->fullname ?? 'Karyawan') }}" 
                                                     data-type="{{ addslashes($leave->leave_type ?? 'Cuti') }}" 
                                                     title="Tolak Pengajuan Cuti">
-                                                    <i class="ti ti-x"></i>
+                                                    <i class="ti ti-x"></i> Tolak
                                                 </button>
                                             </form>
                                         @endif
