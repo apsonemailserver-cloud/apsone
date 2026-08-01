@@ -876,12 +876,14 @@
         }
 
         function showNotification(message, type) {
+            $('.schedule-toast-alert').remove();
+
             const alertClass = type === 'success' ? 'alert-success' :
                 type === 'error' ? 'alert-danger' :
                 type === 'warning' ? 'alert-warning' : 'alert-info';
 
             const alertHtml = `
-            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            <div class="alert ${alertClass} alert-dismissible fade show schedule-toast-alert mb-3" role="alert">
                 <i class="bx bx-info-circle me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -891,26 +893,21 @@
             $('.container-p-y').prepend(alertHtml);
 
             setTimeout(() => {
-                $('.alert').alert('close');
+                $('.schedule-toast-alert').alert('close');
             }, 3000);
         }
 
-        // Add click functionality to calendar days
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarDays = document.querySelectorAll('.calendar-day:not(.inactive)');
+        $(document).ready(function() {
+            $(document).off('click', '.calendar-day:not(.inactive)').on('click', '.calendar-day:not(.inactive)', function(e) {
+                e.stopPropagation();
+                const date = $(this).attr('data-date') || $(this).find('.date-number').text().trim();
+                const hasSchedule = $(this).hasClass('has-schedule');
 
-            calendarDays.forEach(day => {
-                day.addEventListener('click', function() {
-                    const date = this.dataset.date || this.querySelector('.date-number').textContent.trim();
-                    const hasSchedule = this.classList.contains('has-schedule');
-
-                    if (hasSchedule) {
-                        // Show schedule details modal or navigate to detail page
-                        showNotification(`Menampilkan detail jadwal untuk tanggal ${date}`, 'info');
-                    } else {
-                        showNotification(`Tidak ada jadwal untuk tanggal ${date}`, 'warning');
-                    }
-                });
+                if (hasSchedule) {
+                    showNotification(`Menampilkan detail jadwal untuk tanggal ${date}`, 'info');
+                } else {
+                    showNotification(`Tidak ada jadwal untuk tanggal ${date}`, 'warning');
+                }
             });
         });
     </script>
