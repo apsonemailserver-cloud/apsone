@@ -78,7 +78,7 @@ class StationRoleMappingAttendanceTest extends TestCase
                 'success' => false,
             ]);
 
-        $this->assertStringContainsString('belum di-mapping', $response->json('message'));
+        $this->assertStringContainsString('belum terdaftar', $response->json('message'));
     }
 
     public function test_user_can_pass_station_validation_if_role_is_mapped(): void

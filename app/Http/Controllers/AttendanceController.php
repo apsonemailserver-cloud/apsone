@@ -72,7 +72,7 @@ class AttendanceController extends Controller
         }
 
         if (!$station->isRoleAllowed($user)) {
-            return back()->with('error', "Role Anda ('{$user->role}') belum di-mapping untuk presensi di Station {$station->name} ({$station->code}).");
+            return back()->with('error', "Role {$user->role} belum terdaftar untuk melakukan presensi di Station {$station->name} ({$station->code}).");
         }
 
         $targetLat = $station->latitude;
@@ -210,7 +210,7 @@ class AttendanceController extends Controller
         if (!$station->isRoleAllowed($user)) {
             return response()->json([
                 'success' => false,
-                'message' => "Role Anda ('{$user->role}') belum di-mapping untuk presensi di Station {$station->name} ({$station->code})."
+                'message' => "Role {$user->role} belum terdaftar untuk melakukan presensi di Station {$station->name} ({$station->code})."
             ]);
         }
 
