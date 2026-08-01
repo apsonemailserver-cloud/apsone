@@ -72,14 +72,14 @@
                                         <form id="approveForm-{{ $ot->id }}" action="{{ route('overtime.approve', $ot->id) }}" method="POST">
                                             @csrf
                                             <button type="button" class="btn btn-sm btn-success" onclick="confirmApprove({{ $ot->id }}, '{{ addslashes($ot->user->fullname) }}', '{{ addslashes($ot->title) }}')">
-                                                <i class="bx bx-check me-1"></i>Approve
+                                                <i class="ti ti-check me-1"></i>Approve
                                             </button>
                                         </form>
                                         <form id="rejectForm-{{ $ot->id }}" action="{{ route('overtime.reject', $ot->id) }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="rejection_reason" id="rejection_reason-{{ $ot->id }}" value="">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" style="color:#dc2626 !important; border-color:#fecaca !important;" onclick="confirmReject({{ $ot->id }}, '{{ addslashes($ot->user->fullname) }}', '{{ addslashes($ot->title) }}')">
-                                                <i class="bx bx-x me-1"></i>Tolak
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmReject({{ $ot->id }}, '{{ addslashes($ot->user->fullname) }}', '{{ addslashes($ot->title) }}')">
+                                                <i class="ti ti-x me-1"></i>Tolak
                                             </button>
                                         </form>
                                     </div>
