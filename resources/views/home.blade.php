@@ -1741,40 +1741,138 @@
             if (tableContainer) tableContainer.classList.add('d-none');
             if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
-            fetch('{{ route("assignments.fetch_flight_data") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ station: stationCode })
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                return res.json();
-            })
-            .then(resData => {
-                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-                if (loadingState) loadingState.classList.add('d-none');
+            function loadFidsFromServer() {
+                fetch('{{ route("assignments.fetch_flight_data") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ station: stationCode })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(resData => {
+                    if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                    if (loadingState) loadingState.classList.add('d-none');
 
-                if (resData.success && Array.isArray(resData.flights) && resData.flights.length > 0) {
-                    rawFidsFlights = resData.flights;
-                    renderFidsTable(rawFidsFlights);
-                    if (tableContainer) tableContainer.classList.remove('d-none');
-                } else {
-                    rawFidsFlights = [];
-                    if (emptyState) emptyState.classList.remove('d-none');
-                    const countEl = document.getElementById('fidsSummaryCount');
-                    if (countEl) countEl.innerText = 'Total: 0 Penerbangan';
+                    if (resData.success && Array.isArray(resData.flights) && resData.flights.length > 0) {
+                        rawFidsFlights = resData.flights;
+                        renderFidsTable(rawFidsFlights);
+                        if (tableContainer) tableContainer.classList.remove('d-none');
+                    } else {
+                        rawFidsFlights = [];
+                        if (emptyState) emptyState.classList.remove('d-none');
+                        const countEl = document.getElementById('fidsSummaryCount');
+                        if (countEl) countEl.innerText = 'Total: 0 Penerbangan';
+                    }
+                })
+                .catch(err => {
+                    if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                    if (loadingState) loadingState.classList.add('d-none');
+                    if (errorState) errorState.classList.remove('d-none');
+                    const errEl = document.getElementById('fidsErrorMessage');
+                    if (errEl) errEl.innerText = 'Gagal terhubung ke server. ' + (err.message || '');
+                });
+            }
+
+            // Step 1: Try browser-side direct fetch to Flightradar24 (bypasses server IP block on production)
+            const stLower = (stationCode || 'cgk').toLowerCase();
+            const arrUrl = `https://api.flightradar24.com/common/v1/airport.json?code=${stLower}&plugin[]=&plugin-setting[schedule][mode]=arrivals&limit=100`;
+
+            fetch(arrUrl, {
+                headers: {
+                    'Accept': 'application/json, text/plain, */*',
+                    'Accept-Language': 'en-US,en;q=0.9'
                 }
             })
+            .then(res => {
+                if (!res.ok) throw new Error('FR24 HTTP ' + res.status);
+                return res.json();
+            })
+            .then(json => {
+                const arrivalsData = json?.result?.response?.airport?.pluginData?.schedule?.arrivals?.data || [];
+                if (arrivalsData.length === 0) throw new Error('no arrivals from client');
+
+                const depUrl = `https://api.flightradar24.com/common/v1/airport.json?code=${stLower}&plugin[]=&plugin-setting[schedule][mode]=departures&limit=100`;
+                return fetch(depUrl, { headers: { 'Accept': 'application/json' } })
+                    .then(r => r.ok ? r.json() : {})
+                    .then(depJson => {
+                        const depData = depJson?.result?.response?.airport?.pluginData?.schedule?.departures?.data || [];
+                        const depMap = {};
+                        depData.forEach(d => {
+                            const dFl = d.flight || {};
+                            const dReg = (dFl.aircraft?.registration || '').toUpperCase().replace(/[-\s]/g, '');
+                            const dNum = dFl.identification?.number?.default || dFl.identification?.callsign || '';
+                            const dId = dFl.identification?.id || '';
+                            if (dReg && dNum) {
+                                depMap[dReg] = { flight_no: dNum.toUpperCase(), flight_id: dId };
+                            }
+                        });
+
+                        const parsedFlights = [];
+                        arrivalsData.forEach(item => {
+                            const fl = item.flight || {};
+                            const reg = fl.aircraft?.registration || '';
+                            const flightNo = fl.identification?.number?.default || fl.identification?.callsign || '-';
+                            const flightId = fl.identification?.id || '';
+                            const ts = fl.time?.real?.arrival || fl.time?.estimated?.arrival || fl.time?.scheduled?.arrival;
+
+                            const cleanReg = reg.toUpperCase().replace(/[-\s]/g, '');
+                            const toObj = depMap[cleanReg] || {};
+                            const toFlightNo = toObj.flight_no || '-';
+
+                            let startStr = '', endStr = '';
+                            if (ts) {
+                                const d = new Date(ts * 1000);
+                                startStr = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
+                                const dEnd = new Date((ts + 1800) * 1000);
+                                endStr = dEnd.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
+                            }
+
+                            const originCity = fl.airport?.origin?.position?.region?.city
+                                || fl.airport?.origin?.name
+                                || fl.airport?.origin?.code?.iata
+                                || '';
+                            const originCode = (fl.airport?.origin?.code?.iata || '').toUpperCase();
+                            const airlineName = (fl.airline?.name || '') !== 'Airlines' ? (fl.airline?.name || '') : '';
+                            const statusText = fl.status?.text || 'Scheduled';
+                            const statusColor = (fl.status?.icon || fl.status?.generic?.status?.color || 'gray').toLowerCase();
+
+                            parsedFlights.push({
+                                flight_id: flightId,
+                                aircraft_reg: reg.toUpperCase(),
+                                ex_flight: flightNo.toUpperCase(),
+                                to_flight: toFlightNo,
+                                station: stationCode,
+                                start_time: startStr,
+                                end_time: endStr,
+                                origin: originCity !== '-' ? originCity : '',
+                                origin_code: originCode,
+                                status_text: statusText,
+                                status_color: statusColor,
+                                airline: airlineName
+                            });
+                        });
+
+                        if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                        if (loadingState) loadingState.classList.add('d-none');
+
+                        if (parsedFlights.length > 0) {
+                            rawFidsFlights = parsedFlights;
+                            renderFidsTable(rawFidsFlights);
+                            if (tableContainer) tableContainer.classList.remove('d-none');
+                        } else {
+                            loadFidsFromServer();
+                        }
+                    });
+            })
             .catch(err => {
-                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-                if (loadingState) loadingState.classList.add('d-none');
-                if (errorState) errorState.classList.remove('d-none');
-                const errEl = document.getElementById('fidsErrorMessage');
-                if (errEl) errEl.innerText = 'Gagal terhubung ke server. ' + (err.message || '');
+                // Fallback to backend server fetch
+                loadFidsFromServer();
             });
         }
 
