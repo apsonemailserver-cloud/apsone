@@ -556,6 +556,10 @@
                         $topbarMenuLinks[] = ['label' => 'Laporan Leave', 'category' => 'Apply Leave', 'hint' => 'Rekap leave staff', 'icon' => 'ti-file-text', 'url' => route('leaves.laporan')];
                     }
 
+                    if ($currentUser->canAccess('announcement', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Pengumuman', 'category' => 'General', 'hint' => 'Informasi pengumuman perusahaan', 'icon' => 'ti-speakerphone', 'url' => route('announcements.index')];
+                    }
+
                     $topbarMenuLinks[] = ['label' => 'FAQ', 'category' => 'Support', 'hint' => 'Pertanyaan umum sistem', 'icon' => 'ti-help-circle', 'url' => route('faq')];
                     $topbarMenuLinks[] = ['label' => 'Kebijakan Privasi', 'category' => 'Support', 'hint' => 'Informasi privasi aplikasi', 'icon' => 'ti-shield-check', 'url' => route('kebijakan')];
                     $topbarMenuGroups = collect($topbarMenuLinks)->groupBy('category');
@@ -591,6 +595,7 @@
 	                                </button>
 	                            </div>
 
+	                            @if (Auth::user()->canAccess('announcement', 'view'))
 	                            <div class="dropdown topbar-notification-dropdown ms-2">
 	                                <div class="topbar-notification-switch">
 	                                    <button class="topbar-notification-btn" type="button" id="topbarNotificationBell" data-bs-toggle="dropdown" aria-expanded="false" title="Pengumuman">
@@ -646,6 +651,7 @@
 	                                    </div>
 	                                </div>
 	                            </div>
+	                            @endif
                             <ul class="navbar-nav flex-row align-items-center">
                                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                     <button type="button" class="topbar-user-chip nav-link dropdown-toggle hide-arrow border-0 bg-transparent"
