@@ -767,10 +767,37 @@
             border-color: #334155 !important;
             color: #7dd3fc !important;
         }
-        /* Responsive tweaks */
+        /* Responsive & Scroll Tweaks for FIDS Modal */
+        #flightScheduleModal .fids-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+        }
+        #flightScheduleModal .modal-dialog {
+            max-height: calc(100vh - 1.5rem);
+            max-height: calc(100dvh - 1.5rem);
+        }
+        #flightScheduleModal .modal-content {
+            max-height: calc(100vh - 1.5rem);
+            max-height: calc(100dvh - 1.5rem);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #flightScheduleModal .modal-body {
+            flex: 1 1 auto;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 0 !important;
+        }
         #fidsTableContainer {
+            flex: 1 1 auto;
+            overflow-y: auto !important;
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
         #fidsTableContainer::-webkit-scrollbar {
             height: 4px;
@@ -780,13 +807,46 @@
             background: rgba(156, 163, 175, 0.4);
             border-radius: 4px;
         }
-        @media (max-width: 576px) {
-            #flightScheduleModal .modal-dialog { margin: 0.35rem; }
-            #flightScheduleModal .modal-content { border-radius: 0.75rem !important; }
-            #flightScheduleModal .fids-header { padding: 0.75rem 1rem !important; }
-            #flightScheduleModal .fids-controls { padding: 0.5rem 1rem !important; }
-            #flightScheduleModal .fids-table td, #flightScheduleModal .fids-table th { padding: 0.45rem 0.35rem; }
-            .btn-fr24, .btn-assignment-pill { padding: 4px 8px !important; font-size: 0.72rem !important; border-radius: 6px !important; }
+        #flightScheduleModal .btn-fids-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: #ffffff !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+            flex-shrink: 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+        }
+        #flightScheduleModal .btn-fids-close:hover {
+            background: rgba(255, 255, 255, 0.4);
+            color: #ffffff !important;
+            transform: scale(1.06);
+        }
+        @media (max-width: 767.98px) {
+            #flightScheduleModal .modal-dialog {
+                margin: 0.25rem !important;
+                max-width: calc(100% - 0.5rem) !important;
+                max-height: calc(100vh - 0.5rem) !important;
+                max-height: calc(100dvh - 0.5rem) !important;
+                height: calc(100dvh - 0.5rem) !important;
+            }
+            #flightScheduleModal .modal-content {
+                height: 100% !important;
+                max-height: 100% !important;
+                border-radius: 0.75rem !important;
+            }
+            #flightScheduleModal .fids-header { padding: 0.6rem 0.75rem !important; }
+            #flightScheduleModal .modal-title { font-size: 0.88rem !important; }
+            #flightScheduleModal .btn-fids-close { width: 28px; height: 28px; font-size: 0.75rem; }
+            #flightScheduleModal .fids-controls { padding: 0.45rem 0.75rem !important; }
+            #flightScheduleModal .fids-table td, #flightScheduleModal .fids-table th { padding: 0.45rem 0.35rem !important; }
+            .btn-fr24, .btn-assignment-pill { padding: 4px 8px !important; font-size: 0.7rem !important; border-radius: 6px !important; }
         }
         .btn-fr24 {
             background: #ff7a00;
@@ -835,30 +895,32 @@
     </style>
 
     <div class="modal fade" id="flightScheduleModal" tabindex="-1" aria-labelledby="flightScheduleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 overflow-hidden" style="border-radius: .875rem;">
                 <!-- Header FIDS Board -->
                 <div class="fids-header modal-header text-white py-3 px-3 px-md-4">
-                    <div class="d-flex align-items-center gap-2 gap-md-3 flex-grow-1 min-w-0">
-                        <div class="rounded-circle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center text-info flex-shrink-0" style="width:38px;height:38px;">
-                            <i class="fas fa-plane-arrival"></i>
+                    <div class="d-flex align-items-center gap-2 gap-md-3 flex-grow-1 min-w-0 me-2">
+                        <div class="rounded-circle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center text-info flex-shrink-0" style="width:34px;height:34px;">
+                            <i class="fas fa-plane-arrival" style="font-size:.9rem;"></i>
                         </div>
-                        <div class="min-w-0">
-                            <h6 class="modal-title fw-bold text-white mb-0 d-flex align-items-center gap-2 flex-wrap" id="flightScheduleModalLabel">
-                                <span>Flight Schedule Board</span>
-                                <span class="badge bg-warning text-dark px-2" style="font-size:.8rem;" id="fidsStationCode">CGK</span>
+                        <div class="min-w-0 flex-grow-1">
+                            <h6 class="modal-title fw-bold text-white mb-0 d-flex align-items-center gap-1.5 flex-wrap" id="flightScheduleModalLabel">
+                                <span class="text-truncate">Flight Schedule Board</span>
+                                <span class="badge bg-warning text-dark px-2 py-0.5" style="font-size:.75rem;" id="fidsStationCode">CGK</span>
                             </h6>
-                            <small class="text-light opacity-75 d-block text-truncate" id="fidsStationName" style="font-size:.75rem;">Jakarta (Soekarno-Hatta)</small>
+                            <small class="text-light opacity-75 d-block text-truncate" id="fidsStationName" style="font-size:.72rem;">Jakarta (Soekarno-Hatta)</small>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto">
                         <span class="badge border border-success text-success d-none d-sm-inline-flex align-items-center gap-1" style="font-size:.68rem;background:rgba(34,197,94,.12);">
                             <i class="fas fa-satellite-dish fa-spin"></i> Live
                         </span>
                         <a href="https://www.flightradar24.com" target="_blank" rel="noopener" class="btn btn-sm d-none d-md-inline-flex align-items-center gap-1 text-white" style="background:#FF8000;border:none;font-size:.72rem;padding:4px 10px;border-radius:6px;" title="Buka Flightradar24">
                             <i class="fas fa-external-link-alt"></i> FR24
                         </a>
-                        <button type="button" class="btn-close btn-close-white ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-fids-close" data-bs-dismiss="modal" aria-label="Close" title="Tutup Modal">
+                            <i class="fas fa-times" style="font-size:14px;"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -904,7 +966,7 @@
                         <small class="text-muted">Coba refresh beberapa saat lagi.</small>
                     </div>
                     <!-- FIDS Table -->
-                    <div id="fidsTableContainer" class="table-responsive d-none" style="max-height:60vh;overflow-y:auto;">
+                    <div id="fidsTableContainer" class="table-responsive h-100 d-none">
                         <table class="table table-hover align-middle mb-0 fids-table" id="fidsTable">
                             <thead>
                                 <tr>
