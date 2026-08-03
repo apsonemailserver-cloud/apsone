@@ -107,7 +107,7 @@
                 <div class="app-brand demo">
                     <a href="{{ route('home') }}" class="app-brand-link">
                         <span class="app-brand-logo demo">
-                            <img src="{{ asset('storage/aps_mini.png') }}" alt="APS Logo" width="70" height="70" loading="lazy" decoding="async"
+                            <img src="{{ asset('storage/aps_mini.png') }}" alt="APS Logo" width="70" height="70" loading="eager" fetchpriority="high" decoding="async"
                                 style="width: 70px; height: auto;">
                         </span>
                     </a>
