@@ -44,6 +44,34 @@
     @yield('styles')
     <!-- pjax-page-styles-end -->
 
+    <!-- PJAX Event Listener Shim: Ensures DOMContentLoaded callbacks execute even after initial page load -->
+    <script>
+        (function() {
+            const origDocAdd = Document.prototype.addEventListener;
+            const origWinAdd = Window.prototype.addEventListener;
+
+            Document.prototype.addEventListener = function(type, listener, options) {
+                if (type === 'DOMContentLoaded' && (document.readyState === 'interactive' || document.readyState === 'complete')) {
+                    if (typeof listener === 'function') {
+                        setTimeout(function() { listener.call(document, new Event('DOMContentLoaded')); }, 0);
+                    }
+                    return;
+                }
+                return origDocAdd.call(this, type, listener, options);
+            };
+
+            Window.prototype.addEventListener = function(type, listener, options) {
+                if (type === 'DOMContentLoaded' && (document.readyState === 'interactive' || document.readyState === 'complete')) {
+                    if (typeof listener === 'function') {
+                        setTimeout(function() { listener.call(window, new Event('DOMContentLoaded')); }, 0);
+                    }
+                    return;
+                }
+                return origWinAdd.call(this, type, listener, options);
+            };
+        })();
+    </script>
+
     <!-- 4. State Management (Anti-Refresh/Flicker/FOUC Prevention) -->
     <script>
         // Eksekusi LANGSUNG sebelum body dirender untuk mencegah Flash/Layout Shift saat Refresh
@@ -1913,34 +1941,35 @@
                     node.remove();
                 });
 
-                const inserted = [];
+                const loadPromises = [];
                 nodesBetween(newDocument.head, nextStart, nextEnd).forEach(function(node) {
-                    const clone = document.importNode(node, true);
-                    document.head.insertBefore(clone, currentEnd);
-                    inserted.push(clone);
+                    if (node.nodeType === 1 && node.tagName === 'LINK' && (node.getAttribute('rel') || '').toLowerCase() === 'stylesheet') {
+                        const newLink = document.createElement('link');
+                        Array.from(node.attributes).forEach(function(attr) {
+                            newLink.setAttribute(attr.name, attr.value);
+                        });
+
+                        const p = new Promise(function(resolve) {
+                            const timer = setTimeout(resolve, 1500);
+                            newLink.onload = function() { clearTimeout(timer); resolve(); };
+                            newLink.onerror = function() { clearTimeout(timer); resolve(); };
+                        });
+                        loadPromises.push(p);
+                        document.head.insertBefore(newLink, currentEnd);
+                    } else if (node.nodeType === 1 && node.tagName === 'STYLE') {
+                        const newStyle = document.createElement('style');
+                        Array.from(node.attributes).forEach(function(attr) {
+                            newStyle.setAttribute(attr.name, attr.value);
+                        });
+                        newStyle.textContent = node.textContent;
+                        document.head.insertBefore(newStyle, currentEnd);
+                    } else {
+                        const clone = document.importNode(node, true);
+                        document.head.insertBefore(clone, currentEnd);
+                    }
                 });
 
-                await Promise.all(inserted.map(function(node) {
-                    if (
-                        node.nodeType === 1 &&
-                        node.tagName === 'LINK' &&
-                        (node.getAttribute('rel') || '').toLowerCase() === 'stylesheet'
-                    ) {
-                        return new Promise(function(resolve) {
-                            const timeout = setTimeout(resolve, 1600);
-                            node.addEventListener('load', function() {
-                                clearTimeout(timeout);
-                                resolve();
-                            }, { once: true });
-                            node.addEventListener('error', function() {
-                                clearTimeout(timeout);
-                                resolve();
-                            }, { once: true });
-                        });
-                    }
-
-                    return Promise.resolve();
-                }));
+                await Promise.all(loadPromises);
             }
 
             async function replacePageScripts(newDocument) {
@@ -1960,8 +1989,9 @@
                         });
 
                         if (script.src) {
-                            next.onload = resolve;
-                            next.onerror = resolve;
+                            const timer = setTimeout(resolve, 3000);
+                            next.onload = function() { clearTimeout(timer); resolve(); };
+                            next.onerror = function() { clearTimeout(timer); resolve(); };
                             next.src = script.src;
                             currentScripts.appendChild(next);
                             return;
@@ -2022,6 +2052,7 @@
                         document.scrollingElement.scrollTop = 0;
                     }
                     restoreSidebarScroll();
+                    document.dispatchEvent(new Event('DOMContentLoaded'));
                     window.dispatchEvent(new CustomEvent('aps:content-loaded', {
                         detail: {
                             url: target.href
