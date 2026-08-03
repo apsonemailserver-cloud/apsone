@@ -150,6 +150,10 @@ class User extends Authenticatable
 
     public function hasPermission(string $permissionName): bool
     {
+        if ($permissionName === 'profile.view') {
+            return true;
+        }
+
         if ($this->isAdmin() || $this->role === 'Admin') {
             return true;
         }

@@ -52,7 +52,7 @@ class Permission extends Model
     {
         return [
             'dashboard'    => ['view'],
-            'profile'      => ['view', 'edit'],
+            'profile'      => ['edit'],
             'assignment'   => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
             'attendance'   => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
             'overtime'     => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
