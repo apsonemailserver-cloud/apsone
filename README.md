@@ -1,6 +1,6 @@
-# AP3 SIAPS (Sistem Informasi Operasional Station)
+# APS SIAPS (Sistem Informasi Operasional Station)
 
-**AP3 SIAPS** adalah sistem informasi operasional station berbasis web menggunakan **Laravel 12** yang dirancang untuk mendukung manajemen operasional stasiun penerbangan secara real-time. Sistem ini mencakup pemantauan jadwal kerja (*schedule*), shift, absensi berbasis lokasi (GPS) dan verifikasi kamera (WebRTC), pengerjaan pesawat (*work orders* / *aircraft deep cleaning*), pengajuan cuti, lembur, manajemen staf, *blacklist*, sertifikasi & training, monitoring legalitas pegawai (kontrak, PAS bandara, TIM bandara), hak akses *Role-Based Access Control* (RBAC), dokumen operasional, serta broadcast pengumuman dalam satu platform terpadu.
+**APS SIAPS** adalah sistem informasi operasional station berbasis web menggunakan **Laravel 12** yang dirancang untuk mendukung manajemen operasional stasiun penerbangan secara real-time. Sistem ini mencakup pemantauan jadwal kerja (*schedule*), shift, absensi berbasis lokasi (GPS) dan verifikasi kamera (WebRTC), pengerjaan pesawat (*work orders* / *aircraft deep cleaning*), pengajuan cuti, lembur, manajemen staf, *blacklist*, sertifikasi & training, monitoring legalitas pegawai (kontrak, PAS bandara, TIM bandara), hak akses *Role-Based Access Control* (RBAC), dokumen operasional, serta broadcast pengumuman dalam satu platform terpadu.
 
 Aplikasi dirancang responsif, bersih, dan cepat untuk digunakan baik di perangkat desktop maupun *mobile*.
 
@@ -23,7 +23,7 @@ Sistem autentikasi aman dengan perlindungan NIP & Password, dilengkapi fitur pem
 ### 2. Dashboard Operasional Realtime
 Dashboard interaktif menyajikan ringkasan status operasional station secara *live*, metrik pekerjaan berjalan, total staf aktif, staf bertugas, serta grafik performa.
 
-![Dashboard Overview AP3 SIAPS](docs/images/dashboard-overview.png)
+![Dashboard Overview APS SIAPS](docs/images/dashboard-overview.png)
 
 - **Global & Station Filter:** Memantau indikator operasional secara menyeluruh (*Global*) maupun per *Station* spesifik.
 - **Dynamic Quick Action:** Akses cepat ke penambahan *Work Order*, absensi hari ini, serta informasi profil pegawai.

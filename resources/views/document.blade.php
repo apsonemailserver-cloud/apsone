@@ -580,7 +580,7 @@
             </div>
             <h1 class="hero-title">Dokumen Operasional & Administrasi</h1>
             <p class="hero-subtitle">
-                Akses cepat ke formulir, kebijakan, panduan kerja, dan laporan resmi AP3 sesuai peran Anda.
+                Akses cepat ke formulir, kebijakan, panduan kerja, dan laporan resmi APS sesuai peran Anda.
             </p>
         </div>
 
