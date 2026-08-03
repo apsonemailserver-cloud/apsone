@@ -530,7 +530,30 @@
                 // Helper: parse & render flights array into combobox
                 function renderFlights(flights, source) {
                     window.__activeFlights = flights;
-                    let html = '<option value="">-- Pilih Jadwal Penerbangan (Kedatangan) --</option>';
+
+                    // 1. Determine matching flight index first
+                    let matchIdx = -1;
+                    const searchReg = (queryReg || $('#aircraftRegInput').val() || '').toUpperCase().replace(/[-\s]/g, '');
+                    const searchEx = ($('#exFlightInput').val() || '').toUpperCase().replace(/[-\s]/g, '');
+
+                    if (searchReg || searchEx) {
+                        matchIdx = flights.findIndex(function(f) {
+                            const fReg = (f.aircraft_reg || f.registasi || '').toUpperCase().replace(/[-\s]/g, '');
+                            const fEx = (f.ex_flight || f.flight_number || '').toUpperCase().replace(/[-\s]/g, '');
+
+                            const regMatch = searchReg && fReg && (fReg === searchReg || fReg.includes(searchReg) || searchReg.includes(fReg));
+                            const exMatch = searchEx && fEx && (fEx === searchEx || fEx.includes(searchEx) || searchEx.includes(fEx));
+
+                            return regMatch || exMatch;
+                        });
+                    }
+
+                    if (matchIdx === -1 && (queryReg || autoSelectFirst) && flights.length > 0) {
+                        matchIdx = 0;
+                    }
+
+                    // 2. Build HTML with 'selected' attribute directly on matching <option>
+                    let html = `<option value="" ${matchIdx === -1 ? 'selected' : ''}>-- Pilih Jadwal Penerbangan (${flights.length} Flight) --</option>`;
                     flights.forEach(function(item, idx) {
                         const ex = item.ex_flight || item.flight_number || '';
                         const to = (item.to_flight && item.to_flight !== '-') ? ` / ${item.to_flight}` : '';
@@ -573,35 +596,17 @@
                         const arr = item.start_time || item.arrival || '';
                         const timeStr = arr ? ` [${arr}]` : '';
 
-                        html += `<option value="${idx}">${flightNo}${detailStr}${originStr}${timeStr}</option>`;
+                        const isSel = (idx === matchIdx) ? 'selected' : '';
+                        html += `<option value="${idx}" ${isSel}>${flightNo}${detailStr}${originStr}${timeStr}</option>`;
                     });
+
                     $combo.html(html);
-
-                    // Auto-select matching flight by aircraft_reg or ex_flight if available
-                    let matchIdx = -1;
-                    const searchReg = (queryReg || $('#aircraftRegInput').val() || '').toUpperCase().replace(/[-\s]/g, '');
-                    const searchEx = ($('#exFlightInput').val() || '').toUpperCase().replace(/[-\s]/g, '');
-
-                    if (searchReg || searchEx) {
-                        matchIdx = flights.findIndex(function(f) {
-                            const fReg = (f.aircraft_reg || f.registasi || '').toUpperCase().replace(/[-\s]/g, '');
-                            const fEx = (f.ex_flight || f.flight_number || '').toUpperCase().replace(/[-\s]/g, '');
-
-                            const regMatch = searchReg && fReg && (fReg === searchReg || fReg.includes(searchReg) || searchReg.includes(fReg));
-                            const exMatch = searchEx && fEx && (fEx === searchEx || fEx.includes(searchEx) || searchEx.includes(fEx));
-
-                            return regMatch || exMatch;
-                        });
-                    }
 
                     if (matchIdx !== -1 && flights[matchIdx]) {
                         $combo.val(matchIdx.toString());
                         const comboEl = document.getElementById('flightCombobox');
                         if (comboEl) comboEl.selectedIndex = matchIdx + 1; // +1 because index 0 is placeholder
-                    } else if ((queryReg || autoSelectFirst) && flights[0]) {
-                        $combo.val('0');
-                        const comboEl = document.getElementById('flightCombobox');
-                        if (comboEl) comboEl.selectedIndex = 1;
+                        window.populateFlightData(flights[matchIdx]);
                     } else {
                         $combo.val('');
                         const comboEl = document.getElementById('flightCombobox');
