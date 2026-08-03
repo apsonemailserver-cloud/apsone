@@ -488,7 +488,13 @@
                 const $combo = $('#flightCombobox');
                 $combo.val('');
                 const comboEl = document.getElementById('flightCombobox');
-                if (comboEl) comboEl.selectedIndex = 0;
+                if (comboEl) {
+                    comboEl.selectedIndex = 0;
+                    if (comboEl._apsCombobox) {
+                        comboEl._apsCombobox.placeholder = comboEl.options[0]?.text || 'Pilih data';
+                    }
+                    comboEl.dispatchEvent(new Event('change', { bubbles: true }));
+                }
 
                 // Clear form fields
                 $('#aircraftRegInput').val('');
@@ -602,15 +608,24 @@
 
                     $combo.html(html);
 
+                    const comboEl = document.getElementById('flightCombobox');
+                    if (comboEl) {
+                        if (matchIdx !== -1 && flights[matchIdx]) {
+                            $combo.val(matchIdx.toString());
+                            comboEl.selectedIndex = matchIdx + 1; // +1 because index 0 is placeholder
+                        } else {
+                            $combo.val('');
+                            comboEl.selectedIndex = 0;
+                        }
+
+                        if (comboEl._apsCombobox) {
+                            comboEl._apsCombobox.placeholder = comboEl.options[0]?.text || 'Pilih data';
+                        }
+                        comboEl.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+
                     if (matchIdx !== -1 && flights[matchIdx]) {
-                        $combo.val(matchIdx.toString());
-                        const comboEl = document.getElementById('flightCombobox');
-                        if (comboEl) comboEl.selectedIndex = matchIdx + 1; // +1 because index 0 is placeholder
                         window.populateFlightData(flights[matchIdx]);
-                    } else {
-                        $combo.val('');
-                        const comboEl = document.getElementById('flightCombobox');
-                        if (comboEl) comboEl.selectedIndex = 0;
                     }
 
                     $status.removeClass('text-muted text-danger').addClass('text-success')
