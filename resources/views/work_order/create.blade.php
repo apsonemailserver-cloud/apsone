@@ -81,7 +81,7 @@
                                            value="{{ old('wo_number') }}"
                                            placeholder="e.g. WO-2026-001"
                                            maxlength="100">
-                                    <small class="text-muted d-block mt-1">Kosongkan jika tidak ada WO</small>
+                                    <small class="text-muted d-block mt-1 text-nowrap" style="font-size: 0.72rem;">Kosongkan jika tanpa WO</small>
                                 </div>
 
                                 <div class="col-md-3">
