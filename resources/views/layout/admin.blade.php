@@ -550,7 +550,10 @@
 
                     if ($canManageLeave || $currentUser->canAccess('leave', 'approve')) {
                         $topbarMenuLinks[] = ['label' => 'Approval Leave', 'category' => 'Apply Leave', 'hint' => 'Review pengajuan leave', 'icon' => 'ti-circle-check', 'url' => route('leaves.index')];
-                    }    $topbarMenuLinks[] = ['label' => 'Laporan Leave', 'category' => 'Apply Leave', 'hint' => 'Rekap leave staff', 'icon' => 'ti-file-text', 'url' => route('leaves.laporan')];
+                    }
+
+                    if ($canManageLeave || $currentUser->canAccess('leave', 'export')) {
+                        $topbarMenuLinks[] = ['label' => 'Laporan Leave', 'category' => 'Apply Leave', 'hint' => 'Rekap leave staff', 'icon' => 'ti-file-text', 'url' => route('leaves.laporan')];
                     }
 
                     $topbarMenuLinks[] = ['label' => 'FAQ', 'category' => 'Support', 'hint' => 'Pertanyaan umum sistem', 'icon' => 'ti-help-circle', 'url' => route('faq')];
