@@ -150,20 +150,26 @@ Penyampaian informasi resmi stasiun dan portal unduhan dokumen operasional.
 
 ---
 
-## Teknologi yang Digunakan
+## Teknologi & Tech Stack yang Digunakan
 
-- **Framework Backend:** [Laravel 12](https://laravel.com/)
-- **Bahasa Pemrograman:** PHP >= 8.2 (Production: PHP 8.3-FPM)
-- **Database Server:** MySQL / MariaDB
-- **Frontend Build Tool:** [Vite](https://vitejs.dev/)
-- **CSS & UI Framework:** Tailwind CSS & Blade Components
-- **Media & Camera API:** HTML5 WebRTC MediaDevices API
-- **Location Service:** Geolocation API (Latitude, Longitude, Accuracy)
-- **Export Spreadsheet:** `maatwebsite/excel`
-- **PDF Generator:** `barryvdh/laravel-dompdf`
-- **Alert & Toast UI:** `realrashid/sweet-alert`
-- **Web Server Production:** Nginx
-- **Automation Tools:** GitHub Actions CI/CD (SSH deploy) & Rclone (Google Drive backup)
+Aplikasi ini dibangun menggunakan kombinasi teknologi modern, handal, dan berkinerja tinggi:
+
+| Komponen | Teknologi & Versi | Deskripsi |
+| :--- | :--- | :--- |
+| **Framework Backend** | **Laravel 12.x** (`laravel/framework: ^12.0`) | Framework PHP modern berbasis MVC |
+| **Bahasa Pemrograman** | **PHP ^8.2** (Production: **PHP 8.3-FPM**) | Bahasa pemrograman utama server-side |
+| **Database Engine** | **MySQL 8.0** / MariaDB | Sistem manajemen database relasional |
+| **Frontend Build Tool** | **Vite 6.x** (`vite: ^6.0`) | Asset bundler dan HMR cepat |
+| **UI & Styling** | Bootstrap 5, Sneat Admin, Custom CSS, Tailwind CSS | Layout responsif desktop & mobile |
+| **Icon Libraries** | Tabler Icons, Boxicons, FontAwesome | Asset ikon antarmuka |
+| **Absensi Camera API** | HTML5 WebRTC MediaDevices API | Verifikasi wajah foto absensi realtime |
+| **GPS Geofencing** | HTML5 Geolocation API | Validasi titik lokasi (Latitude, Longitude) |
+| **Import / Export Excel** | `maatwebsite/excel: ^3.1` | Pengolahan data staf, absensi, & lembur |
+| **PDF Generator** | `barryvdh/laravel-dompdf: ^3.1` | Cetak laporan work order & dokumen |
+| **Alert & Notification** | `realrashid/sweet-alert: ^7.3` | Pop-up interaktif & toast notification |
+| **Grafik & Visualisasi** | Chart.js | Grafik performa operasional & statistik |
+| **Web Server Production** | Nginx | Web server & FastCGI reverse proxy |
+| **CI/CD & Cloud Backup** | GitHub Actions & Rclone (Google Drive) | Deploy otomatis via SSH & backup harian |
 
 ---
 
