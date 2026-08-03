@@ -577,11 +577,31 @@
                     });
                     $combo.html(html);
 
-                    if ((queryReg || autoSelectFirst) && flights[0]) {
+                    // Auto-select matching flight by aircraft_reg or ex_flight if available
+                    let matchIdx = -1;
+                    const searchReg = (queryReg || $('#aircraftRegInput').val() || '').toUpperCase().replace(/[-\s]/g, '');
+                    const searchEx = ($('#exFlightInput').val() || '').toUpperCase().replace(/[-\s]/g, '');
+
+                    if (searchReg || searchEx) {
+                        matchIdx = flights.findIndex(function(f) {
+                            const fReg = (f.aircraft_reg || f.registasi || '').toUpperCase().replace(/[-\s]/g, '');
+                            const fEx = (f.ex_flight || f.flight_number || '').toUpperCase().replace(/[-\s]/g, '');
+
+                            const regMatch = searchReg && fReg && (fReg === searchReg || fReg.includes(searchReg) || searchReg.includes(fReg));
+                            const exMatch = searchEx && fEx && (fEx === searchEx || fEx.includes(searchEx) || searchEx.includes(fEx));
+
+                            return regMatch || exMatch;
+                        });
+                    }
+
+                    if (matchIdx !== -1 && flights[matchIdx]) {
+                        $combo.val(matchIdx.toString());
+                        const comboEl = document.getElementById('flightCombobox');
+                        if (comboEl) comboEl.selectedIndex = matchIdx + 1; // +1 because index 0 is placeholder
+                    } else if ((queryReg || autoSelectFirst) && flights[0]) {
                         $combo.val('0');
                         const comboEl = document.getElementById('flightCombobox');
                         if (comboEl) comboEl.selectedIndex = 1;
-                        window.populateFlightData(flights[0]);
                     } else {
                         $combo.val('');
                         const comboEl = document.getElementById('flightCombobox');
@@ -760,7 +780,8 @@
                 // Auto-load flight list if station is already selected
                 const initStation = $('#stationInput').val();
                 if (initStation) {
-                    window.loadFlightCombobox(initStation, '');
+                    const initReg = $('#aircraftRegInput').val() || '';
+                    window.loadFlightCombobox(initStation, initReg);
                 }
 
                 // ============================================
