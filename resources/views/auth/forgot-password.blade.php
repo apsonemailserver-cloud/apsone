@@ -9,21 +9,21 @@
     <title>Lupa Password</title>
     <meta name="description" content="" />
     <link rel="icon" href="{{ asset('storage/aps_mini.png') }}" sizes="48x48" type="image/png">
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/core.css') }}"
-        class="template-customizer-core-css" />
-    <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/theme-default.css') }}"
-        class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="{{ asset('template/assets/css/demo.css') }}" />
-    <link rel="stylesheet" href="{{ asset('template/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}" media="print" onload="this.media='all'" />
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap">
+        <link rel="stylesheet" href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}">
+    </noscript>
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/core.min.css') }}" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/theme-default.min.css') }}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{{ asset('template/assets/css/demo.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" media="print" onload="this.media='all'" />
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/pages/page-auth.css') }}" />
-    <script src="{{ asset('template/assets/vendor/js/helpers.js') }}"></script>
-    <script src="{{ asset('template/assets/js/config.js') }}"></script>
+    <script src="{{ asset('template/assets/vendor/js/helpers.js') }}" defer></script>
+    <script src="{{ asset('template/assets/js/config.js') }}" defer></script>
     @include('auth.partials.auth-style')
 </head>
 
@@ -125,12 +125,12 @@
         </main>
     </div>
 
-    <script src="{{ asset('template/assets/vendor/libs/jquery/jquery.js') }}"></script>
-    <script src="{{ asset('template/assets/vendor/libs/popper/popper.js') }}"></script>
-    <script src="{{ asset('template/assets/vendor/js/bootstrap.js') }}"></script>
-    <script src="{{ asset('template/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
-    <script src="{{ asset('template/assets/vendor/js/menu.js') }}"></script>
-    <script src="{{ asset('template/assets/js/main.js') }}"></script>
+    <script src="{{ asset('template/assets/vendor/libs/jquery/jquery.js') }}" defer></script>
+    <script src="{{ asset('template/assets/vendor/libs/popper/popper.js') }}" defer></script>
+    <script src="{{ asset('template/assets/vendor/js/bootstrap.js') }}" defer></script>
+    <script src="{{ asset('template/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}" defer></script>
+    <script src="{{ asset('template/assets/vendor/js/menu.js') }}" defer></script>
+    <script src="{{ asset('template/assets/js/main.js') }}" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const applyTheme = (theme) => {
