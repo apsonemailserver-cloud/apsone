@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default"
-    data-assets-path="{{ asset('template/') }}/assets/" data-template="vertical-menu-template-free">
+    data-assets-path="{{ asset('template/assets') }}/" data-template="vertical-menu-template-free">
 
 <head>
     <meta charset="utf-8" />
@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('template/') }}/assets/vendor/fonts/boxicons.css" />
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css" media="print" onload="this.media='all'">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" media="print" onload="this.media='all'" />
@@ -32,13 +32,13 @@
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     </noscript>
 
-    <link rel="stylesheet" href="{{ asset('template/') }}/assets/vendor/css/core.min.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="{{ asset('template/') }}/assets/vendor/css/theme-default.min.css" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="{{ asset('template/') }}/assets/css/demo.min.css" />
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/core.min.css') }}" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/theme-default.min.css') }}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{{ asset('template/assets/css/demo.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('template/assets/css/custom-admin.min.css') }}?v={{ filemtime(public_path('template/assets/css/custom-admin.min.css')) }}" />
 
-    <script src="{{ asset('template/') }}/assets/vendor/js/helpers.js" defer></script>
-    <script src="{{ asset('template/') }}/assets/js/config.js" defer></script>
+    <script src="{{ asset('template/assets/vendor/js/helpers.js') }}" defer></script>
+    <script src="{{ asset('template/assets/js/config.js') }}" defer></script>
 
     <!-- pjax-page-styles-start -->
     @yield('styles')
@@ -751,14 +751,14 @@
 
         <div class="layout-overlay" id="custom-layout-overlay"></div>
     </div>
-    <script src="{{ asset('template/') }}/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="{{ asset('template/assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="{{ asset('template/') }}/assets/vendor/libs/popper/popper.js" defer></script>
-    <script src="{{ asset('template/') }}/assets/vendor/js/bootstrap.js" defer></script>
-    <script src="{{ asset('template/') }}/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js" defer></script>
-    <script src="{{ asset('template/') }}/assets/vendor/js/menu.js" defer></script>
+    <script src="{{ asset('template/assets/vendor/libs/popper/popper.js') }}" defer></script>
+    <script src="{{ asset('template/assets/vendor/js/bootstrap.js') }}" defer></script>
+    <script src="{{ asset('template/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}" defer></script>
+    <script src="{{ asset('template/assets/vendor/js/menu.js') }}" defer></script>
 
-    <script src="{{ asset('template/') }}/assets/js/main.js?v={{ filemtime(public_path('template/assets/js/main.js')) }}" defer></script>
+    <script src="{{ asset('template/assets/js/main.js') }}?v={{ filemtime(public_path('template/assets/js/main.js')) }}" defer></script>
 
     <script>
         function updateDateTime() {
@@ -789,6 +789,65 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
     </script>
+    <style>
+        /* View Transitions API Ultra-Smooth Circle Animation */
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation: none;
+            mix-blend-mode: normal;
+            display: block;
+        }
+
+        ::view-transition-old(root) {
+            z-index: 1;
+        }
+
+        ::view-transition-new(root) {
+            z-index: 99999;
+        }
+
+        .aps-dark::view-transition-old(root) {
+            z-index: 99999;
+        }
+
+        .aps-dark::view-transition-new(root) {
+            z-index: 1;
+        }
+
+        /* Disable individual element transitions while View Transition API is snapshotting to prevent frame stutter */
+        html.in-view-transition *,
+        html.in-view-transition *::before,
+        html.in-view-transition *::after {
+            transition: none !important;
+            animation: none !important;
+        }
+
+        /* Smooth Fallback CSS Transitions for UI Layout & Components (Only active when View Transition API is NOT running) */
+        html:not(.in-view-transition):not(.no-transitions) body,
+        html:not(.in-view-transition):not(.no-transitions) .layout-wrapper,
+        html:not(.in-view-transition):not(.no-transitions) .layout-container,
+        html:not(.in-view-transition):not(.no-transitions) .layout-menu,
+        html:not(.in-view-transition):not(.no-transitions) .aps-topbar,
+        html:not(.in-view-transition):not(.no-transitions) .card,
+        html:not(.in-view-transition):not(.no-transitions) .modal-content,
+        html:not(.in-view-transition):not(.no-transitions) .dropdown-menu,
+        html:not(.in-view-transition):not(.no-transitions) .table,
+        html:not(.in-view-transition):not(.no-transitions) .form-control,
+        html:not(.in-view-transition):not(.no-transitions) .form-select {
+            transition: background-color 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+                        border-color 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+                        color 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+                        box-shadow 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        }
+
+        html.no-transitions *,
+        html.no-transitions *::before,
+        html.no-transitions *::after {
+            transition: none !important;
+            animation: none !important;
+        }
+    </style>
+
     <script>
         (function() {
             function applyTheme(theme) {
@@ -803,21 +862,20 @@
                     button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
                 });
 
-	                document.querySelectorAll('[data-theme-toggle]').forEach(function(button) {
-	                    const icon = button.querySelector('i');
-	                    const isDark = nextTheme === 'dark';
-	                    const targetTheme = isDark ? 'light' : 'dark';
+                document.querySelectorAll('[data-theme-toggle]').forEach(function(button) {
+                    const icon = button.querySelector('i');
+                    const isDark = nextTheme === 'dark';
+                    const targetTheme = isDark ? 'light' : 'dark';
 
-	                    button.dataset.themeTarget = targetTheme;
-	                    button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-	                    button.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
-	                    button.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+                    button.dataset.themeTarget = targetTheme;
+                    button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+                    button.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+                    button.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
 
                     if (icon) {
                         icon.className = isDark ? 'ti ti-sun' : 'ti ti-moon';
                     }
-
-	                });
+                });
 
                 window.dispatchEvent(new CustomEvent('aps:theme-changed', {
                     detail: {
@@ -826,22 +884,101 @@
                 }));
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
+            window.apsApplyTheme = applyTheme;
+
+            function applyThemeWithTransition(nextTheme, event) {
+                const currentTheme = document.documentElement.classList.contains('aps-dark') ? 'dark' : 'light';
+                if (currentTheme === nextTheme) return;
+
+                if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    applyTheme(nextTheme);
+                    return;
+                }
+
+                let x = window.innerWidth / 2;
+                let y = window.innerHeight / 2;
+
+                if (event && (event.clientX || event.clientY)) {
+                    x = event.clientX;
+                    y = event.clientY;
+                } else {
+                    const toggleBtn = document.querySelector('[data-theme-toggle]');
+                    if (toggleBtn) {
+                        const rect = toggleBtn.getBoundingClientRect();
+                        x = rect.left + rect.width / 2;
+                        y = rect.top + rect.height / 2;
+                    }
+                }
+
+                const endRadius = Math.hypot(
+                    Math.max(x, window.innerWidth - x),
+                    Math.max(y, window.innerHeight - y)
+                );
+
+                const isDark = nextTheme === 'dark';
+                document.documentElement.classList.add('in-view-transition');
+
+                const transition = document.startViewTransition(function() {
+                    applyTheme(nextTheme);
+                });
+
+                transition.ready.then(function() {
+                    const clipPath = [
+                        `circle(0px at ${x}px ${y}px)`,
+                        `circle(${endRadius}px at ${x}px ${y}px)`
+                    ];
+
+                    const anim = document.documentElement.animate(
+                        {
+                            clipPath: isDark ? clipPath : [...clipPath].reverse()
+                        },
+                        {
+                            duration: 520,
+                            easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+                            pseudoElement: isDark ? '::view-transition-new(root)' : '::view-transition-old(root)'
+                        }
+                    );
+
+                    anim.onfinish = function() {
+                        document.documentElement.classList.remove('in-view-transition');
+                    };
+                }).catch(function() {
+                    document.documentElement.classList.remove('in-view-transition');
+                });
+
+                transition.finished.then(function() {
+                    document.documentElement.classList.remove('in-view-transition');
+                });
+            }
+
+            document.addEventListener('click', function(event) {
+                const toggleBtn = event.target.closest('[data-theme-toggle]');
+                if (toggleBtn) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const currentTheme = document.documentElement.classList.contains('aps-dark') ? 'dark' : 'light';
+                    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    applyThemeWithTransition(nextTheme, event);
+                    return;
+                }
+
+                const optionBtn = event.target.closest('[data-theme-option]');
+                if (optionBtn && !optionBtn.hasAttribute('data-theme-toggle')) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const targetTheme = optionBtn.getAttribute('data-theme-option');
+                    if (targetTheme) applyThemeWithTransition(targetTheme, event);
+                    return;
+                }
+            });
+
+            function syncCurrentTheme() {
                 const storedTheme = localStorage.getItem('apsTheme') || 'light';
                 applyTheme(storedTheme);
+            }
 
-                document.querySelectorAll('[data-theme-option]').forEach(function(button) {
-                    button.addEventListener('click', function() {
-                        applyTheme(button.getAttribute('data-theme-option'));
-                    });
-                });
-
-                document.querySelectorAll('[data-theme-toggle]').forEach(function(button) {
-                    button.addEventListener('click', function() {
-                        applyTheme(button.dataset.themeTarget || 'dark');
-                    });
-                });
-            });
+            document.addEventListener('DOMContentLoaded', syncCurrentTheme);
+            window.addEventListener('aps:content-loaded', syncCurrentTheme);
         })();
     </script>
 
@@ -1916,13 +2053,27 @@
             }
 
             function findComment(root, marker) {
-                return Array.from(root.childNodes).find(function(node) {
-                    return node.nodeType === 8 && node.nodeValue.trim() === marker;
-                });
+                if (!root) return null;
+                const walker = document.createTreeWalker(
+                    root,
+                    NodeFilter.SHOW_COMMENT,
+                    null,
+                    false
+                );
+                let node;
+                while ((node = walker.nextNode())) {
+                    if (node.nodeValue && node.nodeValue.trim() === marker) {
+                        return node;
+                    }
+                }
+                return null;
             }
 
-            function nodesBetween(root, startMarker, endMarker) {
-                const nodes = Array.from(root.childNodes);
+            function nodesBetween(startMarker, endMarker) {
+                if (!startMarker || !endMarker) return [];
+                const parent = startMarker.parentNode;
+                if (!parent || parent !== endMarker.parentNode) return [];
+                const nodes = Array.from(parent.childNodes);
                 const startIndex = nodes.indexOf(startMarker);
                 const endIndex = nodes.indexOf(endMarker);
                 if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) return [];
@@ -1930,42 +2081,75 @@
             }
 
             async function replacePageStyles(newDocument) {
-                const currentStart = findComment(document.head, 'pjax-page-styles-start');
-                const currentEnd = findComment(document.head, 'pjax-page-styles-end');
-                const nextStart = findComment(newDocument.head, 'pjax-page-styles-start');
-                const nextEnd = findComment(newDocument.head, 'pjax-page-styles-end');
+                const currentStart = findComment(document, 'pjax-page-styles-start');
+                const currentEnd = findComment(document, 'pjax-page-styles-end');
+                const nextStart = findComment(newDocument, 'pjax-page-styles-start');
+                const nextEnd = findComment(newDocument, 'pjax-page-styles-end');
 
-                if (!currentStart || !currentEnd || !nextStart || !nextEnd) return;
+                if (currentStart && currentEnd) {
+                    nodesBetween(currentStart, currentEnd).forEach(function(node) {
+                        node.remove();
+                    });
+                } else {
+                    document.querySelectorAll('head [data-aps-pjax-style]').forEach(function(el) {
+                        el.remove();
+                    });
+                }
 
-                nodesBetween(document.head, currentStart, currentEnd).forEach(function(node) {
-                    node.remove();
-                });
+                let styleNodes = [];
+                if (nextStart && nextEnd) {
+                    styleNodes = nodesBetween(nextStart, nextEnd);
+                } else {
+                    styleNodes = Array.from(newDocument.querySelectorAll('head link[rel="stylesheet"], head style'));
+                }
 
+                const insertTarget = currentEnd || document.head.lastChild;
                 const loadPromises = [];
-                nodesBetween(newDocument.head, nextStart, nextEnd).forEach(function(node) {
+
+                styleNodes.forEach(function(node) {
                     if (node.nodeType === 1 && node.tagName === 'LINK' && (node.getAttribute('rel') || '').toLowerCase() === 'stylesheet') {
+                        const href = node.getAttribute('href');
+                        if (!href) return;
+
+                        const isStatic = Array.from(document.head.children).some(function(child) {
+                            return child !== currentStart && child !== currentEnd &&
+                                   child.tagName === 'LINK' &&
+                                   child.getAttribute('href') === href &&
+                                   !child.hasAttribute('data-aps-pjax-style');
+                        });
+                        if (isStatic) return;
+
                         const newLink = document.createElement('link');
                         Array.from(node.attributes).forEach(function(attr) {
                             newLink.setAttribute(attr.name, attr.value);
                         });
+                        newLink.setAttribute('data-aps-pjax-style', 'true');
 
                         const p = new Promise(function(resolve) {
-                            const timer = setTimeout(resolve, 1500);
+                            const timer = setTimeout(resolve, 2000);
                             newLink.onload = function() { clearTimeout(timer); resolve(); };
                             newLink.onerror = function() { clearTimeout(timer); resolve(); };
                         });
                         loadPromises.push(p);
-                        document.head.insertBefore(newLink, currentEnd);
+
+                        if (insertTarget && insertTarget.parentNode === document.head) {
+                            document.head.insertBefore(newLink, insertTarget);
+                        } else {
+                            document.head.appendChild(newLink);
+                        }
                     } else if (node.nodeType === 1 && node.tagName === 'STYLE') {
                         const newStyle = document.createElement('style');
                         Array.from(node.attributes).forEach(function(attr) {
                             newStyle.setAttribute(attr.name, attr.value);
                         });
+                        newStyle.setAttribute('data-aps-pjax-style', 'true');
                         newStyle.textContent = node.textContent;
-                        document.head.insertBefore(newStyle, currentEnd);
-                    } else {
-                        const clone = document.importNode(node, true);
-                        document.head.insertBefore(clone, currentEnd);
+
+                        if (insertTarget && insertTarget.parentNode === document.head) {
+                            document.head.insertBefore(newStyle, insertTarget);
+                        } else {
+                            document.head.appendChild(newStyle);
+                        }
                     }
                 });
 
@@ -2004,6 +2188,32 @@
                 }
             }
 
+            function executeScriptsInContainer(container) {
+                if (!container) return;
+                const scripts = Array.from(container.querySelectorAll('script'));
+                scripts.forEach(function(oldScript) {
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(function(attr) {
+                        newScript.setAttribute(attr.name, attr.value);
+                    });
+                    newScript.textContent = oldScript.textContent;
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+            }
+
+            function processStylesInContainer(container) {
+                if (!container) return;
+                const styles = Array.from(container.querySelectorAll('style'));
+                styles.forEach(function(oldStyle) {
+                    const newStyle = document.createElement('style');
+                    Array.from(oldStyle.attributes).forEach(function(attr) {
+                        newStyle.setAttribute(attr.name, attr.value);
+                    });
+                    newStyle.textContent = oldStyle.textContent;
+                    oldStyle.parentNode.replaceChild(newStyle, oldStyle);
+                });
+            }
+
             async function loadContent(url, options) {
                 const target = new URL(url, window.location.href);
                 const shouldPush = !options || options.push !== false;
@@ -2039,6 +2249,8 @@
                     document.title = nextDocument.title || document.title;
                     await replacePageStyles(nextDocument);
                     currentContent.innerHTML = nextContent.innerHTML;
+                    processStylesInContainer(currentContent);
+                    executeScriptsInContainer(currentContent);
                     syncSidebarState(nextDocument);
                     await replacePageScripts(nextDocument);
 
