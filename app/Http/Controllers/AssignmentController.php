@@ -630,6 +630,7 @@ class AssignmentController extends Controller
                         'to_flight' => $toFlightNo,
                         'to_flight_id' => $toFlightId,
                         'station' => $station,
+                        'timestamp' => $ts ?: 0,
                         'start_time' => $startStr,
                         'end_time' => $endStr,
                         'origin' => $originName !== '-' ? $originName : '',

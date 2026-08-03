@@ -932,7 +932,16 @@
                             <input type="text" id="fidsSearchInput" class="form-control border-start-0 ps-0" style="font-size:.8rem;" placeholder="Cari flight, maskapai, registrasi..." onkeyup="filterFidsTable()">
                         </div>
                     </div>
-                    <div class="d-flex align-items-center justify-content-between justify-content-sm-end w-100 w-sm-auto gap-2">
+                    <div class="d-flex align-items-center justify-content-between justify-content-sm-end w-100 w-sm-auto gap-2 flex-wrap">
+                        <div class="d-flex align-items-center gap-1">
+                            <label for="fidsSortSelect" class="form-label mb-0 text-muted d-none d-md-inline" style="font-size:.72rem; white-space:nowrap;"><i class="fas fa-sort me-1"></i>Urutkan:</label>
+                            <select id="fidsSortSelect" class="form-select form-select-sm border-secondary-subtle" style="font-size:.75rem; width:auto; min-width:145px;" onchange="filterFidsTable()">
+                                <option value="time_asc" selected>Jam: Terawal → Terbaru</option>
+                                <option value="time_desc">Jam: Terbaru → Terawal</option>
+                                <option value="flight_asc">Flight (A - Z)</option>
+                                <option value="airline_asc">Maskapai (A - Z)</option>
+                            </select>
+                        </div>
                         <small class="text-muted fw-semibold" id="fidsSummaryCount" style="font-size:.75rem;">0 Penerbangan</small>
                         <button type="button" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" style="font-size:.75rem;" onclick="reloadCurrentFidsModal()">
                             <i class="fas fa-sync-alt" id="fidsRefreshIcon" style="font-size:.7rem;"></i>
@@ -1823,7 +1832,7 @@
 
                     if (resData.success && Array.isArray(resData.flights) && resData.flights.length > 0) {
                         rawFidsFlights = resData.flights;
-                        renderFidsTable(rawFidsFlights);
+                        filterFidsTable();
                         if (tableContainer) tableContainer.classList.remove('d-none');
                     } else {
                         rawFidsFlights = [];
@@ -1910,6 +1919,7 @@
                                 ex_flight: flightNo.toUpperCase(),
                                 to_flight: toFlightNo,
                                 station: stationCode,
+                                timestamp: ts || 0,
                                 start_time: startStr,
                                 end_time: endStr,
                                 origin: originCity !== '-' ? originCity : '',
@@ -1925,7 +1935,7 @@
 
                         if (parsedFlights.length > 0) {
                             rawFidsFlights = parsedFlights;
-                            renderFidsTable(rawFidsFlights);
+                            filterFidsTable();
                             if (tableContainer) tableContainer.classList.remove('d-none');
                         } else {
                             loadFidsFromServer();
@@ -2059,20 +2069,63 @@
             });
         }
 
-        function filterFidsTable() {
-            const query = document.getElementById('fidsSearchInput').value.toLowerCase().trim();
-            if (!query) {
-                renderFidsTable(rawFidsFlights);
-                return;
+        function parseFlightTime(item) {
+            let timeStr = item.start_time || '';
+            if (!timeStr && item.status_text) {
+                const match = item.status_text.match(/\b(\d{1,2})[:.](\d{2})\b/);
+                if (match) {
+                    timeStr = match[0];
+                }
             }
-            const filtered = rawFidsFlights.filter(item => {
-                return (item.ex_flight && item.ex_flight.toLowerCase().includes(query)) ||
-                       (item.aircraft_reg && item.aircraft_reg.toLowerCase().includes(query)) ||
-                       (item.airline && item.airline.toLowerCase().includes(query)) ||
-                       (item.origin && item.origin.toLowerCase().includes(query)) ||
-                       (item.to_flight && item.to_flight.toLowerCase().includes(query));
+            if (timeStr) {
+                const match = timeStr.match(/(\d{1,2})[:.](\d{2})/);
+                if (match) {
+                    const h = parseInt(match[1], 10);
+                    const m = parseInt(match[2], 10);
+                    if (!isNaN(h) && !isNaN(m)) {
+                        return h * 3600 + m * 60;
+                    }
+                }
+            }
+            if (item.timestamp && item.timestamp > 0) {
+                const d = new Date(item.timestamp * 1000);
+                return d.getHours() * 3600 + d.getMinutes() * 60;
+            }
+            return 0;
+        }
+
+        function filterFidsTable() {
+            const query = document.getElementById('fidsSearchInput') ? document.getElementById('fidsSearchInput').value.toLowerCase().trim() : '';
+            const sortVal = document.getElementById('fidsSortSelect') ? document.getElementById('fidsSortSelect').value : 'time_asc';
+
+            let result = Array.from(rawFidsFlights || []);
+
+            if (query) {
+                result = result.filter(item => {
+                    return (item.ex_flight && item.ex_flight.toLowerCase().includes(query)) ||
+                           (item.aircraft_reg && item.aircraft_reg.toLowerCase().includes(query)) ||
+                           (item.airline && item.airline.toLowerCase().includes(query)) ||
+                           (item.origin && item.origin.toLowerCase().includes(query)) ||
+                           (item.to_flight && item.to_flight.toLowerCase().includes(query)) ||
+                           (item.status_text && item.status_text.toLowerCase().includes(query)) ||
+                           (item.start_time && item.start_time.toLowerCase().includes(query));
+                });
+            }
+
+            result.sort((a, b) => {
+                if (sortVal === 'time_asc') {
+                    return parseFlightTime(a) - parseFlightTime(b);
+                } else if (sortVal === 'time_desc') {
+                    return parseFlightTime(b) - parseFlightTime(a);
+                } else if (sortVal === 'flight_asc') {
+                    return (a.ex_flight || '').localeCompare(b.ex_flight || '');
+                } else if (sortVal === 'airline_asc') {
+                    return (a.airline || '').localeCompare(b.airline || '');
+                }
+                return 0;
             });
-            renderFidsTable(filtered);
+
+            renderFidsTable(result);
         }
     </script>
 @endsection

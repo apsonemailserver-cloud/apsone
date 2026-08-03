@@ -533,8 +533,39 @@
                 $combo.empty().html('<option value="" selected>⏳ Memuat daftar flight untuk station ' + (stationCode || 'terpilih') + '...</option>');
                 $status.removeClass('text-success text-danger').addClass('text-muted').text('Sedang memuat...');
 
+                function parseFlightTime(item) {
+                    let timeStr = item.start_time || item.arrival || '';
+                    if (!timeStr && item.status_text) {
+                        const match = item.status_text.match(/\b(\d{1,2})[:.](\d{2})\b/);
+                        if (match) {
+                            timeStr = match[0];
+                        }
+                    }
+                    if (timeStr) {
+                        const match = timeStr.match(/(\d{1,2})[:.](\d{2})/);
+                        if (match) {
+                            const h = parseInt(match[1], 10);
+                            const m = parseInt(match[2], 10);
+                            if (!isNaN(h) && !isNaN(m)) {
+                                return h * 3600 + m * 60;
+                            }
+                        }
+                    }
+                    if (item.timestamp && item.timestamp > 0) {
+                        const d = new Date(item.timestamp * 1000);
+                        return d.getHours() * 3600 + d.getMinutes() * 60;
+                    }
+                    return 0;
+                }
+
                 // Helper: parse & render flights array into combobox
                 function renderFlights(flights, source) {
+                    if (Array.isArray(flights)) {
+                        flights.sort(function(a, b) {
+                            return parseFlightTime(a) - parseFlightTime(b);
+                        });
+                    }
+
                     window.__activeFlights = flights;
 
                     // 1. Determine matching flight index first
@@ -721,6 +752,7 @@
                                     ex_flight: flightNo.toUpperCase(),
                                     to_flight: toFlight,
                                     station: stationCode,
+                                    timestamp: ts || 0,
                                     start_time: startStr,
                                     end_time: endStr,
                                     origin: originCity,
