@@ -602,6 +602,12 @@ class UserController extends Controller
 
     public function updatePhoto(Request $request, $userId)
     {
+        abort_unless(
+            Auth::user()->canAccess('profile', 'edit') || Auth::user()->role === 'Admin',
+            403,
+            'Anda tidak memiliki akses untuk mengubah foto profil.'
+        );
+
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'profile_picture' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ], [

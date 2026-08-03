@@ -347,15 +347,21 @@
             <div class="col-lg-4 col-md-5">
                 <div class="card profile-card mb-4">
                     <div class="card-body">
+                        @php
+                            $canEditProfile = Auth::user()->canAccess('profile', 'edit') || Auth::user()->role === 'Admin';
+                        @endphp
                         <!-- Photo Form -->
                         <form id="photoForm" method="POST" enctype="multipart/form-data"
                             action="{{ route('user.updatePhoto', ['userId' => $user->id]) }}">
                             @csrf
+                            @if($canEditProfile)
                             <input type="file" name="profile_picture" id="fileInput" style="display: none;"
                                 accept="image/png, image/jpeg, image/jpg">
+                            @endif
 
                             <div class="text-center mb-4">
                                 <div class="profile-photo-container">
+                                    @if($canEditProfile)
                                     <label for="fileInput" class="w-100 h-100 d-block m-0" style="cursor: pointer;">
                                         <img src="{{ $user->profile_picture ? asset('storage/photo/' . $user->profile_picture) : asset('storage/photo/user.jpg') }}"
                                             alt="User Photo" class="profile-photo">
@@ -364,6 +370,12 @@
                                             <span>Ubah Foto</span>
                                         </div>
                                     </label>
+                                    @else
+                                    <div class="w-100 h-100 d-block m-0">
+                                        <img src="{{ $user->profile_picture ? asset('storage/photo/' . $user->profile_picture) : asset('storage/photo/user.jpg') }}"
+                                            alt="User Photo" class="profile-photo">
+                                    </div>
+                                    @endif
                                 </div>
                                 <h4 class="mt-3 mb-1 fw-bold text-dark">{{ $user->fullname }}</h4>
                                 <p class="text-muted mb-3 fs-7">{{ $user->job_title ?? 'Staff' }}</p>
