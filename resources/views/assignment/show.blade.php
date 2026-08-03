@@ -1,6 +1,6 @@
 @extends('layout.admin')
 
-@section('title', 'Detail Pekerjaan - ' . $workResult->wo_number)
+@section('title', 'Detail Pekerjaan - ' . $assignment->wo_number)
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -13,16 +13,16 @@
                 <p class="text-secondary mb-0 small">Informasi lengkap Assignment pembersihan pesawat</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                @if($workResult->photo_path)
-                    <a href="{{ route('work_orders.export_single_pdf', $workResult->id) }}" class="btn btn-danger me-1" target="_blank">
+                @if($assignment->photo_path)
+                    <a href="{{ route('assignments.export_single_pdf', $assignment->id) }}" class="btn btn-danger me-1" target="_blank">
                         <i class="bx bxs-file-pdf me-1"></i> Cetak Hardcopy PDF
                     </a>
                 @else
-                    <button type="button" class="btn btn-secondary me-1 opacity-75 btn-no-photo-pdf" data-wo="{{ $workResult->wo_number }}">
+                    <button type="button" class="btn btn-secondary me-1 opacity-75 btn-no-photo-pdf" data-wo="{{ $assignment->wo_number }}">
                         <i class="bx bxs-file-pdf me-1"></i> Cetak Hardcopy PDF
                     </button>
                 @endif
-                <a href="{{ route('work_orders.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('assignments.index') }}" class="btn btn-outline-secondary">
                     <i class="bx bx-arrow-back me-1"></i> Kembali ke Daftar
                 </a>
             </div>
@@ -36,21 +36,21 @@
                         <h5 class="card-title text-dark fw-bold mb-0">
                             <i class="bx bx-detail text-primary me-2"></i>Informasi Assignment
                         </h5>
-                        <span class="badge bg-label-primary px-3 py-2 font-monospace">{{ $workResult->wo_number }}</span>
+                        <span class="badge bg-label-primary px-3 py-2 font-monospace">{{ $assignment->wo_number }}</span>
                     </div>
                     <div class="card-body mt-4">
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="text-secondary small fw-bold text-uppercase d-block mb-1">Stasiun & Tanggal Kerja</label>
                                 <div class="p-3 bg-light rounded border border-dashed">
-                                    <div class="fw-bold text-dark fs-5 mb-1">{{ \Carbon\Carbon::parse($workResult->date)->translatedFormat('d F Y') }}</div>
-                                    <span class="badge bg-primary font-monospace">{{ $workResult->station }}</span>
+                                    <div class="fw-bold text-dark fs-5 mb-1">{{ \Carbon\Carbon::parse($assignment->date)->translatedFormat('d F Y') }}</div>
+                                    <span class="badge bg-primary font-monospace">{{ $assignment->station }}</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-secondary small fw-bold text-uppercase d-block mb-1">Kategori Pekerjaan</label>
                                 <div class="p-3 bg-light rounded border border-dashed">
-                                    @if($workResult->type === 'DCI')
+                                    @if($assignment->type === 'DCI')
                                         <div class="fw-bold text-primary fs-5 mb-1"><i class="bx bx-home-alt me-1"></i>DCI</div>
                                         <span class="text-secondary small">Deep Cleaning Interior</span>
                                     @else
@@ -65,17 +65,17 @@
                             {{-- Aircraft Info --}}
                             <div class="col-md-4">
                                 <label class="text-secondary small fw-bold text-uppercase d-block mb-1">Aircraft Reg</label>
-                                <div class="fw-bold text-dark font-monospace fs-5">{{ $workResult->aircraft_reg }}</div>
+                                <div class="fw-bold text-dark font-monospace fs-5">{{ $assignment->aircraft_reg }}</div>
                             </div>
                             <div class="col-md-4">
                                 <label class="text-secondary small fw-bold text-uppercase d-block mb-1">Ex / To Flight</label>
-                                <div class="fw-bold text-dark font-monospace">Ex: {{ $workResult->ex_flight ?: '-' }}</div>
-                                <div class="small text-muted font-monospace">To: {{ $workResult->to_flight ?: '-' }}</div>
+                                <div class="fw-bold text-dark font-monospace">Ex: {{ $assignment->ex_flight ?: '-' }}</div>
+                                <div class="small text-muted font-monospace">To: {{ $assignment->to_flight ?: '-' }}</div>
                             </div>
                             <div class="col-md-4">
                                 <label class="text-secondary small fw-bold text-uppercase d-block mb-1">Stand & Jam Kerja</label>
-                                <div class="fw-bold text-dark">Stand {{ $workResult->parking_stand }}</div>
-                                <div class="small text-muted font-monospace">{{ substr($workResult->start_time, 0, 5) }} - {{ substr($workResult->end_time, 0, 5) }} ({{ $workResult->duration_minutes }} mnt)</div>
+                                <div class="fw-bold text-dark">Stand {{ $assignment->parking_stand }}</div>
+                                <div class="small text-muted font-monospace">{{ substr($assignment->start_time, 0, 5) }} - {{ substr($assignment->end_time, 0, 5) }} ({{ $assignment->duration_minutes }} mnt)</div>
                             </div>
 
                             <div class="col-12"><hr class="my-2"></div>
@@ -85,18 +85,18 @@
                                 <label class="text-secondary small fw-bold text-uppercase mb-2">Leader Pengawas</label>
                                 <div class="d-flex align-items-center">
                                     <div class="avatar avatar-sm me-2 bg-primary rounded-circle text-white d-flex align-items-center justify-content-center fw-bold">
-                                        {{ substr($workResult->submittedBy ? $workResult->submittedBy->fullname : 'L', 0, 1) }}
+                                        {{ substr($assignment->submittedBy ? $assignment->submittedBy->fullname : 'L', 0, 1) }}
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark">{{ $workResult->submittedBy ? $workResult->submittedBy->fullname : '-' }}</div>
-                                        <div class="small text-muted font-monospace">ID: {{ $workResult->submitted_by ?: '-' }}</div>
+                                        <div class="fw-bold text-dark">{{ $assignment->submittedBy ? $assignment->submittedBy->fullname : '-' }}</div>
+                                        <div class="small text-muted font-monospace">ID: {{ $assignment->submitted_by ?: '-' }}</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="text-secondary small fw-bold text-uppercase mb-2">Jumlah Staff Terlibat</label>
-                                <div class="fs-4 fw-bold text-primary"><i class="bx bx-group me-2"></i>{{ $workResult->users->count() }} Orang</div>
+                                <div class="fs-4 fw-bold text-primary"><i class="bx bx-group me-2"></i>{{ $assignment->users->count() }} Orang</div>
                             </div>
                         </div>
 
@@ -114,7 +114,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($workResult->users as $idx => $st)
+                                        @forelse($assignment->users as $idx => $st)
                                             <tr>
                                                 <td>{{ $idx + 1 }}</td>
                                                 <td>
@@ -144,18 +144,18 @@
                         <h5 class="card-title text-dark fw-bold mb-0">
                             <i class="bx bx-camera text-primary me-2"></i>Foto Bukti Kerja
                         </h5>
-                        @if($workResult->photo_path && (auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) && $workResult->submitted_by === auth()->id())))
-                            <button type="button" class="btn btn-xs btn-outline-secondary btn-upload-photo" data-id="{{ $workResult->id }}" data-wo="{{ $workResult->wo_number }}">
+                        @if($assignment->photo_path && (auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $assignment->submitted_by === auth()->id())))
+                            <button type="button" class="btn btn-xs btn-outline-secondary btn-upload-photo" data-id="{{ $assignment->id }}" data-wo="{{ $assignment->wo_number }}">
                                 <i class="bx bx-upload me-1"></i> Ganti
                             </button>
                         @endif
                     </div>
                     <div class="card-body text-center d-flex flex-column justify-content-center align-items-center mt-3">
-                        @if($workResult->photo_path)
+                        @if($assignment->photo_path)
                             <div class="border rounded p-2 bg-light w-100 mb-3 shadow-inner">
-                                <img src="{{ asset('storage/' . $workResult->photo_path) }}" alt="Bukti Kerja" class="img-fluid rounded" style="max-height: 280px; width: 100%; object-fit: contain;">
+                                <img src="{{ asset('storage/' . $assignment->photo_path) }}" alt="Bukti Kerja" class="img-fluid rounded" style="max-height: 280px; width: 100%; object-fit: contain;">
                             </div>
-                            <a href="{{ asset('storage/' . $workResult->photo_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ asset('storage/' . $assignment->photo_path) }}" target="_blank" class="btn btn-outline-primary btn-sm">
                                 <i class="bx bx-expand-alt me-1"></i> Buka Gambar Penuh
                             </a>
                         @else
@@ -165,7 +165,7 @@
                                     <div class="fw-bold text-dark mb-1">Foto Bukti Belum Ada</div>
                                     <div class="small text-muted">Upload foto bukti pekerjaan terlebih dahulu agar dokumen Laporan PDF dapat dicetak.</div>
                                 </div>
-                                <button type="button" class="btn btn-primary btn-sm btn-upload-photo" data-id="{{ $workResult->id }}" data-wo="{{ $workResult->wo_number }}">
+                                <button type="button" class="btn btn-primary btn-sm btn-upload-photo" data-id="{{ $assignment->id }}" data-wo="{{ $assignment->wo_number }}">
                                     <i class="bx bx-upload me-1"></i> Upload Foto Bukti Sekarang
                                 </button>
                             </div>

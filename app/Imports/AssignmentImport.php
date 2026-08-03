@@ -3,13 +3,13 @@
 namespace App\Imports;
 
 use App\Models\User;
-use App\Models\WorkOrder;
+use App\Models\Assignment;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
-class WorkOrderImport implements ToCollection
+class AssignmentImport implements ToCollection
 {
     public function collection(Collection $rows)
     {
@@ -45,7 +45,7 @@ class WorkOrderImport implements ToCollection
 
                 // Parse staff members
                 $staffInput = $row[10] ?? '';
-                $staffIds = array_map('trim', explode(',', $staffInput));
+                $staffIds = array_map('trim', explode(',', (string) $staffInput));
                 $staffIds = array_filter($staffIds); // remove empty elements
 
                 if (count($staffIds) < 2 || count($staffIds) > 10) {
@@ -58,59 +58,48 @@ class WorkOrderImport implements ToCollection
                     continue; // Must be at least 2 valid staff members
                 }
 
-                // Create the WorkOrder
-                $workOrder = WorkOrder::create([
-                    'date' => $dateStr,
-                    'station' => $station,
-                    'aircraft_reg' => $aircraftReg,
-                    'ex_flight' => $exFlight ?: '-',
-                    'to_flight' => $toFlight ?: '-',
-                    'parking_stand' => $parkingStand,
-                    'wo_number' => $woNumber,
-                    'start_time' => $startTime,
-                    'end_time' => $endTime,
-                    'type' => $type,
-                    'submitted_by' => auth()->id(),
+                // Create assignment
+                $assignment = Assignment::create([
+                    'date'          => $dateStr,
+                    'station'       => strtoupper($station),
+                    'aircraft_reg'  => strtoupper($aircraftReg),
+                    'ex_flight'     => strtoupper($exFlight) ?: '-',
+                    'to_flight'     => strtoupper($toFlight) ?: '-',
+                    'parking_stand' => strtoupper($parkingStand),
+                    'wo_number'     => strtoupper($woNumber),
+                    'start_time'    => $startTime,
+                    'end_time'      => $endTime,
+                    'type'          => $type,
+                    'submitted_by'  => auth()->id(),
                 ]);
 
-                // Sync pivot table
-                $workOrder->users()->sync($userIds);
+                // Attach staff members
+                $assignment->users()->sync($userIds);
             }
         });
     }
 
-    private function formatDate($value)
+    private function formatDate($val)
     {
-        if (!$value) return null;
-
-        if (is_numeric($value)) {
-            try {
-                return Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value))->format('Y-m-d');
-            } catch (\Exception $e) {
-                return null;
-            }
+        if (empty($val)) return null;
+        if (is_numeric($val)) {
+            return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($val)->format('Y-m-d');
         }
-
         try {
-            return Carbon::parse($value)->format('Y-m-d');
+            return Carbon::parse($val)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;
         }
     }
 
-    private function formatTime($value)
+    private function formatTime($val)
     {
-        if (!$value) return null;
-
-        if (is_numeric($value)) {
-            $totalSeconds = $value * 86400;
-            $hours = floor($totalSeconds / 3600);
-            $minutes = floor(($totalSeconds % 3600) / 60);
-            return sprintf('%02d:%02d:00', $hours, $minutes);
+        if (empty($val)) return null;
+        if (is_numeric($val)) {
+            return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($val)->format('H:i');
         }
-
         try {
-            return Carbon::parse($value)->format('H:i:s');
+            return Carbon::parse($val)->format('H:i');
         } catch (\Exception $e) {
             return null;
         }

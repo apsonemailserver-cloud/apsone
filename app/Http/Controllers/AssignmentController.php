@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Station;
 use App\Models\User;
-use App\Models\WorkOrder;
+use App\Models\Assignment;
 use App\Models\Flights;
 use App\Models\Flight_details;
 use App\Models\Schedule;
-use App\Imports\WorkOrderImport;
-use App\Exports\WorkOrderTemplateExport;
+use App\Imports\AssignmentImport;
+use App\Exports\AssignmentTemplateExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use RealRashid\SweetAlert\Facades\Alert;
 use Maatwebsite\Excel\Facades\Excel;
 
-class WorkOrderController extends Controller
+class AssignmentController extends Controller
 {
     /**
      * Display a listing of the work orders.
@@ -27,7 +27,7 @@ class WorkOrderController extends Controller
         $user = auth()->user();
         $stations = Station::select('id', 'code', 'name')->where('is_active', true)->get();
 
-        $query = WorkOrder::with([
+        $query = Assignment::with([
             'users:id,fullname,station',
             'submittedBy:id,fullname'
         ]);
@@ -37,7 +37,7 @@ class WorkOrderController extends Controller
             if ($request->filled('station') && $request->station !== 'All') {
                 $query->where('station', $request->station);
             }
-        } elseif ($user->hasRole(WorkOrder::LEADER_ROLES)) {
+        } elseif ($user->hasRole(Assignment::LEADER_ROLES)) {
             $query->where('submitted_by', $user->id);
         } else {
             $query->whereHas('users', fn($q) => $q->where('users.id', $user->id));
@@ -70,16 +70,16 @@ class WorkOrderController extends Controller
             });
         }
 
-        $workOrders = $query
+        $assignments = $query
             ->orderByRaw("CASE WHEN photo_path IS NULL OR photo_path = '' THEN 0 ELSE 1 END ASC")
             ->orderBy('date', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(20)
             ->withQueryString();
 
-        $workResults = $workOrders;
+        $workOrders = $assignments; $workResults = $assignments;
 
-        return view('work_order.index', compact('workOrders', 'workResults', 'stations', 'dateFrom', 'dateTo'));
+        return view('assignment.index', compact('assignments', 'workOrders', 'workResults', 'stations', 'dateFrom', 'dateTo'));
     }
 
     /**
@@ -88,7 +88,7 @@ class WorkOrderController extends Controller
     public function create()
     {
         $user = auth()->user();
-        if (!$user->hasRole(WorkOrder::LEADER_ROLES)) {
+        if (!$user->hasRole(Assignment::LEADER_ROLES)) {
             abort(403, 'Akses ditolak. Hanya Admin dan Leader yang dapat menginput pekerjaan.');
         }
         $stations = Station::where('is_active', true)->get();
@@ -116,7 +116,7 @@ class WorkOrderController extends Controller
         }
         $availableFlights = $flightQuery->orderBy('created_at', 'desc')->take(30)->get();
 
-        return view('work_order.create', compact('stations', 'staffs', 'availableFlights'));
+        return view('assignment.create', compact('stations', 'staffs', 'availableFlights'));
     }
 
     /**
@@ -124,7 +124,7 @@ class WorkOrderController extends Controller
      */
     public function downloadTemplate()
     {
-        return Excel::download(new WorkOrderTemplateExport, 'Template_Import_Pekerjaan_APS.xlsx');
+        return Excel::download(new AssignmentTemplateExport, 'Template_Import_Pekerjaan_APS.xlsx');
     }
 
     /**
@@ -133,7 +133,7 @@ class WorkOrderController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        if (!$user->hasRole(WorkOrder::LEADER_ROLES)) {
+        if (!$user->hasRole(Assignment::LEADER_ROLES)) {
             abort(403, 'Akses ditolak. Hanya Admin dan Leader yang dapat menginput pekerjaan.');
         }
 
@@ -162,7 +162,7 @@ class WorkOrderController extends Controller
         try {
             $photoPath = null;
             if ($request->hasFile('photo')) {
-                $photoPath = $request->file('photo')->store('work_orders', 'public');
+                $photoPath = $request->file('photo')->store('assignments', 'public');
             }
 
             // WO number is user-provided and optional; null if left blank
@@ -170,7 +170,7 @@ class WorkOrderController extends Controller
                 ? strtoupper(trim($request->wo_number))
                 : null;
 
-            $workOrder = WorkOrder::create([
+            $assignment = Assignment::create([
                 'date'         => $request->date,
                 'station'      => $request->station,
                 'aircraft_reg' => strtoupper($request->aircraft_reg),
@@ -185,7 +185,7 @@ class WorkOrderController extends Controller
                 'submitted_by' => auth()->id(),
             ]);
 
-            $workOrder->users()->sync($request->staff_members);
+            $assignment->users()->sync($request->staff_members);
 
             try {
                 $exFlight = trim((string)$request->ex_flight);
@@ -263,7 +263,7 @@ class WorkOrderController extends Controller
             }
 
             Alert::success('Berhasil', 'Data Work Order (' . ($request->action === 'DCI' ? 'Deep Cleaning Interior' : 'Deep Cleaning Exterior') . ') berhasil disimpan.');
-            return redirect()->route('work_orders.index');
+            return redirect()->route('assignments.index');
         } catch (\Exception $e) {
             Log::error('Error saat menyimpan work order: ' . $e->getMessage());
             Alert::error('Gagal', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
@@ -276,9 +276,9 @@ class WorkOrderController extends Controller
      */
     public function show($id)
     {
-        $workOrder = WorkOrder::with(['users', 'submittedBy'])->findOrFail($id);
-        $workResult = $workOrder;
-        return view('work_order.show', compact('workOrder', 'workResult'));
+        $assignment = Assignment::with(['users', 'submittedBy'])->findOrFail($id);
+        $workOrder = $assignment; $workResult = $assignment;
+        return view('assignment.show', compact('assignment', 'workOrder', 'workResult'));
     }
 
     /**
@@ -289,17 +289,17 @@ class WorkOrderController extends Controller
         try {
             ini_set('memory_limit', '1024M');
             $user = auth()->user();
-            if (!$user->hasRole(WorkOrder::LEADER_ROLES)) {
+            if (!$user->hasRole(Assignment::LEADER_ROLES)) {
                 abort(403, 'Akses ditolak. Staff hanya memiliki hak akses untuk melihat data pekerjaan.');
             }
 
-            $query = WorkOrder::with(['users', 'submittedBy']);
+            $query = Assignment::with(['users', 'submittedBy']);
 
             if ($user->hasRole('Admin')) {
                 if ($request->filled('station') && $request->station !== 'All') {
                     $query->where('station', $request->station);
                 }
-            } elseif ($user->hasRole(WorkOrder::LEADER_ROLES)) {
+            } elseif ($user->hasRole(Assignment::LEADER_ROLES)) {
                 $query->where('submitted_by', $user->id);
             } else {
                 $query->whereHas('users', fn($q) => $q->where('users.id', $user->id));
@@ -315,10 +315,10 @@ class WorkOrderController extends Controller
                 $query->where('type', $request->type);
             }
 
-            $workOrders = $query->orderBy('date', 'asc')->orderBy('start_time', 'asc')->get();
-            $workResults = $workOrders;
+            $assignments = $query->orderBy('date', 'asc')->orderBy('start_time', 'asc')->get();
+            $workOrders = $assignments; $workResults = $assignments;
 
-            if ($workOrders->isEmpty()) {
+            if ($assignments->isEmpty()) {
                 Alert::warning('Data Kosong', 'Tidak ada data Assignment / WO yang dapat diexport PDF untuk kriteria ini.');
                 return redirect()->back();
             }
@@ -343,7 +343,7 @@ class WorkOrderController extends Controller
                 $base64Logo = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
             }
 
-            $pdfView = view()->exists('work_order.pdf') ? 'work_order.pdf' : 'work_result.pdf';
+            $pdfView = view()->exists('assignment.pdf') ? 'assignment.pdf' : 'assignment.pdf';
             $pdf = Pdf::loadView($pdfView, compact(
                 'workOrders',
                 'workResults',
@@ -368,14 +368,14 @@ class WorkOrderController extends Controller
     {
         try {
             $user = auth()->user();
-            if (!$user->hasRole(WorkOrder::LEADER_ROLES)) {
+            if (!$user->hasRole(Assignment::LEADER_ROLES)) {
                 abort(403, 'Akses ditolak. Staff hanya memiliki hak akses untuk melihat data pekerjaan.');
             }
 
-            $workOrder = WorkOrder::with(['users', 'submittedBy'])->findOrFail($id);
-            $workResult = $workOrder;
+            $assignment = Assignment::with(['users', 'submittedBy'])->findOrFail($id);
+            $workOrder = $assignment; $workResult = $assignment;
 
-            if (!$workOrder->photo_path) {
+            if (!$assignment->photo_path) {
                 Alert::error('Cetak Gagal', 'Laporan PDF tidak dapat dicetak karena foto bukti pekerjaan belum diunggah.');
                 return redirect()->back();
             }
@@ -391,10 +391,10 @@ class WorkOrderController extends Controller
             }
 
             $base64Photo = '';
-            if ($workOrder->photo_path) {
-                $fullPhotoPath = storage_path('app/public/' . $workOrder->photo_path);
+            if ($assignment->photo_path) {
+                $fullPhotoPath = storage_path('app/public/' . $assignment->photo_path);
                 if (!file_exists($fullPhotoPath)) {
-                    $fullPhotoPath = public_path('storage/' . $workOrder->photo_path);
+                    $fullPhotoPath = public_path('storage/' . $assignment->photo_path);
                 }
                 if (file_exists($fullPhotoPath)) {
                     $mime = mime_content_type($fullPhotoPath) ?: 'image/jpeg';
@@ -402,11 +402,11 @@ class WorkOrderController extends Controller
                 }
             }
 
-            $singlePdfView = view()->exists('work_order.single_pdf') ? 'work_order.single_pdf' : 'work_result.single_pdf';
-            $pdf = Pdf::loadView($singlePdfView, compact('workOrder', 'workResult', 'base64Logo', 'base64Photo'))
+            $singlePdfView = view()->exists('assignment.single_pdf') ? 'assignment.single_pdf' : 'assignment.single_pdf';
+            $pdf = Pdf::loadView($singlePdfView, compact('assignment', 'workOrder', 'workResult', 'base64Logo', 'base64Photo'))
                 ->setPaper('a4', 'portrait');
 
-            $filename = 'Hardcopy-WO-' . $workOrder->wo_number . '-' . str_replace(' ', '-', $workOrder->aircraft_reg) . '.pdf';
+            $filename = 'Hardcopy-WO-' . $assignment->wo_number . '-' . str_replace(' ', '-', $assignment->aircraft_reg) . '.pdf';
             return $pdf->stream($filename);
         } catch (\Exception $e) {
             Alert::error('Export Gagal', 'Terjadi kesalahan saat mengunduh PDF WO: ' . $e->getMessage());
@@ -419,7 +419,7 @@ class WorkOrderController extends Controller
      */
     public function uploadPhoto(Request $request, $id)
     {
-        $workOrder = WorkOrder::findOrFail($id);
+        $assignment = Assignment::findOrFail($id);
 
         $request->validate([
             'photo' => 'required|image|mimes:jpeg,jpg,png|max:2048',
@@ -430,14 +430,14 @@ class WorkOrderController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            if ($workOrder->photo_path && Storage::disk('public')->exists($workOrder->photo_path)) {
-                Storage::disk('public')->delete($workOrder->photo_path);
+            if ($assignment->photo_path && Storage::disk('public')->exists($assignment->photo_path)) {
+                Storage::disk('public')->delete($assignment->photo_path);
             }
-            $path = $request->file('photo')->store('work_orders', 'public');
-            $workOrder->update(['photo_path' => $path]);
+            $path = $request->file('photo')->store('assignments', 'public');
+            $assignment->update(['photo_path' => $path]);
         }
 
-        Alert::success('Berhasil', 'Foto bukti pekerjaan WO ' . $workOrder->wo_number . ' berhasil diunggah.');
+        Alert::success('Berhasil', 'Foto bukti pekerjaan WO ' . $assignment->wo_number . ' berhasil diunggah.');
         return redirect()->back();
     }
 
@@ -455,14 +455,14 @@ class WorkOrderController extends Controller
         ]);
 
         try {
-            Excel::import(new WorkOrderImport, $request->file('file'));
+            Excel::import(new AssignmentImport, $request->file('file'));
             Alert::success('Berhasil', 'Data Work Order berhasil diimpor secara bulk.');
         } catch (\Exception $e) {
             Log::error('Error saat import excel work orders: ' . $e->getMessage());
             Alert::error('Gagal', 'Terjadi kesalahan saat mengimpor data. Pastikan format kolom Excel sesuai.');
         }
 
-        return redirect()->route('work_orders.index');
+        return redirect()->route('assignments.index');
     }
 
     /**
@@ -471,18 +471,18 @@ class WorkOrderController extends Controller
     public function destroy($id)
     {
         try {
-            $workOrder = WorkOrder::findOrFail($id);
+            $assignment = Assignment::findOrFail($id);
 
-            if (!empty($workOrder->photo_path)) {
+            if (!empty($assignment->photo_path)) {
                 Alert::error('Gagal Hapus', 'Data pekerjaan yang sudah berstatus SELESAI tidak dapat dihapus.');
-                return redirect()->route('work_orders.index');
+                return redirect()->route('assignments.index');
             }
 
-            if ($workOrder->photo_path && Storage::disk('public')->exists($workOrder->photo_path)) {
-                Storage::disk('public')->delete($workOrder->photo_path);
+            if ($assignment->photo_path && Storage::disk('public')->exists($assignment->photo_path)) {
+                Storage::disk('public')->delete($assignment->photo_path);
             }
-            $workOrder->users()->detach();
-            $workOrder->delete();
+            $assignment->users()->detach();
+            $assignment->delete();
 
             Alert::success('Berhasil', 'Data Work Order berhasil dihapus.');
         } catch (\Exception $e) {
@@ -490,7 +490,7 @@ class WorkOrderController extends Controller
             Alert::error('Gagal', 'Terjadi kesalahan saat menghapus data.');
         }
 
-        return redirect()->route('work_orders.index');
+        return redirect()->route('assignments.index');
     }
 
     /**
@@ -530,7 +530,9 @@ class WorkOrderController extends Controller
                     ]
                 ]);
                 $output = curl_exec($ch);
-                curl_close($ch);
+                if (PHP_VERSION_ID < 80500 && is_resource($ch)) {
+                    @curl_close($ch);
+                }
 
                 if (!$output) {
                     $opts = [
@@ -561,9 +563,13 @@ class WorkOrderController extends Controller
                     $dFl = $depItem['flight'] ?? [];
                     $dReg = $dFl['aircraft']['registration'] ?? '';
                     $dFlightNo = $dFl['identification']['number']['default'] ?? ($dFl['identification']['callsign'] ?? '');
+                    $dFlightId = $dFl['identification']['id'] ?? '';
                     if ($dReg && $dFlightNo) {
                         $cleanDReg = strtoupper(str_replace([' ', '-'], '', $dReg));
-                        $depMap[$cleanDReg] = strtoupper($dFlightNo);
+                        $depMap[$cleanDReg] = [
+                            'flight_no' => strtoupper($dFlightNo),
+                            'flight_id' => $dFlightId
+                        ];
                     }
                 }
             }
@@ -576,10 +582,16 @@ class WorkOrderController extends Controller
                     $fl = $item['flight'] ?? [];
                     $reg = $fl['aircraft']['registration'] ?? '';
                     $flightNo = $fl['identification']['number']['default'] ?? ($fl['identification']['callsign'] ?? '-');
+                    $flightId = $fl['identification']['id'] ?? '';
                     $ts = $fl['time']['real']['arrival'] ?? $fl['time']['estimated']['arrival'] ?? $fl['time']['scheduled']['arrival'] ?? null;
                     
                     $cleanReg = strtoupper(str_replace([' ', '-'], '', $reg));
-                    $toFlightNo = ($cleanReg && isset($depMap[$cleanReg])) ? $depMap[$cleanReg] : '-';
+                    $toFlightNo = '-';
+                    $toFlightId = '';
+                    if ($cleanReg && isset($depMap[$cleanReg])) {
+                        $toFlightNo = $depMap[$cleanReg]['flight_no'] ?? '-';
+                        $toFlightId = $depMap[$cleanReg]['flight_id'] ?? '';
+                    }
 
                     $tz = new \DateTimeZone('Asia/Jakarta');
                     if ($ts) {
@@ -607,14 +619,23 @@ class WorkOrderController extends Controller
                         }
                     }
 
+                    $originCode = strtoupper($fl['airport']['origin']['code']['iata'] ?? '');
+                    $statusText = $fl['status']['text'] ?? 'Scheduled';
+                    $statusColor = $fl['status']['icon'] ?? ($fl['status']['generic']['status']['color'] ?? 'gray');
+
                     $frFlights[] = [
+                        'flight_id' => $flightId,
                         'aircraft_reg' => strtoupper($reg ?: ''),
                         'ex_flight' => strtoupper($flightNo),
                         'to_flight' => $toFlightNo,
+                        'to_flight_id' => $toFlightId,
                         'station' => $station,
                         'start_time' => $startStr,
                         'end_time' => $endStr,
                         'origin' => $originName !== '-' ? $originName : '',
+                        'origin_code' => $originCode,
+                        'status_text' => $statusText,
+                        'status_color' => strtolower($statusColor),
                         'airline' => ($fl['airline']['name'] ?? '') !== 'Airlines' ? ($fl['airline']['name'] ?? '') : '',
                     ];
                 }

@@ -173,7 +173,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($workResults as $idx => $item)
+            @forelse($assignments as $idx => $item)
                 <tr>
                     <td class="text-center font-mono">{{ $idx + 1 }}</td>
                     <td class="text-center">{{ \Carbon\Carbon::parse($item->date)->translatedFormat('d M Y') }}</td>

@@ -4,13 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Station;
 use App\Models\User;
-use App\Models\WorkOrder;
+use App\Models\Assignment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-class WorkOrderTest extends TestCase
+class AssignmentTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -74,13 +74,13 @@ class WorkOrderTest extends TestCase
 
     public function test_guest_cannot_access_create_form(): void
     {
-        $response = $this->get(route('work_orders.create'));
+        $response = $this->get(route('assignments.create'));
         $response->assertRedirect(route('login'));
     }
 
     public function test_authenticated_user_can_access_create_form(): void
     {
-        $response = $this->actingAs($this->user)->get(route('work_orders.create'));
+        $response = $this->actingAs($this->user)->get(route('assignments.create'));
         $response->assertStatus(200);
         $response->assertSee('Create Assignment');
     }
@@ -106,9 +106,9 @@ class WorkOrderTest extends TestCase
             'photo' => $photo,
         ];
 
-        $response = $this->actingAs($this->user)->post(route('work_orders.store'), $payload);
+        $response = $this->actingAs($this->user)->post(route('assignments.store'), $payload);
 
-        $response->assertRedirect(route('work_orders.index'));
+        $response->assertRedirect(route('assignments.index'));
 
         $this->assertDatabaseHas('assignments', [
             'station' => 'CGK',
@@ -117,7 +117,7 @@ class WorkOrderTest extends TestCase
             'type' => 'DCI',
         ]);
 
-        $workOrder = WorkOrder::first();
+        $workOrder = Assignment::first();
         $this->assertCount(2, $workOrder->users);
         $this->assertNotNull($workOrder->photo_path);
         Storage::disk('public')->assertExists($workOrder->photo_path);
@@ -136,7 +136,7 @@ class WorkOrderTest extends TestCase
             'staff_members' => [$this->staff1->id],
         ];
 
-        $response = $this->actingAs($this->user)->post(route('work_orders.store'), $payload);
+        $response = $this->actingAs($this->user)->post(route('assignments.store'), $payload);
         $response->assertSessionHasErrors(['staff_members']);
     }
 
@@ -153,7 +153,7 @@ class WorkOrderTest extends TestCase
             'staff_members' => [$this->staff1->id, $this->staff2->id],
         ];
 
-        $response = $this->actingAs($this->user)->post(route('work_orders.store'), $payload);
+        $response = $this->actingAs($this->user)->post(route('assignments.store'), $payload);
         $response->assertSessionHasErrors(['end_time']);
     }
 
@@ -167,22 +167,22 @@ class WorkOrderTest extends TestCase
             "2026-07-31,CGK,PK-LGH,JT371,JT202,A12,WO-2026-999,08:00,09:30,DCI,\"{$this->staff1->id},{$this->staff2->id}\"\n"
         );
 
-        $response = $this->actingAs($this->user)->post(route('work_orders.import'), [
+        $response = $this->actingAs($this->user)->post(route('assignments.import'), [
             'file' => $file,
         ]);
 
-        $response->assertRedirect(route('work_orders.index'));
+        $response->assertRedirect(route('assignments.index'));
     }
 
     public function test_authenticated_user_can_view_work_results_index(): void
     {
-        $response = $this->actingAs($this->user)->get(route('work_orders.index'));
+        $response = $this->actingAs($this->user)->get(route('assignments.index'));
         $response->assertStatus(200);
     }
 
     public function test_admin_can_delete_work_result(): void
     {
-        $workOrder = WorkOrder::create([
+        $workOrder = Assignment::create([
             'date' => '2026-07-31',
             'station' => 'CGK',
             'aircraft_reg' => 'PK-LGH',
@@ -194,21 +194,21 @@ class WorkOrderTest extends TestCase
             'photo_path' => null,
         ]);
 
-        $response = $this->actingAs($this->user)->delete(route('work_orders.destroy', $workOrder->id));
-        $response->assertRedirect(route('work_orders.index'));
+        $response = $this->actingAs($this->user)->delete(route('assignments.destroy', $workOrder->id));
+        $response->assertRedirect(route('assignments.index'));
 
         $this->assertDatabaseMissing('assignments', ['id' => $workOrder->id]);
     }
 
     public function test_user_can_download_excel_template(): void
     {
-        $response = $this->actingAs($this->user)->get(route('work_orders.template'));
+        $response = $this->actingAs($this->user)->get(route('assignments.template'));
         $response->assertStatus(200);
     }
 
     public function test_user_can_fetch_flight_data_dynamically(): void
     {
-        $response = $this->actingAs($this->user)->postJson(route('work_orders.fetch_flight_data'), [
+        $response = $this->actingAs($this->user)->postJson(route('assignments.fetch_flight_data'), [
             'aircraft_reg' => 'PK-LGH',
             'station' => 'CGK',
         ]);
@@ -233,7 +233,7 @@ class WorkOrderTest extends TestCase
     {
         Storage::fake('public');
 
-        $workOrder = WorkOrder::create([
+        $workOrder = Assignment::create([
             'date' => '2026-07-31',
             'station' => 'CGK',
             'aircraft_reg' => 'PK-LGH',
@@ -247,7 +247,7 @@ class WorkOrderTest extends TestCase
 
         Storage::disk('public')->put('work_orders/proof.jpg', 'dummy image content');
 
-        $response = $this->actingAs($this->user)->get(route('work_orders.export_single_pdf', $workOrder->id));
+        $response = $this->actingAs($this->user)->get(route('assignments.export_single_pdf', $workOrder->id));
         $response->assertStatus(200);
         $this->assertEquals('application/pdf', $response->headers->get('content-type'));
     }
@@ -256,7 +256,7 @@ class WorkOrderTest extends TestCase
     {
         Storage::fake('public');
 
-        $workOrder = WorkOrder::create([
+        $workOrder = Assignment::create([
             'date' => '2026-07-31',
             'station' => 'CGK',
             'aircraft_reg' => 'PK-LGH',
@@ -270,7 +270,7 @@ class WorkOrderTest extends TestCase
 
         $photo = UploadedFile::fake()->image('late_proof.jpg', 600, 400);
 
-        $response = $this->actingAs($this->user)->post(route('work_orders.upload_photo', $workOrder->id), [
+        $response = $this->actingAs($this->user)->post(route('assignments.upload_photo', $workOrder->id), [
             'photo' => $photo,
         ]);
 

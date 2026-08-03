@@ -9,8 +9,7 @@ use App\Models\Leave;
 use App\Models\Schedule;
 use App\Models\Station;
 use App\Models\User;
-use App\Models\WorkOrder;
-use App\Models\WorkResult;
+use App\Models\Assignment;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -81,7 +80,7 @@ class HomeController extends Controller
         // 1. Data Penerbangan / Work Orders sesuai periode dashboard
         $today = Carbon::today();
         if ($showManagementDashboard) {
-            $flightsQuery = WorkOrder::with(['users', 'submittedBy'])->whereDate('date', $today);
+            $flightsQuery = Assignment::with(['users', 'submittedBy'])->whereDate('date', $today);
             if ($selectedStation !== 'All') {
                 $flightsQuery->where('station', $selectedStation);
             }
@@ -110,7 +109,7 @@ class HomeController extends Controller
         }
 
         // 2. Total Penerbangan Selesai Hari Ini
-        $totalFlightQuery = WorkOrder::whereDate('date', Carbon::today());
+        $totalFlightQuery = Assignment::whereDate('date', Carbon::today());
         if ($selectedStation !== 'All') {
             $totalFlightQuery->where('station', $selectedStation);
         }
@@ -190,7 +189,7 @@ class HomeController extends Controller
         $chartEndDate = Carbon::now()->endOfDay();
 
         // 1. Batch query daily flights / assignments (1 query instead of 7)
-        $dailyFlightQ = WorkOrder::select(DB::raw('date as date_key'), DB::raw('count(*) as total'))
+        $dailyFlightQ = Assignment::select(DB::raw('date as date_key'), DB::raw('count(*) as total'))
             ->whereBetween('date', [$chartStartDate->toDateString(), $chartEndDate->toDateString()]);
         if ($selectedStation !== 'All') {
             $dailyFlightQ->where('station', $selectedStation);
@@ -276,7 +275,7 @@ class HomeController extends Controller
         $totalWoThisMonth = 0;
 
         if ($showManagementDashboard) {
-            $woQuery = WorkOrder::query();
+            $woQuery = Assignment::query();
             
             $isFullAccess = $user->hasRole(['Admin', 'Head Of Airport Service']) || ($user->station === 'Ho');
 
@@ -302,11 +301,11 @@ class HomeController extends Controller
                 ->get();
         }
 
-        $pendingWorkResultsCount = WorkOrder::query()
+        $pendingWorkResultsCount = Assignment::query()
             ->whereMonth('date', Carbon::today()->month)
             ->whereYear('date', Carbon::today()->year)
             ->when(!$user->hasRole('Admin'), function($q) use ($user) {
-                if ($user->hasRole(WorkOrder::LEADER_ROLES)) {
+                if ($user->hasRole(Assignment::LEADER_ROLES)) {
                     $q->where('submitted_by', $user->id);
                 } else {
                     $q->whereHas('users', fn($sq) => $sq->where('users.id', $user->id));
@@ -384,7 +383,7 @@ class HomeController extends Controller
             ->orderBy('arrival')
             ->get();
 
-        $personalWorkResultsLastMonth = WorkOrder::with(['users', 'submittedBy'])
+        $personalWorkResultsLastMonth = Assignment::with(['users', 'submittedBy'])
             ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
             ->whereBetween('date', [$monthStart->toDateString(), $today->toDateString()])
             ->orderByRaw("CASE WHEN photo_path IS NULL OR photo_path = '' THEN 0 ELSE 1 END ASC")
@@ -427,7 +426,7 @@ class HomeController extends Controller
             ->get()
             ->keyBy(fn (Schedule $schedule) => Carbon::parse($schedule->date)->toDateString());
 
-        $personalWorkResults = WorkOrder::with(['users', 'submittedBy'])
+        $personalWorkResults = Assignment::with(['users', 'submittedBy'])
             ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
             ->orderByRaw("CASE WHEN photo_path IS NULL OR photo_path = '' THEN 0 ELSE 1 END ASC")
             ->orderBy('date', 'desc')

@@ -260,8 +260,8 @@
 
                     {{-- MENU ASSIGNMENT --}}
                     @if(Auth::user()->canAccess('assignment', 'view'))
-                    <li class="menu-item {{ request()->routeIs('work_results.*') || request()->routeIs('work_orders.*') ? 'active' : '' }}">
-                        <a href="{{ route('work_results.index') }}" class="menu-link">
+                    <li class="menu-item {{ request()->routeIs('work_results.*') || request()->routeIs('work_orders.*') || request()->routeIs('assignments.*') ? 'active' : '' }}">
+                        <a href="{{ route('assignments.index') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-plane-arrival"></i>
                             <div data-i18n="Assignment">Assignment</div>
                         </a>

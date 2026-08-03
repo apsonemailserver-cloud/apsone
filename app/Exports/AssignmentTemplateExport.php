@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class WorkOrderTemplateExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize
+class AssignmentTemplateExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize
 {
     public function collection()
     {
@@ -62,13 +62,7 @@ class WorkOrderTemplateExport implements FromCollection, WithHeadings, WithStyle
     public function styles(Worksheet $sheet)
     {
         return [
-            1 => [
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => [
-                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '2F80ED']
-                ]
-            ],
+            1 => ['font' => ['bold' => true]],
         ];
     }
 }

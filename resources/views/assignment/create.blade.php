@@ -9,7 +9,7 @@
         {{-- Header dengan Breadcrumb --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
             <div class="d-flex align-items-center">
-                <a href="{{ route('work_results.index') }}" class="btn btn-icon btn-outline-secondary me-3 rounded-circle shadow-xs" title="Back to Assignment List">
+                <a href="{{ route('assignments.index') }}" class="btn btn-icon btn-outline-secondary me-3 rounded-circle shadow-xs" title="Back to Assignment List">
                     <i class="ti ti-arrow-left fs-4"></i>
                 </a>
                 <div>
@@ -20,7 +20,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('work_results.index') }}">Assignment</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('assignments.index') }}">Assignment</a></li>
                     <li class="breadcrumb-item active">Create Assignment</li>
                 </ol>
             </nav>
@@ -61,11 +61,9 @@
                     </div>
 
                     <div class="card-body mt-3">
-                        <form action="{{ route('work_results.store') }}" method="POST" enctype="multipart/form-data" id="workResultForm">
+                        <form action="{{ route('assignments.store') }}" method="POST" enctype="multipart/form-data" id="workResultForm">
                             @csrf
 
-                            {{-- No WO di-generate otomatis di background --}}
-                            <input type="hidden" name="wo_number" value="{{ old('wo_number', $nextWoNumber) }}">
 
                             {{-- FORM GRID PEKERJAAN & AUTO-FILL FLIGHT --}}
                             <div class="row g-3 mb-4">
@@ -74,19 +72,31 @@
                                     <input type="date" class="form-control" name="date" value="{{ old('date', date('Y-m-d')) }}" required>
                                 </div>
 
+                                <div class="col-md-2">
+                                    <label class="form-label fw-semibold">No. WO <small class="text-muted">(Opsional)</small></label>
+                                    <input type="text"
+                                           class="form-control text-uppercase"
+                                           name="wo_number"
+                                           id="woNumberInput"
+                                           value="{{ old('wo_number') }}"
+                                           placeholder="e.g. WO-2026-001"
+                                           maxlength="100">
+                                    <small class="text-muted d-block mt-1 text-nowrap" style="font-size: 0.72rem;">Kosongkan jika tanpa WO</small>
+                                </div>
+
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Station <span class="text-danger">*</span></label>
                                     <select name="station" id="stationInput" class="form-select" required>
                                         <option value="">-- Pilih Station --</option>
                                         @foreach ($stations as $station)
-                                            <option value="{{ $station->code }}" {{ old('station') == $station->code ? 'selected' : '' }}>
+                                            <option value="{{ $station->code }}" {{ old('station', request('station')) == $station->code ? 'selected' : '' }}>
                                                 {{ $station->code }} - {{ $station->name }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label fw-semibold text-primary">
                                         <i class="bx bx-plane-take-off me-1"></i> Pilih Jadwal Flight <small class="text-muted">(Auto-Fill Flightradar24)</small>
                                     </label>
@@ -100,7 +110,7 @@
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Aircraft Registration <span class="text-danger">*</span></label>
                                     <div class="input-group">
-                                        <input type="text" class="form-control text-uppercase" id="aircraftRegInput" name="aircraft_reg" value="{{ old('aircraft_reg') }}" placeholder="e.g. PK-LGH" required>
+                                        <input type="text" class="form-control text-uppercase" id="aircraftRegInput" name="aircraft_reg" value="{{ old('aircraft_reg', request('aircraft_reg')) }}" placeholder="e.g. PK-LGH" required>
                                         <button type="button" class="btn btn-outline-primary" id="btnFetchFlightData" title="Cari Data Flight">
                                             <i class="bx bx-search-alt"></i>
                                         </button>
@@ -115,24 +125,24 @@
 
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Ex Flight <small class="text-muted">(Default: -)</small></label>
-                                    <input type="text" class="form-control" id="exFlightInput" name="ex_flight" value="{{ old('ex_flight') }}" placeholder="e.g. JT 371 atau -">
+                                    <input type="text" class="form-control" id="exFlightInput" name="ex_flight" value="{{ old('ex_flight', request('ex_flight')) }}" placeholder="e.g. JT 371 atau -">
                                 </div>
 
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">To Flight <small class="text-muted">(Default: -)</small></label>
-                                    <input type="text" class="form-control" id="toFlightInput" name="to_flight" value="{{ old('to_flight') }}" placeholder="e.g. JT 202 atau -">
+                                    <input type="text" class="form-control" id="toFlightInput" name="to_flight" value="{{ old('to_flight', request('to_flight')) }}" placeholder="e.g. JT 202 atau -">
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">Start Time <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" id="startTime" name="start_time" value="{{ old('start_time') }}" required>
+                                    <input type="time" class="form-control" id="startTime" name="start_time" value="{{ old('start_time', request('start_time')) }}" required>
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold">End Time <span class="text-danger">*</span></label>
-                                    <input type="time" class="form-control" id="endTime" name="end_time" value="{{ old('end_time') }}" required>
+                                    <input type="time" class="form-control" id="endTime" name="end_time" value="{{ old('end_time', request('end_time')) }}" required>
                                     <small class="text-muted d-block mt-1">Otomatis +30 menit dari Start Time</small>
                                 </div>
 
@@ -181,13 +191,13 @@
                             </h5>
                             <p class="mb-0 mt-1 small text-muted">Upload file spreadsheet (.xlsx / .xls) untuk pencatatan sekaligus (bulk import)</p>
                         </div>
-                        <a href="{{ route('work_results.template') }}" class="btn btn-sm btn-outline-primary">
-                            <i class="bx bx-download me-1"></i> Download Contoh Excel (Template)
+                        <a href="{{ route('assignments.template') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-download me-1"></i> Download Template
                         </a>
                     </div>
 
                     <div class="card-body mt-3">
-                        <form action="{{ route('work_results.import') }}" method="POST" enctype="multipart/form-data" id="excelImportForm">
+                        <form action="{{ route('assignments.import') }}" method="POST" enctype="multipart/form-data" id="excelImportForm">
                             @csrf
                             <div class="row align-items-end">
                                 <div class="col-md-9 mb-3 mb-md-0">
@@ -508,8 +518,9 @@
                 // Clear active flights array
                 window.__activeFlights = [];
 
-                // Only clear form fields if auto-loading station without query
-                if (!queryReg && !autoSelectFirst) {
+                // Only clear form fields if auto-loading station without query and no URL query params passed
+                const hasUrlParams = !!("{{ request('aircraft_reg') || request('ex_flight') || request('start_time') }}");
+                if (!queryReg && !autoSelectFirst && !hasUrlParams) {
                     window.clearFlightDataForm();
                 }
 
@@ -581,10 +592,10 @@
                         .text('✅ ' + flights.length + ' flight berhasil dimuat dari ' + source + '. Data berhasil terisi.');
                 }
 
-                // Helper: call PHP backend as fallback
+                // Helper: call our PHP backend as fallback
                 function loadFromServer() {
                     $.ajax({
-                        url: "{{ route('work_results.fetch_flight_data') }}",
+                        url: "{{ route('assignments.fetch_flight_data') }}",
                         type: "POST",
                         data: { _token: "{{ csrf_token() }}", station: stationCode, aircraft_reg: queryReg },
                         success: function(response) {
@@ -633,6 +644,7 @@
                                 if (dReg && dNum) depMap[dReg] = dNum.toUpperCase();
                             });
 
+                            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
                             const flights = [];
                             arrivalsData.forEach(function(item) {
                                 const fl = item.flight || {};

@@ -13,13 +13,13 @@
                 <p class="text-secondary mb-0 small">Monitoring aircraft deep cleaning assignment results (DCI & DCE)</p>
             </div>
             <div class="d-flex align-items-center gap-2">
-                @if(auth()->user()->hasPermission('assignment.create') || auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
-                    <a href="{{ route('work_results.create') }}" class="btn btn-primary">
-                        <i class="bx bx-plus-circle me-1"></i> Create Assignment
+                @if(auth()->user()->hasPermission('assignment.create') || auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
+                    <a href="{{ route('assignments.create') }}" class="btn btn-primary">
+                        <i class="bx bx-plus me-1"></i> Tambah Assignment
                     </a>
                 @endif
-                @if(auth()->user()->hasPermission('assignment.export') || auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
-                    <a href="{{ route('work_results.export.pdf', request()->query()) }}" class="btn btn-outline-secondary">
+                @if(auth()->user()->hasPermission('assignment.export') || auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
+                    <a href="{{ route('assignments.export.pdf', request()->query()) }}" class="btn btn-outline-secondary">
                         <i class="bx bx-download me-1"></i> Export Bulk PDF
                     </a>
                 @endif
@@ -37,7 +37,7 @@
         {{-- Filter Bar Card --}}
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <form action="{{ route('work_results.index') }}" method="GET" class="row g-3 align-items-end">
+                <form action="{{ route('assignments.index') }}" method="GET" class="row g-3 align-items-end">
                     @if(auth()->user()->hasRole('Admin'))
                         <div class="col-md-2">
                             <label class="form-label fw-semibold text-dark">STATION</label>
@@ -81,7 +81,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="bx bx-filter-alt me-1"></i> Filter
                             </button>
-                            <a href="{{ route('work_results.index') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('assignments.index') }}" class="btn btn-outline-secondary">
                                 <i class="bx bx-refresh me-1"></i> Reset
                             </a>
                         </div>
@@ -96,11 +96,11 @@
                 <h5 class="card-title text-dark fw-bold mb-0">
                     <i class="bx bx-list-ul text-primary me-2"></i>Assignment List
                 </h5>
-                <span class="badge bg-label-primary rounded-pill px-3 py-2 font-monospace">TOTAL: {{ $workResults->total() }} DATA</span>
+                <span class="badge bg-label-primary rounded-pill px-3 py-2 font-monospace">TOTAL: {{ $assignments->total() }} DATA</span>
             </div>
 
             <div class="card-body mt-3">
-                @if($workResults->isEmpty())
+                @if($assignments->isEmpty())
                     <div class="text-center py-5 text-muted">
                         <i class="bx bx-folder-open fs-1 mb-2 text-secondary d-block"></i>
                         <p class="mb-1 fw-bold text-dark">No Assignments Found</p>
@@ -125,9 +125,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($workResults as $index => $item)
+                                @foreach($assignments as $index => $item)
                                     <tr>
-                                        <td class="fw-semibold text-secondary">{{ $workResults->firstItem() + $index }}</td>
+                                        <td class="fw-semibold text-secondary">{{ $assignments->firstItem() + $index }}</td>
                                         <td>
                                             <div class="fw-bold text-dark">{{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}</div>
                                             <span class="badge bg-label-secondary mt-1 font-monospace">{{ $item->station }}</span>
@@ -165,14 +165,14 @@
                                                     <button type="button" class="btn btn-xs btn-label-primary py-1 px-2.5 rounded-pill btn-preview-photo" data-photo-url="{{ asset('storage/' . $item->photo_path) }}" data-wo="{{ $item->wo_number }}" title="Lihat Foto Bukti">
                                                         <i class="bx bx-image-alt me-1"></i> Lihat Foto
                                                     </button>
-                                                    @if(auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) && $item->submitted_by === auth()->id()))
+                                                    @if(auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $item->submitted_by === auth()->id()))
                                                         <button type="button" class="btn btn-xs btn-icon btn-outline-secondary rounded-circle btn-upload-photo" data-id="{{ $item->id }}" data-wo="{{ $item->wo_number }}" title="Ganti Foto Bukti">
                                                             <i class="bx bx-upload"></i>
                                                         </button>
                                                     @endif
                                                 </div>
                                             @else
-                                                @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                                @if(auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
                                                     <button type="button" class="btn btn-xs btn-label-warning py-1 px-2.5 rounded-pill btn-upload-photo" data-id="{{ $item->id }}" data-wo="{{ $item->wo_number }}" title="Upload Foto Bukti Pekerjaan">
                                                         <i class="bx bx-upload me-1"></i> Upload Foto
                                                     </button>
@@ -206,12 +206,12 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex align-items-center justify-content-center gap-1">
-                                                <a href="{{ route('work_results.show', $item->id) }}" class="action-btn" title="Detail Pekerjaan">
+                                                <a href="{{ route('assignments.show', $item->id) }}" class="action-btn" title="Detail Pekerjaan">
                                                     <i class="bx bx-show"></i>
                                                 </a>
-                                                @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                                @if(auth()->user()->hasPermission('assignment.export') || auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
                                                     @if($item->photo_path)
-                                                        <a href="{{ route('work_results.export_single_pdf', $item->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
+                                                        <a href="{{ route('assignments.export_single_pdf', $item->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
                                                             <i class="bx bx-printer"></i>
                                                         </a>
                                                     @else
@@ -220,8 +220,8 @@
                                                         </button>
                                                     @endif
                                                 @endif
-                                                @if(empty($item->photo_path) && (auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) && $item->submitted_by === auth()->id())))
-                                                    <form action="{{ route('work_results.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
+                                                @if(empty($item->photo_path) && (auth()->user()->hasPermission('assignment.delete') || auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $item->submitted_by === auth()->id())))
+                                                    <form action="{{ route('assignments.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="button" class="action-btn action-delete btn-delete" title="Hapus Data Pekerjaan">
@@ -239,7 +239,7 @@
 
                     {{-- Pagination --}}
                     <div class="mt-4">
-                        {{ $workResults->links('vendor.pagination.custom') }}
+                        {{ $assignments->links('vendor.pagination.custom') }}
                     </div>
                 @endif
             </div>

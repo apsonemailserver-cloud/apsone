@@ -54,15 +54,15 @@
 
                     <div class="attendance-action-buttons d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
                         @if(isset($pendingWorkResultsCount) && $pendingWorkResultsCount > 0)
-                            <a href="{{ route('work_results.index') }}" class="btn btn-label-warning shadow-sm fw-semibold d-inline-flex align-items-center py-2 px-3">
+                            <a href="{{ route('assignments.index') }}" class="btn btn-label-warning shadow-sm fw-semibold d-inline-flex align-items-center py-2 px-3">
                                 <i class="bx bx-loader-alt bx-spin me-1.5 fs-5 text-warning"></i>
                                 <span>{{ $pendingWorkResultsCount }} Pekerjaan Masih Proses</span>
                             </a>
                         @endif
 
-                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) || auth()->user()->canAccess('assignment', 'create'))
-                            <a href="{{ route('work_results.create') }}" class="btn btn-primary-custom text-white shadow-sm">
-                                <i class="bx bx-plus-circle me-1"></i> Tambah WO
+                        @if(auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) || auth()->user()->canAccess('assignment', 'create'))
+                            <a href="{{ route('assignments.create') }}" class="btn btn-primary-custom text-white shadow-sm">
+                                <i class="bx bx-plus-circle me-1"></i> Tambah Assignment
                             </a>
                         @endif
 
@@ -108,7 +108,12 @@
                             $stationStatusClass = $count > 0 ? 'station-card-active' : 'station-card-empty';
                         @endphp
                         <div class="col-xl-3 col-lg-4 col-md-6">
-                            <div class="station-card {{ $borderColor }} {{ $stationStatusClass }} h-100 d-flex flex-column justify-content-between">
+                            <div class="station-card station-modal-trigger {{ $borderColor }} {{ $stationStatusClass }} h-100 d-flex flex-column justify-content-between"
+                                style="cursor: pointer;"
+                                data-station-code="{{ $st->code }}"
+                                data-station-name="{{ addslashes($st->name) }}"
+                                onclick="window.openFlightScheduleModal('{{ $st->code }}', '{{ addslashes($st->name) }}')"
+                                title="Klik untuk lihat Live Flight Schedule {{ $st->code }}">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
                                         <div class="station-code">{{ $st->code }}</div>
@@ -121,11 +126,14 @@
                                 </div>
                                 @if ($count > 0)
                                     <a href="{{ route('staff.index', ['station' => $st->code]) }}"
-                                        class="btn btn-sm station-detail-btn w-100 fw-semibold">
+                                        class="btn btn-sm station-detail-btn w-100 fw-semibold"
+                                        onclick="event.stopPropagation();"
+                                        title="Lihat Detail Staff Aktif">
                                         <i class="fas fa-users me-1"></i> Lihat Detail
                                     </a>
                                 @else
-                                    <button class="btn btn-sm station-empty-btn w-100 fw-semibold" disabled>
+                                    <button class="btn btn-sm station-empty-btn w-100 fw-semibold"
+                                        onclick="event.stopPropagation();" disabled>
                                         Kosong
                                     </button>
                                 @endif
@@ -267,7 +275,7 @@
                                 <span class="text-muted fw-normal">(1 Bulan Terakhir)</span>
                             </h2>
                         </div>
-                        <a href="{{ route('work_results.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                        <a href="{{ route('assignments.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
                     </div>
                     @if(isset($assignedFlights) && $assignedFlights->isNotEmpty())
                         <div class="d-none" aria-hidden="true">
@@ -324,7 +332,7 @@
                                                         <i class="bx bx-image-alt me-1"></i> Lihat Foto
                                                     </button>
                                                 @else
-                                                    @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                                    @if(auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
                                                         <button type="button" class="btn btn-xs btn-label-warning py-1 px-2.5 rounded-pill btn-upload-photo" data-id="{{ $wo->id }}" data-wo="{{ $wo->wo_number }}" title="Upload Foto Bukti Pekerjaan">
                                                             <i class="bx bx-upload me-1"></i> Upload Foto
                                                         </button>
@@ -354,12 +362,12 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="d-flex align-items-center justify-content-center gap-1">
-                                                    <a href="{{ route('work_results.show', $wo->id) }}" class="action-btn" title="Detail Pekerjaan">
+                                                    <a href="{{ route('assignments.show', $wo->id) }}" class="action-btn" title="Detail Pekerjaan">
                                                         <i class="bx bx-show"></i>
                                                     </a>
-                                                    @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                                                    @if(auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
                                                         @if($wo->photo_path)
-                                                            <a href="{{ route('work_results.export_single_pdf', $wo->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
+                                                            <a href="{{ route('assignments.export_single_pdf', $wo->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
                                                                 <i class="bx bx-printer"></i>
                                                             </a>
                                                         @else
@@ -671,6 +679,290 @@
 
     @include('modal.add_flight')
     @include('modal.flight')
+
+    <!-- Flight Schedule Modal (FIDS Airport Board) -->
+    <style>
+        /* FIDS Modal — Light / Dark mode */
+        #flightScheduleModal .fids-header {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            border-bottom: 2px solid rgba(59,130,246,.6);
+        }
+        #flightScheduleModal .fids-controls {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background .2s;
+        }
+        #flightScheduleModal .fids-table thead th {
+            background: #0F172A;
+            color: #94A3B8;
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            white-space: nowrap;
+        }
+        #flightScheduleModal .fids-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background .15s;
+        }
+        #flightScheduleModal .fids-table tbody tr:hover {
+            background: #f0f7ff;
+        }
+        #flightScheduleModal .fids-footer {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        /* Dark mode (.aps-dark, html.aps-dark, .dark-style, [data-bs-theme=dark]) */
+        .aps-dark #flightScheduleModal .fids-controls,
+        .aps-dark #flightScheduleModal .fids-footer,
+        .dark-style #flightScheduleModal .fids-controls,
+        .dark-style #flightScheduleModal .fids-footer,
+        html[data-bs-theme="dark"] #flightScheduleModal .fids-controls,
+        html[data-bs-theme="dark"] #flightScheduleModal .fids-footer {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+        .aps-dark #flightScheduleModal .fids-table tbody tr,
+        .dark-style #flightScheduleModal .fids-table tbody tr,
+        html[data-bs-theme="dark"] #flightScheduleModal .fids-table tbody tr {
+            border-color: #334155 !important;
+        }
+        .aps-dark #flightScheduleModal .fids-table tbody tr:hover,
+        .dark-style #flightScheduleModal .fids-table tbody tr:hover,
+        html[data-bs-theme="dark"] #flightScheduleModal .fids-table tbody tr:hover {
+            background: #1e3a5f !important;
+        }
+        .aps-dark #flightScheduleModal .modal-content,
+        .dark-style #flightScheduleModal .modal-content,
+        html[data-bs-theme="dark"] #flightScheduleModal .modal-content {
+            background: #0f172a !important;
+        }
+        .aps-dark #flightScheduleModal .form-control,
+        .dark-style #flightScheduleModal .form-control,
+        html[data-bs-theme="dark"] #flightScheduleModal .form-control {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        .aps-dark #flightScheduleModal .input-group-text,
+        .dark-style #flightScheduleModal .input-group-text,
+        html[data-bs-theme="dark"] #flightScheduleModal .input-group-text {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        .aps-dark #flightScheduleModal .text-dark,
+        .dark-style #flightScheduleModal .text-dark,
+        html[data-bs-theme="dark"] #flightScheduleModal .text-dark {
+            color: #f1f5f9 !important;
+        }
+        .aps-dark #flightScheduleModal .text-muted,
+        .dark-style #flightScheduleModal .text-muted,
+        html[data-bs-theme="dark"] #flightScheduleModal .text-muted {
+            color: #94a3b8 !important;
+        }
+        .aps-dark #flightScheduleModal code,
+        .dark-style #flightScheduleModal code,
+        html[data-bs-theme="dark"] #flightScheduleModal code {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            color: #7dd3fc !important;
+        }
+        /* Responsive tweaks */
+        #fidsTableContainer {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        #fidsTableContainer::-webkit-scrollbar {
+            height: 4px;
+            width: 4px;
+        }
+        #fidsTableContainer::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 4px;
+        }
+        @media (max-width: 576px) {
+            #flightScheduleModal .modal-dialog { margin: 0.35rem; }
+            #flightScheduleModal .modal-content { border-radius: 0.75rem !important; }
+            #flightScheduleModal .fids-header { padding: 0.75rem 1rem !important; }
+            #flightScheduleModal .fids-controls { padding: 0.5rem 1rem !important; }
+            #flightScheduleModal .fids-table td, #flightScheduleModal .fids-table th { padding: 0.45rem 0.35rem; }
+            .btn-fr24, .btn-assignment-pill { padding: 4px 8px !important; font-size: 0.72rem !important; border-radius: 6px !important; }
+        }
+        .btn-fr24 {
+            background: #ff7a00;
+            border: none;
+            color: #ffffff !important;
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 8px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(255, 122, 0, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-fr24:hover {
+            background: #e56d00;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(255, 122, 0, 0.4);
+        }
+        .btn-assignment-pill {
+            background: #3b82f6;
+            border: none;
+            color: #ffffff !important;
+            font-size: 0.76rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 8px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-assignment-pill:hover {
+            background: #2563eb;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+        }
+    </style>
+
+    <div class="modal fade" id="flightScheduleModal" tabindex="-1" aria-labelledby="flightScheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content shadow-lg border-0 overflow-hidden" style="border-radius: .875rem;">
+                <!-- Header FIDS Board -->
+                <div class="fids-header modal-header text-white py-3 px-3 px-md-4">
+                    <div class="d-flex align-items-center gap-2 gap-md-3 flex-grow-1 min-w-0">
+                        <div class="rounded-circle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center text-info flex-shrink-0" style="width:38px;height:38px;">
+                            <i class="fas fa-plane-arrival"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h6 class="modal-title fw-bold text-white mb-0 d-flex align-items-center gap-2 flex-wrap" id="flightScheduleModalLabel">
+                                <span>Flight Schedule Board</span>
+                                <span class="badge bg-warning text-dark px-2" style="font-size:.8rem;" id="fidsStationCode">CGK</span>
+                            </h6>
+                            <small class="text-light opacity-75 d-block text-truncate" id="fidsStationName" style="font-size:.75rem;">Jakarta (Soekarno-Hatta)</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <span class="badge border border-success text-success d-none d-sm-inline-flex align-items-center gap-1" style="font-size:.68rem;background:rgba(34,197,94,.12);">
+                            <i class="fas fa-satellite-dish fa-spin"></i> Live
+                        </span>
+                        <a href="https://www.flightradar24.com" target="_blank" rel="noopener" class="btn btn-sm d-none d-md-inline-flex align-items-center gap-1 text-white" style="background:#FF8000;border:none;font-size:.72rem;padding:4px 10px;border-radius:6px;" title="Buka Flightradar24">
+                            <i class="fas fa-external-link-alt"></i> FR24
+                        </a>
+                        <button type="button" class="btn-close btn-close-white ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <!-- Controls Bar -->
+                <div class="fids-controls px-3 px-md-4 py-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width:400px;">
+                        <div class="input-group input-group-sm w-100">
+                            <span class="input-group-text border-end-0"><i class="fas fa-search" style="font-size:.75rem;"></i></span>
+                            <input type="text" id="fidsSearchInput" class="form-control border-start-0 ps-0" style="font-size:.8rem;" placeholder="Cari flight, maskapai, registrasi..." onkeyup="filterFidsTable()">
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between justify-content-sm-end w-100 w-sm-auto gap-2">
+                        <small class="text-muted fw-semibold" id="fidsSummaryCount" style="font-size:.75rem;">0 Penerbangan</small>
+                        <button type="button" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" style="font-size:.75rem;" onclick="reloadCurrentFidsModal()">
+                            <i class="fas fa-sync-alt" id="fidsRefreshIcon" style="font-size:.7rem;"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-0">
+                    <!-- Loading State -->
+                    <div id="fidsLoadingState" class="text-center py-5">
+                        <div class="spinner-border text-primary mb-3" style="width:2rem;height:2rem;" role="status"><span class="visually-hidden">Loading...</span></div>
+                        <h6 class="fw-semibold mb-1">Mengambil Data Penerbangan Live...</h6>
+                        <small class="text-muted">Menghubungkan ke Flightradar24...</small>
+                    </div>
+                    <!-- Error State -->
+                    <div id="fidsErrorState" class="text-center py-5 d-none">
+                        <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex p-3 mb-2">
+                            <i class="fas fa-exclamation-triangle fs-4"></i>
+                        </div>
+                        <h6 class="fw-semibold text-danger mb-1" id="fidsErrorMessage">Gagal memuat data penerbangan.</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="reloadCurrentFidsModal()">Coba Lagi</button>
+                    </div>
+                    <!-- Empty State -->
+                    <div id="fidsEmptyState" class="text-center py-5 d-none">
+                        <div class="rounded-circle bg-secondary bg-opacity-10 text-secondary d-inline-flex p-3 mb-2">
+                            <i class="fas fa-plane-slash fs-4"></i>
+                        </div>
+                        <h6 class="fw-semibold text-muted mb-1">Tidak ada data penerbangan aktif.</h6>
+                        <small class="text-muted">Coba refresh beberapa saat lagi.</small>
+                    </div>
+                    <!-- FIDS Table -->
+                    <div id="fidsTableContainer" class="table-responsive d-none" style="max-height:60vh;overflow-y:auto;">
+                        <table class="table table-hover align-middle mb-0 fids-table" id="fidsTable">
+                            <thead>
+                                <tr>
+                                    <th class="ps-2 ps-md-4 py-3" style="width:28px;">#</th>
+                                    <th class="py-3">FLIGHT</th>
+                                    <th class="py-3 d-none d-md-table-cell">MASKAPAI</th>
+                                    <th class="py-3 d-none d-md-table-cell">RUTE</th>
+                                    <th class="py-3 d-none d-md-table-cell">REGISTRASI</th>
+                                    <th class="py-3 d-none d-sm-table-cell">TO FLIGHT</th>
+                                    <th class="py-3">STATUS FIDS</th>
+                                    <th class="pe-2 pe-md-4 py-3 text-end" style="min-width:150px;">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fidsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="fids-footer modal-footer py-2 px-3 px-md-4 d-flex justify-content-between align-items-center">
+                    <small class="text-muted d-none d-sm-block" style="font-size:.72rem;">
+                        <i class="fas fa-satellite-dish me-1 text-warning"></i> Data live dari Flightradar24 Arrivals &amp; Departures
+                    </small>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Upload Foto Bukti Pekerjaan -->
+    <div class="modal fade" id="uploadPhotoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="uploadPhotoModalTitle">Upload Foto Bukti Pekerjaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="uploadPhotoForm" action="" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="alert alert-primary d-flex align-items-center py-2 px-3 mb-3">
+                            <i class="bx bx-info-circle me-2 fs-5"></i>
+                            <div class="small">Laporan PDF baru dapat dicetak setelah foto bukti pekerjaan diunggah.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Pilih File Foto Bukti <span class="text-danger">*</span></label>
+                            <input type="file" name="photo" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
+                            <small class="text-muted d-block mt-1">Format: JPG, JPEG, PNG. Maksimal 2MB.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary"><i class="bx bx-upload me-1"></i> Simpan & Unggah Foto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -1354,36 +1646,273 @@
                     });
                 }
             });
-        });
-    </script>
+        }); // end DOMContentLoaded (counter animation + photo/print handlers)
 
-    <!-- Modal Upload Foto Bukti Pekerjaan -->
-    <div class="modal fade" id="uploadPhotoModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="uploadPhotoModalTitle">Upload Foto Bukti Pekerjaan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="uploadPhotoForm" action="" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="alert alert-primary d-flex align-items-center py-2 px-3 mb-3">
-                            <i class="bx bx-info-circle me-2 fs-5"></i>
-                            <div class="small">Laporan PDF baru dapat dicetak setelah foto bukti pekerjaan diunggah.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Pilih File Foto Bukti <span class="text-danger">*</span></label>
-                            <input type="file" name="photo" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
-                            <small class="text-muted d-block mt-1">Format: JPG, JPEG, PNG. Maksimal 2MB.</small>
-                        </div>
+        let currentFidsStation = '';
+        let currentFidsStationName = '';
+        let rawFidsFlights = [];
+        let fidsModalInstance = null;
+
+        // Initialize FIDS modal on DOM ready
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalEl = document.getElementById('flightScheduleModal');
+            if (!modalEl) return;
+
+            fidsModalInstance = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+
+            // Load data only after modal is fully shown (prevents DOM race conditions)
+            modalEl.addEventListener('shown.bs.modal', function () {
+                if (currentFidsStation) {
+                    loadFidsData(currentFidsStation);
+                }
+            });
+
+            // Reset state when modal is hidden
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                rawFidsFlights = [];
+                const tbody = document.getElementById('fidsTableBody');
+                if (tbody) tbody.innerHTML = '';
+                const countEl = document.getElementById('fidsSummaryCount');
+                if (countEl) countEl.innerText = 'Total: 0 Penerbangan';
+                const loadingState = document.getElementById('fidsLoadingState');
+                if (loadingState) loadingState.classList.remove('d-none');
+                const tableContainer = document.getElementById('fidsTableContainer');
+                if (tableContainer) tableContainer.classList.add('d-none');
+                const errorState = document.getElementById('fidsErrorState');
+                if (errorState) errorState.classList.add('d-none');
+                const emptyState = document.getElementById('fidsEmptyState');
+                if (emptyState) emptyState.classList.add('d-none');
+                const searchEl = document.getElementById('fidsSearchInput');
+                if (searchEl) searchEl.value = '';
+            });
+        });
+
+        window.openFlightScheduleModal = function (stationCode, stationName) {
+            currentFidsStation = stationCode;
+            currentFidsStationName = stationName;
+
+            const codeEl = document.getElementById('fidsStationCode');
+            const nameEl = document.getElementById('fidsStationName');
+            if (codeEl) codeEl.innerText = stationCode;
+            if (nameEl) nameEl.innerText = stationName;
+
+            // Ensure loading state is shown before opening
+            const loadingState = document.getElementById('fidsLoadingState');
+            const tableContainer = document.getElementById('fidsTableContainer');
+            const errorState = document.getElementById('fidsErrorState');
+            const emptyState = document.getElementById('fidsEmptyState');
+            if (loadingState) loadingState.classList.remove('d-none');
+            if (tableContainer) tableContainer.classList.add('d-none');
+            if (errorState) errorState.classList.add('d-none');
+            if (emptyState) emptyState.classList.add('d-none');
+
+            const modalEl = document.getElementById('flightScheduleModal');
+            if (modalEl) {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    if (!fidsModalInstance) {
+                        fidsModalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+                    }
+                    fidsModalInstance.show();
+                } else if (typeof jQuery !== 'undefined' && typeof $('#flightScheduleModal').modal === 'function') {
+                    $('#flightScheduleModal').modal('show');
+                }
+            }
+
+            // Immediately load data for station
+            loadFidsData(stationCode);
+        };
+
+        function reloadCurrentFidsModal() {
+            if (currentFidsStation) {
+                loadFidsData(currentFidsStation);
+            }
+        }
+
+        function loadFidsData(stationCode) {
+            const loadingState = document.getElementById('fidsLoadingState');
+            const errorState = document.getElementById('fidsErrorState');
+            const emptyState = document.getElementById('fidsEmptyState');
+            const tableContainer = document.getElementById('fidsTableContainer');
+            const refreshIcon = document.getElementById('fidsRefreshIcon');
+
+            if (loadingState) loadingState.classList.remove('d-none');
+            if (errorState) errorState.classList.add('d-none');
+            if (emptyState) emptyState.classList.add('d-none');
+            if (tableContainer) tableContainer.classList.add('d-none');
+            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+            fetch('{{ route("assignments.fetch_flight_data") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ station: stationCode })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(resData => {
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                if (loadingState) loadingState.classList.add('d-none');
+
+                if (resData.success && Array.isArray(resData.flights) && resData.flights.length > 0) {
+                    rawFidsFlights = resData.flights;
+                    renderFidsTable(rawFidsFlights);
+                    if (tableContainer) tableContainer.classList.remove('d-none');
+                } else {
+                    rawFidsFlights = [];
+                    if (emptyState) emptyState.classList.remove('d-none');
+                    const countEl = document.getElementById('fidsSummaryCount');
+                    if (countEl) countEl.innerText = 'Total: 0 Penerbangan';
+                }
+            })
+            .catch(err => {
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                if (loadingState) loadingState.classList.add('d-none');
+                if (errorState) errorState.classList.remove('d-none');
+                const errEl = document.getElementById('fidsErrorMessage');
+                if (errEl) errEl.innerText = 'Gagal terhubung ke server. ' + (err.message || '');
+            });
+        }
+
+        function renderFidsTable(flights) {
+            const tbody = document.getElementById('fidsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const countEl = document.getElementById('fidsSummaryCount');
+            if (countEl) countEl.innerText = `${flights.length} Penerbangan`;
+
+            flights.forEach((item, index) => {
+                const createAssignmentUrl = `{{ route('assignments.create') }}?station=${encodeURIComponent(item.station)}&aircraft_reg=${encodeURIComponent(item.aircraft_reg)}&ex_flight=${encodeURIComponent(item.ex_flight)}&to_flight=${encodeURIComponent(item.to_flight)}&start_time=${encodeURIComponent(item.start_time)}&end_time=${encodeURIComponent(item.end_time)}`;
+
+                // Determine status badge first so we know if flight is landed
+                let statusBadge = '';
+                const sText = item.status_text || 'Scheduled';
+                const sColor = (item.status_color || '').toLowerCase();
+                const isLanded = sText.toLowerCase().includes('landed') || sText.toLowerCase().includes('arrived');
+
+                // Build direct Flightradar24 URL (smart resolution for live vs landed)
+                const flightNoClean = (item.ex_flight || '').replace(/\s+/g, '').toUpperCase();
+                const regClean = (item.aircraft_reg || '').replace(/[-\s]/g, '').toLowerCase();
+                let fr24Url = 'https://www.flightradar24.com';
+
+                if (isLanded) {
+                    // For landed flights, link directly to flight history or aircraft data page on FR24 to prevent "Live flight not found" popup
+                    if (flightNoClean && flightNoClean !== '-') {
+                        fr24Url = `https://www.flightradar24.com/data/flights/${flightNoClean.toLowerCase()}`;
+                    } else if (regClean) {
+                        fr24Url = `https://www.flightradar24.com/data/aircraft/${regClean}`;
+                    }
+                } else if (item.flight_id && flightNoClean && flightNoClean !== '-') {
+                    fr24Url = `https://www.flightradar24.com/${flightNoClean}/${item.flight_id}`;
+                } else if (flightNoClean && flightNoClean !== '-') {
+                    fr24Url = `https://www.flightradar24.com/data/flights/${flightNoClean.toLowerCase()}`;
+                } else if (regClean) {
+                    fr24Url = `https://www.flightradar24.com/data/aircraft/${regClean}`;
+                }
+
+                const toFlightNoClean = (item.to_flight || '').replace(/\s+/g, '').toUpperCase();
+                let toFr24Url = '';
+                if (toFlightNoClean && toFlightNoClean !== '-') {
+                    toFr24Url = `https://www.flightradar24.com/data/flights/${toFlightNoClean.toLowerCase()}`;
+                }
+
+                const toFlightDisplay = (toFlightNoClean && toFlightNoClean !== '-')
+                    ? `<a href="${toFr24Url}" target="_blank" rel="noopener" class="badge bg-label-info text-decoration-none d-inline-flex align-items-center gap-1" style="font-size:.72rem;" title="Buka ${item.to_flight} di Flightradar24">${item.to_flight} <i class="fas fa-external-link-alt" style="font-size:.55rem;opacity:.75;"></i></a>`
+                    : `<span class="text-muted">-</span>`;
+
+
+
+                let statusTextFormatted = sText.toUpperCase();
+                if (item.start_time && !statusTextFormatted.includes(':')) {
+                    statusTextFormatted += ' ' + item.start_time;
+                }
+
+                if (sColor === 'green' || sText.toLowerCase().includes('landed') || sText.toLowerCase().includes('arrived')) {
+                    statusBadge = `<span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25 px-2 py-1" style="font-size:.72rem;"><i class="fas fa-check-circle me-1"></i>${statusTextFormatted}</span>`;
+                } else if (sColor === 'yellow' || sColor === 'amber' || sText.toLowerCase().includes('delayed')) {
+                    statusBadge = `<span class="badge bg-warning bg-opacity-15 text-warning border border-warning border-opacity-25 px-2 py-1" style="font-size:.72rem;"><i class="fas fa-exclamation-circle me-1"></i>${statusTextFormatted}</span>`;
+                } else if (sColor === 'red' || sText.toLowerCase().includes('cancelled')) {
+                    statusBadge = `<span class="badge bg-danger bg-opacity-15 text-danger border border-danger border-opacity-25 px-2 py-1" style="font-size:.72rem;"><i class="fas fa-times-circle me-1"></i>${statusTextFormatted}</span>`;
+                } else if (sText.toLowerCase().includes('en route') || sText.toLowerCase().includes('estimated')) {
+                    statusBadge = `<span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-25 px-2 py-1" style="font-size:.72rem;"><i class="fas fa-plane-arrival me-1"></i>${statusTextFormatted}</span>`;
+                } else {
+                    statusBadge = `<span class="badge bg-secondary bg-opacity-15 text-secondary border border-secondary border-opacity-25 px-2 py-1" style="font-size:.72rem;"><i class="far fa-clock me-1"></i>${statusTextFormatted}</span>`;
+                }
+
+                // Build Route Display
+                const originLabel = item.origin ? item.origin : (item.origin_code || '-');
+                const routeDisplay = `
+                    <div class="d-flex align-items-center gap-1 flex-wrap" style="font-size:.78rem;">
+                        <span class="fw-semibold text-dark">${originLabel}</span>
+                        ${item.origin_code ? `<span class="badge bg-label-secondary" style="font-size:.65rem;">${item.origin_code}</span>` : ''}
+                        <i class="fas fa-arrow-right text-muted mx-0.5" style="font-size:.6rem;opacity:.7;"></i>
+                        <span class="badge bg-label-warning text-dark fw-bold" style="font-size:.68rem;">${item.station}</span>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary"><i class="bx bx-upload me-1"></i> Simpan & Unggah Foto</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                `;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-2 ps-md-4 fw-semibold text-muted" style="font-size:.75rem;width:28px;">${index + 1}</td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <a href="${fr24Url}" target="_blank" rel="noopener" class="fw-bold text-primary text-decoration-none d-inline-flex align-items-center gap-1" style="font-size:.88rem;letter-spacing:.2px;" title="Buka ${item.ex_flight} di Flightradar24">
+                                ${item.ex_flight || '-'}
+                                <i class="fas fa-external-link-alt text-primary" style="font-size:.58rem;opacity:.75;"></i>
+                            </a>
+                            <span class="d-md-none text-muted text-truncate" style="font-size:.7rem;max-width:110px;">${item.airline || ''} ${item.origin ? '• ' + item.origin : ''}</span>
+                        </div>
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        <span class="fw-semibold text-dark" style="font-size:.8rem;">${item.airline || '-'}</span>
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        ${routeDisplay}
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        <code style="font-size:.78rem;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);color:#6366f1;border-radius:4px;padding:2px 6px;">${item.aircraft_reg || '-'}</code>
+                    </td>
+                    <td class="d-none d-sm-table-cell">${toFlightDisplay}</td>
+                    <td>${statusBadge}</td>
+                    <td class="pe-2 pe-md-4 text-end" style="min-width:150px;">
+                        <div class="d-flex align-items-center justify-content-end gap-1.5" style="gap: 6px !important;">
+                            <a href="${fr24Url}" target="_blank" rel="noopener"
+                               class="btn-fr24"
+                               title="Buka live radar ${item.ex_flight} di Flightradar24">
+                                <i class="fas fa-plane" style="font-size:.68rem;"></i>
+                                <span>FR24</span>
+                            </a>
+                            <a href="${createAssignmentUrl}"
+                               class="btn-assignment-pill"
+                               title="Buat Assignment untuk ${item.ex_flight}">
+                                <i class="fas fa-plus-circle" style="font-size:.68rem;"></i>
+                                <span>Assignment</span>
+                            </a>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterFidsTable() {
+            const query = document.getElementById('fidsSearchInput').value.toLowerCase().trim();
+            if (!query) {
+                renderFidsTable(rawFidsFlights);
+                return;
+            }
+            const filtered = rawFidsFlights.filter(item => {
+                return (item.ex_flight && item.ex_flight.toLowerCase().includes(query)) ||
+                       (item.aircraft_reg && item.aircraft_reg.toLowerCase().includes(query)) ||
+                       (item.airline && item.airline.toLowerCase().includes(query)) ||
+                       (item.origin && item.origin.toLowerCase().includes(query)) ||
+                       (item.to_flight && item.to_flight.toLowerCase().includes(query));
+            });
+            renderFidsTable(filtered);
+        }
+    </script>
 @endsection

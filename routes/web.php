@@ -21,8 +21,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\WorkOrderController;
-use App\Http\Controllers\WorkResultController;
+use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\RoleController;
 use App\Models\Blacklist;
 
@@ -218,30 +217,43 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/announcements/{id}/read', [AnnouncementController::class, 'markAsRead'])->name('announcements.read');
     Route::post('/announcements/mark-all-read', [AnnouncementController::class, 'markAllRead'])->name('announcements.mark_all_read');
 
-    // --- WORK ORDERS ---
-    Route::get('/work-orders', [WorkOrderController::class, 'index'])->name('work_orders.index');
-    Route::get('/work-orders/create', [WorkOrderController::class, 'create'])->name('work_orders.create');
-    Route::get('/work-orders/template', [WorkOrderController::class, 'downloadTemplate'])->name('work_orders.template');
-    Route::post('/work-orders/store', [WorkOrderController::class, 'store'])->name('work_orders.store');
-    Route::post('/work-orders/fetch-flight-data', [WorkOrderController::class, 'fetchFlightData'])->name('work_orders.fetch_flight_data');
-    Route::post('/work-orders/import', [WorkOrderController::class, 'import'])->name('work_orders.import');
-    Route::get('/work-orders/export/pdf', [WorkOrderController::class, 'exportPdf'])->name('work_orders.export.pdf');
-    Route::get('/work-orders/{id}/export-pdf', [WorkOrderController::class, 'exportSinglePdf'])->name('work_orders.export_single_pdf');
-    Route::post('/work-orders/{id}/upload-photo', [WorkOrderController::class, 'uploadPhoto'])->name('work_orders.upload_photo');
-    Route::get('/work-orders/{id}', [WorkOrderController::class, 'show'])->name('work_orders.show');
-    Route::delete('/work-orders/{id}', [WorkOrderController::class, 'destroy'])->name('work_orders.destroy');
+    // --- ASSIGNMENTS ---
+    Route::get('/assignments', [AssignmentController::class, 'index'])->name('assignments.index');
+    Route::get('/assignments/create', [AssignmentController::class, 'create'])->name('assignments.create');
+    Route::get('/assignments/template', [AssignmentController::class, 'downloadTemplate'])->name('assignments.template');
+    Route::post('/assignments/store', [AssignmentController::class, 'store'])->name('assignments.store');
+    Route::post('/assignments/fetch-flight-data', [AssignmentController::class, 'fetchFlightData'])->name('assignments.fetch_flight_data');
+    Route::post('/assignments/import', [AssignmentController::class, 'import'])->name('assignments.import');
+    Route::get('/assignments/export/pdf', [AssignmentController::class, 'exportPdf'])->name('assignments.export.pdf');
+    Route::get('/assignments/{id}/export-pdf', [AssignmentController::class, 'exportSinglePdf'])->name('assignments.export_single_pdf');
+    Route::post('/assignments/{id}/upload-photo', [AssignmentController::class, 'uploadPhoto'])->name('assignments.upload_photo');
+    Route::get('/assignments/{id}', [AssignmentController::class, 'show'])->name('assignments.show');
+    Route::delete('/assignments/{id}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
 
-    // Legacy Work Results Route Aliases
-    Route::get('/work-results', [WorkOrderController::class, 'index'])->name('work_results.index');
-    Route::get('/work-results/create', [WorkOrderController::class, 'create'])->name('work_results.create');
-    Route::get('/work-results/template', [WorkOrderController::class, 'downloadTemplate'])->name('work_results.template');
-    Route::post('/work-results/store', [WorkOrderController::class, 'store'])->name('work_results.store');
-    Route::post('/work-results/fetch-flight-data', [WorkOrderController::class, 'fetchFlightData'])->name('work_results.fetch_flight_data');
-    Route::post('/work-results/import', [WorkOrderController::class, 'import'])->name('work_results.import');
-    Route::get('/work-results/export/pdf', [WorkOrderController::class, 'exportPdf'])->name('work_results.export.pdf');
-    Route::get('/work-results/{id}/export-pdf', [WorkOrderController::class, 'exportSinglePdf'])->name('work_results.export_single_pdf');
-    Route::post('/work-results/{id}/upload-photo', [WorkOrderController::class, 'uploadPhoto'])->name('work_results.upload_photo');
-    Route::get('/work-results/{id}', [WorkOrderController::class, 'show'])->name('work_results.show');
+    // Legacy Aliases for /work-orders and /work-results -> redirect to AssignmentController
+    Route::get('/work-orders', [AssignmentController::class, 'index'])->name('work_orders.index');
+    Route::get('/work-orders/create', [AssignmentController::class, 'create'])->name('work_orders.create');
+    Route::get('/work-orders/template', [AssignmentController::class, 'downloadTemplate'])->name('work_orders.template');
+    Route::post('/work-orders/store', [AssignmentController::class, 'store'])->name('work_orders.store');
+    Route::post('/work-orders/fetch-flight-data', [AssignmentController::class, 'fetchFlightData'])->name('work_orders.fetch_flight_data');
+    Route::post('/work-orders/import', [AssignmentController::class, 'import'])->name('work_orders.import');
+    Route::get('/work-orders/export/pdf', [AssignmentController::class, 'exportPdf'])->name('work_orders.export.pdf');
+    Route::get('/work-orders/{id}/export-pdf', [AssignmentController::class, 'exportSinglePdf'])->name('work_orders.export_single_pdf');
+    Route::post('/work-orders/{id}/upload-photo', [AssignmentController::class, 'uploadPhoto'])->name('work_orders.upload_photo');
+    Route::get('/work-orders/{id}', [AssignmentController::class, 'show'])->name('work_orders.show');
+    Route::delete('/work-orders/{id}', [AssignmentController::class, 'destroy'])->name('work_orders.destroy');
+
+    Route::get('/work-results', [AssignmentController::class, 'index'])->name('work_results.index');
+    Route::get('/work-results/create', [AssignmentController::class, 'create'])->name('work_results.create');
+    Route::get('/work-results/template', [AssignmentController::class, 'downloadTemplate'])->name('work_results.template');
+    Route::post('/work-results/store', [AssignmentController::class, 'store'])->name('work_results.store');
+    Route::post('/work-results/fetch-flight-data', [AssignmentController::class, 'fetchFlightData'])->name('work_results.fetch_flight_data');
+    Route::post('/work-results/import', [AssignmentController::class, 'import'])->name('work_results.import');
+    Route::get('/work-results/export/pdf', [AssignmentController::class, 'exportPdf'])->name('work_results.export.pdf');
+    Route::get('/work-results/{id}/export-pdf', [AssignmentController::class, 'exportSinglePdf'])->name('work_results.export_single_pdf');
+    Route::post('/work-results/{id}/upload-photo', [AssignmentController::class, 'uploadPhoto'])->name('work_results.upload_photo');
+    Route::get('/work-results/{id}', [AssignmentController::class, 'show'])->name('work_results.show');
+
     // --- MANAJEMEN ROLE & HAK AKSES ---
     Route::post('/roles/{id}/toggle-user', [RoleController::class, 'toggleUserRole'])->name('roles.toggle-user');
     Route::resource('roles', RoleController::class)->except(['show']);

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Assignment {{ $workResult->wo_number }}</title>
+    <title>Assignment {{ $assignment->wo_number }}</title>
     <style>
         @page {
             margin: 20px 24px;
@@ -308,7 +308,7 @@
                         <td style="vertical-align: middle;">
                             <div class="company-title">PT ANGKASA PRATAMA SEJAHTERA</div>
                             <div class="company-sub">Ground Handling & Aircraft Operations Support Services</div>
-                            <div class="station-pill">STATION: {{ $workResult->station }} | OPERATIONAL REPORT</div>
+                            <div class="station-pill">STATION: {{ $assignment->station }} | OPERATIONAL REPORT</div>
                         </td>
                     </tr>
                 </table>
@@ -316,8 +316,8 @@
             <td style="width: 40%; vertical-align: top;">
                 <div class="doc-card">
                     <div class="doc-title">LAPORAN ASSIGNMENT</div>
-                    <div class="doc-subtitle">DEEP CLEANING {{ $workResult->type == 'DCI' ? 'INTERIOR (DCI)' : 'EXTERIOR (DCE)' }}</div>
-                    <div class="wo-badge">{{ $workResult->wo_number }}</div>
+                    <div class="doc-subtitle">DEEP CLEANING {{ $assignment->type == 'DCI' ? 'INTERIOR (DCI)' : 'EXTERIOR (DCE)' }}</div>
+                    <div class="wo-badge">{{ $assignment->wo_number }}</div>
                 </div>
             </td>
         </tr>
@@ -331,43 +331,43 @@
     <table class="info-table">
         <tr>
             <td class="info-label">Nomor Assignment</td>
-            <td class="info-value font-mono">{{ $workResult->wo_number }}</td>
+            <td class="info-value font-mono">{{ $assignment->wo_number }}</td>
             <td class="info-label">Kategori Pekerjaan</td>
             <td class="info-value">
                 <span class="pill-job">
-                    {{ $workResult->type }} - {{ $workResult->type == 'DCI' ? 'Deep Cleaning Interior' : 'Deep Cleaning Exterior' }}
+                    {{ $assignment->type }} - {{ $assignment->type == 'DCI' ? 'Deep Cleaning Interior' : 'Deep Cleaning Exterior' }}
                 </span>
             </td>
         </tr>
         <tr>
             <td class="info-label">Stasiun / Bandara</td>
-            <td class="info-value">{{ $workResult->station }}</td>
+            <td class="info-value">{{ $assignment->station }}</td>
             <td class="info-label">Tanggal Kerja</td>
-            <td class="info-value">{{ date('d F Y', strtotime($workResult->date)) }}</td>
+            <td class="info-value">{{ date('d F Y', strtotime($assignment->date)) }}</td>
         </tr>
         <tr>
             <td class="info-label">Aircraft Registration</td>
-            <td class="info-value"><span class="pill-reg">{{ $workResult->aircraft_reg }}</span></td>
+            <td class="info-value"><span class="pill-reg">{{ $assignment->aircraft_reg }}</span></td>
             <td class="info-label">Parking Stand</td>
-            <td class="info-value">Stand {{ $workResult->parking_stand }}</td>
+            <td class="info-value">Stand {{ $assignment->parking_stand }}</td>
         </tr>
         <tr>
             <td class="info-label">Ex Flight (Arrival)</td>
-            <td class="info-value">{{ $workResult->ex_flight ?: '-' }}</td>
+            <td class="info-value">{{ $assignment->ex_flight ?: '-' }}</td>
             <td class="info-label">To Flight (Departure)</td>
-            <td class="info-value">{{ $workResult->to_flight ?: '-' }}</td>
+            <td class="info-value">{{ $assignment->to_flight ?: '-' }}</td>
         </tr>
         <tr>
             <td class="info-label">Jam Kerja (WIB)</td>
-            <td class="info-value">{{ substr($workResult->start_time, 0, 5) }} - {{ substr($workResult->end_time, 0, 5) }} WIB</td>
+            <td class="info-value">{{ substr($assignment->start_time, 0, 5) }} - {{ substr($assignment->end_time, 0, 5) }} WIB</td>
             <td class="info-label">Total Durasi</td>
-            <td class="info-value"><strong>{{ $workResult->duration_minutes }} Menit</strong></td>
+            <td class="info-value"><strong>{{ $assignment->duration_minutes }} Menit</strong></td>
         </tr>
         <tr>
             <td class="info-label">Leader Pengawas</td>
             <td class="info-value" colspan="3">
-                <strong>{{ strtoupper($workResult->submittedBy ? $workResult->submittedBy->fullname : 'Leader On Duty') }}</strong> 
-                <span class="text-muted" style="font-size: 7.5pt;">(NIP: {{ $workResult->submitted_by ?: '-' }})</span>
+                <strong>{{ strtoupper($assignment->submittedBy ? $assignment->submittedBy->fullname : 'Leader On Duty') }}</strong> 
+                <span class="text-muted" style="font-size: 7.5pt;">(NIP: {{ $assignment->submitted_by ?: '-' }})</span>
             </td>
         </tr>
     </table>
@@ -385,7 +385,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($workResult->users as $idx => $staff)
+            @forelse($assignment->users as $idx => $staff)
                 <tr>
                     <td class="text-center text-muted">{{ $idx + 1 }}</td>
                     <td class="font-mono">{{ $staff->id }}</td>
@@ -405,8 +405,8 @@
 
     <div class="photo-card">
         @if($base64Photo)
-            <img src="{{ $base64Photo }}" class="photo-img" alt="Foto Bukti WO {{ $workResult->wo_number }}">
-            <div class="photo-caption">Lampiran Foto Bukti Pembersihan Pesawat ({{ $workResult->aircraft_reg }}) — WO: {{ $workResult->wo_number }}</div>
+            <img src="{{ $base64Photo }}" class="photo-img" alt="Foto Bukti WO {{ $assignment->wo_number }}">
+            <div class="photo-caption">Lampiran Foto Bukti Pembersihan Pesawat ({{ $assignment->aircraft_reg }}) — WO: {{ $assignment->wo_number }}</div>
         @else
             <div style="padding: 24px; color: #94a3b8; font-style: italic; font-size: 8pt;">
                 (Tidak ada lampiran foto bukti pekerjaan)
@@ -420,15 +420,15 @@
             <td class="sig-cell">
                 <div class="sig-card">
                     <div class="sig-title">Dibuat Oleh (Leader)</div>
-                    <div class="sig-name">{{ strtoupper($workResult->submittedBy ? $workResult->submittedBy->fullname : 'Leader On Duty') }}</div>
-                    <div class="sig-sub">NIP: {{ $workResult->submitted_by ?: '-' }}</div>
+                    <div class="sig-name">{{ strtoupper($assignment->submittedBy ? $assignment->submittedBy->fullname : 'Leader On Duty') }}</div>
+                    <div class="sig-sub">NIP: {{ $assignment->submitted_by ?: '-' }}</div>
                 </div>
             </td>
             <td class="sig-cell">
                 <div class="sig-card">
                     <div class="sig-title">Diperiksa Oleh (Supervisor)</div>
                     <div class="sig-name">Supervisor Operations</div>
-                    <div class="sig-sub">Station {{ $workResult->station }}</div>
+                    <div class="sig-sub">Station {{ $assignment->station }}</div>
                 </div>
             </td>
             <td class="sig-cell">
@@ -448,7 +448,7 @@
                 * Dokumen ini diterbitkan secara resmi melalui Sistem Manajemen Operasional PT Angkasa Pratama Sejahtera (APS ONE).
             </td>
             <td class="footer-stamp">
-                DOC-REF: APS-WO-{{ $workResult->wo_number }} &nbsp;|&nbsp; {{ date('d/m/Y H:i') }} WIB
+                DOC-REF: APS-WO-{{ $assignment->wo_number }} &nbsp;|&nbsp; {{ date('d/m/Y H:i') }} WIB
             </td>
         </tr>
     </table>
