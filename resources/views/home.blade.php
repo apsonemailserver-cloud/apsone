@@ -60,7 +60,7 @@
                             </a>
                         @endif
 
-                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES))
+                        @if(auth()->user()->hasRole(\App\Models\WorkResult::LEADER_ROLES) || auth()->user()->canAccess('assignment', 'create'))
                             <a href="{{ route('work_results.create') }}" class="btn btn-primary-custom text-white shadow-sm">
                                 <i class="bx bx-plus-circle me-1"></i> Tambah WO
                             </a>

@@ -104,6 +104,9 @@
                         </form>
                     </div>
 
+                    @php
+                        $canEditPAS = Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin';
+                    @endphp
                     {{-- Tabel --}}
                     <div class="table-responsive">
                         <table class="table">
@@ -115,7 +118,9 @@
                                     <th>PAS Terdaftar</th>
                                     <th>PAS Habis</th>
                                     <th>Status</th>
+                                    @if($canEditPAS)
                                     <th class="text-center">Aksi</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -160,15 +165,17 @@
                                                 <small class="d-block text-danger mt-1">Lewat</small>
                                             @endif
                                         </td>
+                                        @if($canEditPAS)
                                         <td class="text-center">
                                             <a href="{{ route('users.PASEdit', $user->id) }}" class="action-btn action-edit" title="Edit Pas">
                                                 <i class="ti ti-pencil"></i>
                                             </a>
                                         </td>
+                                        @endif
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7">
+                                        <td colspan="{{ $canEditPAS ? 7 : 6 }}">
                                             <div class="empty-state">
                                                 <i class="bx bx-id-card d-block"></i>
                                                 <p>Tidak ada data PAS ditemukan.</p>

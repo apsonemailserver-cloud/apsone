@@ -37,6 +37,9 @@
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
+                                @php
+                                    $canEditOffice = Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin';
+                                @endphp
                                 <tr>
                                     <th>NIP</th>
                                     <th>Nama</th>
@@ -44,7 +47,9 @@
                                     <th>Jabatan</th>
                                     <th>Role</th>
                                     <th>Kantor</th>
+                                    @if($canEditOffice)
                                     <th class="text-center">Aksi</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -56,6 +61,7 @@
                                         <td>{{ $item->job_title }}</td>
                                         <td><span class="badge bg-label-primary">{{ $item->role }}</span></td>
                                         <td>{{ $item->station }}</td>
+                                        @if($canEditOffice)
                                         <td class="text-center">
                                             <form id="resetPasswordForm-{{ $item->id }}" action="{{ route('user.resetPassword', $item->id) }}" method="POST" class="d-inline">
                                                 @csrf
@@ -65,6 +71,7 @@
                                                 </button>
                                             </form>
                                         </td>
+                                        @endif
                                     </tr>
                                 @endforeach
                             </tbody>

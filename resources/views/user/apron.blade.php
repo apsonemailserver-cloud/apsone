@@ -52,15 +52,19 @@
                                                 <a href="{{ route('users.show', ['user' => $users->id, 'page' => request('page')]) }}" class="action-btn" title="Lihat Detail">
                                                     <i class="bx bx-show"></i>
                                                 </a>
+                                                @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
                                                 <a href="{{ route('users.edit', ['user' => $users->id, 'page' => request('page'), 'redirect_to' => url()->full()]) }}" class="action-btn action-edit" title="Edit Data">
                                                     <i class="ti ti-pencil"></i>
                                                 </a>
                                                 <button type="button" class="action-btn border-0" onclick="confirmReset({{ $users->id }}, '{{ $users->fullname }}')" title="Reset Password">
                                                     <i class="bx bx-refresh"></i>
                                                 </button>
+                                                @endif
+                                                @if(Auth::user()->canAccess('user', 'delete') || Auth::user()->role === 'Admin')
                                                 <button type="button" class="action-btn border-0" onclick="confirmDelete({{ $users->id }}, '{{ $users->fullname }}')" title="Hapus User" style="color:#dc2626; border-color:#fecaca;">
                                                     <i class="bx bx-trash"></i>
                                                 </button>
+                                                @endif
                                             </div>
 
                                             <form id="resetPasswordForm-{{ $users->id }}" action="{{ route('user.resetPassword', $users->id) }}" method="POST" style="display: none;">

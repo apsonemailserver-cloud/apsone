@@ -48,6 +48,9 @@
                     </form>
                 </div>
 
+                @php
+                    $canEditTIM = Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin';
+                @endphp
                 {{-- Tabel --}}
                 <div class="table-responsive">
                     <table class="table">
@@ -58,7 +61,9 @@
                                 <th>Station</th>
                                 <th>Tanggal Expired</th>
                                 <th>Status</th>
+                                @if($canEditTIM)
                                 <th class="text-center">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -94,15 +99,17 @@
                                     <td><span class="badge bg-label-primary">{{ $user->station }}</span></td>
                                     <td class="fw-bold">{{ $end->translatedFormat('d M Y') }}</td>
                                     <td>{!! $statusBadge !!}</td>
+                                    @if($canEditTIM)
                                     <td class="text-center">
                                         <a href="{{ route('users.TIMEdit', $user->id) }}" class="action-btn action-edit" title="Update TIM">
                                             <i class="ti ti-pencil"></i>
                                         </a>
                                     </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-5">
+                                    <td colspan="{{ $canEditTIM ? 6 : 5 }}" class="text-center py-5">
                                         <div class="empty-state">
                                             <i class="bx bx-id-card d-block"></i>
                                             <p>Tidak ada data TIM Bandara.</p>

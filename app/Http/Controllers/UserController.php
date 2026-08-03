@@ -423,6 +423,8 @@ class UserController extends Controller
 
     public function KontrakUpdate(Request $request, User $user)
     {
+        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses untuk mengubah data kontrak.');
+
         $request->validate([
             'contract_start' => 'nullable|date',
             'contract_end' => 'nullable|date',
@@ -492,6 +494,8 @@ class UserController extends Controller
 
     public function PASUpdate(Request $request, User $user)
     {
+        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses untuk mengubah data PAS.');
+
         $request->validate([
             'pas_expired' => 'nullable|date',
             'pas_registered' => 'nullable|date',
@@ -558,6 +562,8 @@ class UserController extends Controller
 
     public function TIMUpdate(Request $request, User $user)
     {
+        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses untuk mengubah data TIM.');
+
         $request->validate([
             'tim_number' => 'nullable|string|max:50',
             'tim_expired' => 'nullable|date',

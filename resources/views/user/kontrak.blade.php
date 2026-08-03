@@ -46,8 +46,11 @@
                     </form>
                 </div>
 
+                @php
+                    $canEditKontrak = Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin';
+                @endphp
                 {{-- Tabel + Pagination --}}
-                <x-data-table :paginator="$users" empty-icon="bx-calendar-x" empty-text="Tidak ada data ditemukan." :col-span="7">
+                <x-data-table :paginator="$users" empty-icon="bx-calendar-x" empty-text="Tidak ada data ditemukan." :col-span="$canEditKontrak ? 7 : 6">
                     <x-slot name="head">
                         <th>NIP</th>
                         <th>Nama Lengkap</th>
@@ -55,7 +58,9 @@
                         <th>Kontrak Mulai</th>
                         <th>Kontrak Berakhir</th>
                         <th>Status</th>
+                        @if($canEditKontrak)
                         <th class="text-center">Aksi</th>
+                        @endif
                     </x-slot>
 
                     @foreach ($users as $user)
@@ -98,12 +103,14 @@
                                     <small class="d-block text-danger mt-1">Lewat {{ abs(intval($daysLeft)) }} hari</small>
                                 @endif
                             </td>
+                            @if($canEditKontrak)
                             <td class="text-center">
                                 <a href="{{ route('users.KontrakEdit', ['id' => $user->id, 'page' => request('page')]) }}" 
                                    class="action-btn action-edit" title="Edit Kontrak">
                                     <i class="ti ti-pencil"></i>
                                 </a>
                             </td>
+                            @endif
                         </tr>
                     @endforeach
                 </x-data-table>

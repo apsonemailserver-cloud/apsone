@@ -288,10 +288,12 @@
 
                             {{-- Tombol Aksi --}}
                             <div class="text-end mt-4">
+                                @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
                                 <a href="{{ route('users.edit', ['user' => $user->id, 'page' => $page]) }}"
                                     class="btn btn-warning">
                                     <i class="bx bx-edit me-1"></i>Edit Data
                                 </a>
+                                @endif
                                 <a href="{{ route('users.apron', ['page' => $page]) }}" class="btn btn-secondary">
                                     <i class="bx bx-arrow-back me-1"></i>Kembali
                                 </a>

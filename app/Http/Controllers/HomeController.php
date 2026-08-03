@@ -42,9 +42,14 @@ class HomeController extends Controller
     /**
      * Menampilkan data dashboard utama dengan Filter Station.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|\Illuminate\Http\RedirectResponse
     {
         $user = Auth::user();
+
+        if (! $user->canAccess('dashboard', 'view')) {
+            return redirect()->route('users.profile', $user->id);
+        }
+
         $showManagementDashboard = $user->hasRole(self::MANAGEMENT_ROLES);
         $todayAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('created_at', Carbon::today())

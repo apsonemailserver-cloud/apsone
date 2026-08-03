@@ -129,12 +129,14 @@
                         <span class="menu-header-text">Menu</span>
                     </li>
 
+                    @if (Auth::user()->canAccess('dashboard', 'view'))
                     <li class="menu-item {{ request()->routeIs('home') ? 'active' : '' }}">
                         <a href="{{ route('home') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-layout-dashboard"></i>
                             <div data-i18n="Dashboard">Dashboard</div>
                         </a>
                     </li>
+                    @endif
 
                     <li class="menu-item {{ request()->routeIs('users.profile') ? 'active' : '' }}">
                         <a href="{{ route('users.profile', Auth::user()->id) }}" class="menu-link">
@@ -143,6 +145,7 @@
                         </a>
                     </li>
 
+                    @if (Auth::user()->canAccess('schedule', 'view'))
                     <li class="menu-item {{ request()->is('schedule*') || request()->routeIs('schedule.*') ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-calendar-week"></i>
@@ -172,6 +175,7 @@
                             @endif
                         </ul>
                     </li>
+                    @endif
 
                     @if (Auth::user()->canAccess('shift', 'view'))
                     <li class="menu-item {{ request()->routeIs('shift.*') ? 'active' : '' }}">
@@ -183,6 +187,7 @@
                     @endif
 
 
+                    @if (Auth::user()->canAccess('attendance', 'view') || Auth::user()->canAccess('overtime', 'view') || Auth::user()->canAccess('attendance', 'approve') || Auth::user()->canAccess('overtime', 'approve'))
                     <li
                         class="menu-item {{ request()->is('attendance*') || request()->is('overtime*') ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
@@ -192,13 +197,14 @@
 
                         <ul class="menu-sub">
 
-
+                            @if (Auth::user()->canAccess('attendance', 'view'))
                             <li class="menu-item {{ request()->routeIs('attendance.index') || request()->routeIs('attendance.history') || request()->routeIs('attendance.camera') || request()->routeIs('attendance.corrections.create') || request()->routeIs('attendance.corrections.store') ? 'active' : '' }}">
                                 <a href="{{ route('attendance.index') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-stopwatch"></i>
                                     <div data-i18n="Today's Attendance">Today's Attendance</div>
                                 </a>
                             </li>
+                            @endif
 
                             @if (Auth::user()->canAccess('attendance', 'export'))
                                 <li class="menu-item {{ request()->routeIs('attendance.reports') ? 'active' : '' }}">
@@ -219,6 +225,7 @@
                             @endif
 
 
+                            @if (Auth::user()->canAccess('overtime', 'view'))
                             <li
                                 class="menu-item {{ request()->routeIs('overtime.index') || request()->routeIs('overtime.create') ? 'active' : '' }}">
                                 <a href="{{ route('overtime.index') }}" class="menu-link">
@@ -226,6 +233,7 @@
                                     <div data-i18n="My Overtime">My Overtime</div>
                                 </a>
                             </li>
+                            @endif
 
 
                             @if (Auth::user()->canAccess('overtime', 'approve'))
@@ -248,6 +256,7 @@
 
                         </ul>
                     </li>
+                    @endif
 
                     {{-- MENU ASSIGNMENT --}}
                     @if(Auth::user()->canAccess('assignment', 'view'))
@@ -349,6 +358,7 @@
                     </li>
                     @endif
 
+                    @if (Auth::user()->canAccess('training', 'view'))
                     <li class="menu-item {{ (request()->is('training*') || request()->is('my-certificates*') || request()->routeIs('my.certificates*')) ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-award"></i>
@@ -372,19 +382,23 @@
                             @endif
                         </ul>
                     </li>
+                    @endif
 
+                    @if (Auth::user()->canAccess('leave', 'view') || Auth::user()->canAccess('leave', 'create') || Auth::user()->canAccess('leave', 'approve') || Auth::user()->canAccess('leave', 'export'))
                     <li class="menu-item {{ request()->is('leaves*') ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-logout-2"></i>
                             <div data-i18n="Apply Leave">Apply Leave</div>
                         </a>
                         <ul class="menu-sub">
+                            @if (Auth::user()->canAccess('leave', 'view') || Auth::user()->canAccess('leave', 'create'))
                             <li class="menu-item {{ request()->routeIs('leaves.pengajuan') || request()->routeIs('leaves.create') ? 'active' : '' }}">
                                 <a href="{{ route('leaves.pengajuan') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-send"></i>
                                     <div data-i18n="Leave Request">Leave Request</div>
                                 </a>
                             </li>
+                            @endif
                             @if (Auth::user()->canAccess('leave', 'approve'))
                                 <li class="menu-item {{ request()->routeIs('leaves.index') ? 'active' : '' }}">
                                     <a href="{{ route('leaves.index') }}" class="menu-link">
@@ -403,7 +417,9 @@
                             @endif
                         </ul>
                     </li>
+                    @endif
 
+                    @if (Auth::user()->canAccess('announcement', 'view'))
                     <li class="menu-item {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
                         <a href="{{ route('announcements.index') }}" class="menu-link">
                             <i class="menu-icon tf-icons ti ti-speakerphone"></i>
@@ -413,6 +429,7 @@
                             @endif
                         </a>
                     </li>
+                    @endif
 
                     <li class="menu-item {{ request()->routeIs('faq') ? 'active' : '' }}">
                         <a href="{{ route('faq') }}" class="menu-link">
@@ -454,64 +471,86 @@
                         || \App\Models\User::where('manager', $currentUser->fullname)->exists();
                     $canManageTraining = in_array($currentUser->role, ['Admin', 'HSE', 'Head Of Airport Service']);
                     $canManageLeave = in_array($currentUser->role, ['Admin', 'Head Of Airport Service']);
-                    $topbarMenuLinks = [
-                        ['label' => 'Dashboard', 'category' => 'Menu', 'hint' => 'Overview operasional dan statistik', 'icon' => 'ti-layout-dashboard', 'url' => route('home')],
-                        ['label' => 'Profile', 'category' => 'Menu', 'hint' => 'Data akun dan biodata staff', 'icon' => 'ti-user-circle', 'url' => route('users.profile', $currentUser->id)],
-                        ['label' => 'Jadwal Hari Ini', 'category' => 'Schedule', 'hint' => 'Lihat jadwal aktif hari ini', 'icon' => 'ti-calendar-check', 'url' => route('schedule.now')],
-                        ['label' => 'Data Schedule', 'category' => 'Schedule', 'hint' => 'Kalender dan data jadwal bulanan', 'icon' => 'ti-calendar', 'url' => route('schedule.index')],
-                    ];
+                    $topbarMenuLinks = [];
+                    if ($currentUser->canAccess('dashboard', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Dashboard', 'category' => 'Menu', 'hint' => 'Overview operasional dan statistik', 'icon' => 'ti-layout-dashboard', 'url' => route('home')];
+                    }
+                    $topbarMenuLinks[] = ['label' => 'Profile', 'category' => 'Menu', 'hint' => 'Data akun dan biodata staff', 'icon' => 'ti-user-circle', 'url' => route('users.profile', $currentUser->id)];
 
-                    if ($canManageSchedule) {
+                    if ($currentUser->canAccess('schedule', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Jadwal Hari Ini', 'category' => 'Schedule', 'hint' => 'Lihat jadwal aktif hari ini', 'icon' => 'ti-calendar-check', 'url' => route('schedule.now')];
+                        $topbarMenuLinks[] = ['label' => 'Data Schedule', 'category' => 'Schedule', 'hint' => 'Kalender dan data jadwal bulanan', 'icon' => 'ti-calendar', 'url' => route('schedule.index')];
+                    }
+
+                    if ($canManageSchedule && ($currentUser->canAccess('schedule', 'create') || $currentUser->canAccess('schedule', 'edit'))) {
                         $topbarMenuLinks[] = ['label' => 'Create / Update Schedule', 'category' => 'Schedule', 'hint' => 'Kelola pembuatan jadwal staff', 'icon' => 'ti-calendar-plus', 'url' => route('schedule.view')];
                     }
 
-                    if (in_array(strtolower((string) $currentUser->role), ['admin', 'ass leader', 'Head Of Airport Service', 'leader'])) {
+                    if ($currentUser->canAccess('shift', 'view')) {
                         $topbarMenuLinks[] = ['label' => 'Shift', 'category' => 'Menu', 'hint' => 'Data shift kerja', 'icon' => 'ti-clock', 'url' => route('shift.index')];
                     }
-                    $topbarMenuLinks[] = ['label' => 'Absensi Hari Ini', 'category' => 'Attendance', 'hint' => 'Monitoring absensi staff', 'icon' => 'ti-stopwatch', 'url' => route('attendance.index')];
 
-                    if ($canViewAdminAttendance) {
+                    if ($currentUser->canAccess('attendance', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Absensi Hari Ini', 'category' => 'Attendance', 'hint' => 'Monitoring absensi staff', 'icon' => 'ti-stopwatch', 'url' => route('attendance.index')];
+                    }
+
+                    if ($canViewAdminAttendance || $currentUser->canAccess('attendance', 'export')) {
                         $topbarMenuLinks[] = ['label' => 'Laporan Absensi', 'category' => 'Attendance', 'hint' => 'Rekap dan export absensi', 'icon' => 'ti-file-text', 'url' => route('attendance.reports')];
                     }
 
-                    if ($canApproveAttendanceCorrections) {
+                    if ($canApproveAttendanceCorrections || $currentUser->canAccess('attendance', 'approve')) {
                         $topbarMenuLinks[] = ['label' => 'Approval Koreksi Absensi', 'category' => 'Attendance', 'hint' => 'Validasi koreksi waktu absensi', 'icon' => 'ti-user-check', 'url' => route('attendance.corrections.approval')];
                     }
 
-                    $topbarMenuLinks[] = ['label' => 'Lembur Saya', 'category' => 'Attendance', 'hint' => 'Pengajuan dan status lembur', 'icon' => 'ti-hourglass', 'url' => route('overtime.index')];
+                    if ($currentUser->canAccess('overtime', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Lembur Saya', 'category' => 'Attendance', 'hint' => 'Pengajuan dan status lembur', 'icon' => 'ti-hourglass', 'url' => route('overtime.index')];
+                    }
 
-                    if ($canApproveOvertime) {
+                    if ($canApproveOvertime || $currentUser->canAccess('overtime', 'approve')) {
                         $topbarMenuLinks[] = ['label' => 'Approval Lembur', 'category' => 'Attendance', 'hint' => 'Validasi pengajuan lembur', 'icon' => 'ti-circle-check', 'url' => route('overtime.approval')];
                     }
 
-                    if ($currentUser->role === 'Admin') {
+                    if ($currentUser->role === 'Admin' || $currentUser->canAccess('overtime', 'export')) {
                         $topbarMenuLinks[] = ['label' => 'Laporan Lembur', 'category' => 'Attendance', 'hint' => 'Rekap lembur operasional', 'icon' => 'ti-chart-line', 'url' => route('overtime.report')];
+                    }
+
+                    if ($currentUser->canAccess('station', 'view')) {
                         $topbarMenuLinks[] = ['label' => 'Manajemen Station', 'category' => 'Administrator', 'hint' => 'Kelola status dan koordinat station', 'icon' => 'ti-building-store', 'url' => route('stations.index')];
+                    }
+                    if ($currentUser->canAccess('user', 'view')) {
                         $topbarMenuLinks[] = ['label' => 'Monitor Station', 'category' => 'Administrator', 'hint' => 'Pantau staff tiap station', 'icon' => 'ti-device-desktop', 'url' => route('staff.index')];
-                        $topbarMenuLinks[] = ['label' => 'Blacklist', 'category' => 'Administrator', 'hint' => 'Data staff blacklist', 'icon' => 'ti-user-x', 'url' => route('blacklist.index')];
                         $topbarMenuLinks[] = ['label' => 'Kontrak', 'category' => 'Administrator', 'hint' => 'Masa kontrak staff', 'icon' => 'ti-file-text', 'url' => route('users.kontrak')];
                         $topbarMenuLinks[] = ['label' => 'PAS Bandara', 'category' => 'Administrator', 'hint' => 'Masa aktif PAS bandara', 'icon' => 'ti-id', 'url' => route('users.pas')];
                         $topbarMenuLinks[] = ['label' => 'TIM Bandara', 'category' => 'Administrator', 'hint' => 'Data TIM bandara', 'icon' => 'ti-badge', 'url' => route('users.tim')];
                     }
+                    if ($currentUser->canAccess('blacklist', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Blacklist', 'category' => 'Administrator', 'hint' => 'Data staff blacklist', 'icon' => 'ti-user-x', 'url' => route('blacklist.index')];
+                    }
 
-                    $topbarMenuLinks[] = ['label' => 'Cetak Dokumen', 'category' => 'General', 'hint' => 'Dokumen dan surat', 'icon' => 'ti-file-text', 'url' => route('document')];
+                    if ($currentUser->canAccess('document', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Cetak Dokumen', 'category' => 'General', 'hint' => 'Dokumen dan surat', 'icon' => 'ti-file-text', 'url' => route('document')];
+                    }
 
-                    if ($currentUser->role === 'Admin') {
+                    if ($currentUser->role === 'Admin' || $currentUser->canAccess('document', 'create')) {
                         $topbarMenuLinks[] = ['label' => 'Manajemen Dokumen', 'category' => 'General', 'hint' => 'Kelola file dan akses dokumen', 'icon' => 'ti-folders', 'url' => route('admin.documents.index')];
                     }
 
-                    if ($canManageTraining) {
-                        $topbarMenuLinks[] = ['label' => 'Manajemen Training', 'category' => 'Training', 'hint' => 'Kelola data sertifikat', 'icon' => 'ti-book', 'url' => route('admin.training.certificates.index')];
-                        $topbarMenuLinks[] = ['label' => 'Tambah Sertifikat', 'category' => 'Training', 'hint' => 'Input sertifikat baru', 'icon' => 'ti-circle-plus', 'url' => route('admin.training.certificates.create')];
-                    } else {
-                        $topbarMenuLinks[] = ['label' => 'Sertifikat Saya', 'category' => 'Training', 'hint' => 'Lihat sertifikat pribadi', 'icon' => 'ti-certificate', 'url' => route('my.certificates')];
+                    if ($currentUser->canAccess('training', 'view')) {
+                        if ($canManageTraining || $currentUser->canAccess('training', 'create')) {
+                            $topbarMenuLinks[] = ['label' => 'Manajemen Training', 'category' => 'Training', 'hint' => 'Kelola data sertifikat', 'icon' => 'ti-book', 'url' => route('admin.training.certificates.index')];
+                            $topbarMenuLinks[] = ['label' => 'Tambah Sertifikat', 'category' => 'Training', 'hint' => 'Input sertifikat baru', 'icon' => 'ti-circle-plus', 'url' => route('admin.training.certificates.create')];
+                        } else {
+                            $topbarMenuLinks[] = ['label' => 'Sertifikat Saya', 'category' => 'Training', 'hint' => 'Lihat sertifikat pribadi', 'icon' => 'ti-certificate', 'url' => route('my.certificates')];
+                        }
                     }
 
-                    $topbarMenuLinks[] = ['label' => 'Pengajuan Leave', 'category' => 'Apply Leave', 'hint' => 'Ajukan izin atau cuti', 'icon' => 'ti-send', 'url' => route('leaves.pengajuan')];
+                    if ($currentUser->canAccess('leave', 'view') || $currentUser->canAccess('leave', 'create')) {
+                        $topbarMenuLinks[] = ['label' => 'Pengajuan Leave', 'category' => 'Apply Leave', 'hint' => 'Ajukan izin atau cuti', 'icon' => 'ti-send', 'url' => route('leaves.pengajuan')];
+                    }
 
-                    if ($canManageLeave) {
+                    if ($canManageLeave || $currentUser->canAccess('leave', 'approve')) {
                         $topbarMenuLinks[] = ['label' => 'Approval Leave', 'category' => 'Apply Leave', 'hint' => 'Review pengajuan leave', 'icon' => 'ti-circle-check', 'url' => route('leaves.index')];
-                        $topbarMenuLinks[] = ['label' => 'Laporan Leave', 'category' => 'Apply Leave', 'hint' => 'Rekap leave staff', 'icon' => 'ti-file-text', 'url' => route('leaves.laporan')];
+                    }    $topbarMenuLinks[] = ['label' => 'Laporan Leave', 'category' => 'Apply Leave', 'hint' => 'Rekap leave staff', 'icon' => 'ti-file-text', 'url' => route('leaves.laporan')];
                     }
 
                     $topbarMenuLinks[] = ['label' => 'FAQ', 'category' => 'Support', 'hint' => 'Pertanyaan umum sistem', 'icon' => 'ti-help-circle', 'url' => route('faq')];
