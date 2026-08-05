@@ -894,6 +894,7 @@
         }
     </style>
 
+    @if (Auth::user()->role == 'Admin')
     <div class="modal fade" id="flightScheduleModal" tabindex="-1" aria-labelledby="flightScheduleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 overflow-hidden" style="border-radius: .875rem;">
@@ -1004,6 +1005,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Modal Upload Foto Bukti Pekerjaan -->
     <div class="modal fade" id="uploadPhotoModal" tabindex="-1" aria-hidden="true">

@@ -116,10 +116,10 @@ class HomeController extends Controller
         $totalFlightPerDay = $totalFlightQuery->count();
 
         // 3. Total Staff (ALWAYS GLOBAL as requested)
-        $userCount = User::count();
+        $userCount = User::where('is_active', 1)->count();
 
         // 3b. Staff for attendance calculation (Filtered by Station)
-        $userKehadiranQuery = User::query();
+        $userKehadiranQuery = User::where('is_active', 1);
         if ($selectedStation !== 'All') {
             $userKehadiranQuery->where('station', $selectedStation);
         }
@@ -141,7 +141,8 @@ class HomeController extends Controller
         $twoMonthsFromNow = Carbon::today()->addMonths(2);
 
         // 1. Kontrak Expired Soon
-        $contractQuery = User::whereDate('contract_end', '<=', $twoMonthsFromNow)
+        $contractQuery = User::where('is_active', 1)
+            ->whereDate('contract_end', '<=', $twoMonthsFromNow)
             ->whereDate('contract_end', '>=', Carbon::today());
         if ($selectedStation !== 'All') {
             $contractQuery->where('station', $selectedStation);
@@ -149,7 +150,8 @@ class HomeController extends Controller
         $totalContractStaff = $contractQuery->count();
 
         // 2. PAS Expired Soon
-        $pasQuery = User::whereDate('pas_expired', '<=', $twoMonthsFromNow)
+        $pasQuery = User::where('is_active', 1)
+            ->whereDate('pas_expired', '<=', $twoMonthsFromNow)
             ->whereDate('pas_expired', '>=', Carbon::today());
         if ($selectedStation !== 'All') {
             $pasQuery->where('station', $selectedStation);
@@ -233,7 +235,7 @@ class HomeController extends Controller
         }
 
         // Doughnut Chart: Distribusi Role (Filtered)
-        $doughnutQuery = User::select('role', DB::raw('count(*) as total'));
+        $doughnutQuery = User::where('is_active', 1)->select('role', DB::raw('count(*) as total'));
         if ($selectedStation !== 'All') {
             $doughnutQuery->where('station', $selectedStation);
         }
@@ -263,7 +265,8 @@ class HomeController extends Controller
 
         // Data Monitoring Station (Untuk Widget Kartu-Kartu Station)
         $allStations = !empty($listStations) ? $listStations : Station::where('is_active', 1)->get();
-        $stationStats = User::select('station', DB::raw('count(*) as total'))
+        $stationStats = User::where('is_active', 1)
+            ->select('station', DB::raw('count(*) as total'))
             ->groupBy('station')
             ->pluck('total', 'station');
 
