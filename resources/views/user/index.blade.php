@@ -8,13 +8,13 @@
     <link rel="icon" href="{{ asset('storage/aps_mini.png') }}" sizes="48x48" type="image/png">
 
     <!-- Bootstrap & FontAwesome -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="{{ asset('vendor/bootstrap3/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome5/css/all.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}">
+    <link href="{{ asset('vendor/inter/inter.css') }}" rel="stylesheet" />
+    <link href="{{ asset('vendor/material-icons/material-icons.css') }}" rel="stylesheet" />
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
 
     <link rel="stylesheet" href="/assets/css/style.css">
 
@@ -197,7 +197,7 @@ function openBanModal(id, name) {
 }
 </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
     <script>
         function confirmReset(userId) {
             Swal.fire({
@@ -219,7 +219,7 @@ function openBanModal(id, name) {
 
 
     @include('sweetalert::alert')
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="{{ asset('vendor/bootstrap3/js/bootstrap.min.js') }}"></script>
 </body>
 
 </html>

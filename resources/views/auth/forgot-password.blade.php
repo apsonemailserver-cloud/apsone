@@ -9,12 +9,10 @@
     <title>Lupa Password</title>
     <meta name="description" content="" />
     <link rel="icon" href="{{ asset('storage/aps_mini.png') }}" sizes="48x48" type="image/png">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="{{ asset('vendor/public-sans/public-sans.css') }}" media="print" onload="this.media='all'" />
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}" media="print" onload="this.media='all'" />
     <noscript>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap">
+        <link rel="stylesheet" href="{{ asset('vendor/public-sans/public-sans.css') }}">
         <link rel="stylesheet" href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}">
     </noscript>
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/core.min.css') }}" class="template-customizer-core-css" />

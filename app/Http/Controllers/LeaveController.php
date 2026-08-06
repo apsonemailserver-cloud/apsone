@@ -36,6 +36,10 @@ class LeaveController extends Controller
             ->join('users', 'users.id', '=', 'leaves.user_id')
             ->latest('leaves.created_at');
 
+        if (!$user->isAdmin()) {
+            $query->where('leaves.user_id', '!=', $user->id);
+        }
+
         $userRole = $user->role ?? '';
 
         // Halaman Approval HANYA menampilkan pengajuan yang MASIH MENUNGGU PERSETUJUAN (Pending)
@@ -48,15 +52,15 @@ class LeaveController extends Controller
         } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
             // Leader / SPV BGE melihat pengajuan pending BGE di station miliknya
             $query->where('users.station', $user->station)
-                  ->whereIn('leaves.status', ['pending Bge', 'pending']);
+                  ->where('leaves.status', 'pending Bge');
         } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
             // Leader / SPV Apron melihat pengajuan pending Apron di station miliknya
             $query->where('users.station', $user->station)
-                  ->whereIn('leaves.status', ['pending Apron', 'pending']);
+                  ->where('leaves.status', 'pending Apron');
         } else {
             // Atasan/Supervisor lain hanya melihat pengajuan pending di station miliknya
             $query->where('users.station', $user->station)
-                  ->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
+                  ->where('leaves.status', 'pending');
         }
 
         // Search Filter
@@ -84,15 +88,43 @@ class LeaveController extends Controller
         $query = Leave::with('user')
             ->select('leaves.*')
             ->join('users', 'users.id', '=', 'leaves.user_id')
-            ->where('users.station', $user->station)
             ->latest(); // Eager load relasi user
 
-        // Jika tidak punya akses approve/view semua, hanya tampilkan miliknya
-        if (!$user->canAccess('leave', 'approve')) {
-            $query->where('user_id', $user->id);
-        }
-        if ($user->canAccess('leave', 'approve') && $user->station === 'Ho') {
-            $query->orWhere('leaves.status', 'pending');
+        $userRole = $user->role ?? '';
+
+        if ($user->isAdmin()) {
+            // Admin sees all leaves
+        } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
+            // HOAS sees leaves in their station
+            $query->where('users.station', $user->station);
+        } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+            // Leader Bge sees own leaves + Bge subordinates
+            $query->where(function ($q) use ($user) {
+                $q->where('leaves.user_id', $user->id)
+                  ->orWhere(function ($q2) use ($user) {
+                      $q2->where('users.station', $user->station)
+                         ->where(function ($q3) {
+                             $q3->where('users.role', 'LIKE', '%Bge%')
+                                ->orWhere('users.role', 'LIKE', '%BGE%')
+                                ->orWhere('users.role', 'LIKE', '%Baggage%');
+                         });
+                  });
+            });
+        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+            // Leader Apron sees own leaves + Apron subordinates
+            $query->where(function ($q) use ($user) {
+                $q->where('leaves.user_id', $user->id)
+                  ->orWhere(function ($q2) use ($user) {
+                      $q2->where('users.station', $user->station)
+                         ->where(function ($q3) {
+                             $q3->where('users.role', 'LIKE', '%Apron%')
+                                ->orWhere('users.role', 'LIKE', '%APRON%');
+                         });
+                  });
+            });
+        } else {
+            // Standard user sees only own leaves
+            $query->where('leaves.user_id', $user->id);
         }
 
         // Search Filter
@@ -277,16 +309,24 @@ class LeaveController extends Controller
             return redirect()->back()->withInput();
         }
 
-        $status = '';
+        $status = 'pending';
 
         if ($user->isAdmin()) {
             $status = 'approved';
-        } else if ($user->hasRole('Porter Bge')) {
-            $status = 'pending Bge';
-        } else if ($user->hasRole('Porter Apron')) {
-            $status = 'pending Apron';
         } else {
-            $status = 'pending';
+            $userRole = $user->role ?? '';
+            $isLeaderOrSpv = (str_contains($userRole, 'Leader') && !str_contains($userRole, 'Ass'))
+                || str_contains($userRole, 'SPV')
+                || str_contains($userRole, 'Manager')
+                || str_contains($userRole, 'Head');
+
+            if (!$isLeaderOrSpv) {
+                if (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE') || str_contains($userRole, 'Baggage')) {
+                    $status = 'pending Bge';
+                } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+                    $status = 'pending Apron';
+                }
+            }
         }
 
         $startDate = Carbon::parse($request->start_date);
@@ -424,13 +464,51 @@ class LeaveController extends Controller
      */
     public function updateStatus(Request $request, Leave $leave)
     {
+        $user = Auth::user();
+        if (!$user->canAccess('leave', 'approve') && !$user->isAdmin()) {
+            abort(403, 'Anda tidak memiliki akses untuk menyetujui pengajuan ini.');
+        }
+
+        if (!$user->isAdmin() && (string) $leave->user_id === (string) $user->id) {
+            abort(403, 'Anda tidak dapat menyetujui pengajuan cuti Anda sendiri.');
+        }
+
         $validStatuses = ['approved', 'rejected by ho', 'pending', 'rejected by leader', 'canceled'];
 
         $request->validate([
             'status' => ['required', Rule::in($validStatuses)]
         ]);
 
+        $userRole = $user->role ?? '';
         $status = $request->status;
+
+        // Validasi transisi status dan hak akses
+        if ($user->isAdmin() || $userRole === 'Head Of Airport Service') {
+            if (!in_array($status, ['approved', 'rejected by ho'])) {
+                abort(400, 'Status tidak valid untuk HOAS/Admin.');
+            }
+        } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+            if ($leave->status !== 'pending Bge') {
+                abort(403, 'Leader BGE hanya dapat menyetujui pengajuan berstatus Menunggu BGE.');
+            }
+            if (!in_array($status, ['pending', 'rejected by leader'])) {
+                abort(400, 'Status tidak valid untuk Leader BGE.');
+            }
+        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+            if ($leave->status !== 'pending Apron') {
+                abort(403, 'Leader Apron hanya dapat menyetujui pengajuan berstatus Menunggu Apron.');
+            }
+            if (!in_array($status, ['pending', 'rejected by leader'])) {
+                abort(400, 'Status tidak valid untuk Leader Apron.');
+            }
+        } else {
+            if ($leave->status !== 'pending') {
+                abort(403, 'Anda hanya dapat menyetujui pengajuan berstatus Menunggu HO.');
+            }
+            if (!in_array($status, ['approved', 'rejected by leader'])) {
+                abort(400, 'Status tidak valid.');
+            }
+        }
 
         if ($status === 'approved' && $leave->leave_type === 'Cuti Tahunan') {
             $annualLeaveDecision = $this->annualLeaveDecision(

@@ -221,7 +221,7 @@
 @endsection
 
 @section('styles')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('vendor/select2/select2.min.css') }}" rel="stylesheet" />
     <style>
         /* BRAND THEME COLOR BLUE OVERRIDES (#2f80ed / #2563eb) */
         :root {
@@ -376,8 +376,8 @@
 @endsection
 
 @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('vendor/select2/select2.min.js') }}"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
     <script>
         $(document).ready(function() {
             // Function to populate data fields (defined inside document ready but shared)
@@ -422,7 +422,7 @@
                 // Helper to format time strictly to HH:MM (24-hour format)
                 function toHHMM(str) {
                     if (!str) return '';
-                    str = str.toString().trim();
+                    str = str.toString().trim().replace(/\./g, ':');
                     if (str.includes(' ')) str = str.split(' ')[1];
                     if (str.includes('T')) str = str.split('T')[1];
                     if (str.includes('+')) str = str.split('+')[0];
@@ -664,7 +664,7 @@
                 }
 
                 // Helper: call our PHP backend as fallback
-                function loadFromServer() {
+                function loadFromServer(ignoreError) {
                     $.ajax({
                         url: "{{ route('assignments.fetch_flight_data') }}",
                         type: "POST",
@@ -678,8 +678,13 @@
                             }
                         },
                         error: function() {
-                            $combo.html('<option value="" selected>-- Isian Manual atau Pilih Station Kembali --</option>');
-                            $status.removeClass('text-success').addClass('text-danger').text('Gagal memuat data flight.');
+                            if (ignoreError) {
+                                $combo.html('<option value="" selected>-- Tidak ada jadwal arrival untuk station ini --</option>');
+                                $status.removeClass('text-success text-danger').addClass('text-muted').text('Tidak ada data flight.');
+                            } else {
+                                $combo.html('<option value="" selected>-- Isian Manual atau Pilih Station Kembali --</option>');
+                                $status.removeClass('text-success').addClass('text-danger').text('Gagal memuat data flight.');
+                            }
                         }
                     });
                 }
@@ -699,7 +704,10 @@
                     return res.json();
                 }).then(function(json) {
                     const arrivalsData = (json?.result?.response?.airport?.pluginData?.schedule?.arrivals?.data) || [];
-                    if (arrivalsData.length === 0) throw new Error('no arrivals');
+                    if (arrivalsData.length === 0) {
+                        loadFromServer(true);
+                        return;
+                    }
 
                     // Also fetch departures to get to_flight
                     const depUrl = `https://api.flightradar24.com/common/v1/airport.json?code=${stationLower}&plugin[]=&plugin-setting[schedule][mode]=departures&limit=100`;
@@ -763,12 +771,12 @@
                             if (flights.length > 0) {
                                 renderFlights(flights, 'Flightradar24 Live');
                             } else {
-                                loadFromServer();
+                                loadFromServer(true);
                             }
                         });
                 }).catch(function(err) {
                     // Browser fetch blocked (CORS / network error) — fall back to server
-                    loadFromServer();
+                    loadFromServer(false);
                 });
             };
 

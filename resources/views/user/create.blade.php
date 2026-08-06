@@ -278,7 +278,7 @@
 @endsection
 
 @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('vendor/select2/select2.min.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             function initUserSelect2() {
@@ -292,7 +292,7 @@
                     if (window.jQuery && typeof window.jQuery.fn.select2 !== 'function') {
                         if (!document.querySelector('script[src*="select2.min.js"]')) {
                             const s2s = document.createElement('script');
-                            s2s.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+                            s2s.src = '/vendor/select2/select2.min.js';
                             document.head.appendChild(s2s);
                         }
                     }
@@ -470,7 +470,7 @@
 @endsection
 
 @section('styles')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('vendor/select2/select2.min.css') }}" rel="stylesheet" />
     <style>
         .select2-container--default .select2-selection--multiple {
             background-color: #1e293b;

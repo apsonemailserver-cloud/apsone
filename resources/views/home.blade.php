@@ -1,9 +1,9 @@
 @extends('layout.admin')
 
 @section('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome6/css/all.min.css') }}" media="print" onload="this.media='all'">
     <noscript>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="{{ asset('vendor/fontawesome6/css/all.min.css') }}">
     </noscript>
     <link rel="stylesheet" href="{{ asset('template/assets/css/custom-home.min.css') }}?v={{ filemtime(public_path('template/assets/css/custom-home.min.css')) }}" />
 @endsection
@@ -90,8 +90,8 @@
             </div>
         </div>
 
-        {{-- MONITORING STATION WIDGET (KHUSUS ADMIN) --}}
-        @if (Auth::user()->role == 'Admin')
+        {{-- MONITORING STATION WIDGET (ADMIN & HOAS) --}}
+        @if (Auth::user()->hasRole(['Admin', 'Head Of Airport Service']))
             <div class="monitoring-section">
                 <div class="monitoring-heading">
                     <div class="monitoring-icon">
@@ -141,6 +141,7 @@
                         </div>
                     @endforeach
 
+                    @if (Auth::user()->hasRole('Admin'))
                     <div class="col-xl-3 col-lg-4 col-md-6">
                         <a href="{{ route('stations.create') }}"
                             class="station-card station-create-card h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none">
@@ -150,6 +151,7 @@
                             <div class="fw-bold" style="font-size: 0.8rem;">Buka Station Baru</div>
                         </a>
                     </div>
+                    @endif
                 </div>
             </div>
         @endif
@@ -894,7 +896,7 @@
         }
     </style>
 
-    @if (Auth::user()->role == 'Admin')
+    @if (Auth::user()->hasRole(['Admin', 'Head Of Airport Service']))
     <div class="modal fade" id="flightScheduleModal" tabindex="-1" aria-labelledby="flightScheduleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 overflow-hidden" style="border-radius: .875rem;">
@@ -1040,10 +1042,39 @@
 
 @section('scripts')
     @if ($showManagementDashboard)
-        <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+        <script src="{{ asset('vendor/chartjs/chart.umd.js') }}" defer></script>
     @endif
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        if (window.__dashboardCleanup) {
+            window.__dashboardCleanup();
+        }
+
+        function initDashboardPage() {
+            if (window.__dashboardCleanup) {
+                window.__dashboardCleanup();
+            }
+
+            window.__dashboardCleanup = function() {
+                if (window.__onDashboardThemeChanged) {
+                    window.removeEventListener('aps:theme-changed', window.__onDashboardThemeChanged);
+                }
+                if (window.__dashboardCharts) {
+                    window.__dashboardCharts.forEach(function(chart) {
+                        if (chart && typeof chart.destroy === 'function') {
+                            chart.destroy();
+                        }
+                    });
+                }
+                window.__dashboardCharts = [];
+                if (window.__dashboardIntervals) {
+                    window.__dashboardIntervals.forEach(clearInterval);
+                }
+                window.__dashboardIntervals = [];
+            };
+
+            window.__dashboardCharts = [];
+            window.__dashboardIntervals = [];
+
             @if ($showManagementDashboard)
             // DATA YANG DIKIRIM DARI CONTROLLER AKAN OTOMATIS BERUBAH SESUAI FILTER
             const lineChartLabels = @json($lineChartLabels ?? []);
@@ -1076,7 +1107,7 @@
                 grid: 'rgba(148, 163, 184, 0.16)'
             };
 
-            const dashboardCharts = [];
+            const dashboardCharts = window.__dashboardCharts;
             const getDashboardChartTheme = () => {
                 const dark = document.documentElement.classList.contains('aps-dark');
 
@@ -1560,9 +1591,15 @@
                 }));
             }
 
-            window.addEventListener('aps:theme-changed', function() {
-                dashboardCharts.forEach(applyDashboardChartTheme);
-            });
+            // Clean up old theme change listener to avoid accumulation
+            if (window.__onDashboardThemeChanged) {
+                window.removeEventListener('aps:theme-changed', window.__onDashboardThemeChanged);
+            }
+            window.__onDashboardThemeChanged = function() {
+                const charts = window.__dashboardCharts || [];
+                charts.forEach(applyDashboardChartTheme);
+            };
+            window.addEventListener('aps:theme-changed', window.__onDashboardThemeChanged);
             @endif
 
             document.querySelectorAll('.countdown').forEach(function(el) {
@@ -1630,6 +1667,7 @@
                     const interval = setInterval(function() {
                         if (!updateTimer()) clearInterval(interval);
                     }, 1000);
+                    window.__dashboardIntervals.push(interval);
                 }
             });
 
@@ -1719,46 +1757,45 @@
                     });
                 }
             });
-        }); // end DOMContentLoaded (counter animation + photo/print handlers)
+            // End of counter & photo/print initialization
+
+            // Initialize FIDS modal
+            const modalEl = document.getElementById('flightScheduleModal');
+            if (modalEl) {
+                fidsModalInstance = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+
+                // Load data only after modal is fully shown (prevents DOM race conditions)
+                modalEl.addEventListener('shown.bs.modal', function () {
+                    if (currentFidsStation) {
+                        loadFidsData(currentFidsStation);
+                    }
+                });
+
+                // Reset state when modal is hidden
+                modalEl.addEventListener('hidden.bs.modal', function () {
+                    rawFidsFlights = [];
+                    const tbody = document.getElementById('fidsTableBody');
+                    if (tbody) tbody.innerHTML = '';
+                    const countEl = document.getElementById('fidsSummaryCount');
+                    if (countEl) countEl.innerText = 'Total: 0 Penerbangan';
+                    const loadingState = document.getElementById('fidsLoadingState');
+                    if (loadingState) loadingState.classList.remove('d-none');
+                    const tableContainer = document.getElementById('fidsTableContainer');
+                    if (tableContainer) tableContainer.classList.add('d-none');
+                    const errorState = document.getElementById('fidsErrorState');
+                    if (errorState) errorState.classList.add('d-none');
+                    const emptyState = document.getElementById('fidsEmptyState');
+                    if (emptyState) emptyState.classList.add('d-none');
+                    const searchEl = document.getElementById('fidsSearchInput');
+                    if (searchEl) searchEl.value = '';
+                });
+            }
+        } // end initDashboardPage
 
         let currentFidsStation = '';
         let currentFidsStationName = '';
         let rawFidsFlights = [];
         let fidsModalInstance = null;
-
-        // Initialize FIDS modal on DOM ready
-        document.addEventListener('DOMContentLoaded', function () {
-            const modalEl = document.getElementById('flightScheduleModal');
-            if (!modalEl) return;
-
-            fidsModalInstance = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
-
-            // Load data only after modal is fully shown (prevents DOM race conditions)
-            modalEl.addEventListener('shown.bs.modal', function () {
-                if (currentFidsStation) {
-                    loadFidsData(currentFidsStation);
-                }
-            });
-
-            // Reset state when modal is hidden
-            modalEl.addEventListener('hidden.bs.modal', function () {
-                rawFidsFlights = [];
-                const tbody = document.getElementById('fidsTableBody');
-                if (tbody) tbody.innerHTML = '';
-                const countEl = document.getElementById('fidsSummaryCount');
-                if (countEl) countEl.innerText = 'Total: 0 Penerbangan';
-                const loadingState = document.getElementById('fidsLoadingState');
-                if (loadingState) loadingState.classList.remove('d-none');
-                const tableContainer = document.getElementById('fidsTableContainer');
-                if (tableContainer) tableContainer.classList.add('d-none');
-                const errorState = document.getElementById('fidsErrorState');
-                if (errorState) errorState.classList.add('d-none');
-                const emptyState = document.getElementById('fidsEmptyState');
-                if (emptyState) emptyState.classList.add('d-none');
-                const searchEl = document.getElementById('fidsSearchInput');
-                if (searchEl) searchEl.value = '';
-            });
-        });
 
         window.openFlightScheduleModal = function (stationCode, stationName) {
             currentFidsStation = stationCode;
@@ -1814,7 +1851,7 @@
             if (tableContainer) tableContainer.classList.add('d-none');
             if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
-            function loadFidsFromServer() {
+            function loadFidsFromServer(ignoreServerError = false) {
                 fetch('{{ route("assignments.fetch_flight_data") }}', {
                     method: 'POST',
                     headers: {
@@ -1846,9 +1883,16 @@
                 .catch(err => {
                     if (refreshIcon) refreshIcon.classList.remove('fa-spin');
                     if (loadingState) loadingState.classList.add('d-none');
-                    if (errorState) errorState.classList.remove('d-none');
-                    const errEl = document.getElementById('fidsErrorMessage');
-                    if (errEl) errEl.innerText = 'Gagal terhubung ke server. ' + (err.message || '');
+                    if (ignoreServerError) {
+                        if (emptyState) emptyState.classList.remove('d-none');
+                        const countEl = document.getElementById('fidsSummaryCount');
+                        if (countEl) countEl.innerText = 'Total: 0 Penerbangan';
+                        rawFidsFlights = [];
+                    } else {
+                        if (errorState) errorState.classList.remove('d-none');
+                        const errEl = document.getElementById('fidsErrorMessage');
+                        if (errEl) errEl.innerText = 'Gagal terhubung ke server. ' + (err.message || '');
+                    }
                 });
             }
 
@@ -1868,7 +1912,10 @@
             })
             .then(json => {
                 const arrivalsData = json?.result?.response?.airport?.pluginData?.schedule?.arrivals?.data || [];
-                if (arrivalsData.length === 0) throw new Error('no arrivals from client');
+                if (arrivalsData.length === 0) {
+                    loadFidsFromServer(true);
+                    return;
+                }
 
                 const depUrl = `https://api.flightradar24.com/common/v1/airport.json?code=${stLower}&plugin[]=&plugin-setting[schedule][mode]=departures&limit=100`;
                 return fetch(depUrl, { headers: { 'Accept': 'application/json' } })
@@ -2129,5 +2176,21 @@
 
             renderFidsTable(result);
         }
+
+        // Run init on load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDashboardPage);
+        } else {
+            initDashboardPage();
+        }
+
+        // Clean up and bind to PJAX content loaded event
+        if (window.__onDashboardContentLoaded) {
+            window.removeEventListener('aps:content-loaded', window.__onDashboardContentLoaded);
+        }
+        window.__onDashboardContentLoaded = function() {
+            initDashboardPage();
+        };
+        window.addEventListener('aps:content-loaded', window.__onDashboardContentLoaded);
     </script>
 @endsection

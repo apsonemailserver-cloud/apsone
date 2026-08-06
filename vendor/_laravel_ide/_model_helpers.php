@@ -330,7 +330,7 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property string $read_at
      * @property string $user_id
-     * @property int $announcement_id
+     * @property mixed $announcement_id
      * @property int $id
      * @property-read \App\Models\Announcement $announcement
      * @property-read \App\Models\User $user
@@ -650,7 +650,7 @@ namespace App\Models {
      * @property string|null $photo_path
      * @property string $end_time
      * @property string $start_time
-     * @property string $wo_number
+     * @property string|null $wo_number
      * @property string $parking_stand
      * @property string|null $to_flight
      * @property string|null $ex_flight
@@ -995,7 +995,7 @@ namespace App\Models {
      * @property string|null $check_out_time
      * @property string|null $status
      * @property string|null $check_in_time
-     * @property int|null $station_id
+     * @property mixed $station_id
      * @property string $user_id
      * @property int $id
      * @property-read \App\Models\User $user
@@ -1333,8 +1333,8 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon $proposed_check_out_time
      * @property \Illuminate\Support\Carbon $proposed_check_in_time
      * @property \Illuminate\Support\Carbon $attendance_date
-     * @property int $station_id
-     * @property int|null $attendance_id
+     * @property mixed $station_id
+     * @property mixed $attendance_id
      * @property string $user_id
      * @property int $id
      * @property-read \App\Models\User $user
@@ -2636,8 +2636,8 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
-     * @property int $schedule_id
-     * @property int $flight_id
+     * @property mixed $schedule_id
+     * @property mixed $flight_id
      * @property int $id
      * @property-read \App\Models\Schedule $schedule
      * @method static \Illuminate\Database\Eloquent\Builder<Flight_details>|Flight_details whereId($value)
@@ -3286,7 +3286,7 @@ namespace App\Models {
      * @property string|null $replacement_employee_name
      * @property string|null $attachment_path
      * @property string|null $reason
-     * @property int|null $number_of_days
+     * @property mixed $number_of_days
      * @property string $end_date
      * @property string $start_date
      * @property string $leave_type
@@ -3624,7 +3624,7 @@ namespace App\Models {
      * @property string|null $rejection_reason
      * @property string $description
      * @property string $title
-     * @property int $duration
+     * @property mixed $duration
      * @property string $date
      * @property string $user_id
      * @property int $id
@@ -4898,7 +4898,7 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
-     * @property int $use_manpower
+     * @property mixed $use_manpower
      * @property string $end_time
      * @property string $start_time
      * @property string $description
@@ -5218,7 +5218,7 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property string|null $role
-     * @property int $radius
+     * @property mixed $radius
      * @property float|null $longitude
      * @property float|null $latitude
      * @property bool $is_active

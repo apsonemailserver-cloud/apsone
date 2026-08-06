@@ -145,19 +145,28 @@
                                 $rejectStatus = 'rejected by ho';
 
                                 if ($isPending && ($authUser->canAccess('leave', 'approve') || $authUser->isAdmin())) {
-                                    $canApproveThis = true;
                                     if ($authUser->isAdmin() || $userRole === 'Head Of Airport Service') {
+                                        $canApproveThis = true;
                                         $approveStatus = 'approved';
                                         $rejectStatus = 'rejected by ho';
                                     } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
-                                        $approveStatus = ($leave->status === 'pending Bge') ? 'pending' : 'approved';
-                                        $rejectStatus = 'rejected by leader';
+                                        if ($leave->status === 'pending Bge') {
+                                            $canApproveThis = true;
+                                            $approveStatus = 'pending';
+                                            $rejectStatus = 'rejected by leader';
+                                        }
                                     } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
-                                        $approveStatus = ($leave->status === 'pending Apron') ? 'pending' : 'approved';
-                                        $rejectStatus = 'rejected by leader';
+                                        if ($leave->status === 'pending Apron') {
+                                            $canApproveThis = true;
+                                            $approveStatus = 'pending';
+                                            $rejectStatus = 'rejected by leader';
+                                        }
                                     } else {
-                                        $approveStatus = ($leave->status === 'pending') ? 'approved' : 'pending';
-                                        $rejectStatus = 'rejected by leader';
+                                        if ($leave->status === 'pending') {
+                                            $canApproveThis = true;
+                                            $approveStatus = 'approved';
+                                            $rejectStatus = 'rejected by leader';
+                                        }
                                     }
                                 }
 
@@ -243,7 +252,7 @@
 @endsection
 
 @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
     <script>
         $(document).ready(function() {
             $(document).on('click', '.btn-approve-leave', function(e) {

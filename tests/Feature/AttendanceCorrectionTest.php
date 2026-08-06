@@ -257,7 +257,7 @@ class AttendanceCorrectionTest extends TestCase
     public function test_unrelated_user_cannot_view_or_decide_a_correction(): void
     {
         [, , , $correction] = $this->makePendingCorrection();
-        $unrelated = $this->makeUser('109999', 'Bukan Manager', 'Leader Apron');
+        $unrelated = $this->makeUser('109999', 'Bukan Manager', 'Leader Bge');
 
         $this->actingAs($unrelated)
             ->get(route('attendance.corrections.approval'))

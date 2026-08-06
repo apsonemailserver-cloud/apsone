@@ -501,6 +501,15 @@ class AssignmentController extends Controller
         $query = trim($request->input('aircraft_reg') ?: $request->input('query_str') ?: '');
         $station = strtoupper(trim($request->input('station') ?: 'CGK'));
 
+        if ($station === 'RMH') {
+            return response()->json([
+                'success' => true,
+                'source' => 'Database Sistem',
+                'flights' => [],
+                'data' => null
+            ]);
+        }
+
         if (!$query && !$station) {
             return response()->json(['success' => false, 'message' => 'Pilih station atau ketik registrasi pesawat.'], 400);
         }

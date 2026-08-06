@@ -78,32 +78,51 @@ class OvertimeController extends Controller
         // Security Check: Hanya yg punya overtime.approve yg boleh masuk
         abort_unless(Auth::user()->canAccess('overtime', 'approve'), 403);
 
-        $query = Overtime::with('user')->where('status', 'Pending');
+        $query = Overtime::with('user')
+            ->select('overtimes.*')
+            ->join('users', 'users.id', '=', 'overtimes.user_id')
+            ->where('overtimes.status', 'Pending');
+
+        if (!$user->isAdmin()) {
+            $query->where('overtimes.user_id', '!=', $user->id);
+        }
 
         // Filter Search (NIP / Nama)
         if ($search = $request->input('search')) {
-            $query->whereHas('user', function($q) use ($search) {
-                $q->where('fullname', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('users.fullname', 'like', "%{$search}%")
+                  ->orWhere('users.id', 'like', "%{$search}%");
             });
         }
 
-        // Filter Station
+        $userRole = $user->role ?? '';
+
+        // Filter Station dan Divisi berdasarkan hak akses
         if ($user->isAdmin()) {
             if ($request->filled('station')) {
-                $query->whereHas('user', function($q) use ($request) {
-                    $q->where('station', $request->station);
-                });
+                $query->where('users.station', $request->station);
             }
+        } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
+            $query->where('users.station', $user->station);
+        } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+            $query->where('users.station', $user->station)
+                  ->where(function($q) {
+                      $q->where('users.role', 'LIKE', '%Bge%')
+                        ->orWhere('users.role', 'LIKE', '%BGE%')
+                        ->orWhere('users.role', 'LIKE', '%Baggage%');
+                  });
+        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+            $query->where('users.station', $user->station)
+                  ->where(function($q) {
+                      $q->where('users.role', 'LIKE', '%Apron%')
+                        ->orWhere('users.role', 'LIKE', '%APRON%');
+                  });
         } else {
-            // Jika BUKAN Admin, hanya tampilkan request dari Station yang sama
-            $query->whereHas('user', function($q) use ($user) {
-                $q->where('station', $user->station);
-            });
+            $query->where('users.station', $user->station);
         }
 
         $perPage = $request->input('per_page', 20);
-        $pendingOvertimes = $query->orderBy('date', 'desc')->paginate($perPage)->withQueryString();
+        $pendingOvertimes = $query->orderBy('overtimes.date', 'desc')->paginate($perPage)->withQueryString();
 
         return view('overtime.approval', compact('pendingOvertimes'));
     }
@@ -111,6 +130,8 @@ class OvertimeController extends Controller
     public function approve($id)
     {
         $ot = Overtime::with('user')->findOrFail($id);
+        $this->authorizeDecision($ot);
+
         $ot->update([
             'status' => 'Approved',
             'approved_by' => Auth::user()->fullname
@@ -143,6 +164,8 @@ class OvertimeController extends Controller
         ]);
 
         $ot = Overtime::with('user')->findOrFail($id);
+        $this->authorizeDecision($ot);
+
         $ot->update([
             'status' => 'Rejected',
             'rejection_reason' => $request->input('rejection_reason'),
@@ -263,6 +286,50 @@ class OvertimeController extends Controller
             return Excel::download(new OvertimeReportExport($overtimes), 'Laporan_Lembur' . $stationLabel . '_'.date('YmdHis').'.xlsx');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengunduh laporan lembur: ' . $e->getMessage());
+        }
+    }
+
+    private function authorizeDecision(Overtime $ot)
+    {
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+            return;
+        }
+
+        // Prevent self-approval
+        if ((string) $ot->user_id === (string) $user->id) {
+            abort(403, 'Anda tidak dapat menyetujui/menolak pengajuan lembur Anda sendiri.');
+        }
+
+        $userRole = $user->role ?? '';
+        $applicant = $ot->user;
+
+        if (!$applicant) {
+            abort(404, 'Data pemohon tidak ditemukan.');
+        }
+
+        // Station must match
+        if ($applicant->station !== $user->station) {
+            abort(403, 'Anda hanya dapat menyetujui/menolak pengajuan lembur di station yang sama.');
+        }
+
+        if ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
+            // HOAS has access to all at station
+            return;
+        }
+
+        $applicantRole = $applicant->role ?? '';
+
+        if (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+            $isBgeSub = str_contains($applicantRole, 'Bge') || str_contains($applicantRole, 'BGE') || str_contains($applicantRole, 'Baggage');
+            if (!$isBgeSub) {
+                abort(403, 'Leader BGE hanya dapat menyetujui/menolak pengajuan divisi Baggage.');
+            }
+        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+            $isApronSub = str_contains($applicantRole, 'Apron') || str_contains($applicantRole, 'APRON');
+            if (!$isApronSub) {
+                abort(403, 'Leader Apron hanya dapat menyetujui/menolak pengajuan divisi Apron.');
+            }
         }
     }
 }

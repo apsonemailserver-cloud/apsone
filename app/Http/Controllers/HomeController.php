@@ -264,7 +264,13 @@ class HomeController extends Controller
         }
 
         // Data Monitoring Station (Untuk Widget Kartu-Kartu Station)
-        $allStations = !empty($listStations) ? $listStations : Station::where('is_active', 1)->get();
+        if ($user->hasRole('Admin')) {
+            $allStations = Station::where('is_active', 1)->get();
+        } else {
+            $allStations = Station::where('is_active', 1)
+                ->where('code', $user->station)
+                ->get();
+        }
         $stationStats = User::where('is_active', 1)
             ->select('station', DB::raw('count(*) as total'))
             ->groupBy('station')
