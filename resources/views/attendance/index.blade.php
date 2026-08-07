@@ -34,6 +34,19 @@
     .badge-absent { background-color: #fee2e2; color: #991b1b; }
     .badge-in-progress { background-color: #fef3c7; color: #92400e; }
     .badge-leave { background-color: #e0f2fe; color: #0369a1; }
+
+    .leave-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.45rem 1rem;
+        border-radius: 9999px;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        text-align: left;
+        max-width: max-content;
+    }
     
     .btn-attendance {
         padding: 0.55rem 1.5rem;
@@ -229,13 +242,13 @@
                     <!-- Action Buttons -->
                     <div class="text-center py-3">
                         @if(isset($onLeaveToday) && $onLeaveToday)
-                            <div class="d-inline-flex align-items-center gap-3 px-4 py-3 rounded-pill bg-white border shadow-sm text-start my-2" style="border-color: #e2e8f0 !important;">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background-color: #e0f2fe; color: #0284c7;">
-                                    <i class="bx bx-calendar-event fs-3"></i>
+                            <div class="leave-status-badge mx-auto my-1">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; background-color: #e0f2fe; color: #0284c7;">
+                                    <i class="bx bx-calendar-event fs-5"></i>
                                 </div>
-                                <div class="pe-3 py-1">
-                                    <div class="fw-bold text-dark mb-1" style="font-size: 0.95rem; line-height: 1.3;">Sedang Cuti Hari Ini</div>
-                                    <div class="text-muted" style="font-size: 0.8rem; line-height: 1.4;">Bebas dari kewajiban presensi & kerja</div>
+                                <div class="pe-1">
+                                    <div class="fw-bold text-dark" style="font-size: 0.82rem; line-height: 1.2;">Sedang Cuti Hari Ini</div>
+                                    <div class="text-muted" style="font-size: 0.72rem; line-height: 1.2;">Bebas dari kewajiban presensi</div>
                                 </div>
                             </div>
                         @else
