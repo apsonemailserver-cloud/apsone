@@ -144,7 +144,10 @@
                         <h5 class="card-title text-dark fw-bold mb-0">
                             <i class="bx bx-camera text-primary me-2"></i>Foto Bukti Kerja
                         </h5>
-                        @if($assignment->photo_path && (auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $assignment->submitted_by === auth()->id())))
+                        @php
+                            $canUpload = auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $assignment->submitted_by === auth()->id());
+                        @endphp
+                        @if($assignment->photo_path && $canUpload)
                             <button type="button" class="btn btn-xs btn-outline-secondary btn-upload-photo" data-id="{{ $assignment->id }}" data-wo="{{ $assignment->wo_number }}">
                                 <i class="bx bx-upload me-1"></i> Ganti
                             </button>
@@ -165,9 +168,11 @@
                                     <div class="fw-bold text-dark mb-1">Foto Bukti Belum Ada</div>
                                     <div class="small text-muted">Upload foto bukti pekerjaan terlebih dahulu agar dokumen Laporan PDF dapat dicetak.</div>
                                 </div>
-                                <button type="button" class="btn btn-primary btn-sm btn-upload-photo" data-id="{{ $assignment->id }}" data-wo="{{ $assignment->wo_number }}">
-                                    <i class="bx bx-upload me-1"></i> Upload Foto Bukti Sekarang
-                                </button>
+                                @if($canUpload)
+                                    <button type="button" class="btn btn-primary btn-sm btn-upload-photo" data-id="{{ $assignment->id }}" data-wo="{{ $assignment->wo_number }}">
+                                        <i class="bx bx-upload me-1"></i> Upload Foto Bukti Sekarang
+                                    </button>
+                                @endif
                             </div>
                         @endif
                     </div>

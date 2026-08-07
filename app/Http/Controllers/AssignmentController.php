@@ -421,6 +421,12 @@ class AssignmentController extends Controller
     {
         $assignment = Assignment::findOrFail($id);
 
+        $user = auth()->user();
+        $canUpload = $user->hasRole('Admin') || ($user->hasRole(Assignment::LEADER_ROLES) && $assignment->submitted_by === $user->id);
+        if (!$canUpload) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengunggah foto bukti pekerjaan ini.');
+        }
+
         $request->validate([
             'photo' => 'required|image|mimes:jpeg,jpg,png|max:2048',
         ], [
