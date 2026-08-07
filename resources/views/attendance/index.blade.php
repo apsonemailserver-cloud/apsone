@@ -146,6 +146,47 @@
         border: 1px solid rgba(47, 128, 237, 0.26);
         box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
     }
+
+    .work-finished-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.45rem 1rem;
+        border-radius: 9999px;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        text-align: left;
+        max-width: max-content;
+    }
+
+    /* Dark Mode support for status badges */
+    html.aps-dark .leave-status-badge,
+    html.aps-dark .work-finished-badge {
+        background-color: #101a2c !important;
+        border-color: #24324a !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    html.aps-dark .leave-status-badge .text-dark,
+    html.aps-dark .work-finished-badge .text-dark {
+        color: #e6edf7 !important;
+    }
+    
+    html.aps-dark .leave-status-badge .text-muted,
+    html.aps-dark .work-finished-badge .text-muted {
+        color: #8fa1b8 !important;
+    }
+
+    html.aps-dark .work-finished-badge .rounded-circle {
+        background-color: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+    }
+    
+    html.aps-dark .leave-status-badge .rounded-circle {
+        background-color: rgba(2, 132, 199, 0.15) !important;
+        color: #38bdf8 !important;
+    }
 </style>
 @endsection
 
@@ -263,9 +304,22 @@
                                     <i class="bx bx-log-out"></i> Absen Out Sekarang
                                 </a>
                             @elseif($todayAttendance && $todayAttendance->check_in_time && $todayAttendance->check_out_time)
-                                <div class="bg-light p-3 rounded-pill d-inline-flex align-items-center gap-2 px-4 border">
-                                    <i class="bx bx-check-double text-success fs-4"></i>
-                                    <span class="fw-bold text-success">Today's work is finished</span>
+                                @php
+                                    $in = \Carbon\Carbon::parse($todayAttendance->check_in_time);
+                                    $out = \Carbon\Carbon::parse($todayAttendance->check_out_time);
+                                    $duration = $in->diff($out);
+                                    $hours = $duration->h;
+                                    $minutes = $duration->i;
+                                    $durationStr = ($hours > 0 ? $hours . ' jam ' : '') . $minutes . ' menit';
+                                @endphp
+                                <div class="work-finished-badge mx-auto my-1">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; background-color: #d1fae5; color: #065f46;">
+                                        <i class="bx bx-check-double fs-5"></i>
+                                    </div>
+                                    <div class="pe-1">
+                                        <div class="fw-bold text-dark" style="font-size: 0.82rem; line-height: 1.2;">Today's work is finished!</div>
+                                        <div class="text-muted" style="font-size: 0.72rem; line-height: 1.2;">Durasi Kerja: {{ $durationStr }}</div>
+                                    </div>
                                 </div>
                             @endif
                         @endif

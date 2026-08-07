@@ -62,7 +62,11 @@
                             </a>
                         @endif
 
-                        @if ($todayAttendance)
+                        @if (isset($onLeaveToday) && $onLeaveToday)
+                            <button class="btn btn-outline-info shadow-sm" disabled>
+                                <i class="bx bx-calendar-event me-1"></i> Sedang Cuti
+                            </button>
+                        @elseif ($todayAttendance)
                             @if (!$todayAttendance->check_in_time)
                                 <a href="{{ route('attendance.camera', ['type' => 'in']) }}" class="btn btn-primary-custom text-white shadow-sm">
                                     <i class="bx bx-log-in me-1"></i> Absen In

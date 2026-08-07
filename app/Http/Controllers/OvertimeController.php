@@ -117,14 +117,14 @@ class OvertimeController extends Controller
             }
         } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
             $query->where('users.station', $user->station);
-        } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+        } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
             $query->where('users.station', $user->station)
                   ->where(function($q) {
                       $q->where('users.role', 'LIKE', '%Bge%')
                         ->orWhere('users.role', 'LIKE', '%BGE%')
                         ->orWhere('users.role', 'LIKE', '%Baggage%');
                   });
-        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+        } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
             $query->where('users.station', $user->station)
                   ->where(function($q) {
                       $q->where('users.role', 'LIKE', '%Apron%')

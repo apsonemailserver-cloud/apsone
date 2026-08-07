@@ -40,7 +40,7 @@ class AttendanceCorrectionController extends Controller
                 if (! empty($userStations)) {
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
                 }
-            } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+            } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
                 if (! empty($userStations)) {
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
                 }
@@ -49,7 +49,7 @@ class AttendanceCorrectionController extends Controller
                       ->orWhere('role', 'LIKE', '%BGE%')
                       ->orWhere('role', 'LIKE', '%Baggage%');
                 });
-            } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+            } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
                 if (! empty($userStations)) {
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
                 }

@@ -49,11 +49,11 @@ class LeaveController extends Controller
         } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
             // Head of Airport Service / HO dapat melihat pengajuan pending
             $query->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
-        } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+        } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
             // Leader / SPV BGE melihat pengajuan pending BGE di station miliknya
             $query->where('users.station', $user->station)
                   ->where('leaves.status', 'pending Bge');
-        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+        } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
             // Leader / SPV Apron melihat pengajuan pending Apron di station miliknya
             $query->where('users.station', $user->station)
                   ->where('leaves.status', 'pending Apron');
@@ -97,7 +97,7 @@ class LeaveController extends Controller
         } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
             // HOAS sees leaves in their station
             $query->where('users.station', $user->station);
-        } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
+        } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
             // Leader Bge sees own leaves + Bge subordinates
             $query->where(function ($q) use ($user) {
                 $q->where('leaves.user_id', $user->id)
@@ -110,7 +110,7 @@ class LeaveController extends Controller
                          });
                   });
             });
-        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+        } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
             // Leader Apron sees own leaves + Apron subordinates
             $query->where(function ($q) use ($user) {
                 $q->where('leaves.user_id', $user->id)

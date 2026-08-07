@@ -55,6 +55,15 @@ class HomeController extends Controller
             ->latest()
             ->first();
 
+        $onLeaveToday = false;
+        if (\Illuminate\Support\Facades\Schema::hasTable('leaves')) {
+            $onLeaveToday = \App\Models\Leave::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'pending Apron', 'pending Bge', 'approved'])
+                ->whereDate('start_date', '<=', Carbon::today()->toDateString())
+                ->whereDate('end_date', '>=', Carbon::today()->toDateString())
+                ->exists();
+        }
+
         // =================================================================
         // BAGIAN 0: LOGIKA FILTER STATION (BARU)
         // =================================================================
@@ -103,6 +112,7 @@ class HomeController extends Controller
                 'selectedStation' => $selectedStation,
                 'listStations' => $listStations,
                 'todayAttendance' => $todayAttendance,
+                'onLeaveToday' => $onLeaveToday,
                 'flights' => $flights,
                 ...$this->staffDashboardData($user),
             ]);
@@ -332,6 +342,7 @@ class HomeController extends Controller
             'showManagementDashboard',
             'selectedStation',
             'listStations',
+            'onLeaveToday',
 
             // KPI Utama
             'userCount',

@@ -125,6 +125,11 @@
                             ? \Carbon\Carbon::parse($attendance->check_out_time)
                             : null;
 
+                            if ($correction && $correction->status === 'approved') {
+                                $checkIn = \Carbon\Carbon::parse($correction->proposed_check_in_time);
+                                $checkOut = \Carbon\Carbon::parse($correction->proposed_check_out_time);
+                            }
+
                             $checkInClass  = '';
                             $checkOutClass = '';
 
@@ -168,7 +173,7 @@
                                     $latenessBadgeClass = 'bg-label-success';
                                 }
                             } elseif ($checkIn) {
-                                if ($attendance->status === 'Terlambat') {
+                                if ($attendance && $attendance->status === 'Terlambat') {
                                     $latenessStatus = 'Telat';
                                     $latenessBadgeClass = 'bg-label-danger';
                                 } else {
@@ -211,13 +216,22 @@
                                     $keteranganBadgeClass = 'bg-label-secondary';
                                 }
                             }
+
+                            $locationText = '-';
+                            if ($checkIn) {
+                                if ($attendance) {
+                                    $locationText = $attendance->station?->code ?? $row->user?->station ?? ($attendance->check_in_notes ?? '-');
+                                } elseif ($correction && $correction->status === 'approved') {
+                                    $locationText = $correction->station?->code ?? $row->user?->station ?? '-';
+                                }
+                            }
                             @endphp
 
                             <tr class="{{ $isOnLeave ? 'table-info' : '' }}">
                                 <td>{{ $date->translatedFormat('d M Y') }}</td>
                                 <td class="{{ $checkInClass }}" style="border-radius: 0.25rem;">{{ $checkIn ? $checkIn->format('H:i:s') : '-' }}</td>
                                 <td class="{{ $checkOutClass }}" style="border-radius: 0.25rem;">{{ $checkOut ? $checkOut->format('H:i:s') : '-' }}</td>
-                                <td>{{ $checkIn ? ($attendance->station?->code ?? $row->user?->station ?? ($attendance->check_in_notes ?? '-')) : '-' }}</td>
+                                <td>{{ $locationText }}</td>
                                 <td>{{ $isOnLeave ? '-' : $workDuration }}</td>
                                 <td>
                                     <span class="badge {{ $latenessBadgeClass }}">

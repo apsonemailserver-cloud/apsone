@@ -184,6 +184,19 @@
                             $checkIn = $attendance && $attendance->check_in_time ? \Carbon\Carbon::parse($attendance->check_in_time) : null;
                             $checkOut = $attendance && $attendance->check_out_time ? \Carbon\Carbon::parse($attendance->check_out_time) : null;
 
+                            if ($correction && $correction->status === \App\Models\AttendanceCorrection::STATUS_APPROVED) {
+                                $checkIn = \Carbon\Carbon::parse($correction->proposed_check_in_time);
+                                $checkOut = \Carbon\Carbon::parse($correction->proposed_check_out_time);
+                            }
+
+                            $stationCode = '-';
+                            if ($attendance && $attendance->check_in_time) {
+                                $stationCode = $attendance->station?->code ?? $user->station ?? '-';
+                            }
+                            if ($correction && $correction->status === \App\Models\AttendanceCorrection::STATUS_APPROVED) {
+                                $stationCode = $correction->station?->code ?? $user->station ?? '-';
+                            }
+
                             $isShiftKosong = $startTime && $startTime->format('H:i') === '00:00' && $endTime && $endTime->format('H:i') === '00:00';
 
                             $today = now()->startOfDay();
@@ -204,7 +217,7 @@
                                     style="cursor: pointer;"
                                     title="Klik row untuk lihat detail note koreksi"
                                     data-date="{{ $currentDate->translatedFormat('d F Y') }}"
-                                    data-station="{{ $attendance && $attendance->check_in_time ? ($attendance->station?->code ?? $user->station ?? '-') : '-' }}"
+                                    data-station="{{ $stationCode }}"
                                     data-shift="{{ $schedule ? $startTime->format('H:i') . ' - ' . $endTime->format('H:i') : '-' }}"
                                     data-in="{{ $checkIn ? $checkIn->format('H:i') : '-' }}"
                                     data-out="{{ $checkOut ? $checkOut->format('H:i') : '-' }}"
@@ -214,7 +227,7 @@
                                 @endif
                             >
                                 <td>{{ $day }}</td>
-                                <td>{{ $attendance && $attendance->check_in_time ? ($attendance->station?->code ?? $user->station ?? '-') : '-' }}</td>
+                                <td>{{ $stationCode }}</td>
                                 <td>
                                     @if($schedule)
                                     {{ $startTime->format('H:i') }} - {{ $endTime->format('H:i') }}

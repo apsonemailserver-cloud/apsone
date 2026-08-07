@@ -30,6 +30,11 @@ class AttendanceReportExport implements FromCollection, WithHeadings
             $checkInTime = $attendance?->check_in_time ? \Carbon\Carbon::parse($attendance->check_in_time) : null;
             $checkOutTime = $attendance?->check_out_time ? \Carbon\Carbon::parse($attendance->check_out_time) : null;
 
+            if ($correction && $correction->status === 'approved') {
+                $checkInTime = \Carbon\Carbon::parse($correction->proposed_check_in_time);
+                $checkOutTime = \Carbon\Carbon::parse($correction->proposed_check_out_time);
+            }
+
             $checkIn = $checkInTime ? $checkInTime->format('H:i:s') : '-';
             $checkOut = $checkOutTime ? $checkOutTime->format('H:i:s') : '-';
 
@@ -44,7 +49,7 @@ class AttendanceReportExport implements FromCollection, WithHeadings
                     $schedStart = \Carbon\Carbon::parse($date->toDateString() . ' ' . $schedule->start_time);
                     $latenessStatus = $checkInTime->gt($schedStart) ? 'Telat' : 'Tepat Waktu';
                 } else {
-                    $latenessStatus = ($attendance->status === 'Terlambat') ? 'Telat' : 'Tepat Waktu';
+                    $latenessStatus = ($attendance && $attendance->status === 'Terlambat') ? 'Telat' : 'Tepat Waktu';
                 }
             } elseif (!$leave && $date->lt($today)) {
                 if ($schedule) {
@@ -64,13 +69,22 @@ class AttendanceReportExport implements FromCollection, WithHeadings
                 $keteranganText = $schedule ? 'Tidak Hadir' : 'Libur';
             }
 
+            $lokasiText = '-';
+            if ($checkInTime) {
+                if ($attendance) {
+                    $lokasiText = $attendance->station?->code ?? $row->user->station ?? '-';
+                } elseif ($correction && $correction->status === 'approved') {
+                    $lokasiText = $correction->station?->code ?? $row->user->station ?? '-';
+                }
+            }
+
             return [
                 'Tanggal' => $date->translatedFormat('d M Y'),
                 'Nama' => $row->user->fullname ?? '-',
                 'NIP' => $row->user->id ?? '-',
                 'Check-in' => $checkIn,
                 'Check-out' => $checkOut,
-                'Lokasi' => $attendance ? ($attendance->station?->code ?? $row->user->station) : '-',
+                'Lokasi' => $lokasiText,
                 'Durasi Kerja' => $workDuration,
                 'Status Telat' => $latenessStatus,
                 'Keterangan' => $keteranganText,
