@@ -13,18 +13,13 @@
 
     <link rel="icon" href="{{ asset('storage/aps_mini.png') }}" sizes="48x48" type="image/png">
 
-    <link rel="stylesheet" href="{{ asset('vendor/public-sans/public-sans.css') }}" media="print" onload="this.media='all'" />
-    <link rel="stylesheet" href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}" media="print" onload="this.media='all'" />
-    <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/tabler-icons.min.css') }}" media="print" onload="this.media='all'">
-    <link href="{{ asset('vendor/select2/select2.min.css') }}" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript>
-        <link rel="stylesheet" href="{{ asset('vendor/public-sans/public-sans.css') }}">
-        <link rel="stylesheet" href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}">
-        <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}">
-        <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/tabler-icons.min.css') }}">
-        <link href="{{ asset('vendor/select2/select2.min.css') }}" rel="stylesheet" />
-    </noscript>
+    <link rel="stylesheet" href="{{ asset('vendor/public-sans/public-sans.css') }}" />
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/tabler-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome6/css/all.min.css') }}">
+    <link href="{{ asset('vendor/select2/select2.min.css') }}" rel="stylesheet" />
+
 
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/core.min.css') }}" class="template-customizer-core-css" />
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/theme-default.min.css') }}" class="template-customizer-theme-css" />

@@ -1,10 +1,6 @@
 @extends('layout.admin')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('vendor/fontawesome6/css/all.min.css') }}" media="print" onload="this.media='all'">
-    <noscript>
-        <link rel="stylesheet" href="{{ asset('vendor/fontawesome6/css/all.min.css') }}">
-    </noscript>
     <link rel="stylesheet" href="{{ asset('template/assets/css/custom-home.min.css') }}?v={{ filemtime(public_path('template/assets/css/custom-home.min.css')) }}" />
 @endsection
 
