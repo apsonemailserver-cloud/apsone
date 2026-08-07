@@ -603,7 +603,6 @@
                                     <th>KEDATANGAN</th>
                                     <th>HITUNG MUNDUR</th>
                                     <th>DIBUAT PADA</th>
-                                    <th class="text-center">STATUS</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -631,34 +630,11 @@
                                             @endif
                                         </td>
                                         <td class="text-muted">{{ $flight->created_at ? $flight->created_at->format('d M Y, H:i') : '-' }}</td>
-                                        <td class="no-click text-center">
-                                            @if ($flight->status ?? (!empty($flight->photo_path)))
-                                                <span class="badge bg-label-success px-3 py-1.5 rounded-pill fw-semibold">
-                                                    <i class="bx bx-check me-1"></i>Selesai
-                                                </span>
-                                            @else
-                                                @if (in_array(Auth::user()->role, ['Ass Leader', 'Leader']))
-                                                    <form action="{{ route('flights.update', $flight->id) }}"
-                                                        method="POST" style="display:inline;">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <button type="submit"
-                                                            class="btn btn-warning btn-xs rounded-pill px-3 shadow-sm" title="Klik untuk selesaikan penerbangan">
-                                                            <i class="bx bx-loader-alt bx-spin me-1"></i> Selesaikan
-                                                        </button>
-                                                    </form>
-                                                @else
-                                                    <span class="badge bg-label-warning px-3 py-1.5 rounded-pill fw-semibold">
-                                                        <i class="bx bx-loader-alt bx-spin me-1"></i>Proses
-                                                    </span>
-                                                @endif
-                                            @endif
-                                        </td>
                                     </tr>
                                     @include('modal.view_flight', ['flight' => $flight])
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center py-5 text-muted">
+                                        <td colspan="7" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
                                             <p class="mb-0">
                                                 Tidak ada data penerbangan untuk hari ini.
