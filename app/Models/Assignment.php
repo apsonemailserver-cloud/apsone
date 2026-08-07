@@ -72,4 +72,63 @@ class Assignment extends Model
             return 0;
         }
     }
+
+    /**
+     * Dynamically resolve airline name or code from flight identifier.
+     */
+    public function getAirlineAttribute()
+    {
+        $flight = $this->ex_flight ?: $this->to_flight;
+        if (empty($flight) || $flight === '-') {
+            return '-';
+        }
+
+        $code = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $flight));
+        $iata2 = substr($code, 0, 2);
+        $icao3 = substr($code, 0, 3);
+
+        $map = [
+            'QF' => 'Qantas',
+            'JT' => 'Lion Air',
+            'LNI' => 'Lion Air',
+            'GA' => 'Garuda',
+            'GIA' => 'Garuda',
+            'QG' => 'Citilink',
+            'CTV' => 'Citilink',
+            'ID' => 'Batik Air',
+            'BTK' => 'Batik Air',
+            'SQ' => 'Singapore Airlines',
+            'SIA' => 'Singapore Airlines',
+            'MH' => 'Malaysia Airlines',
+            'MAS' => 'Malaysia Airlines',
+            'AK' => 'AirAsia',
+            'FD' => 'AirAsia',
+            'QZ' => 'AirAsia',
+            'AXM' => 'AirAsia',
+            'TR' => 'Scoot',
+            'TGW' => 'Scoot',
+            'OD' => 'Batik Air Malaysia',
+            'MXD' => 'Batik Air Malaysia',
+            'SL' => 'Thai Lion Air',
+            'TLM' => 'Thai Lion Air',
+            'CZ' => 'China Southern',
+            'CSN' => 'China Southern',
+            'MF' => 'Xiamen Air',
+            'CXA' => 'Xiamen Air',
+            'SJ' => 'Sriwijaya',
+            'SRY' => 'Sriwijaya',
+            'IN' => 'Nam Air',
+            'LKE' => 'Nam Air',
+            '8B' => 'TransNusa',
+            'TNU' => 'TransNusa',
+        ];
+
+        if (isset($map[$icao3])) {
+            return $map[$icao3];
+        }
+        if (isset($map[$iata2])) {
+            return $map[$iata2];
+        }
+        return $iata2;
+    }
 }
