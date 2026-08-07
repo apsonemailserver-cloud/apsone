@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use RealRashid\SweetAlert\Facades\Alert;
 
 use App\Services\RequestNotificationMailService;
 
@@ -149,6 +150,19 @@ class AttendanceCorrectionController extends Controller
             throw ValidationException::withMessages([
                 'attendance_date' => 'Koreksi untuk tanggal ini sudah pernah diajukan.',
             ]);
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('leaves')) {
+            $hasLeave = \App\Models\Leave::where('user_id', Auth::id())
+                ->whereIn('status', ['pending', 'pending Apron', 'pending Bge', 'approved'])
+                ->whereDate('start_date', '<=', $attendanceDate)
+                ->whereDate('end_date', '>=', $attendanceDate)
+                ->exists();
+
+            if ($hasLeave) {
+                Alert::error('Gagal', 'Anda tidak dapat mengajukan koreksi absen pada tanggal tersebut karena sedang dalam masa cuti.');
+                return redirect()->back()->withInput();
+            }
         }
 
         $validated = $request->validate([

@@ -33,6 +33,7 @@
     .badge-present { background-color: #d1fae5; color: #065f46; }
     .badge-absent { background-color: #fee2e2; color: #991b1b; }
     .badge-in-progress { background-color: #fef3c7; color: #92400e; }
+    .badge-leave { background-color: #e0f2fe; color: #0369a1; }
     
     .btn-attendance {
         padding: 0.55rem 1.5rem;
@@ -187,12 +188,14 @@
                     <div class="attendance-info-container">
                         <div class="info-item">
                             <div class="info-label">Station</div>
-                            <div class="info-value">{{ $todayAttendance ? ($user->station ?? '-') : '-' }}</div>
+                            <div class="info-value">{{ $user->station ?? '-' }}</div>
                         </div>
                         <div class="info-item">
                             <div class="info-label">Current Status</div>
                             <div class="info-value">
-                                @if(!$todayAttendance)
+                                @if(isset($onLeaveToday) && $onLeaveToday)
+                                    <span class="status-badge badge-leave">On Leave</span>
+                                @elseif(!$todayAttendance)
                                     <span class="status-badge badge-absent">Not Clocked In</span>
                                 @elseif($todayAttendance && $todayAttendance->check_in_time && !$todayAttendance->check_out_time)
                                     <span class="status-badge badge-in-progress">On Duty</span>
@@ -225,21 +228,33 @@
 
                     <!-- Action Buttons -->
                     <div class="text-center py-3">
-                        @if(!$todayAttendance)
-                            <a href="{{ route('attendance.camera', ['type' => 'in']) }}" 
-                               class="btn-attendance btn-checkin">
-                                <i class="bx bx-log-in"></i> Absen In Sekarang
-                            </a>
-                        @elseif($todayAttendance && $todayAttendance->check_in_time && !$todayAttendance->check_out_time)
-                            <a href="{{ route('attendance.camera', ['type' => 'out']) }}" 
-                               class="btn-attendance btn-checkout">
-                                <i class="bx bx-log-out"></i> Absen Out Sekarang
-                            </a>
-                        @elseif($todayAttendance && $todayAttendance->check_in_time && $todayAttendance->check_out_time)
-                            <div class="bg-light p-3 rounded-pill d-inline-flex align-items-center gap-2 px-4 border">
-                                <i class="bx bx-check-double text-success fs-4"></i>
-                                <span class="fw-bold text-success">Today's work is finished</span>
+                        @if(isset($onLeaveToday) && $onLeaveToday)
+                            <div class="d-inline-flex align-items-center gap-3 px-4 py-3 rounded-pill bg-white border shadow-sm text-start my-2" style="border-color: #e2e8f0 !important;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background-color: #e0f2fe; color: #0284c7;">
+                                    <i class="bx bx-calendar-event fs-3"></i>
+                                </div>
+                                <div class="pe-3 py-1">
+                                    <div class="fw-bold text-dark mb-1" style="font-size: 0.95rem; line-height: 1.3;">Sedang Cuti Hari Ini</div>
+                                    <div class="text-muted" style="font-size: 0.8rem; line-height: 1.4;">Bebas dari kewajiban presensi & kerja</div>
+                                </div>
                             </div>
+                        @else
+                            @if(!$todayAttendance)
+                                <a href="{{ route('attendance.camera', ['type' => 'in']) }}" 
+                                   class="btn-attendance btn-checkin">
+                                    <i class="bx bx-log-in"></i> Absen In Sekarang
+                                </a>
+                            @elseif($todayAttendance && $todayAttendance->check_in_time && !$todayAttendance->check_out_time)
+                                <a href="{{ route('attendance.camera', ['type' => 'out']) }}" 
+                                   class="btn-attendance btn-checkout">
+                                    <i class="bx bx-log-out"></i> Absen Out Sekarang
+                                </a>
+                            @elseif($todayAttendance && $todayAttendance->check_in_time && $todayAttendance->check_out_time)
+                                <div class="bg-light p-3 rounded-pill d-inline-flex align-items-center gap-2 px-4 border">
+                                    <i class="bx bx-check-double text-success fs-4"></i>
+                                    <span class="fw-bold text-success">Today's work is finished</span>
+                                </div>
+                            @endif
                         @endif
                     </div>
                 </div>

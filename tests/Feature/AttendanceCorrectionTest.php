@@ -527,4 +527,48 @@ class AttendanceCorrectionTest extends TestCase
             }
         }
     }
+
+    public function test_cannot_submit_attendance_correction_when_on_active_leave(): void
+    {
+        [$applicant, $station] = $this->makeUserAndStation();
+
+        // Create leaves table in test SQLite database
+        Schema::create('leaves', function (Blueprint $table) {
+            $table->id();
+            $table->string('user_id');
+            $table->string('leave_type');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->integer('total_days');
+            $table->text('reason');
+            $table->string('status');
+            $table->timestamps();
+        });
+
+        // Create active leave
+        \App\Models\Leave::create([
+            'user_id' => $applicant->id,
+            'leave_type' => 'Cuti Tahunan',
+            'start_date' => '2026-07-20',
+            'end_date' => '2026-07-20',
+            'total_days' => 1,
+            'reason' => 'Holiday',
+            'status' => 'approved',
+        ]);
+
+        $this->actingAs($applicant)
+            ->post(route('attendance.corrections.store', '2026-07-20'), [
+                'check_in_time' => '08:00',
+                'check_out_time' => '17:00',
+                'station_id' => $station->id,
+                'reason' => 'Mesin absensi tidak mencatat.',
+            ])
+            ->assertRedirect();
+
+        // Ensure correction was not created
+        $this->assertDatabaseMissing('attendance_corrections', [
+            'user_id' => $applicant->id,
+            'attendance_date' => '2026-07-20',
+        ]);
+    }
 }

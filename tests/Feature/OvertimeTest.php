@@ -61,4 +61,47 @@ class OvertimeTest extends TestCase
             'approved_by' => 'Leader Apron',
         ]);
     }
+
+    public function test_cannot_submit_overtime_when_on_active_leave(): void
+    {
+        $staff = User::create([
+            'id' => '102002',
+            'fullname' => 'Staff Member',
+            'email' => 'staff@example.com',
+            'password' => 'password',
+            'role' => 'Staff',
+            'station' => 'CGK',
+            'is_active' => true,
+            'gender' => 'Male',
+            'join_date' => '2026-01-01',
+            'salary' => '0',
+        ]);
+
+        // Create active leave
+        \App\Models\Leave::create([
+            'user_id' => $staff->id,
+            'leave_type' => 'Cuti Tahunan',
+            'start_date' => '2026-07-28',
+            'end_date' => '2026-07-28',
+            'total_days' => 1,
+            'reason' => 'Holiday',
+            'status' => 'approved',
+        ]);
+
+        $this->actingAs($staff)
+            ->from(route('overtime.create'))
+            ->post(route('overtime.store'), [
+                'date' => '2026-07-28',
+                'duration' => 2,
+                'title' => 'Deep Cleaning',
+                'description' => 'Clean aircraft',
+            ])
+            ->assertRedirect(route('overtime.create')); // redirects back on validation failure
+
+        // Ensure overtime record was not created
+        $this->assertDatabaseMissing('overtimes', [
+            'user_id' => $staff->id,
+            'date' => '2026-07-28',
+        ]);
+    }
 }

@@ -151,4 +151,50 @@ class StationRoleMappingAttendanceTest extends TestCase
         $response->assertRedirect(route('stations.index'));
         $this->assertSame('Porter Bge, Leader Apron', $station->fresh()->role);
     }
+
+    public function test_user_is_blocked_from_check_in_if_on_active_leave(): void
+    {
+        Schema::create('leaves', function (Blueprint $table) {
+            $table->id();
+            $table->string('user_id');
+            $table->string('leave_type');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->integer('total_days');
+            $table->text('reason');
+            $table->string('status');
+            $table->timestamps();
+        });
+
+        $user = User::create([
+            'id' => '1004',
+            'name' => 'Leave User',
+            'role' => 'Porter Bge',
+            'station' => 'CGK',
+            'is_active' => 1,
+        ]);
+
+        // Create active leave for today
+        \App\Models\Leave::create([
+            'user_id' => $user->id,
+            'leave_type' => 'Cuti Tahunan',
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->toDateString(),
+            'total_days' => 1,
+            'reason' => 'Holiday',
+            'status' => 'approved',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->postJson(route('attendance.checkIn'), [
+                'latitude' => -6.1256,
+                'longitude' => 106.6558,
+            ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => false,
+                'message' => 'Absensi gagal! Anda tidak dapat melakukan absensi karena sedang dalam masa cuti.'
+            ]);
+    }
 }

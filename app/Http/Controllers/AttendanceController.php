@@ -31,7 +31,16 @@ class AttendanceController extends Controller
             ->where('date', $today->toDateString())
             ->first();
 
-        return view('attendance.index', compact('todayAttendance', 'todaySchedule', 'user'));
+        $onLeaveToday = false;
+        if (\Illuminate\Support\Facades\Schema::hasTable('leaves')) {
+            $onLeaveToday = \App\Models\Leave::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'pending Apron', 'pending Bge', 'approved'])
+                ->whereDate('start_date', '<=', $today->toDateString())
+                ->whereDate('end_date', '>=', $today->toDateString())
+                ->exists();
+        }
+
+        return view('attendance.index', compact('todayAttendance', 'todaySchedule', 'user', 'onLeaveToday'));
     }
 
     public function camera(Request $request)
@@ -75,6 +84,18 @@ class AttendanceController extends Controller
         $user = Auth::user();
         $now = Carbon::now();
         $today = $now->format('Y-m-d');
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('leaves')) {
+            $hasLeave = \App\Models\Leave::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'pending Apron', 'pending Bge', 'approved'])
+                ->whereDate('start_date', '<=', $today)
+                ->whereDate('end_date', '>=', $today)
+                ->exists();
+
+            if ($hasLeave) {
+                return back()->with('error', 'Absensi gagal! Anda tidak dapat melakukan absensi karena sedang dalam masa cuti.');
+            }
+        }
 
         /*
     |--------------------------------------------------------------------------
@@ -210,6 +231,21 @@ class AttendanceController extends Controller
         $user = Auth::user();
         $now = Carbon::now();
         $today = $now->format('Y-m-d');
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('leaves')) {
+            $hasLeave = \App\Models\Leave::where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'pending Apron', 'pending Bge', 'approved'])
+                ->whereDate('start_date', '<=', $today)
+                ->whereDate('end_date', '>=', $today)
+                ->exists();
+
+            if ($hasLeave) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Absensi gagal! Anda tidak dapat melakukan absensi karena sedang dalam masa cuti.'
+                ]);
+            }
+        }
 
         // 1. Ambil Station User dari Database
         $station = Station::where('code', $user->station)->first();

@@ -42,6 +42,19 @@ class OvertimeController extends Controller
             'description' => 'required|string',
         ]);
 
+        if (\Illuminate\Support\Facades\Schema::hasTable('leaves')) {
+            $hasLeave = \App\Models\Leave::where('user_id', Auth::id())
+                ->whereIn('status', ['pending', 'pending Apron', 'pending Bge', 'approved'])
+                ->whereDate('start_date', '<=', $request->date)
+                ->whereDate('end_date', '>=', $request->date)
+                ->exists();
+
+            if ($hasLeave) {
+                Alert::error('Gagal', 'Anda tidak dapat mengajukan lembur pada tanggal tersebut karena sedang dalam masa cuti.');
+                return redirect()->back()->withInput();
+            }
+        }
+
         $overtime = Overtime::create([
             'user_id' => Auth::id(),
             'date' => $request->date,
