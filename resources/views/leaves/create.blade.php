@@ -81,9 +81,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="attachment" class="form-label">Lampiran (Opsional, max 2MB)</label>
-                        <input type="file" name="attachment" id="attachment" class="form-control @error('attachment') is-invalid @enderror">
-                        <small class="form-text text-muted">Contoh: Surat dokter, surat keterangan.</small>
+                        <label for="attachment" class="form-label">Lampiran Foto Bukti (Opsional, max 5MB)</label>
+                        <input type="file" name="attachment" id="attachment" accept="image/png, image/jpeg, image/jpg, image/webp" class="form-control @error('attachment') is-invalid @enderror">
+                        <small class="form-text text-muted">Hanya diperbolehkan mengunggah file foto/gambar (JPG, JPEG, PNG, WEBP).</small>
                         @error('attachment')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

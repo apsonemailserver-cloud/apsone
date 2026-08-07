@@ -151,7 +151,7 @@
                                     <div data-i18n="Schedule List">Schedule List</div>
                                 </a>
                             </li>
-                            @if (Auth::user()->canAccess('schedule', 'create') || Auth::user()->canAccess('schedule', 'edit'))
+                            @if (Auth::user()->isAdmin() || strtolower((string) Auth::user()->role) === 'admin')
                                 <li
                                     class="menu-item {{ request()->routeIs('schedule.create') || request()->routeIs('schedule.edit') || request()->routeIs('schedule.view') || request()->routeIs('schedule.show') ? 'active' : '' }}">
                                     <a href="{{ route('schedule.view') }}" class="menu-link">
@@ -443,15 +443,7 @@
             <div class="layout-page">
                 @php
                     $currentUser = Auth::user();
-                    $canManageSchedule = in_array(strtolower((string) $currentUser->role), [
-                        'admin',
-                        'spv bge',
-                        'ass leader bge',
-                        'leader bge',
-                        'spv apron',
-                        'ass leader apron',
-                        'leader apron',
-                    ]);
+                    $canManageSchedule = $currentUser->isAdmin() || strtolower((string) $currentUser->role) === 'admin';
                     $canViewAdminAttendance = in_array($currentUser->role, ['Admin', 'Head Of Airport Service']);
                     $canApproveOvertime = in_array($currentUser->role, ['Admin', 'LEADER', 'Head Of Airport Service', 'ASS LEADER']);
                     $canApproveAttendanceCorrections = in_array('Admin', array_map('trim', explode(',', (string) $currentUser->role)), true)

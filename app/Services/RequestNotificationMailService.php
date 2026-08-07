@@ -48,8 +48,16 @@ class RequestNotificationMailService
             return;
         }
 
-        $isApproved = in_array(strtolower($status), ['approved', 'disetujui'], true);
-        $statusLabel = $isApproved ? 'Disetujui' : 'Ditolak';
+        $isForwarded = in_array(strtolower($status), ['forwarded', 'diteruskan', 'pending_ho'], true);
+        $isApproved  = in_array(strtolower($status), ['approved', 'disetujui'], true) || $isForwarded;
+
+        if ($isForwarded) {
+            $statusLabel = 'Disetujui Leader & Menunggu HOAS';
+        } elseif ($isApproved) {
+            $statusLabel = 'Disetujui';
+        } else {
+            $statusLabel = 'Ditolak';
+        }
 
         try {
             Mail::send('emails.request-decided', [

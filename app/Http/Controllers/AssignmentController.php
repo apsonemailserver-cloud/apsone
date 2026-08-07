@@ -94,9 +94,6 @@ class AssignmentController extends Controller
         $stations = Station::where('is_active', true)->get();
 
         $staffQuery = User::where('is_active', true);
-        if (!$user->isAdmin() && $user->station) {
-            $staffQuery->where('station', $user->station);
-        }
 
         $scheduledUserIds = Schedule::whereDate('date', '>=', now()->subDays(7)->toDateString())
             ->pluck('user_id')

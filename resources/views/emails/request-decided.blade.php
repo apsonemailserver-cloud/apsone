@@ -8,17 +8,43 @@
 </head>
 <body style="margin:0; padding:0; background-color:#f8fafc; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased; color:#1e293b;">
     @php
-        $isApproved = in_array(strtolower($status), ['approved', 'disetujui'], true);
-        $headerGradient = $isApproved ? 'linear-gradient(135deg, #065f46 0%, #059669 55%, #10b981 100%)' : 'linear-gradient(135deg, #881337 0%, #be123c 55%, #f43f5e 100%)';
-        $badgeBg = $isApproved ? '#dcfce7' : '#ffe4e6';
-        $badgeColor = $isApproved ? '#15803d' : '#be123c';
-        $statusTextUpper = $isApproved ? 'DISETUJUI (APPROVED)' : 'DITOLAK (REJECTED)';
-        $cardBg = $isApproved ? '#f0fdf4' : '#fff1f2';
-        $cardBorder = $isApproved ? '#bbf7d0' : '#fecdd3';
-        $cardTitleColor = $isApproved ? '#166534' : '#9f1239';
-        $cardTextColor = $isApproved ? '#14532d' : '#881337';
-        $iconSymbol = $isApproved ? '✓' : '✕';
-        $iconBg = $isApproved ? '#16a34a' : '#e11d48';
+        $isForwarded = in_array(strtolower($status), ['forwarded', 'diteruskan', 'pending_ho'], true);
+        $isApproved  = in_array(strtolower($status), ['approved', 'disetujui'], true) || $isForwarded;
+
+        if ($isForwarded) {
+            $headerGradient  = 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%)';
+            $badgeBg         = '#dbeafe';
+            $badgeColor      = '#1d4ed8';
+            $statusTextUpper = 'DISETUJUI LEADER (MENUNGGU HOAS)';
+            $cardBg          = '#eff6ff';
+            $cardBorder      = '#bfdbfe';
+            $cardTitleColor  = '#1e40af';
+            $cardTextColor   = '#1e3a8a';
+            $iconSymbol      = '✓';
+            $iconBg          = '#2563eb';
+        } elseif ($isApproved) {
+            $headerGradient  = 'linear-gradient(135deg, #065f46 0%, #059669 55%, #10b981 100%)';
+            $badgeBg         = '#dcfce7';
+            $badgeColor      = '#15803d';
+            $statusTextUpper = 'DISETUJUI (APPROVED)';
+            $cardBg          = '#f0fdf4';
+            $cardBorder      = '#bbf7d0';
+            $cardTitleColor  = '#166534';
+            $cardTextColor   = '#14532d';
+            $iconSymbol      = '✓';
+            $iconBg          = '#16a34a';
+        } else {
+            $headerGradient  = 'linear-gradient(135deg, #881337 0%, #be123c 55%, #f43f5e 100%)';
+            $badgeBg         = '#ffe4e6';
+            $badgeColor      = '#be123c';
+            $statusTextUpper = 'DITOLAK (REJECTED)';
+            $cardBg          = '#fff1f2';
+            $cardBorder      = '#fecdd3';
+            $cardTitleColor  = '#9f1239';
+            $cardTextColor   = '#881337';
+            $iconSymbol      = '✕';
+            $iconBg          = '#e11d48';
+        }
     @endphp
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%; background-color:#f8fafc; margin:0; padding:40px 16px;">
@@ -113,7 +139,9 @@
                                                         Pengajuan {{ $statusLabel }} {{ !empty($approverName) ? 'oleh ' . $approverName : '' }}
                                                     </div>
                                                     <div style="font-size:13px; line-height:1.6; color:{{ $cardTextColor }};">
-                                                        @if($isApproved)
+                                                        @if($isForwarded)
+                                                            Permohonan {{ $requestType }} Anda telah disetujui oleh atasan/leader Anda {{ !empty($approverName) ? ' (' . $approverName . ')' : '' }} dan saat ini diteruskan ke Head Of Airport Service (HOAS) untuk persetujuan akhir.
+                                                        @elseif($isApproved)
                                                             Permohonan {{ $requestType }} Anda telah resmi disetujui dan telah dicatat dalam riwayat kehadiran/cuti/lembur perusahaan. Terima kasih atas kerja samanya.
                                                         @else
                                                             Mohon maaf, permohonan {{ $requestType }} Anda belum dapat disetujui. Apabila Anda memiliki pertanyaan, silakan hubungi langsung atasan/leader Anda.

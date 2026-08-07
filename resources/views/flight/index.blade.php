@@ -135,7 +135,7 @@
             <div id="scheduleDropdown" class="collapse">
                 <a href="{{ route('schedule.now') }}" style="padding-left: 30px;">Jadwal Schedule Hari Ini </a>
                 <a href="{{ route('schedule.index') }}" style="padding-left: 30px;">Data Schedule</a>
-                @if (in_array(Auth::user()->role, ['ADMIN', 'ASS LEADER', 'Head Of Airport Service', 'LEADER']))
+                @if (in_array(strtoupper((string) Auth::user()->role), ['ADMIN']))
                     <a href="{{ route('schedule.view') }}" style="padding-left: 30px;">Create / Update Schedule</a>
                 @endif
             </div>

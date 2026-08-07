@@ -13,14 +13,16 @@
                 <p class="text-secondary mb-0 small">Informasi lengkap Assignment pembersihan pesawat</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                @if($assignment->photo_path)
-                    <a href="{{ route('assignments.export_single_pdf', $assignment->id) }}" class="btn btn-danger me-1" target="_blank">
-                        <i class="bx bxs-file-pdf me-1"></i> Cetak Hardcopy PDF
-                    </a>
-                @else
-                    <button type="button" class="btn btn-secondary me-1 opacity-75 btn-no-photo-pdf" data-wo="{{ $assignment->wo_number }}">
-                        <i class="bx bxs-file-pdf me-1"></i> Cetak Hardcopy PDF
-                    </button>
+                @if(auth()->user()->hasPermission('assignment.export') || auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
+                    @if($assignment->photo_path)
+                        <a href="{{ route('assignments.export_single_pdf', $assignment->id) }}" class="btn btn-danger me-1" target="_blank">
+                            <i class="bx bxs-file-pdf me-1"></i> Cetak Hardcopy PDF
+                        </a>
+                    @else
+                        <button type="button" class="btn btn-secondary me-1 opacity-75 btn-no-photo-pdf" data-wo="{{ $assignment->wo_number }}">
+                            <i class="bx bxs-file-pdf me-1"></i> Cetak Hardcopy PDF
+                        </button>
+                    @endif
                 @endif
                 <a href="{{ route('assignments.index') }}" class="btn btn-outline-secondary">
                     <i class="bx bx-arrow-back me-1"></i> Kembali ke Daftar

@@ -14,6 +14,44 @@
                 <p><strong>Catatan:</strong> {{ $leave->manager_comment }}</p>
                 @endif
 
+                @php
+                    $attachment = $leave->attachment_path ?: $leave->document;
+                    $attachmentUrl = $attachment ? asset('storage/' . $attachment) : null;
+                    $ext = $attachment ? strtolower(pathinfo($attachment, PATHINFO_EXTENSION)) : '';
+                    $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']);
+                @endphp
+
+                @if($attachmentUrl)
+                <div class="mt-3 mb-3 p-3 border rounded bg-light">
+                    <strong class="d-block mb-2 text-dark">
+                        <i class="ti ti-paperclip me-1"></i>Lampiran Dokumen:
+                    </strong>
+                    @if($isImage)
+                        <div class="text-center p-2 bg-white border rounded mb-2">
+                            <a href="{{ $attachmentUrl }}" target="_blank" title="Klik untuk memperbesar">
+                                <img src="{{ $attachmentUrl }}" alt="Lampiran {{ $leave->user->fullname ?? '' }}" class="img-fluid rounded" style="max-height: 250px; width: 100%; object-fit: contain;">
+                            </a>
+                        </div>
+                        <a href="{{ $attachmentUrl }}" target="_blank" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="ti ti-external-link me-1"></i> Buka Gambar Ukuran Penuh
+                        </a>
+                    @else
+                        <div class="d-flex align-items-center justify-content-between p-2 bg-white border rounded">
+                            <div class="d-flex align-items-center overflow-hidden me-2">
+                                <i class="ti ti-file-text fs-3 text-primary me-2 flex-shrink-0"></i>
+                                <div class="text-truncate">
+                                    <div class="fw-semibold text-truncate">{{ basename($attachment) }}</div>
+                                    <small class="text-muted">Dokumen Lampiran ({{ strtoupper($ext ?: 'FILE') }})</small>
+                                </div>
+                            </div>
+                            <a href="{{ $attachmentUrl }}" target="_blank" class="btn btn-sm btn-primary flex-shrink-0">
+                                <i class="ti ti-download me-1"></i> Lihat / Unduh
+                            </a>
+                        </div>
+                    @endif
+                </div>
+                @endif
+
                 <hr>
 
                 <p>

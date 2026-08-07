@@ -11,15 +11,7 @@
         <div id="scheduleDropdown" class="collapse">
             <a href="{{ route('schedule.now') }}" style="padding-left: 30px;">Jadwal Schedule Hari Ini </a>
             <a href="{{ route('schedule.index') }}" style="padding-left: 30px;">Data Schedule</a>
-            @if (in_array(strtolower((string) Auth::user()->role), [
-                    'admin',
-                    'spv bge',
-                    'ass leader bge',
-                    'leader bge',
-                    'spv apron',
-                    'ass leader apron',
-                    'leader apron',
-                ]))
+            @if (in_array(strtolower((string) Auth::user()->role), ['admin']))
                 <a href="{{ route('schedule.view') }}" style="padding-left: 30px;">Create / Update Schedule</a>
             @endif
         </div>

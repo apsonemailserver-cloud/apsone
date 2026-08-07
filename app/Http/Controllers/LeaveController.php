@@ -281,8 +281,12 @@ class LeaveController extends Controller
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after_or_equal:start_date',
             'reason'     => 'required|string|max:1000',
-            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'attachment' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'replacement_employee_name' => 'nullable|string|max:255',
+        ], [
+            'attachment.image' => 'File lampiran harus berupa foto / gambar.',
+            'attachment.mimes' => 'Format foto lampiran harus berupa JPG, JPEG, PNG, atau WEBP.',
+            'attachment.max'   => 'Ukuran foto lampiran maksimal 5MB.',
         ]);
 
         // ===== CEK OVERLAP CUTI =====
@@ -570,21 +574,36 @@ class LeaveController extends Controller
 
         // Kirim email pemberitahuan status keputusan ke pemohon
         if ($leave->user) {
+            $isApprovedByLeader = ($status === 'pending');
+            $isApprovedByHo     = ($status === 'approved');
+            $isRejected         = str_starts_with($status, 'rejected');
+
+            if ($isApprovedByLeader) {
+                $statusText = 'Disetujui Leader (Menunggu HOAS)';
+                $mailStatus = 'Forwarded';
+            } elseif ($isApprovedByHo) {
+                $statusText = 'Disetujui (Approved)';
+                $mailStatus = 'Approved';
+            } else {
+                $statusText = 'Ditolak (Rejected)';
+                $mailStatus = 'Rejected';
+            }
+
             $emailDetails = [
                 'Jenis Cuti'      => $leave->leave_type,
                 'Tanggal Mulai'   => Carbon::parse($leave->start_date)->translatedFormat('d F Y'),
                 'Tanggal Selesai' => Carbon::parse($leave->end_date)->translatedFormat('d F Y'),
                 'Total Hari'      => $leave->total_days . ' Hari',
-                'Status'          => str_contains(strtolower($status), 'approved') ? 'Disetujui (Approved)' : 'Ditolak (Rejected)',
+                'Status'          => $statusText,
             ];
-            if (str_starts_with($status, 'rejected') && $leave->manager_comment) {
+            if ($isRejected && $leave->manager_comment) {
                 $emailDetails['Alasan Penolakan'] = $leave->manager_comment;
             }
 
             RequestNotificationMailService::sendDecisionEmail(
                 $leave->user,
                 'Cuti (' . $leave->leave_type . ')',
-                $status,
+                $mailStatus,
                 $emailDetails,
                 Auth::user()->fullname
             );

@@ -74,7 +74,7 @@ class ScheduleController extends Controller
 
     public function autoCreate()
     {
-        abort_unless(Auth::user()->canAccess('schedule', 'create'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
 
         @set_time_limit(300);
 
@@ -427,7 +427,7 @@ class ScheduleController extends Controller
 
     public function show(): View
     {
-        abort_unless(Auth::user()->canAccess('schedule', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
 
         $authUser   = Auth::user();
         $rolePorter = $authUser->isAdmin() ? 'Porter' : null;
@@ -461,6 +461,7 @@ class ScheduleController extends Controller
 
     public function edit(Request $request, $id)
     {
+        abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
         $page = $request->get('page', 1);
 
         $user = User::findOrFail($id);
@@ -493,6 +494,7 @@ class ScheduleController extends Controller
 
     public function update(Request $request, $userId, $date)
     {
+        abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
         DB::beginTransaction();
         try {
             $shiftId = $request->input('shift_id');
@@ -517,6 +519,7 @@ class ScheduleController extends Controller
     }
     public function updateActive(Request $request)
     {
+        abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
         $schedule = Schedule::findOrFail($request->id);
         $schedule->is_active = $request->is_active;
         $schedule->save();
@@ -526,6 +529,7 @@ class ScheduleController extends Controller
 
     public function import(Request $request)
     {
+        abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
         $request->validate([
             'file' => 'required|mimes:xlsx,xls'
         ]);

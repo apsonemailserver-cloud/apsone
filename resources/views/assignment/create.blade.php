@@ -161,8 +161,8 @@
                                     <label class="form-label fw-bold">Staff Members <span class="text-danger">*</span> <small class="text-muted">(Pilih minimal 2 dan maksimal 10 staff)</small></label>
                                     <select name="staff_members[]" id="staffMembers" class="form-select select2-multiple" multiple="multiple" data-placeholder="-- Cari & Pilih Staff Berdasarkan Nama / NIK --" required>
                                         @foreach($staffs as $staff)
-                                            <option value="{{ $staff->id }}" {{ (is_array(old('staff_members')) && in_array($staff->id, old('staff_members'))) ? 'selected' : '' }}>
-                                                {{ $staff->fullname }} (NIK: {{ $staff->id }})
+                                            <option value="{{ $staff->id }}" data-station="{{ $staff->station }}" {{ (is_array(old('staff_members')) && in_array($staff->id, old('staff_members'))) ? 'selected' : '' }}>
+                                                {{ $staff->fullname }} (NIK: {{ $staff->id }})@if($staff->station) - [{{ $staff->station }}]@endif
                                             </option>
                                         @endforeach
                                     </select>
@@ -781,6 +781,65 @@
             };
 
             // Inisialisasi Select2 & Auto-load Combobox
+            window.__allStaffOptions = window.__allStaffOptions || [];
+
+            function cacheStaffOptions() {
+                if (typeof window.jQuery === 'undefined') return;
+                const $ = window.jQuery;
+                const $staffSelect = $('#staffMembers');
+                if (!$staffSelect.length) return;
+
+                if (window.__allStaffOptions.length === 0) {
+                    $staffSelect.find('option').each(function() {
+                        const val = $(this).val();
+                        if (val) {
+                            window.__allStaffOptions.push({
+                                value: val,
+                                text: $(this).text(),
+                                station: $(this).data('station'),
+                                selected: $(this).is(':selected')
+                            });
+                        }
+                    });
+                }
+            }
+
+            function filterStaffByStation(selectedStation) {
+                if (typeof window.jQuery === 'undefined') return;
+                const $ = window.jQuery;
+                const $staffSelect = $('#staffMembers');
+                if (!$staffSelect.length) return;
+
+                cacheStaffOptions();
+                if (!window.__allStaffOptions.length) return;
+
+                const currentSelected = $staffSelect.val() || [];
+
+                if (typeof $.fn.select2 === 'function' && $staffSelect.hasClass('select2-hidden-accessible')) {
+                    $staffSelect.select2('destroy');
+                }
+
+                $staffSelect.empty();
+
+                window.__allStaffOptions.forEach(function(opt) {
+                    if (!selectedStation || !opt.station || String(opt.station).toUpperCase() === String(selectedStation).toUpperCase()) {
+                        const isSelected = currentSelected.includes(String(opt.value)) || opt.selected;
+                        const newOpt = new Option(opt.text, opt.value, false, isSelected);
+                        $(newOpt).attr('data-station', opt.station);
+                        $staffSelect.append(newOpt);
+                    }
+                });
+
+                if (typeof $.fn.select2 === 'function') {
+                    $staffSelect.select2({
+                        placeholder: '-- Cari & Pilih Staff Berdasarkan Nama / NIK --',
+                        allowClear: true,
+                        width: '100%',
+                        dropdownParent: $staffSelect.parent()
+                    });
+                }
+            }
+
             function initStaffSelect2() {
                 if (typeof window.jQuery === 'undefined') {
                     setTimeout(initStaffSelect2, 30);
@@ -790,19 +849,9 @@
                 const $staffSelect = $('#staffMembers');
                 if (!$staffSelect.length) return;
 
-                if (typeof $.fn.select2 === 'function') {
-                    if ($staffSelect.hasClass('select2-hidden-accessible')) {
-                        $staffSelect.select2('destroy');
-                    }
-                    $staffSelect.select2({
-                        placeholder: '-- Cari & Pilih Staff Berdasarkan Nama / NIK --',
-                        allowClear: true,
-                        width: '100%',
-                        dropdownParent: $staffSelect.parent()
-                    });
-                } else {
-                    setTimeout(initStaffSelect2, 30);
-                }
+                cacheStaffOptions();
+                const currentStation = $('#stationInput').val();
+                filterStaffByStation(currentStation);
             }
 
             function initWorkResultPage() {
@@ -855,6 +904,9 @@
                 $stationEl.on('change.flightClear', function() {
                     const selectedStation = $(this).val();
                     console.log('[AP3] stationInput CHANGE fired. New station:', selectedStation);
+
+                    // Filter staff list according to newly selected station
+                    filterStaffByStation(selectedStation);
 
                     // 1) IMMEDIATELY wipe old flight data
                     window.__activeFlights = [];
