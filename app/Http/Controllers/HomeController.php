@@ -324,7 +324,9 @@ class HomeController extends Controller
             ->whereMonth('date', Carbon::today()->month)
             ->whereYear('date', Carbon::today()->year)
             ->when(!$user->hasRole('Admin'), function($q) use ($user) {
-                if ($user->hasRole(Assignment::LEADER_ROLES)) {
+                if ($user->hasRole('Head Of Airport Service')) {
+                    $q->where('station', $user->station);
+                } elseif ($user->hasRole(Assignment::LEADER_ROLES)) {
                     $q->where('submitted_by', $user->id);
                 } else {
                     $q->whereHas('users', fn($sq) => $sq->where('users.id', $user->id));

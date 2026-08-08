@@ -37,6 +37,8 @@ class AssignmentController extends Controller
             if ($request->filled('station') && $request->station !== 'All') {
                 $query->where('station', $request->station);
             }
+        } elseif ($user->hasRole('Head Of Airport Service')) {
+            $query->where('station', $user->station);
         } elseif ($user->hasRole(Assignment::LEADER_ROLES)) {
             $query->where('submitted_by', $user->id);
         } else {
@@ -296,6 +298,8 @@ class AssignmentController extends Controller
                 if ($request->filled('station') && $request->station !== 'All') {
                     $query->where('station', $request->station);
                 }
+            } elseif ($user->hasRole('Head Of Airport Service')) {
+                $query->where('station', $user->station);
             } elseif ($user->hasRole(Assignment::LEADER_ROLES)) {
                 $query->where('submitted_by', $user->id);
             } else {
@@ -419,7 +423,9 @@ class AssignmentController extends Controller
         $assignment = Assignment::findOrFail($id);
 
         $user = auth()->user();
-        $canUpload = $user->hasRole('Admin') || ($user->hasRole(Assignment::LEADER_ROLES) && $assignment->submitted_by === $user->id);
+        $canUpload = $user->hasRole('Admin')
+            || ($user->hasRole('Head Of Airport Service') && $assignment->station === $user->station)
+            || ($user->hasRole(Assignment::LEADER_ROLES) && $assignment->submitted_by === $user->id);
         if (!$canUpload) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengunggah foto bukti pekerjaan ini.');
         }

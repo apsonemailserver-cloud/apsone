@@ -165,7 +165,7 @@
                                                     <button type="button" class="btn btn-xs btn-label-primary py-1 px-2.5 rounded-pill btn-preview-photo" data-photo-url="{{ asset('storage/' . $item->photo_path) }}" data-wo="{{ $item->wo_number }}" title="Lihat Foto Bukti">
                                                         <i class="bx bx-image-alt me-1"></i> Lihat Foto
                                                     </button>
-                                                    @if(auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $item->submitted_by === auth()->id()))
+                                                    @if(auth()->user()->hasRole('Admin') || (auth()->user()->hasRole('Head Of Airport Service') && $item->station === auth()->user()->station) || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $item->submitted_by === auth()->id()))
                                                         <button type="button" class="btn btn-xs btn-icon btn-outline-secondary rounded-circle btn-upload-photo" data-id="{{ $item->id }}" data-wo="{{ $item->wo_number }}" title="Ganti Foto Bukti">
                                                             <i class="bx bx-upload"></i>
                                                         </button>

@@ -147,7 +147,7 @@
                             <i class="bx bx-camera text-primary me-2"></i>Foto Bukti Kerja
                         </h5>
                         @php
-                            $canUpload = auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $assignment->submitted_by === auth()->id());
+                            $canUpload = auth()->user()->hasRole('Admin') || (auth()->user()->hasRole('Head Of Airport Service') && $assignment->station === auth()->user()->station) || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $assignment->submitted_by === auth()->id());
                         @endphp
                         @if($assignment->photo_path && $canUpload)
                             <button type="button" class="btn btn-xs btn-outline-secondary btn-upload-photo" data-id="{{ $assignment->id }}" data-wo="{{ $assignment->wo_number }}">
