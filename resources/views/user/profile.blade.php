@@ -698,7 +698,7 @@
                 <span class="text-muted fw-light">Profile /</span> {{ $user->fullname }}
             </h4>
             <div class="profile-page-badges">
-                <span class="badge bg-primary">{{ $user->role }}</span>
+                <span class="badge bg-primary">{{ $user->roleRelation->name ?? '-' }}</span>
                 <span class="badge bg-label-secondary">{{ $user->station }}</span>
             </div>
         </div>
@@ -739,10 +739,10 @@
                                     @endif
                                 </div>
                                 <h4 class="profile-summary-name mt-3 mb-1 fw-bold text-dark">{{ $user->fullname }}</h4>
-                                <p class="profile-summary-title text-muted mb-3 fs-7">{{ $user->job_title ?? 'Staff' }}</p>
+                                <p class="profile-summary-title text-muted mb-3 fs-7">{{ $user->jobTitle->name ?? 'Staff' }}</p>
                                 <div class="profile-meta-badges d-flex justify-content-center gap-2 mb-2">
-                                    <span class="badge bg-label-primary px-2.5 py-1">{{ $user->cluster ?? 'N/A' }}</span>
-                                    <span class="badge bg-label-info px-2.5 py-1">{{ $user->unit ?? 'N/A' }}</span>
+                                    <span class="badge bg-label-primary px-2.5 py-1">{{ $user->cluster->name ?? 'N/A' }}</span>
+                                    <span class="badge bg-label-info px-2.5 py-1">{{ $user->unit->name ?? 'N/A' }}</span>
                                 </div>
                             </div>
                         </form>
@@ -880,7 +880,7 @@
                                             </div>
                                             <div class="tile-content">
                                                 <div class="tile-label">Job Title</div>
-                                                <div class="tile-value">{{ $user->job_title ?? 'N/A' }}</div>
+                                                <div class="tile-value">{{ $user->jobTitle->name ?? 'N/A' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -892,7 +892,7 @@
                                             </div>
                                             <div class="tile-content">
                                                 <div class="tile-label">Cluster</div>
-                                                <div class="tile-value">{{ $user->cluster ?? 'N/A' }}</div>
+                                                <div class="tile-value">{{ $user->cluster->name ?? 'N/A' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -904,7 +904,7 @@
                                             </div>
                                             <div class="tile-content">
                                                 <div class="tile-label">Unit</div>
-                                                <div class="tile-value">{{ $user->unit ?? 'N/A' }}</div>
+                                                <div class="tile-value">{{ $user->unit->name ?? 'N/A' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -916,7 +916,7 @@
                                             </div>
                                             <div class="tile-content">
                                                 <div class="tile-label">Sub Unit</div>
-                                                <div class="tile-value">{{ $user->sub_unit ?? 'N/A' }}</div>
+                                                <div class="tile-value">{{ $user->subUnit->name ?? 'N/A' }}</div>
                                             </div>
                                         </div>
                                     </div>

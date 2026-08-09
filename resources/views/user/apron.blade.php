@@ -44,7 +44,7 @@
                                     <tr>
                                         <td><strong>{{ $users->id }}</strong></td>
                                         <td>{{ $users->fullname }}</td>
-                                        <td><span class="badge bg-label-primary">{{ $users->role }}</span></td>
+                                        <td><span class="badge bg-label-primary">{{ $users->roleRelation->name ?? '-' }}</span></td>
                                         <td>{{ \Carbon\Carbon::parse($users->created_at)->translatedFormat('d M Y H:i') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($users->updated_at)->translatedFormat('d M Y H:i') }}</td>
                                         <td>

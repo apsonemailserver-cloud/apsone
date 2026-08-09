@@ -49,7 +49,10 @@ class UserController extends Controller
 
         $search = request('search');
 
-        $user = User::where('role', 'Porter Apron')
+        $user = User::with('roleRelation')
+            ->whereHas('roleRelation', function ($q) {
+                $q->where('name', 'Porter Apron');
+            })
             ->where(function ($q) use ($search) {
                 if ($search) {
                     $q->where('fullname', 'like', "%{$search}%")
@@ -69,7 +72,10 @@ class UserController extends Controller
 
         $search = request('search');
 
-        $user = User::where('role', 'Porter Bge')
+        $user = User::with('roleRelation')
+            ->whereHas('roleRelation', function ($q) {
+                $q->where('name', 'Porter Bge');
+            })
             ->where(function ($q) use ($search) {
                 if ($search) {
                     $q->where('fullname', 'like', "%{$search}%")
@@ -85,11 +91,17 @@ class UserController extends Controller
 
     public function indexOffice(): View
     {
-        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak meinginkan akses ke halaman ini.');
 
         $search = request('search');
 
-        $user = User::whereNotIn('role', ['Porter Bge', 'Porter Apron'])
+        $user = User::with(['jobTitle', 'roleRelation'])
+            ->where(function ($q) {
+                $q->whereDoesntHave('roleRelation')
+                  ->orWhereHas('roleRelation', function ($rq) {
+                      $rq->whereNotIn('name', ['Porter Bge', 'Porter Apron']);
+                  });
+            })
             ->where(function ($q) use ($search) {
                 if ($search) {
                     $q->where('fullname', 'like', "%{$search}%")
@@ -114,6 +126,8 @@ class UserController extends Controller
     {
         abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $page = $request->get('page', 1);
+
+        $user->load(['unit', 'subUnit', 'jobTitle', 'cluster', 'roleRelation']);
 
         return view('user.show', compact('user', 'page'));
     }
@@ -235,16 +249,12 @@ class UserController extends Controller
             'Head Of Airport Service', 'Admin'
         ];
 
-        $queryManagers = User::where(function ($q) use ($managerRoles) {
-            foreach ($managerRoles as $r) {
-                $q->orWhere('role', 'like', "%{$r}%");
-            }
+        $queryManagers = User::with('roleRelation')->whereHas('roleRelation', function ($q) use ($managerRoles) {
+            $q->whereIn('name', $managerRoles);
         });
 
-        $querySenior = User::where(function ($q) use ($seniorRoles) {
-            foreach ($seniorRoles as $r) {
-                $q->orWhere('role', 'like', "%{$r}%");
-            }
+        $querySenior = User::with('roleRelation')->whereHas('roleRelation', function ($q) use ($seniorRoles) {
+            $q->whereIn('name', $seniorRoles);
         });
 
         if (!empty($station)) {
@@ -256,7 +266,7 @@ class UserController extends Controller
             return [
                 'id' => $user->id,
                 'fullname' => trim($user->fullname),
-                'role' => $user->role,
+                'role' => $user->roleRelation->name ?? '-',
                 'display' => trim($user->fullname) . ' (' . $user->id . ')'
             ];
         })->values();
@@ -265,36 +275,32 @@ class UserController extends Controller
             return [
                 'id' => $user->id,
                 'fullname' => trim($user->fullname),
-                'role' => $user->role,
+                'role' => $user->roleRelation->name ?? '-',
                 'display' => trim($user->fullname) . ' (' . $user->id . ')'
             ];
         })->values();
 
         if ($seniorManagers->isEmpty() && !empty($station)) {
-            $seniorManagers = User::where(function ($q) use ($seniorRoles) {
-                foreach ($seniorRoles as $r) {
-                    $q->orWhere('role', 'like', "%{$r}%");
-                }
+            $seniorManagers = User::with('roleRelation')->whereHas('roleRelation', function ($q) use ($seniorRoles) {
+                $q->whereIn('name', $seniorRoles);
             })->orderBy('fullname', 'asc')->get()->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'fullname' => trim($user->fullname),
-                    'role' => $user->role,
+                    'role' => $user->roleRelation->name ?? '-',
                     'display' => trim($user->fullname) . ' (' . $user->id . ')'
                 ];
             })->values();
         }
 
         if ($managers->isEmpty() && !empty($station)) {
-            $managers = User::where(function ($q) use ($managerRoles) {
-                foreach ($managerRoles as $r) {
-                    $q->orWhere('role', 'like', "%{$r}%");
-                }
+            $managers = User::with('roleRelation')->whereHas('roleRelation', function ($q) use ($managerRoles) {
+                $q->whereIn('name', $managerRoles);
             })->orderBy('fullname', 'asc')->get()->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'fullname' => trim($user->fullname),
-                    'role' => $user->role,
+                    'role' => $user->roleRelation->name ?? '-',
                     'display' => trim($user->fullname) . ' (' . $user->id . ')'
                 ];
             })->values();
@@ -589,13 +595,14 @@ class UserController extends Controller
     public function profile()
     {
         $user = Auth::user();
+        $user->load(['unit', 'subUnit', 'jobTitle', 'cluster', 'roleRelation']);
 
         return view('user.profile', compact('user'));
     }
 
     public function userProfile($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with(['unit', 'subUnit', 'jobTitle', 'cluster', 'roleRelation'])->findOrFail($id);
 
         return view('staff.profile', compact('user'));
     }

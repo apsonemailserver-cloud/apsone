@@ -30,12 +30,12 @@ class User extends Authenticatable
         'password',
         'is_active',
         'gender',
-        'job_title',
-        'role',
+        'job_title_id',
+        'role_id',
         'station',
-        'cluster',
-        'unit',
-        'sub_unit',
+        'cluster_id',
+        'unit_id',
+        'sub_unit_id',
         'status',
         'manager',
         'senior_manager',
@@ -76,13 +76,19 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function roleRelation()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
     public function hasRole($roles): bool
     {
-        if (empty($this->role)) {
+        $roleName = $this->roleRelation ? $this->roleRelation->name : null;
+        if (empty($roleName)) {
             return false;
         }
 
-        $userRoles = array_map('trim', explode(',', $this->role));
+        $userRoles = array_map('trim', explode(',', $roleName));
         if (is_array($roles)) {
             return count(array_intersect($roles, $userRoles)) > 0;
         }
@@ -145,7 +151,8 @@ class User extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->role === 'Admin';
+        $roleName = $this->roleRelation ? $this->roleRelation->name : null;
+        return $roleName === 'Admin';
     }
 
     public function hasPermission(string $permissionName): bool
@@ -154,15 +161,17 @@ class User extends Authenticatable
             return true;
         }
 
-        if ($this->isAdmin() || $this->role === 'Admin') {
+        $roleName = $this->roleRelation ? $this->roleRelation->name : null;
+
+        if ($this->isAdmin() || $roleName === 'Admin') {
             return true;
         }
 
-        if (empty($this->role)) {
+        if (empty($roleName)) {
             return false;
         }
 
-        $userRoles = array_map('trim', explode(',', $this->role));
+        $userRoles = array_map('trim', explode(',', $roleName));
         if (in_array('Admin', $userRoles)) {
             return true;
         }
@@ -202,5 +211,25 @@ class User extends Authenticatable
     public function workResults()
     {
         return $this->assignments();
+    }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    public function subUnit()
+    {
+        return $this->belongsTo(SubUnit::class, 'sub_unit_id');
+    }
+
+    public function jobTitle()
+    {
+        return $this->belongsTo(JobTitle::class, 'job_title_id');
+    }
+
+    public function cluster()
+    {
+        return $this->belongsTo(Cluster::class, 'cluster_id');
     }
 }

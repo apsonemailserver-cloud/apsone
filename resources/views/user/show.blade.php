@@ -52,8 +52,8 @@
                                                 </div>
                                             </label>
                                             <h4 class="fw-bold mt-3">{{ $user->fullname }}</h4>
-                                            <span class="badge bg-primary fs-6">{{ $user->role ?? 'No Role' }}</span>
-                                            <p class="text-muted mt-2">{{ $user->job_title ?? 'No Job Title' }}</p>
+                                            <span class="badge bg-primary fs-6">{{ $user->roleRelation->name ?? 'No Role' }}</span>
+                                            <p class="text-muted mt-2">{{ $user->jobTitle->name ?? 'No Job Title' }}</p>
                                         </div>
                                     </form>
                                 </div>
@@ -149,13 +149,13 @@
 
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Job Title</label>
-                                                <input type="text" class="form-control" value="{{ $user->job_title }}"
+                                                <input type="text" class="form-control" value="{{ $user->jobTitle->name ?? '-' }}"
                                                     readonly>
                                             </div>
 
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Unit</label>
-                                                <input type="text" class="form-control" value="{{ $user->unit }}"
+                                                <input type="text" class="form-control" value="{{ $user->unit->name ?? '-' }}"
                                                     readonly>
                                             </div>
 
@@ -182,13 +182,13 @@
 
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Cluster</label>
-                                                <input type="text" class="form-control" value="{{ $user->cluster }}"
+                                                <input type="text" class="form-control" value="{{ $user->cluster->name ?? '-' }}"
                                                     readonly>
                                             </div>
 
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Sub Unit</label>
-                                                <input type="text" class="form-control" value="{{ $user->sub_unit }}"
+                                                <input type="text" class="form-control" value="{{ $user->subUnit->name ?? '-' }}"
                                                     readonly>
                                             </div>
 

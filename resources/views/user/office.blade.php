@@ -58,8 +58,8 @@
                                         <td><strong>{{ $item->id }}</strong></td>
                                         <td>{{ $item->fullname }}</td>
                                         <td>{{ $item->email }}</td>
-                                        <td>{{ $item->job_title }}</td>
-                                        <td><span class="badge bg-label-primary">{{ $item->role }}</span></td>
+                                        <td>{{ $item->jobTitle->name ?? '-' }}</td>
+                                        <td><span class="badge bg-label-primary">{{ $item->roleRelation->name ?? '-' }}</span></td>
                                         <td>{{ $item->station }}</td>
                                         @if($canEditOffice)
                                         <td class="text-center">
