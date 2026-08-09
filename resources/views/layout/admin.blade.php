@@ -261,6 +261,40 @@
                             <span class="menu-header-text">Administrator</span>
                         </li>
 
+                        {{-- MENU BARU: MASTER DATA --}}
+                        <li class="menu-item {{ request()->routeIs('master.*') ? 'active open' : '' }}">
+                            <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
+                                <i class="menu-icon tf-icons ti ti-database"></i>
+                                <div data-i18n="Master Data">Master Data</div>
+                            </a>
+                            <ul class="menu-sub">
+                                <li class="menu-item {{ request()->routeIs('master.units.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master.units.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-category"></i>
+                                        <div data-i18n="Units">Units</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item {{ request()->routeIs('master.sub_units.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master.sub_units.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-box"></i>
+                                        <div data-i18n="Sub Units">Sub Units</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item {{ request()->routeIs('master.job_titles.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master.job_titles.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-briefcase"></i>
+                                        <div data-i18n="Job Titles">Job Titles</div>
+                                    </a>
+                                </li>
+                                <li class="menu-item {{ request()->routeIs('master.clusters.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master.clusters.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-layout-grid"></i>
+                                        <div data-i18n="Clusters">Clusters</div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
                         {{-- MENU BARU: STATION MANAGEMENT (ON/OFF) --}}
                         @if(Auth::user()->canAccess('station', 'view'))
                         <li class="menu-item {{ request()->routeIs('stations.*') ? 'active' : '' }}">

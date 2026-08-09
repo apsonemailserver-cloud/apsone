@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 // --- DAFTAR SEMUA CONTROLLER DI SINI ---
+use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\OvertimeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\HomeController;
@@ -257,6 +258,33 @@ Route::middleware(['auth'])->group(function () {
     // --- MANAJEMEN ROLE & HAK AKSES ---
     Route::post('/roles/{id}/toggle-user', [RoleController::class, 'toggleUserRole'])->name('roles.toggle-user');
     Route::resource('roles', RoleController::class)->except(['show']);
+
+    // --- MASTER DATA MANAGEMENT ---
+    Route::prefix('master')->name('master.')->group(function () {
+        // Units
+        Route::get('units', [MasterDataController::class, 'unitsIndex'])->name('units.index');
+        Route::post('units', [MasterDataController::class, 'unitsStore'])->name('units.store');
+        Route::put('units/{unit}', [MasterDataController::class, 'unitsUpdate'])->name('units.update');
+        Route::delete('units/{unit}', [MasterDataController::class, 'unitsDestroy'])->name('units.destroy');
+
+        // Sub Units
+        Route::get('sub-units', [MasterDataController::class, 'subUnitsIndex'])->name('sub_units.index');
+        Route::post('sub-units', [MasterDataController::class, 'subUnitsStore'])->name('sub_units.store');
+        Route::put('sub-units/{subUnit}', [MasterDataController::class, 'subUnitsUpdate'])->name('sub_units.update');
+        Route::delete('sub-units/{subUnit}', [MasterDataController::class, 'subUnitsDestroy'])->name('sub_units.destroy');
+
+        // Job Titles
+        Route::get('job-titles', [MasterDataController::class, 'jobTitlesIndex'])->name('job_titles.index');
+        Route::post('job-titles', [MasterDataController::class, 'jobTitlesStore'])->name('job_titles.store');
+        Route::put('job-titles/{jobTitle}', [MasterDataController::class, 'jobTitlesUpdate'])->name('job_titles.update');
+        Route::delete('job-titles/{jobTitle}', [MasterDataController::class, 'jobTitlesDestroy'])->name('job_titles.destroy');
+
+        // Clusters
+        Route::get('clusters', [MasterDataController::class, 'clustersIndex'])->name('clusters.index');
+        Route::post('clusters', [MasterDataController::class, 'clustersStore'])->name('clusters.store');
+        Route::put('clusters/{cluster}', [MasterDataController::class, 'clustersUpdate'])->name('clusters.update');
+        Route::delete('clusters/{cluster}', [MasterDataController::class, 'clustersDestroy'])->name('clusters.destroy');
+    });
 
     // --- BANTUAN & LAINNYA ---
     Route::view('/faq', 'faq')->name('faq');
