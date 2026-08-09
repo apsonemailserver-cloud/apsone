@@ -45,17 +45,21 @@ class AttendanceCorrectionController extends Controller
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
                 }
                 $query->whereHas('user', function ($q) {
-                    $q->where('role', 'LIKE', '%Bge%')
-                      ->orWhere('role', 'LIKE', '%BGE%')
-                      ->orWhere('role', 'LIKE', '%Baggage%');
+                    $q->whereHas('roleRelation', function ($rq) {
+                        $rq->where('name', 'LIKE', '%Bge%')
+                          ->orWhere('name', 'LIKE', '%BGE%')
+                          ->orWhere('name', 'LIKE', '%Baggage%');
+                    });
                 });
             } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
                 if (! empty($userStations)) {
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
                 }
                 $query->whereHas('user', function ($q) {
-                    $q->where('role', 'LIKE', '%Apron%')
-                      ->orWhere('role', 'LIKE', '%APRON%');
+                    $q->whereHas('roleRelation', function ($rq) {
+                        $rq->where('name', 'LIKE', '%Apron%')
+                          ->orWhere('name', 'LIKE', '%APRON%');
+                    });
                 });
             } else {
                 $query->whereHas(

@@ -15,16 +15,14 @@ class RoleController extends Controller
         $roles = Role::withCount('permissions')->get();
         
         // Count users per role
-        $allUsers = User::select('id', 'fullname', 'role')->get();
+        $allUsers = User::with('roleRelation')->get();
         $userCounts = [];
         foreach ($allUsers as $u) {
-            $rList = array_map('trim', explode(',', (string)$u->role));
-            foreach ($rList as $rName) {
-                if (!isset($userCounts[$rName])) {
-                    $userCounts[$rName] = 0;
-                }
-                $userCounts[$rName]++;
+            $rName = $u->roleRelation->name ?? '-';
+            if (!isset($userCounts[$rName])) {
+                $userCounts[$rName] = 0;
             }
+            $userCounts[$rName]++;
         }
 
         $modules = Permission::modules();
@@ -77,11 +75,10 @@ class RoleController extends Controller
         $assignedPermissionIds = $role->permissions->pluck('id')->toArray();
 
         // Get employees list: SORT ACTIVE (has_role = true) FIRST, then by fullname
-        $employees = User::select('id', 'fullname', 'job_title', 'station', 'role')
+        $employees = User::with(['roleRelation', 'jobTitle'])
             ->get()
             ->map(function($user) use ($role) {
-                $userRoles = array_map('trim', explode(',', (string)$user->role));
-                $user->has_role = in_array($role->name, $userRoles);
+                $user->has_role = ($user->role_id == $role->id);
                 return $user;
             })
             ->sortBy([
@@ -136,20 +133,14 @@ class RoleController extends Controller
         $userId = $request->input('user_id');
         $user = User::findOrFail($userId);
 
-        $userRoles = array_filter(array_map('trim', explode(',', (string)$user->role)));
-        
-        if (in_array($role->name, $userRoles)) {
-            // Detach role
-            $userRoles = array_diff($userRoles, [$role->name]);
+        if ($user->role_id == $role->id) {
+            $user->role_id = null;
+            $hasRole = false;
         } else {
-            // Attach role
-            $userRoles[] = $role->name;
+            $user->role_id = $role->id;
+            $hasRole = true;
         }
-
-        $user->role = implode(', ', array_unique($userRoles));
         $user->save();
-
-        $hasRole = in_array($role->name, array_map('trim', explode(',', (string)$user->role)));
 
         return response()->json([
             'success' => true,

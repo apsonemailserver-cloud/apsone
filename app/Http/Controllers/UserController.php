@@ -206,17 +206,32 @@ class UserController extends Controller
             // =========================
             // SIMPAN USER
             // =========================
+            $roleInput = is_array($request->role) ? implode(', ', $request->role) : $request->role;
+            $roleId = null;
+            if (!empty($roleInput)) {
+                $roleObj = \App\Models\Role::where('name', trim($roleInput))->first();
+                if (!$roleObj) {
+                    $roleObj = \App\Models\Role::create(['name' => trim($roleInput), 'label' => trim($roleInput)]);
+                }
+                $roleId = $roleObj->id;
+            }
+
+            $jobTitleId = !empty($request->job_title) ? \App\Models\JobTitle::where('name', trim($request->job_title))->value('id') : null;
+            $unitId = !empty($request->unit) ? \App\Models\Unit::where('name', trim($request->unit))->value('id') : null;
+            $subUnitId = !empty($request->sub_unit) ? \App\Models\SubUnit::where('name', trim($request->sub_unit))->value('id') : null;
+            $clusterId = !empty($request->cluster) ? \App\Models\Cluster::where('name', trim($request->cluster))->value('id') : null;
+
             $user = new User;
             $user->id = $generatedId;
             $user->fullname = $request->fullname;
             $user->email = $request->email;
-            $user->role = is_array($request->role) ? implode(', ', $request->role) : $request->role;
+            $user->role_id = $roleId;
             $user->station = $request->station;
             $user->gender = $request->gender;
-            $user->job_title = $request->job_title;
-            $user->cluster = $request->cluster;
-            $user->unit = $request->unit;
-            $user->sub_unit = $request->sub_unit;
+            $user->job_title_id = $jobTitleId;
+            $user->cluster_id = $clusterId;
+            $user->unit_id = $unitId;
+            $user->sub_unit_id = $subUnitId;
             $user->manager = $request->manager;
             $user->senior_manager = $request->senior_manager;
             $user->is_qantas = $request->is_qantas;
@@ -348,9 +363,31 @@ class UserController extends Controller
 
         try {
             $data = $request->all();
-            if (isset($data['role']) && is_array($data['role'])) {
-                $data['role'] = implode(', ', $data['role']);
+            
+            if (!empty($request->role)) {
+                $roleInput = is_array($request->role) ? implode(', ', $request->role) : $request->role;
+                $roleObj = \App\Models\Role::where('name', trim($roleInput))->first();
+                if (!$roleObj) {
+                    $roleObj = \App\Models\Role::create(['name' => trim($roleInput), 'label' => trim($roleInput)]);
+                }
+                $data['role_id'] = $roleObj->id;
             }
+
+            if (!empty($request->job_title)) {
+                $data['job_title_id'] = \App\Models\JobTitle::where('name', trim($request->job_title))->value('id');
+            }
+            if (!empty($request->unit)) {
+                $data['unit_id'] = \App\Models\Unit::where('name', trim($request->unit))->value('id');
+            }
+            if (!empty($request->sub_unit)) {
+                $data['sub_unit_id'] = \App\Models\SubUnit::where('name', trim($request->sub_unit))->value('id');
+            }
+            if (!empty($request->cluster)) {
+                $data['cluster_id'] = \App\Models\Cluster::where('name', trim($request->cluster))->value('id');
+            }
+
+            unset($data['role'], $data['job_title'], $data['unit'], $data['sub_unit'], $data['cluster']);
+
             $user->update($data);
             Alert::success('Success', 'Data user berhasil diupdate');
 

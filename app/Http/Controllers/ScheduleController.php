@@ -89,9 +89,10 @@ class ScheduleController extends Controller
             if (! $user->isAdmin()) {
                 // Filter porter berdasarkan station yang sama
                 $rolePorters = DB::table('users')
-                    ->where('station', $user->station)
-                    ->whereIn('role', ['Porter Bge', 'Porter Apron'])
-                    ->pluck('role')
+                    ->join('roles', 'users.role_id', '=', 'roles.id')
+                    ->where('users.station', $user->station)
+                    ->whereIn('roles.name', ['Porter Bge', 'Porter Apron'])
+                    ->pluck('roles.name')
                     ->unique()
                     ->values()
                     ->toArray();
@@ -106,9 +107,10 @@ class ScheduleController extends Controller
             $existing = DB::table('schedules')
                 ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
                 ->whereIn('user_id', function ($query) use ($rolePorters) {
-                    $query->select('id')
+                    $query->select('users.id')
                         ->from('users')
-                        ->whereIn('role', $rolePorters);
+                        ->join('roles', 'users.role_id', '=', 'roles.id')
+                        ->whereIn('roles.name', $rolePorters);
                 })
                 ->exists();
 
@@ -119,9 +121,10 @@ class ScheduleController extends Controller
 
             // Users (PORTER sesuai SPV)
             $users = DB::table('users')
-                ->whereIn('role', $rolePorters)
-                ->select('id', 'is_qantas')
-                ->orderBy('id')
+                ->join('roles', 'users.role_id', '=', 'roles.id')
+                ->whereIn('roles.name', $rolePorters)
+                ->select('users.id', 'users.is_qantas')
+                ->orderBy('users.id')
                 ->get();
 
             if ($users->isEmpty()) {
@@ -435,9 +438,10 @@ class ScheduleController extends Controller
         // Jika bukan admin, deteksi porter berdasarkan station
         if (! $authUser->isAdmin()) {
             $porterRoles = DB::table('users')
-                ->where('station', $authUser->station)
-                ->whereIn('role', ['Porter Bge', 'Porter Apron'])
-                ->pluck('role')
+                ->join('roles', 'users.role_id', '=', 'roles.id')
+                ->where('users.station', $authUser->station)
+                ->whereIn('roles.name', ['Porter Bge', 'Porter Apron'])
+                ->pluck('roles.name')
                 ->unique()
                 ->values()
                 ->toArray();
@@ -446,7 +450,9 @@ class ScheduleController extends Controller
 
         $search = request('search');
 
-        $user = User::where('role', 'like', "%{$rolePorter}%")->when($search, function ($query, $search) {
+        $user = User::whereHas('roleRelation', function ($q) use ($rolePorter) {
+            $q->where('name', 'like', "%{$rolePorter}%");
+        })->when($search, function ($query, $search) {
             return $query->where('fullname', 'like', "%{$search}%")
                 ->orWhere('id', 'like', "%{$search}%");
         })

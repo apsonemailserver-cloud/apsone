@@ -452,7 +452,9 @@ class AttendanceController extends Controller
                 }
 
                 if ($request->filled('role')) {
-                    $queryUser->where('role', $request->role);
+                    $queryUser->whereHas('roleRelation', function ($rq) use ($request) {
+                        $rq->where('name', $request->role);
+                    });
                 }
 
                 if (! $request->filled('user_name') && ! $request->filled('station_id') && ! $request->filled('role')) {
@@ -597,7 +599,9 @@ class AttendanceController extends Controller
             }
 
             if ($request->filled('role')) {
-                $queryUser->where('role', $request->role);
+                $queryUser->whereHas('roleRelation', function ($rq) use ($request) {
+                    $rq->where('name', $request->role);
+                });
             }
 
             if (! $request->filled('user_name') && ! $request->filled('station_id') && ! $request->filled('role')) {

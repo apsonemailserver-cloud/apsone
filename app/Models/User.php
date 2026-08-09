@@ -81,6 +81,11 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id');
     }
 
+    public function getRoleAttribute()
+    {
+        return $this->roleRelation ? $this->roleRelation->name : null;
+    }
+
     public function hasRole($roles): bool
     {
         $roleName = $this->roleRelation ? $this->roleRelation->name : null;

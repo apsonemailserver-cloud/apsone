@@ -16,6 +16,26 @@ class StaffImport implements ToCollection
 
         foreach ($rows as $row) {
 
+            $roleName = !empty($row[4]) ? trim($row[4]) : null;
+            $roleId = null;
+            if ($roleName) {
+                $roleObj = \App\Models\Role::where('name', $roleName)->first();
+                if (!$roleObj) {
+                    $roleObj = \App\Models\Role::create(['name' => $roleName, 'label' => $roleName]);
+                }
+                $roleId = $roleObj->id;
+            }
+
+            $jobTitleName = !empty($row[20]) ? trim($row[20]) : null;
+            $jobTitleId = null;
+            if ($jobTitleName) {
+                $jtObj = \App\Models\JobTitle::where('name', $jobTitleName)->first();
+                if (!$jtObj) {
+                    $jtObj = \App\Models\JobTitle::create(['name' => $jobTitleName]);
+                }
+                $jobTitleId = $jtObj->id;
+            }
+
             User::updateOrCreate(
                 [
                     'id' => $row[0],
@@ -25,7 +45,7 @@ class StaffImport implements ToCollection
                     'email'           => $row[2],
                     'phone'           => $row[3],
                     'no_hp'           => $row[3],
-                    'role'            => strtoupper($row[4]),
+                    'role_id'         => $roleId,
                     'station'         => $row[5],
                     'gender'          => $row[6],
                     'join_date'       => $this->formatDate($row[7]),
@@ -41,9 +61,8 @@ class StaffImport implements ToCollection
                     'no_nik'          => $row[17],
                     'tempat_lahir'    => $row[18],
                     'tanggal_lahir'   => $this->formatDate($row[19]),
-                    'job_title'           => $row[20],
+                    'job_title_id'    => $jobTitleId,
                     'password'        => Hash::make('password123'),
-
                 ]
             );
         }

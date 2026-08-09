@@ -245,11 +245,13 @@ class HomeController extends Controller
         }
 
         // Doughnut Chart: Distribusi Role (Filtered)
-        $doughnutQuery = User::where('is_active', 1)->select('role', DB::raw('count(*) as total'));
+        $doughnutQuery = User::where('users.is_active', 1)
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->select('roles.name as role', DB::raw('count(*) as total'));
         if ($selectedStation !== 'All') {
-            $doughnutQuery->where('station', $selectedStation);
+            $doughnutQuery->where('users.station', $selectedStation);
         }
-        $doughnutData = $doughnutQuery->groupBy('role')->get();
+        $doughnutData = $doughnutQuery->groupBy('roles.name')->get();
 
         $doughnutChartLabels = $doughnutData->pluck('role');
         $doughnutChartData = $doughnutData->pluck('total');
@@ -488,8 +490,9 @@ class HomeController extends Controller
         }
 
         $karyawan = DB::table('users')
-            ->select('id', 'fullname', 'role', 'alamat')
-            ->where('id', $user->id)
+            ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
+            ->select('users.id', 'users.fullname', 'roles.name as role', 'users.alamat')
+            ->where('users.id', $user->id)
             ->first();
 
         if (! $karyawan) {
@@ -537,15 +540,7 @@ class HomeController extends Controller
         $adminDocuments = $visibleDocuments->filter(fn (Document $document) => $document->hasRoleAccess('Admin'))->count();
         $managerDocuments = $visibleDocuments->filter(fn (Document $document) => $document->hasAnyRoleAccess(Document::managerRoles()))->count();
 
-        $availableRoles = User::query()
-            ->whereNotNull('role')
-            ->select('role')
-            ->distinct()
-            ->orderBy('role')
-            ->pluck('role')
-            ->filter()
-            ->values()
-            ->all();
+        $availableRoles = \App\Models\Role::orderBy('name', 'asc')->pluck('name')->toArray();
 
         return view('document', compact(
             'visibleDocuments',

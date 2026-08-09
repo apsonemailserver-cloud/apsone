@@ -97,15 +97,7 @@ class AdminDocumentController extends Controller
 
     private function availableRoles(): array
     {
-        return User::query()
-            ->whereNotNull('role')
-            ->select('role')
-            ->distinct()
-            ->orderBy('role')
-            ->pluck('role')
-            ->filter()
-            ->values()
-            ->all();
+        return \App\Models\Role::orderBy('name', 'asc')->pluck('name')->toArray();
     }
 
     private function rules(bool $requireFile): array
