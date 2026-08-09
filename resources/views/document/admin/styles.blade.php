@@ -134,12 +134,14 @@
         border: 1px solid #e2e8f0;
     }
 
-    .document-admin-page .document-role-list {
+    .document-admin-page .document-role-list,
+    .document-admin-page .document-role-grid {
         display: grid;
-        gap: 0.45rem;
-        max-height: 290px;
-        overflow: auto;
-        padding-right: 0.2rem;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 0.5rem;
+        max-height: 260px;
+        overflow-y: auto;
+        padding-right: 0.25rem;
     }
 
     .document-admin-page .document-role-option {

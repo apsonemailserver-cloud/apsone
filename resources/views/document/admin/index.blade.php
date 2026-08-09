@@ -10,10 +10,8 @@
     <div class="container-xxl flex-grow-1 container-p-y document-admin-page">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
             <div>
-                <h4 class="fw-bold mb-1">
-                    <span class="text-muted fw-light">General /</span> Manajemen Dokumen
-                </h4>
-                <p class="text-muted mb-0">Kelola dokumen, file unduhan, dan role akses dokumen.</p>
+                <h4 class="fw-bold mb-1">Manajemen Dokumen</h4>
+                <p class="text-muted mb-0" style="font-size:0.875rem;">Kelola berkas, panduan, dan dokumen operasional perusahaan.</p>
             </div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
@@ -25,22 +23,16 @@
 
         <div class="card">
             <div class="card-body">
-                <div class="dt-toolbar">
-                    <form action="{{ route('admin.documents.index') }}" method="GET" class="dt-search">
-                        <i class="ti ti-search search-icon"></i>
-                        <input type="text" name="search" class="form-control"
-                            placeholder="Cari nama dokumen, deskripsi, file, atau role..."
-                            value="{{ request('search') }}">
-                    </form>
-                    <div class="dt-actions">
-                        <a href="{{ route('document') }}" class="btn btn-label-secondary">
-                            <i class="ti ti-eye"></i>Lihat Halaman
+                <x-dt-toolbar :searchFormAction="route('admin.documents.index')" searchPlaceholder="Cari nama dokumen, deskripsi, file, atau role...">
+                    <x-slot name="actions">
+                        <a href="{{ route('document') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="ti ti-eye me-1"></i>Lihat Halaman
                         </a>
-                        <a href="{{ route('admin.documents.create') }}" class="btn btn-primary">
-                            <i class="ti ti-plus"></i>Tambah Dokumen
+                        <a href="{{ route('admin.documents.create') }}" class="btn btn-primary btn-sm">
+                            <i class="ti ti-plus me-1"></i>Tambah Dokumen
                         </a>
-                    </div>
-                </div>
+                    </x-slot>
+                </x-dt-toolbar>
 
                 <div class="table-responsive">
                     <table class="table">
@@ -120,27 +112,17 @@
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
                                             @if ($fileExists)
-                                                <a href="{{ route('document.download', $document) }}" class="action-btn"
-                                                    title="Unduh">
-                                                    <i class="ti ti-download"></i>
-                                                </a>
+                                                <x-action-button action="download" :href="route('document.download', $document)" title="Unduh" />
                                             @endif
                                             @if (Auth::user()?->role === 'Admin' || Auth::user()->hasPermission('document.edit'))
-                                                <a href="{{ route('admin.documents.edit', $document) }}" class="action-btn"
-                                                    title="Edit">
-                                                    <i class="ti ti-pencil"></i>
-                                                </a>
+                                                <x-action-button action="edit" :href="route('admin.documents.edit', $document)" title="Edit" />
                                             @endif
                                             @if (Auth::user()?->role === 'Admin' || Auth::user()->hasPermission('document.delete'))
                                                 <form action="{{ route('admin.documents.destroy', $document) }}" method="POST"
                                                     id="delete-document-{{ $document->id }}" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="button" class="action-btn action-delete border-0"
-                                                        title="Hapus"
-                                                        onclick="confirmDeleteDocument('{{ $document->id }}')">
-                                                        <i class="ti ti-trash"></i>
-                                                    </button>
+                                                    <x-action-button type="button" action="delete" onclick="confirmDeleteDocument('{{ $document->id }}')" title="Hapus" />
                                                 </form>
                                             @endif
                                         </div>

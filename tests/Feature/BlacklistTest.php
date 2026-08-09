@@ -52,9 +52,12 @@ class BlacklistTest extends TestCase
             'is_active' => 1,
         ]);
 
+        $pdfFile = \Illuminate\Http\UploadedFile::fake()->create('sk_blacklist.pdf', 500, 'application/pdf');
+
         $response = $this->actingAs($admin)->post(route('blacklist.store'), [
-            'user_id' => $staff->id,
-            'reason'  => 'Terbukti melakukan pelanggaran berat aset perusahaan.',
+            'user_id'         => $staff->id,
+            'reason'          => 'Terbukti melakukan pelanggaran berat aset perusahaan.',
+            'attachment_file' => $pdfFile,
         ]);
 
         $response->assertRedirect(route('blacklist.index'));
@@ -78,5 +81,44 @@ class BlacklistTest extends TestCase
         $indexResponse->assertStatus(200);
         $indexResponse->assertSee('ABDUL ARIFIN');
         $indexResponse->assertSee('4250491');
+    }
+
+    public function test_blacklisted_user_cannot_login()
+    {
+        $staff = User::create([
+            'id' => '999001',
+            'fullname' => 'BANNED USER',
+            'role' => 'Staff',
+            'station' => 'CGK',
+            'email' => 'banned@test.com',
+            'password' => Hash::make('password123'),
+            'gender' => 'Male',
+            'job_title' => 'STAFF',
+            'cluster' => 'GROUND HANDLING',
+            'unit' => 'BAGGAGE HANDLING',
+            'sub_unit' => 'PORTER',
+            'manager' => 'MANAGER',
+            'is_qantas' => 0,
+            'join_date' => '2025-01-01',
+            'salary' => 3000000,
+            'is_active' => 0,
+        ]);
+
+        Blacklist::create([
+            'nik' => '999001',
+            'fullname' => 'BANNED USER',
+            'reason' => 'Pelanggaran berat',
+            'station' => 'CGK',
+            'banned_by' => 'Admin Tester',
+        ]);
+
+        $response = $this->post(route('actionlogin'), [
+            'login' => '999001',
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertGuest();
     }
 }

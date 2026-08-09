@@ -40,7 +40,7 @@
                 <form action="{{ route('assignments.index') }}" method="GET" class="row g-3 align-items-end">
                     @if(auth()->user()->hasRole('Admin'))
                         <div class="col-md-2">
-                            <label class="form-label fw-semibold text-dark">STATION</label>
+                            <label class="form-label fw-semibold text-dark">Station</label>
                             <select name="station" class="form-select">
                                 <option value="All">-- All Stations --</option>
                                 @foreach($stations as $st)
@@ -53,7 +53,7 @@
                     @endif
 
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-dark">TYPE</label>
+                        <label class="form-label fw-semibold text-dark">Tipe</label>
                         <select name="type" class="form-select">
                             <option value="">-- All Types --</option>
                             <option value="DCI" {{ request('type') == 'DCI' ? 'selected' : '' }}>DCI (Interior)</option>
@@ -62,17 +62,17 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-dark">START DATE</label>
+                        <label class="form-label fw-semibold text-dark">Tanggal Mulai</label>
                         <input type="date" name="date_from" class="form-control" value="{{ request('date_from', $dateFrom ?? \Carbon\Carbon::now()->startOfMonth()->toDateString()) }}">
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-dark">END DATE</label>
+                        <label class="form-label fw-semibold text-dark">Tanggal Selesai</label>
                         <input type="date" name="date_to" class="form-control" value="{{ request('date_to', $dateTo ?? \Carbon\Carbon::now()->endOfMonth()->toDateString()) }}">
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold text-dark">SEARCH DATA</label>
+                        <label class="form-label fw-semibold text-dark">Cari Data</label>
                         <input type="text" name="search" class="form-control" placeholder="Reg / WO / Flight..." value="{{ request('search') }}">
                     </div>
 
@@ -112,15 +112,19 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th>DATE & STATION</th>
-                                    <th>CATEGORY</th>
-                                    <th>REGISTRATION & ASSIGNMENT</th>
-                                    <th>EX / TO FLIGHT</th>
-                                    <th>STAND & TIME</th>
-                                    <th>EVIDENCE PHOTO</th>
-                                    <th>STATUS</th>
-                                    <th>LEADER</th>
-                                    <th>STAFF ON DUTY</th>
+                                    <th>Tanggal</th>
+                                    <th>Station</th>
+                                    <th>Category</th>
+                                    <th>Registrasi</th>
+                                    <th>No. WO</th>
+                                    <th>Ex Flight</th>
+                                    <th>To Flight</th>
+                                    <th>Stand</th>
+                                    <th>Waktu Kerja</th>
+                                    <th>Evidence Photo</th>
+                                    <th>Status</th>
+                                    <th>Leader</th>
+                                    <th>Staff on Duty</th>
                                     <th class="text-center" width="10%">ACTION</th>
                                 </tr>
                             </thead>
@@ -128,10 +132,8 @@
                                 @foreach($assignments as $index => $item)
                                     <tr>
                                         <td class="fw-semibold text-secondary">{{ $assignments->firstItem() + $index }}</td>
-                                        <td>
-                                            <div class="fw-bold text-dark">{{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}</div>
-                                            <span class="badge bg-label-secondary mt-1 font-monospace">{{ $item->station }}</span>
-                                        </td>
+                                        <td><strong>{{ \Carbon\Carbon::parse($item->date)->format('d M Y') }}</strong></td>
+                                        <td><span class="badge bg-label-secondary font-monospace">{{ $item->station }}</span></td>
                                         <td>
                                             @if($item->type === 'DCI')
                                                 <span class="badge bg-label-primary px-3 py-1.5 font-monospace fw-bold">DCI (INTERIOR)</span>
@@ -147,18 +149,12 @@
                                                 <span class="badge bg-label-secondary px-3 py-1.5 font-monospace fw-bold">{{ strtoupper($item->type ?? '-') }}</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <strong class="text-dark fs-6">{{ $item->aircraft_reg }}</strong>
-                                            <div class="small text-muted font-monospace">WO: {{ $item->wo_number }}</div>
-                                        </td>
-                                        <td>
-                                            <div class="small fw-semibold text-dark">Ex: {{ $item->ex_flight ?: '-' }}</div>
-                                            <div class="small text-muted">To: {{ $item->to_flight ?: '-' }}</div>
-                                        </td>
-                                        <td>
-                                            <div class="fw-medium text-dark"><i class="bx bx-parking me-1 text-primary"></i>Stand {{ $item->parking_stand }}</div>
-                                            <div class="small text-muted"><i class="bx bx-time me-1"></i>{{ substr($item->start_time, 0, 5) }} - {{ substr($item->end_time, 0, 5) }} ({{ $item->duration_minutes }} min)</div>
-                                        </td>
+                                        <td><strong class="text-dark fs-6">{{ $item->aircraft_reg }}</strong></td>
+                                        <td><code class="font-monospace text-muted">WO: {{ $item->wo_number }}</code></td>
+                                        <td><span class="small fw-semibold text-dark">{{ $item->ex_flight ?: '-' }}</span></td>
+                                        <td><span class="small text-muted">{{ $item->to_flight ?: '-' }}</span></td>
+                                        <td><div class="fw-medium text-dark"><i class="bx bx-parking me-1 text-primary"></i>Stand {{ $item->parking_stand }}</div></td>
+                                        <td><span class="small text-muted"><i class="bx bx-time me-1"></i>{{ substr($item->start_time, 0, 5) }} - {{ substr($item->end_time, 0, 5) }} ({{ $item->duration_minutes }} min)</span></td>
                                         <td>
                                             @if($item->photo_path)
                                                 <div class="d-inline-flex align-items-center gap-1">
@@ -188,45 +184,31 @@
                                                 <span class="badge bg-label-warning px-3 py-1.5 rounded-pill fw-semibold"><i class="bx bx-loader-alt bx-spin me-1"></i>Proses</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">{{ $item->submittedBy ? $item->submittedBy->fullname : '-' }}</div>
-                                            <div class="small text-muted font-monospace">Leader</div>
-                                        </td>
+                                        <td><div class="fw-semibold text-dark">{{ $item->submittedBy ? $item->submittedBy->fullname : '-' }}</div></td>
                                         <td>
                                             @if($item->users && $item->users->count() > 0)
-                                                @foreach($item->users->take(2) as $st)
+                                                @foreach($item->users as $st)
                                                     <span class="badge bg-label-primary me-1 mb-1 font-monospace" style="font-size: 0.75rem;">{{ $st->fullname }}</span>
                                                 @endforeach
-                                                @if($item->users->count() > 2)
-                                                    <span class="badge bg-label-secondary me-1 mb-1 font-monospace" style="font-size: 0.75rem;">+{{ $item->users->count() - 2 }}</span>
-                                                @endif
                                             @else
                                                 <span class="text-muted small">-</span>
                                             @endif
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex align-items-center justify-content-center gap-1">
-                                                <a href="{{ route('assignments.show', $item->id) }}" class="action-btn" title="Detail Pekerjaan">
-                                                    <i class="bx bx-show"></i>
-                                                </a>
+                                                <x-action-button action="view" :href="route('assignments.show', $item->id)" title="Detail Pekerjaan" />
                                                 @if(auth()->user()->hasPermission('assignment.export') || auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
                                                     @if($item->photo_path)
-                                                        <a href="{{ route('assignments.export_single_pdf', $item->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
-                                                            <i class="bx bx-printer"></i>
-                                                        </a>
+                                                        <x-action-button action="edit" icon="ti ti-printer" :href="route('assignments.export_single_pdf', $item->id)" title="Cetak Hardcopy WO PDF" target="_blank" />
                                                     @else
-                                                        <button type="button" class="action-btn action-edit opacity-50 btn-no-photo-pdf" data-wo="{{ $item->wo_number }}" title="Belum Ada Foto (Tidak Bisa Dicetak)">
-                                                            <i class="bx bx-printer"></i>
-                                                        </button>
+                                                        <x-action-button type="button" action="edit" icon="ti ti-printer" class="opacity-50 btn-no-photo-pdf" :data-wo="$item->wo_number" title="Belum Ada Foto (Tidak Bisa Dicetak)" />
                                                     @endif
                                                 @endif
                                                 @if(empty($item->photo_path) && (auth()->user()->hasPermission('assignment.delete') || auth()->user()->hasRole('Admin') || (auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES) && $item->submitted_by === auth()->id())))
                                                     <form action="{{ route('assignments.destroy', $item->id) }}" method="POST" class="d-inline delete-form">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="button" class="action-btn action-delete btn-delete" title="Hapus Data Pekerjaan">
-                                                            <i class="bx bx-trash"></i>
-                                                        </button>
+                                                        <x-action-button type="button" action="delete" class="btn-delete" title="Hapus Data Pekerjaan" />
                                                     </form>
                                                 @endif
                                             </div>

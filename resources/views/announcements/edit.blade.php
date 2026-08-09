@@ -4,21 +4,11 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
-        <div>
-            <h4 class="fw-bold mb-1">
-                <span class="text-muted fw-light">Pengumuman /</span> Edit Pengumuman
-            </h4>
-            <p class="text-muted mb-0">Perbarui pengumuman.</p>
+    <div class="card mb-4">
+        <div class="card-header border-bottom">
+            <h5 class="mb-0 fw-bold">Edit Pengumuman</h5>
         </div>
-        <a href="{{ route('announcements.index') }}" class="btn btn-label-secondary">
-            <i class="ti ti-arrow-left me-1"></i>Kembali
-        </a>
-    </div>
-
-    <div class="card">
-        <h5 class="card-header">Formulir Edit Pengumuman</h5>
-        <div class="card-body">
+        <div class="card-body pt-4">
             @if ($errors->any())
                 <div class="alert alert-danger alert-dismissible fade show mb-4 border-0" role="alert">
                     <h6 class="alert-heading fw-bold mb-1">Terjadi Kesalahan Validation:</h6>
@@ -82,14 +72,7 @@
                     <textarea name="content" class="form-control" rows="8" required>{{ old('content', $announcement->content) }}</textarea>
                 </div>
 
-                <div class="d-flex align-items-center justify-content-end gap-2">
-                    <a href="{{ route('announcements.index') }}" class="btn btn-label-secondary">
-                        Batal
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-device-floppy me-1"></i>Simpan Perubahan
-                    </button>
-                </div>
+                <x-form-actions :cancelHref="route('announcements.index')" submitText="Simpan Perubahan" />
             </form>
         </div>
     </div>

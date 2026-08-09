@@ -9,14 +9,23 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use RealRashid\SweetAlert\Facades\Alert;
 
+use App\Http\Controllers\Traits\PreservesIndexState;
+
 class ShiftController extends Controller
 {
-    public function index(): View
+    use PreservesIndexState;
+
+    public function index(Request $request)
     {
         if (! Auth::user()->canAccess('shift', 'view')) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
-        $perPage = request()->input('per_page', 30);
+
+        if ($redirect = $this->checkIndexState($request, 'shift', '#^/shift(/\d+)?(/edit)?$|/shift/create#')) {
+            return $redirect;
+        }
+
+        $perPage = $request->input('per_page', 30);
         $shifts = Shift::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
 
         return view('shift.index', compact('shifts'));
@@ -28,11 +37,28 @@ class ShiftController extends Controller
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        return view('shift.create');
+        $count = Shift::count() + 1;
+        $autoShiftId = 'SFT-' . str_pad($count, 3, '0', STR_PAD_LEFT);
+        while (Shift::where('id', $autoShiftId)->exists()) {
+            $count++;
+            $autoShiftId = 'SFT-' . str_pad($count, 3, '0', STR_PAD_LEFT);
+        }
+
+        return view('shift.create', compact('autoShiftId'));
     }
 
     public function store(Request $request)
     {
+        if (!$request->filled('id')) {
+            $count = Shift::count() + 1;
+            $autoShiftId = 'SFT-' . str_pad($count, 3, '0', STR_PAD_LEFT);
+            while (Shift::where('id', $autoShiftId)->exists()) {
+                $count++;
+                $autoShiftId = 'SFT-' . str_pad($count, 3, '0', STR_PAD_LEFT);
+            }
+            $request->merge(['id' => $autoShiftId]);
+        }
+
         $request->validate([
             'id' => 'required',
             'name' => 'required',
@@ -40,17 +66,19 @@ class ShiftController extends Controller
             'start_time' => 'required',
             'end_time' => 'required',
             'use_manpower' => 'required',
+            'tolerance_minutes' => 'nullable|integer|min:0',
         ]);
 
         try {
-            Shift::create($request->only([
-                'id',
-                'name',
-                'description',
-                'start_time',
-                'end_time',
-                'use_manpower',
-            ]));
+            Shift::create([
+                'id' => $request->id,
+                'name' => $request->name,
+                'description' => $request->description,
+                'start_time' => $request->start_time,
+                'end_time' => $request->end_time,
+                'tolerance_minutes' => $request->input('tolerance_minutes', 15),
+                'use_manpower' => $request->use_manpower,
+            ]);
 
             Alert::success('Success', 'Data berhasil disimpan');
 

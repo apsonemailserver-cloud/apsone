@@ -8,18 +8,6 @@
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y document-admin-page">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
-            <div>
-                <h4 class="fw-bold mb-1">
-                    <span class="text-muted fw-light">General /</span> Edit Dokumen
-                </h4>
-                <p class="text-muted mb-0">Perbarui metadata dokumen atau ganti file unduhan.</p>
-            </div>
-            <a href="{{ route('document') }}" class="btn btn-label-secondary">
-                <i class="ti ti-arrow-left me-1"></i>Kembali
-            </a>
-        </div>
-
         <form action="{{ route('admin.documents.update', $document) }}" method="POST" enctype="multipart/form-data">
             @include('document.admin._form', [
                 'method' => 'PUT',

@@ -56,14 +56,7 @@
                 </div>
                 @endif
 
-                {{-- Toolbar --}}
-                <div class="dt-toolbar">
-                    <form action="{{ route('staff.index') }}" method="GET" class="dt-search">
-                        <input type="hidden" name="station" value="{{ request('station') }}">
-                        <i class="ti ti-search search-icon"></i>
-                        <input type="text" name="search" class="form-control" placeholder="Cari NIP / Nama..." value="{{ request('search') }}">
-                    </form>
-                </div>
+                <x-dt-toolbar :searchFormAction="route('staff.index')" searchPlaceholder="Cari NIP / Nama..." />
 
                 {{-- Tabel --}}
                 <div class="table-responsive">
@@ -129,18 +122,12 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('users.userProfile', $staff->id) }}" class="action-btn" title="Detail">
-                                            <i class="ti ti-eye"></i>
-                                        </a>
+                                        <x-action-button action="view" :href="route('users.userProfile', $staff->id)" title="Detail" />
                                         @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
-                                        <a href="{{ route('users.edit', ['user' => $staff->id, 'redirect_to' => url()->full()]) }}" class="action-btn action-edit" title="Edit Staff">
-                                            <i class="ti ti-pencil"></i>
-                                        </a>
+                                        <x-action-button action="edit" :href="route('users.edit', ['user' => $staff->id, 'redirect_to' => url()->full()])" title="Edit Staff" />
                                         @endif
                                         @if(!$isBlacklisted && (Auth::user()->canAccess('blacklist', 'create') || Auth::user()->role === 'Admin'))
-                                        <button type="button" class="action-btn action-delete" onclick="openBanModal('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Blacklist">
-                                            <i class="ti ti-ban"></i>
-                                        </button>
+                                        <x-action-button type="button" action="blacklist" onclick="openBanModal('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Blacklist" />
                                         @endif
                                     </div>
                                 </td>
@@ -206,57 +193,76 @@
     </div>
 </div>
 
-<form id="global-ban-form" action="{{ route('blacklist.store') }}" method="POST" style="display: none;">
-    @csrf
-    <input type="hidden" name="user_id" id="swal-ban-user-id">
-    <input type="hidden" name="reason" id="swal-ban-reason">
-</form>
+<div class="modal fade" id="banModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom px-4 py-3.5 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avatar avatar-xs bg-danger-subtle rounded-circle d-flex align-items-center justify-content-center p-2" style="width:2.2rem;height:2.2rem;">
+                        <i class="ti ti-alert-triangle-filled text-danger fs-5"></i>
+                    </div>
+                    <h5 class="modal-title fw-bold text-body mb-0" style="font-size: 1.05rem;">
+                        Blacklist Staff (PHK & Ban)
+                    </h5>
+                </div>
+                <button type="button" class="btn btn-sm btn-icon btn-label-secondary rounded-circle" data-bs-dismiss="modal" aria-label="Close" title="Tutup">
+                    <i class="ti ti-x fs-5"></i>
+                </button>
+            </div>
+            <form action="{{ route('blacklist.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4 text-start">
+                    <input type="hidden" name="user_id" id="ban_user_id">
+                    
+                    {{-- Warning Banner --}}
+                    <div class="alert alert-danger bg-danger-subtle text-danger border-danger border-opacity-25 rounded-3 p-3 mb-3.5" role="alert">
+                        <div class="d-flex gap-2.5 align-items-start">
+                            <i class="ti ti-shield-x fs-4 flex-shrink-0 mt-0.5 text-danger"></i>
+                            <div style="font-size:0.83rem; line-height:1.45;">
+                                <strong>PERINGATAN:</strong> Tindakan ini akan <strong>mematikan akun</strong> staff dan mencatat namanya ke dalam daftar hitam (blacklist) perusahaan selamanya.
+                            </div>
+                        </div>
+                    </div>
 
-<script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
-<script>
-    function openBanModal(id, name) {
-        Swal.fire({
-            icon: 'warning',
-            iconColor: '#dc2626',
-            title: 'Blacklist Staff',
-            html: `
-                <div style="background:#fef2f2; border-radius:0.75rem; padding:1rem 1.25rem; margin:0.5rem 0; text-align:left;">
-                    <div style="margin-bottom:0.75rem; display:flex; align-items:flex-start; gap:0.75rem;">
-                        <span style="flex-shrink:0; background:#fecaca; color:#dc2626; border-radius:999px; padding:0.15rem 0.65rem; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-top:2px;">Staff</span>
-                        <span style="font-weight:600; color:#111827; font-size:0.9375rem;">${name}</span>
+                    {{-- Staff Info --}}
+                    <div class="mb-3.5">
+                        <label class="form-label fw-semibold text-body" style="font-size:0.82rem;">Nama Staff</label>
+                        <input type="text" class="form-control fw-bold" id="ban_user_name" readonly style="background-color: var(--bs-tertiary-bg, #f8fafc);">
+                    </div>
+
+                    {{-- Alasan Pelanggaran --}}
+                    <div class="mb-3.5">
+                        <label class="form-label fw-semibold text-body" style="font-size:0.82rem;">Alasan Pelanggaran <span class="text-danger">*</span></label>
+                        <textarea name="reason" class="form-control" rows="3" required placeholder="Contoh: Terbukti mencuri aset perusahaan pada tanggal..."></textarea>
+                    </div>
+
+                    {{-- Lampiran PDF Wajib --}}
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold text-body" style="font-size:0.82rem;">Dokumen Surat / SK Blacklist (Wajib PDF) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-body-tertiary"><i class="ti ti-file-text text-danger"></i></span>
+                            <input type="file" name="attachment_file" class="form-control" accept=".pdf" required>
+                        </div>
+                        <div class="form-text mt-1.5 text-muted" style="font-size:0.75rem;">Unggah berkas Surat Keputusan (SK) atau bukti pelanggaran berformat PDF (Maksimal 2MB).</div>
                     </div>
                 </div>
-                <p style="color:#dc2626; font-size:0.8125rem; margin-top:0.75rem; padding:0.5rem 0.75rem; background:#fff5f5; border-radius:0.5rem; border-left: 3px solid #dc2626; text-align: left;">
-                    ⚠ Tindakan ini akan <strong>mematikan akun</strong> staff dan mencatat namanya ke dalam daftar hitam perusahaan selamanya.
-                </p>
-                <div style="text-align: left; margin-top: 1rem;">
-                    <label style="font-size: 0.8125rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">Alasan Pelanggaran (Wajib)</label>
-                    <textarea id="ban-reason-input" class="form-control" rows="3" placeholder="Contoh: Terbukti mencuri aset perusahaan pada tanggal..."></textarea>
+                <div class="modal-footer bg-body-tertiary px-4 py-3 border-top">
+                    <button type="button" class="btn btn-label-secondary px-3.5" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-bold">
+                        <i class="ti ti-user-x me-1.5"></i> Ya, Blacklist Staff
+                    </button>
                 </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: '✕ Ya, Blacklist',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#e5e7eb',
-            customClass: { confirmButton: 'btn-danger' },
-            reverseButtons: true,
-            focusCancel: true,
-            preConfirm: () => {
-                const reason = document.getElementById('ban-reason-input').value;
-                if (!reason.trim()) {
-                    Swal.showValidationMessage('Alasan pelanggaran wajib diisi');
-                    return false;
-                }
-                return reason;
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('swal-ban-user-id').value = id;
-                document.getElementById('swal-ban-reason').value = result.value;
-                document.getElementById('global-ban-form').submit();
-            }
-        });
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openBanModal(id, name) {
+        document.getElementById('ban_user_id').value = id;
+        document.getElementById('ban_user_name').value = name;
+        var myModal = new bootstrap.Modal(document.getElementById('banModal'));
+        myModal.show();
     }
 </script>
 @endif

@@ -22,26 +22,35 @@ class Permission extends Model
     }
 
     /**
-     * Map of system modules with readable labels
+     * Map of system modules with readable labels matching sidebar menu
      */
     public static function modules(): array
     {
         return [
-            'dashboard' => 'Dashboard Utama',
-            'profile' => 'Profile Karyawan',
-            'assignment' => 'Assignment (Work Order)',
-            'attendance' => 'Presensi & Absensi',
-            'overtime' => 'Lembur',
-            'schedule' => 'Jadwal Kerja',
-            'shift' => 'Shift Kerja',
-            'station' => 'Manajemen Station',
-            'user' => 'User Management',
-            'blacklist' => 'Blacklist Staff',
-            'document' => 'Dokumen',
-            'training' => 'Training & Sertifikat',
-            'leave' => 'Cuti & Izin',
-            'announcement' => 'Pengumuman',
-            'role' => 'Hak Akses & Role',
+            // Menu
+            'dashboard'    => 'Dashboard',
+            'profile'      => 'Profile',
+            'schedule'     => 'Schedule',
+            'shift'        => 'Shift',
+            'attendance'   => 'Attendance',
+            'overtime'     => 'Overtime',
+            'assignment'   => 'Assignment',
+
+            // Administrator
+            'station'      => 'Station Management',
+            'user'         => 'Station Monitoring (Staff)',
+            'role'         => 'Role & Permissions',
+            'blacklist'    => 'Blacklist Staff',
+            'job_title'    => 'Job Titles',
+            'unit'         => 'Units',
+            'sub_unit'     => 'Sub Units',
+
+            // General
+            'document'     => 'Documents',
+            'training'     => 'Training',
+            'leave'        => 'Apply Leave',
+            'master_leave' => 'Master Cuti',
+            'announcement' => 'Announcement',
         ];
     }
 
@@ -52,19 +61,25 @@ class Permission extends Model
     {
         return [
             'dashboard'    => ['view'],
-            'profile'      => ['edit'],
-            'assignment'   => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
+            'profile'      => ['view', 'edit'],
+            'schedule'     => ['view', 'create', 'edit', 'delete', 'sync', 'export'],
+            'shift'        => ['view', 'create', 'edit', 'delete'],
             'attendance'   => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
             'overtime'     => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
-            'schedule'     => ['view', 'create', 'edit', 'delete', 'export'],
-            'shift'        => ['view', 'create', 'edit', 'delete'],
+            'assignment'   => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
+
             'station'      => ['view', 'create', 'edit', 'delete'],
             'user'         => ['view', 'create', 'edit', 'delete', 'export'],
-            'blacklist'    => ['view', 'create', 'delete'],
             'role'         => ['view', 'create', 'edit', 'delete'],
+            'blacklist'    => ['view', 'create', 'delete'],
+            'job_title'    => ['view', 'create', 'edit', 'delete'],
+            'unit'         => ['view', 'create', 'edit', 'delete'],
+            'sub_unit'     => ['view', 'create', 'edit', 'delete'],
+
             'document'     => ['view', 'create', 'edit', 'delete', 'export'],
             'training'     => ['view', 'create', 'edit', 'delete'],
             'leave'        => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
+            'master_leave' => ['view', 'create', 'edit', 'delete', 'sync'],
             'announcement' => ['view', 'create', 'edit', 'delete'],
         ];
     }
@@ -75,12 +90,13 @@ class Permission extends Model
     public static function actions(): array
     {
         return [
-            'view' => 'Lihat / Akses',
-            'create' => 'Tambah / Buat',
-            'edit' => 'Edit / Ubah',
-            'delete' => 'Hapus',
+            'view'    => 'Lihat / Akses',
+            'create'  => 'Tambah / Buat',
+            'edit'    => 'Edit / Ubah',
+            'delete'  => 'Hapus',
             'approve' => 'Persetujuan / Approval',
-            'export' => 'Export / Cetak PDF',
+            'sync'    => 'Sync / Auto',
+            'export'  => 'Export / Cetak PDF',
         ];
     }
 }

@@ -101,7 +101,7 @@ class StaffController extends Controller
         }
 
         $request->validate([
-            'file' => 'required|mimes:csv,txt,xlsx'
+            'file' => 'required|mimes:csv,txt,xlsx|max:2048'
         ]);
 
         try {

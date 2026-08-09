@@ -12,6 +12,7 @@ class Leave extends Model
 
     protected $fillable = [
         'user_id',
+        'leave_type_id',
         'leave_type',
         'start_date',
         'end_date',
@@ -27,6 +28,14 @@ class Leave extends Model
         'pic_approved_by', // DITAMBAHKAN: ID PIC yang menyetujui
         'pic_approved_at', // DITAMBAHKAN: Waktu PIC menyetujui
     ];
+
+    /**
+     * Relasi ke master tipe cuti.
+     */
+    public function leaveType()
+    {
+        return $this->belongsTo(LeaveType::class, 'leave_type_id');
+    }
 
     /**
      * Relasi ke user yang mengajukan cuti.

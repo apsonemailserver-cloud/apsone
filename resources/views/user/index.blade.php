@@ -146,39 +146,62 @@
     </div>
     <div class="modal fade" id="banModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger">
-                <h5 class="modal-title text-white">
-                    <i class="bx bx-error-alt me-2"></i> Blacklist Staff (PHK & Ban)
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('blacklist.store') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="alert alert-warning text-start">
-                        <strong>PERINGATAN:</strong><br>
-                        Tindakan ini akan <b>menonaktifkan akun</b> staff dan mencatat namanya ke dalam daftar hitam perusahaan selamanya (berdasarkan NIP/KTP).
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom px-4 py-3.5 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avatar avatar-xs bg-danger-subtle rounded-circle d-flex align-items-center justify-content-center p-2" style="width:2.2rem;height:2.2rem;">
+                        <i class="ti ti-alert-triangle-filled text-danger fs-5"></i>
                     </div>
-                    
-                    {{-- ID User yang akan di-ban --}}
+                    <h5 class="modal-title fw-bold text-body mb-0" style="font-size: 1.05rem;">
+                        Blacklist Staff (PHK & Ban)
+                    </h5>
+                </div>
+                <button type="button" class="btn btn-sm btn-icon btn-label-secondary rounded-circle" data-bs-dismiss="modal" aria-label="Close" title="Tutup">
+                    <i class="ti ti-x fs-5"></i>
+                </button>
+            </div>
+            <form action="{{ route('blacklist.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4 text-start">
                     <input type="hidden" name="user_id" id="ban_user_id">
                     
-                    <div class="mb-3 text-start">
-                        <label class="form-label">Nama Staff</label>
-                        <input type="text" class="form-control" id="ban_user_name" readonly style="background-color: #f5f5f5;">
+                    {{-- Warning Banner --}}
+                    <div class="alert alert-danger bg-danger-subtle text-danger border-danger border-opacity-25 rounded-3 p-3 mb-3.5" role="alert">
+                        <div class="d-flex gap-2.5 align-items-start">
+                            <i class="ti ti-shield-x fs-4 flex-shrink-0 mt-0.5 text-danger"></i>
+                            <div style="font-size:0.83rem; line-height:1.45;">
+                                <strong>PERINGATAN:</strong> Tindakan ini akan <strong>mematikan akun</strong> staff dan mencatat namanya ke dalam daftar hitam (blacklist) perusahaan selamanya.
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3 text-start">
-                        <label class="form-label fw-bold text-danger">Alasan Pelanggaran (Wajib Diisi)</label>
-                        <textarea name="reason" class="form-control" rows="4" required 
-                                  placeholder="Contoh: Terbukti melakukan pencurian aset kabel di Station CGK pada tanggal..."></textarea>
-                        <div class="form-text">Jelaskan kasusnya secara detail untuk rekam jejak HRD.</div>
+                    {{-- Staff Info --}}
+                    <div class="mb-3.5">
+                        <label class="form-label fw-semibold text-body" style="font-size:0.82rem;">Nama Staff</label>
+                        <input type="text" class="form-control fw-bold" id="ban_user_name" readonly style="background-color: var(--bs-tertiary-bg, #f8fafc);">
+                    </div>
+
+                    {{-- Alasan Pelanggaran --}}
+                    <div class="mb-3.5">
+                        <label class="form-label fw-semibold text-body" style="font-size:0.82rem;">Alasan Pelanggaran <span class="text-danger">*</span></label>
+                        <textarea name="reason" class="form-control" rows="3" required placeholder="Contoh: Terbukti mencuri aset perusahaan pada tanggal..."></textarea>
+                    </div>
+
+                    {{-- Lampiran PDF Wajib --}}
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold text-body" style="font-size:0.82rem;">Dokumen Surat / SK Blacklist (Wajib PDF) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-body-tertiary"><i class="ti ti-file-text text-danger"></i></span>
+                            <input type="file" name="attachment_file" class="form-control" accept=".pdf" required>
+                        </div>
+                        <div class="form-text mt-1.5 text-muted" style="font-size:0.75rem;">Unggah berkas Surat Keputusan (SK) atau bukti pelanggaran berformat PDF (Maksimal 2MB).</div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Konfirmasi Blacklist</button>
+                <div class="modal-footer bg-body-tertiary px-4 py-3 border-top">
+                    <button type="button" class="btn btn-label-secondary px-3.5" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-bold">
+                        <i class="ti ti-user-x me-1.5"></i> Ya, Blacklist Staff
+                    </button>
                 </div>
             </form>
         </div>

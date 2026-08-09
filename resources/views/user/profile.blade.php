@@ -692,13 +692,13 @@
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y profile-page">
-        <!-- Header -->
-        <div class="profile-page-header">
-            <h4 class="profile-page-title">
-                <span class="text-muted fw-light">Profile /</span> {{ $user->fullname }}
-            </h4>
-            <div class="profile-page-badges">
-                <span class="badge bg-primary">{{ $user->roleRelation->name ?? '-' }}</span>
+        <div class="profile-page-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">{{ $user->fullname }}</h4>
+                <p class="text-muted mb-0" style="font-size:0.875rem;">Informasi detail data diri, hak akses, dan station penugasan.</p>
+            </div>
+            <div class="profile-page-badges mt-2 mt-md-0">
+                <span class="badge bg-primary">{{ $user->roleRelation->name ?? $user->role }}</span>
                 <span class="badge bg-label-secondary">{{ $user->station }}</span>
             </div>
         </div>

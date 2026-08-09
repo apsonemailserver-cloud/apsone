@@ -4,67 +4,13 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="py-4">
-
-        {{-- Header dengan Breadcrumb --}}
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
-            <div class="d-flex align-items-center">
-                <a href="{{ route('assignments.index') }}" class="btn btn-icon btn-outline-secondary me-3 rounded-circle shadow-xs" title="Back to Assignment List">
-                    <i class="ti ti-arrow-left fs-4"></i>
-                </a>
-                <div>
-                    <h4 class="fw-bold mb-1 text-dark">Create Assignment</h4>
-                    <p class="text-muted mb-0 small">Aircraft deep cleaning record form (Deep Cleaning Interior & Exterior)</p>
-                </div>
-            </div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('assignments.index') }}">Assignment</a></li>
-                    <li class="breadcrumb-item active">Create Assignment</li>
-                </ol>
-            </nav>
+    <div class="card mb-4">
+        <div class="card-header border-bottom">
+            <h5 class="mb-0 fw-bold">Tambah Assignment Baru</h5>
         </div>
-
-        {{-- Alert Validasi Error --}}
-        @if ($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                <h6 class="alert-heading fw-bold mb-1"><i class="bx bx-error-circle me-1"></i>Validation Error:</h6>
-                <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-                <i class="bx bx-check-circle me-1"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        <div class="row">
-            <div class="col-md-10 offset-md-1">
-
-                {{-- CARD FORM INPUT PEKERJAAN --}}
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header border-bottom py-3 d-flex align-items-center justify-content-between bg-white">
-                        <div>
-                            <h5 class="card-title text-dark fw-bold mb-0">
-                                <i class="bx bx-plus-circle text-primary me-2"></i>Assignment Form
-                            </h5>
-                            <p class="mb-0 mt-1 small text-muted">Input aircraft deep cleaning details (Deep Cleaning Interior & Exterior)</p>
-                        </div>
-                    </div>
-
-                    <div class="card-body mt-3">
-                        <form action="{{ route('assignments.store') }}" method="POST" enctype="multipart/form-data" id="workResultForm">
-                            @csrf
-
-
+        <div class="card-body pt-4">
+            <form action="{{ route('assignments.store') }}" method="POST" enctype="multipart/form-data" id="workResultForm">
+                @csrf
                             {{-- FORM GRID PEKERJAAN & AUTO-FILL FLIGHT --}}
                             <div class="row g-3 mb-4">
                                 <div class="col-md-3">
@@ -213,10 +159,6 @@
                         </form>
                     </div>
                 </div>
-
-            </div>
-        </div>
-    </div>
 </div>
 @endsection
 

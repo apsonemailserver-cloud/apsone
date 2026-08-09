@@ -706,6 +706,7 @@
 
     <script src="{{ asset('vendor/tensorflow/tf.min.js') }}"></script>
     <script src="{{ asset('vendor/tensorflow/blazeface.min.js') }}"></script>
+    <script src="{{ asset('vendor/face-api/face-api.min.js') }}"></script>
     <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
 
     @if(session('error'))
@@ -787,23 +788,36 @@
 
                 navigator.geolocation.getCurrentPosition(
                     (pos) => updateGpsUI(pos),
-                    (err) => console.warn('GPS refresh error:', err),
-                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                    (err) => {
+                        navigator.geolocation.getCurrentPosition(
+                            (pos2) => updateGpsUI(pos2),
+                            (err2) => console.warn('GPS refresh fallback error:', err2),
+                            { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+                        );
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
                 );
             }
 
-            // Immediately start GPS pre-warming on page load
+            // Immediately start GPS pre-warming on page load (fast network/cached location first)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => updateGpsUI(pos),
-                    (err) => console.warn('Initial GPS fetch error:', err),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    (err) => {
+                        console.warn('Fast GPS fetch error, retrying with high accuracy:', err);
+                        navigator.geolocation.getCurrentPosition(
+                            (pos2) => updateGpsUI(pos2),
+                            (err2) => console.warn('High accuracy GPS error:', err2),
+                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+                        );
+                    },
+                    { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
                 );
 
                 gpsWatchId = navigator.geolocation.watchPosition(
                     (pos) => updateGpsUI(pos),
                     (err) => console.warn('Watch GPS error:', err),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
                 );
             }
 
@@ -821,22 +835,17 @@
                 btnSubmit.disabled = true;
             };
 
-            const updateFaceStatusUI = (hasFace) => {
+            const hasFaceSamples = @json($hasFaceSamples ?? false);
+            let isFaceMatched = !hasFaceSamples; // If no face samples, default true (grace mode)
+            let refDescriptors = [];
+            let isFaceApiLoaded = false;
+
+            const updateFaceStatusUI = (hasFace, matchDistance = null) => {
                 isFaceDetected = hasFace;
                 const cameraHint = document.querySelector('.camera-hint');
                 const hintIcon = document.querySelector('.camera-hint i');
 
-                if (hasFace) {
-                    if (cameraStatus) {
-                        cameraStatus.className = 'camera-status-pill is-success';
-                        cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Wajah Terdeteksi</span>';
-                    }
-                    if (faceGuide) faceGuide.classList.add('is-valid');
-                    if (cameraHint) cameraHint.className = 'camera-hint is-success';
-                    if (hintIcon) hintIcon.className = 'bx bx-check-circle';
-                    if (hintText) hintText.textContent = 'Wajah terdeteksi dengan jelas. Silakan klik {{ $actionTitle }}.';
-                    btnSubmit.disabled = false;
-                } else {
+                if (!hasFace) {
                     if (cameraStatus) {
                         cameraStatus.className = 'camera-status-pill is-warning';
                         cameraStatus.innerHTML = '<i class="bx bx-error-circle"></i><span>Wajah Tidak Terdeteksi</span>';
@@ -846,10 +855,89 @@
                     if (hintIcon) hintIcon.className = 'bx bx-x-circle';
                     if (hintText) hintText.textContent = 'Posisikan wajah di tengah frame hingga indikator berwarna hijau.';
                     btnSubmit.disabled = true;
+                    return;
+                }
+
+                if (hasFaceSamples && refDescriptors.length > 0) {
+                    if (matchDistance !== null && matchDistance < 0.55) {
+                        isFaceMatched = true;
+                        const matchPct = Math.min(99, Math.round((1 - matchDistance) * 100));
+                        if (cameraStatus) {
+                            cameraStatus.className = 'camera-status-pill is-success';
+                            cameraStatus.innerHTML = `<i class="bx bx-check-double"></i><span>Wajah Cocok (${matchPct}%)</span>`;
+                        }
+                        if (faceGuide) faceGuide.classList.add('is-valid');
+                        if (cameraHint) cameraHint.className = 'camera-hint is-success';
+                        if (hintIcon) hintIcon.className = 'bx bx-check-circle';
+                        if (hintText) hintText.textContent = `Verifikasi wajah berhasil (${matchPct}% kecocokan). Silakan klik {{ $actionTitle }}.`;
+                        btnSubmit.disabled = false;
+                    } else {
+                        isFaceMatched = false;
+                        if (cameraStatus) {
+                            cameraStatus.className = 'camera-status-pill is-warning';
+                            cameraStatus.innerHTML = '<i class="bx bx-user-x"></i><span>Wajah Tidak Cocok</span>';
+                        }
+                        if (faceGuide) faceGuide.classList.remove('is-valid');
+                        if (cameraHint) cameraHint.className = 'camera-hint is-warning';
+                        if (hintIcon) hintIcon.className = 'bx bx-error';
+                        if (hintText) hintText.textContent = 'Wajah di kamera tidak cocok dengan 3 foto referensi terdaftar NIP Anda.';
+                        btnSubmit.disabled = true;
+                    }
+                } else {
+                    // Grace Mode (No reference photos uploaded yet)
+                    isFaceMatched = true;
+                    if (cameraStatus) {
+                        cameraStatus.className = 'camera-status-pill is-success';
+                        cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Wajah Terdeteksi (Mode Presensi)</span>';
+                    }
+                    if (faceGuide) faceGuide.classList.add('is-valid');
+                    if (cameraHint) cameraHint.className = 'camera-hint is-success';
+                    if (hintIcon) hintIcon.className = 'bx bx-check-circle';
+                    if (hintText) hintText.textContent = 'Wajah terdeteksi (Foto referensi NIP belum diisi oleh Admin). Silakan klik {{ $actionTitle }}.';
+                    btnSubmit.disabled = false;
                 }
             };
 
             setStatus('bx-loader-alt bx-spin', 'Memuat AI...');
+
+            // Load face-api.js models and reference descriptors if registered
+            async function initFaceRecognition() {
+                if (hasFaceSamples && typeof faceapi !== 'undefined') {
+                    try {
+                        const MODEL_URL = '{{ asset("vendor/face-api/models") }}';
+                        setStatus('bx-loader-alt bx-spin', 'Memuat AI Face Recognition...');
+                        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                        await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
+                        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+
+                        // Fetch reference photos API
+                        const resp = await fetch('{{ route("attendance.face-samples.api") }}');
+                        const data = await resp.json();
+
+                        if (data && data.photos) {
+                            setStatus('bx-loader-alt bx-spin', 'Menganalisis Foto Referensi...');
+                            for (const pos of ['front', 'right', 'left']) {
+                                if (data.photos[pos]) {
+                                    try {
+                                        const img = await faceapi.fetchImage(data.photos[pos]);
+                                        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
+                                        if (detection && detection.descriptor) {
+                                            refDescriptors.push(detection.descriptor);
+                                        }
+                                    } catch (e) {
+                                        console.warn('Error loading ref photo ' + pos + ':', e);
+                                    }
+                                }
+                            }
+                        }
+                        isFaceApiLoaded = true;
+                        console.log('Face Recognition initialized with ' + refDescriptors.length + ' descriptors.');
+                    } catch (err) {
+                        console.warn('FaceAPI init error:', err);
+                    }
+                }
+            }
+            initFaceRecognition();
 
             // Load BlazeFace AI Neural Model
             if (typeof blazeface !== 'undefined') {
@@ -859,6 +947,11 @@
                     console.log('BlazeFace AI model loaded.');
                 }).catch(err => {
                     console.warn('BlazeFace model load error:', err);
+                    isModelReady = true;
+                });
+            } else {
+                isModelReady = true;
+            }
                     isModelReady = true; // Fallback to Laplacian edge detector
                 });
             } else {
@@ -1059,9 +1152,21 @@
                     setInterval(async () => {
                         if (loader.classList.contains('is-hidden')) {
                             const detected = await detectFaceInVideo();
-                            updateFaceStatusUI(detected);
+                            let minDistance = null;
+                            if (detected && hasFaceSamples && isFaceApiLoaded && refDescriptors.length > 0) {
+                                try {
+                                    const liveDetection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
+                                    if (liveDetection && liveDetection.descriptor) {
+                                        const distances = refDescriptors.map(ref => faceapi.euclideanDistance(liveDetection.descriptor, ref));
+                                        minDistance = Math.min(...distances);
+                                    }
+                                } catch (e) {
+                                    console.warn('Face match error:', e);
+                                }
+                            }
+                            updateFaceStatusUI(detected, minDistance);
                         }
-                    }, 300);
+                    }, 400);
                 };
             }).catch(() => {
                 setErrorState('Tidak bisa membuka kamera', 'Periksa izin kamera di browser, lalu coba buka halaman ini kembali.');
@@ -1091,6 +1196,16 @@
                         icon: 'warning',
                         title: 'Wajah Tidak Terdeteksi',
                         text: 'Posisikan wajah Anda dengan jelas di tengah kamera sebelum menekan tombol {{ $actionTitle }}.',
+                        confirmButtonColor: '#2f80ed'
+                    });
+                    return;
+                }
+
+                if (hasFaceSamples && !isFaceMatched) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Verifikasi Wajah Gagal',
+                        text: 'Wajah di kamera tidak cocok dengan foto referensi terdaftar NIP Anda.',
                         confirmButtonColor: '#2f80ed'
                     });
                     return;
@@ -1156,6 +1271,7 @@
                     didOpen: () => Swal.showLoading()
                 });
 
+                // Try fast low-accuracy / cached location first (instant ~100ms response)
                 navigator.geolocation.getCurrentPosition(
                     (pos) => processFormSubmission(pos),
                     (error) => {
@@ -1165,11 +1281,11 @@
                             navigator.geolocation.getCurrentPosition(
                                 (pos2) => processFormSubmission(pos2),
                                 (error2) => handleFailure(error2),
-                                { enableHighAccuracy: false, timeout: 8000, maximumAge: 10000 }
+                                { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
                             );
                         }
                     },
-                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                    { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
                 );
             });
         });

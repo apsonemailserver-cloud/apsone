@@ -20,18 +20,13 @@
 
             <div class="card">
                 <div class="card-body">
-                    {{-- Toolbar --}}
-                    <div class="dt-toolbar">
-                        <form action="{{ route('users.office') }}" method="GET" class="dt-search">
-                            <i class="bx bx-search search-icon"></i>
-                            <input type="text" name="search" class="form-control" placeholder="Cari NIP atau Nama..." value="{{ request('search') }}">
-                        </form>
+                    <x-dt-toolbar :searchFormAction="route('users.office')" searchPlaceholder="Cari NIP atau Nama...">
                         @if (request('search'))
-                        <div class="dt-actions">
+                        <x-slot name="actions">
                             <a href="{{ route('users.office') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
-                        </div>
+                        </x-slot>
                         @endif
-                    </div>
+                    </x-dt-toolbar>
 
                     {{-- Tabel --}}
                     <div class="table-responsive">
@@ -66,9 +61,7 @@
                                             <form id="resetPasswordForm-{{ $item->id }}" action="{{ route('user.resetPassword', $item->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('PUT')
-                                                <button type="button" class="action-btn border-0" onclick="confirmReset({{ $item->id }})" title="Reset Password">
-                                                    <i class="bx bx-refresh"></i>
-                                                </button>
+                                                <x-action-button type="button" action="reset" onclick="confirmReset({{ $item->id }})" title="Reset Password" />
                                             </form>
                                         </td>
                                         @endif

@@ -153,9 +153,10 @@
         <div class="row">
             <div class="col-lg-12 mb-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1">
-                    <h4 class="fw-bold pt-3 pb-1 mb-0">
-                        <span class="text-muted fw-light">Lembur /</span> Riwayat Lembur
-                    </h4>
+                    <div>
+                        <h4 class="fw-bold mb-1">Riwayat Lembur</h4>
+                        <p class="text-muted mb-0" style="font-size:0.875rem;">Daftar pengajuan dan riwayat lembur karyawan.</p>
+                    </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-primary">
                             <i class="bx bx-time me-1"></i>
@@ -249,15 +250,10 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6">
-                                                <div class="text-center py-5">
-                                                    <i class="bx bx-time bx-lg text-muted mb-3" style="font-size: 4rem;"></i>
-                                                    <h5 class="text-muted">Belum ada data lembur</h5>
-                                                    <p class="text-muted">Mulai dengan mengajukan lembur pertama Anda</p>
-                                                    <a href="{{ route('overtime.create') }}" class="create-btn mt-3">
-                                                        <i class="bx bx-plus-circle"></i> Ajukan Lembur
-                                                    </a>
-                                                </div>
+                                            <td colspan="6" class="text-center py-5 text-muted">
+                                                <i class="bx bx-time d-block fs-1 mb-2 opacity-50"></i>
+                                                <h6 class="fw-bold mb-1 text-secondary">Belum ada data lembur</h6>
+                                                <p class="mb-0 text-muted small">Mulai dengan mengajukan lembur pertama Anda.</p>
                                             </td>
                                         </tr>
                                     @endforelse

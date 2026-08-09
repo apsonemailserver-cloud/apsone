@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        
+        $middleware->trustProxies(at: '*');
+
         // 2. PENTING: Daftarkan middleware ke grup 'web'
         // 'append' artinya dijalankan setelah middleware bawaan Laravel selesai
         $middleware->web(append: [

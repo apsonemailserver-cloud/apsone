@@ -8,11 +8,24 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 
+use App\Http\Controllers\Traits\PreservesIndexState;
+
 class RoleController extends Controller
 {
+    use PreservesIndexState;
+
     public function index(Request $request)
     {
-        $roles = Role::withCount('permissions')->get();
+        if ($redirect = $this->checkIndexState($request, 'roles', '#^/roles(/\d+)?(/edit|/permissions)?$|/roles/create#')) {
+            return $redirect;
+        }
+
+        $query = Role::withCount('permissions')->orderBy('name');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        $perPage = (int) $request->input('per_page', 10);
+        $roles = $query->paginate($perPage)->withQueryString();
         
         // Count users per role
         $allUsers = User::with('roleRelation')->get();
@@ -34,39 +47,49 @@ class RoleController extends Controller
 
     public function create()
     {
-        $modules = Permission::modules();
-        $actions = Permission::actions();
-        $permissionsByModule = Permission::all()->groupBy('module');
-
-        return view('role.create', compact('modules', 'actions', 'permissionsByModule'));
+        return view('role.create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:roles,name',
-            'label' => 'nullable|string|max:150',
             'description' => 'nullable|string|max:255',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role = Role::create([
             'name' => trim($validated['name']),
-            'label' => $validated['label'] ?: trim($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_system' => false,
         ]);
-
-        if (!empty($validated['permissions'])) {
-            $role->permissions()->sync($validated['permissions']);
-        }
 
         Alert::success('Berhasil', "Role '{$role->name}' berhasil dibuat.");
         return redirect()->route('roles.index');
     }
 
     public function edit($id)
+    {
+        $role = Role::findOrFail($id);
+        return view('role.edit', compact('role'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $role = Role::findOrFail($id);
+
+        $validated = $request->validate([
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $role->update([
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        Alert::success('Berhasil', "Data role '{$role->name}' berhasil diperbarui.");
+        return redirect()->route('roles.index');
+    }
+
+    public function permissions($id)
     {
         $role = Role::with('permissions')->findOrFail($id);
         $modules = Permission::modules();
@@ -89,7 +112,7 @@ class RoleController extends Controller
 
         $activeEmployeeCount = $employees->where('has_role', true)->count();
 
-        return view('role.edit', compact(
+        return view('role.permissions', compact(
             'role', 
             'modules', 
             'actions', 
@@ -100,29 +123,31 @@ class RoleController extends Controller
         ));
     }
 
-    public function update(Request $request, $id)
+    public function updatePermissions(Request $request, $id)
     {
         $role = Role::findOrFail($id);
 
         $validated = $request->validate([
-            'label' => 'required|string|max:150',
-            'description' => 'nullable|string|max:255',
-            'permissions' => 'nullable|array',
+            'permissions'   => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        $role->update([
-            'label' => $validated['label'],
-            'description' => $validated['description'] ?? null,
-        ]);
-
         if ($role->name === 'Admin') {
-            // Admin always has all permissions
             $role->permissions()->sync(Permission::pluck('id')->toArray());
         } else {
             $role->permissions()->sync($validated['permissions'] ?? []);
         }
 
+        // AJAX / fetch request — return JSON so the page can stay and show toast
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Hak akses role '{$role->name}' berhasil diperbarui.",
+                'count'   => $role->permissions()->count(),
+            ]);
+        }
+
+        // Normal form submission — redirect with flash alert
         Alert::success('Berhasil', "Hak akses role '{$role->name}' berhasil diperbarui.");
         return redirect()->route('roles.index');
     }

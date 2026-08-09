@@ -74,7 +74,7 @@ class ScheduleController extends Controller
 
     public function autoCreate()
     {
-        abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
+        abort_unless(Auth::user()->isAdmin() || Auth::user()->canAccess('schedule', 'sync'), 403, 'Akses ditolak. Anda tidak memiliki izin untuk menggenerate jadwal.');
 
         @set_time_limit(300);
 
@@ -525,7 +525,14 @@ class ScheduleController extends Controller
     }
     public function updateActive(Request $request)
     {
-        abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
+        $user = Auth::user();
+        $userRole = $user->role ?? '';
+        $canToggle = $user->isAdmin() 
+            || $user->canAccess('schedule', 'edit') 
+            || in_array($userRole, ['Leader Apron', 'Leader Bge', 'SPV Apron', 'SPV Bge', 'Head Of Airport Service']);
+
+        abort_unless($canToggle, 403, 'Akses ditolak. Anda tidak memiliki izin untuk mengelola status aktif jadwal.');
+
         $schedule = Schedule::findOrFail($request->id);
         $schedule->is_active = $request->is_active;
         $schedule->save();
@@ -537,7 +544,7 @@ class ScheduleController extends Controller
     {
         abort_unless(Auth::user()->isAdmin(), 403, 'Akses ditolak. Hanya Admin yang dapat mengelola jadwal.');
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
+            'file' => 'required|mimes:xlsx,xls|max:2048'
         ]);
 
         try {

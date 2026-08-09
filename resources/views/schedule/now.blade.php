@@ -43,7 +43,7 @@
     }
 
     input:checked + .slider {
-        background-color: #48bb78;
+        background-color: var(--sn-blue, #2f80ed) !important;
     }
 
     input:checked + .slider:before {
@@ -400,7 +400,7 @@
     }
 
     .schedule-now-page input:checked + .slider {
-        background-color: var(--sn-green);
+        background-color: var(--sn-blue, #2f80ed) !important;
     }
 
     .schedule-now-page .empty-state {
@@ -458,6 +458,10 @@
         background-color: #344760;
     }
 
+    html.aps-dark .schedule-now-page input:checked + .slider {
+        background-color: var(--sn-blue, #3b82f6) !important;
+    }
+
     @media (max-width: 1199.98px) {
         .schedule-now-page .today-overview {
             grid-template-columns: 1fr;
@@ -507,10 +511,11 @@
 
 <div class="container-xxl flex-grow-1 container-p-y schedule-now-page">
     <!-- Header -->
-    <div class="schedule-page-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
-        <h4 class="fw-bold pt-3 pb-1 mb-0">
-            <span class="text-muted fw-light">Schedule /</span> Jadwal Hari Ini
-        </h4>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Jadwal Hari Ini</h4>
+            <p class="text-muted mb-0" style="font-size:0.875rem;">Pantau status aktif dan kebutuhan tenaga kerja hari ini.</p>
+        </div>
         <span class="date-pill">
             <i class="bx bx-calendar"></i>
             {{ $today->format('d M Y') }}
@@ -621,7 +626,14 @@
                             </div>
                         </div>
                         
-                        @if(auth()->user()->role == 'Leader Apron' || in_array(auth()->user()->role, ['SPV Bge','SPV Apron']))
+                        @php
+                            $authUser = auth()->user();
+                            $userRole = $authUser->role ?? '';
+                            $canToggleSchedule = $authUser->isAdmin() 
+                                || $authUser->canAccess('schedule', 'edit') 
+                                || in_array($userRole, ['Leader Apron', 'Leader Bge', 'SPV Bge', 'SPV Apron', 'Head Of Airport Service']);
+                        @endphp
+                        @if($canToggleSchedule)
                         <label class="switch">
                             <input type="checkbox"
                                 class="attendance-toggle"
@@ -659,27 +671,29 @@
             // Show loading state
             switchElement.prop('disabled', true);
 
+            let token = $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}';
+
             $.ajax({
-                url: '/schedules/update-active',
+                url: '{{ route("schedule.updateActive") }}',
                 method: 'POST',
                 data: {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    _token: token,
                     id: scheduleId,
                     is_active: isActive
                 },
                 success: function(res) {
                     console.log(res.message);
-                    // Show success feedback
                     showNotification('Status berhasil diupdate', 'success');
-
-                    // Reload data directly
                     location.reload();
                 },
                 error: function(err) {
                     console.error('Gagal update status:', err);
-                    // Revert the toggle on error
                     switchElement.prop('checked', !isActive);
-                    showNotification('Gagal update status!', 'error');
+                    let msg = 'Gagal update status!';
+                    if (err.responseJSON && err.responseJSON.message) {
+                        msg = err.responseJSON.message;
+                    }
+                    showNotification(msg, 'error');
                 },
                 complete: function() {
                     switchElement.prop('disabled', false);

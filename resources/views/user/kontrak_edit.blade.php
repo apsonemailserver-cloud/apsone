@@ -2,70 +2,57 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <!-- Basic Bootstrap Table -->
-            <div class="card">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0">EDIT KONTRAK</h5>
-                </div>
-                <div class="card-body">
-                    @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    @endif
-
-                    @if(session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    <form action="{{ route('users.KontrakUpdate', ['user' => $user->id]) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        
-                        <input type="hidden" name="page" value="{{ $page }}">
-                        
-                        <div class="mb-3">
-                            <label class="form-label">NIP</label>
-                            <input type="text" class="form-control" name="ID" value="{{ $user->id }}" readonly>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Nama</label>
-                            <input type="text" class="form-control" name="fullname" value="{{ $user->fullname }}" readonly>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Kontrak Mulai</label>
-                            <input type="date" class="form-control" name="contract_start"
-                                value="{{ old('contract_start', $user->contract_start ? \Carbon\Carbon::parse($user->contract_start)->format('Y-m-d') : '') }}">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Kontrak Selesai</label>
-                            <input type="date" class="form-control" name="contract_end"
-                                value="{{ old('contract_end', $user->contract_end ? \Carbon\Carbon::parse($user->contract_end)->format('Y-m-d') : '') }}">
-                        </div>
-                        
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bx bx-save me-1"></i>UPDATE
-                            </button>
-                            <a href="{{ route('users.kontrak', ['page' => $page]) }}" class="btn btn-warning">
-                                <i class="bx bx-arrow-back me-1"></i>BACK
-                            </a>
-                        </div>
-                    </form>
-                </div>
+    <div class="card mb-4">
+        <div class="card-header border-bottom">
+            <h5 class="mb-0 fw-bold">Edit Kontrak Kerja</h5>
+        </div>
+        <div class="card-body pt-4">
+            @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-            <!--/ Basic Bootstrap Table -->
+            @endif
+
+            @if(session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <form action="{{ route('users.KontrakUpdate', ['user' => $user->id]) }}" method="POST">
+                @csrf
+                @method('PUT')
+                
+                <input type="hidden" name="page" value="{{ $page }}">
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">NIP</label>
+                    <input type="text" class="form-control" name="ID" value="{{ $user->id }}" readonly>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nama</label>
+                    <input type="text" class="form-control" name="fullname" value="{{ $user->fullname }}" readonly>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Kontrak Mulai <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" name="contract_start"
+                        value="{{ old('contract_start', $user->contract_start ? \Carbon\Carbon::parse($user->contract_start)->format('Y-m-d') : '') }}">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Kontrak Selesai <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" name="contract_end"
+                        value="{{ old('contract_end', $user->contract_end ? \Carbon\Carbon::parse($user->contract_end)->format('Y-m-d') : '') }}">
+                </div>
+                
+                <x-form-actions :cancelHref="route('users.kontrak', ['page' => $page])" submitText="Update" />
+            </form>
         </div>
     </div>
 </div>

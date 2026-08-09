@@ -313,7 +313,7 @@
                     </tbody>
                 </table>
                 <div class="mt-4" style="margin-top: 20px;">
-                    {{ $flights->links('pagination::bootstrap-4') }}
+                    {{ $flights->links('vendor.pagination.custom') }}
                 </div>
             </div>
         </div>

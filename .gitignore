@@ -1,3 +1,7 @@
 .env
 .worktrees/
 thesis/
+storage/
+.agents
+.DS_Store
+.phpunit.result.cache

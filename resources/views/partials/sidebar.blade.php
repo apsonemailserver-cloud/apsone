@@ -90,9 +90,13 @@
         </a>
         <div id="applyLeaveDropdown" class="collapse">
             <a href="{{ route('leaves.pengajuan') }}" class="dropdown-item ps-4">Pengajuan Leave</a>
-            @if (in_array(Auth::user()->role, ['Leader', 'Ass Leader', 'Admin', 'SPV']))
+            @if (in_array(Auth::user()->role, ['Leader', 'Ass Leader', 'Admin', 'SPV']) || Auth::user()->hasPermission('leave.approve'))
                 <a href="{{ route('leaves.index') }}" class="dropdown-item ps-4">Approval Leave</a>
+                <a href="{{ route('leaves.balances') }}" class="dropdown-item ps-4">Saldo Cuti Karyawan</a>
                 <a href="{{ route('leaves.laporan') }}" class="dropdown-item ps-4">Laporan Leave</a>
+            @endif
+            @if (Auth::user()->canAccess('master_leave', 'view'))
+                <a href="{{ route('master_leaves.index') }}" class="dropdown-item ps-4">Master Cuti</a>
             @endif
         </div>
     </div>

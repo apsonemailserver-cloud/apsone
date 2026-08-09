@@ -290,44 +290,51 @@
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Tanggal & Station</th>
-                                    <th>Kategori</th>
-                                    <th>Registrasi & Assignment</th>
-                                    <th>Ex / To Flight</th>
-                                    <th>Stand & Waktu</th>
-                                    <th>Foto Bukti</th>
-                                    <th>Status</th>
-                                    <th>Staff Terlibat</th>
-                                    <th class="text-center">Aksi</th>
+                                    <th width="4%">#</th>
+                                    <th>TANGGAL</th>
+                                    <th>STATION</th>
+                                    <th>CATEGORY</th>
+                                    <th>REGISTRASI</th>
+                                    <th>NO. WO</th>
+                                    <th>EX FLIGHT</th>
+                                    <th>TO FLIGHT</th>
+                                    <th>STAND</th>
+                                    <th>WAKTU KERJA</th>
+                                    <th>EVIDENCE PHOTO</th>
+                                    <th>STATUS</th>
+                                    <th>LEADER</th>
+                                    <th>STAFF ON DUTY</th>
+                                    <th class="text-center" width="10%">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @if (isset($personalWorkResultsLastMonth) && $personalWorkResultsLastMonth->isNotEmpty())
-                                    @foreach ($personalWorkResultsLastMonth as $wo)
+                                    @foreach ($personalWorkResultsLastMonth as $index => $wo)
                                         <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">{{ \Carbon\Carbon::parse($wo->date)->format('d M Y') }}</div>
-                                                <span class="badge bg-label-secondary mt-1">{{ $wo->station }}</span>
-                                            </td>
+                                            <td class="fw-semibold text-secondary">{{ $loop->iteration }}</td>
+                                            <td><strong>{{ \Carbon\Carbon::parse($wo->date)->format('d M Y') }}</strong></td>
+                                            <td><span class="badge bg-label-secondary font-monospace">{{ $wo->station }}</span></td>
                                             <td>
                                                 @if($wo->type === 'DCI')
-                                                    <span class="badge bg-label-primary px-3 py-1.5 fw-bold">DCI (INTERIOR)</span>
+                                                    <span class="badge bg-label-primary px-3 py-1.5 font-monospace fw-bold">DCI (INTERIOR)</span>
+                                                @elseif($wo->type === 'DCE')
+                                                    <span class="badge bg-label-success px-3 py-1.5 font-monospace fw-bold">DCE (EXTERIOR)</span>
+                                                @elseif($wo->type === 'PDI')
+                                                    <span class="badge bg-label-info px-3 py-1.5 font-monospace fw-bold">PDI</span>
+                                                @elseif($wo->type === 'Transit')
+                                                    <span class="badge bg-label-warning px-3 py-1.5 font-monospace fw-bold">TRANSIT</span>
+                                                @elseif($wo->type === 'RON')
+                                                    <span class="badge bg-label-dark px-3 py-1.5 font-monospace fw-bold">RON</span>
                                                 @else
-                                                    <span class="badge bg-label-success px-3 py-1.5 fw-bold">DCE (EXTERIOR)</span>
+                                                    <span class="badge bg-label-secondary px-3 py-1.5 font-monospace fw-bold">{{ strtoupper($wo->type ?? '-') }}</span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                <strong class="text-dark fs-6">{{ $wo->aircraft_reg }}</strong>
-                                                <div class="small text-muted">WO: {{ $wo->wo_number }}</div>
-                                            </td>
-                                            <td>
-                                                <div class="small fw-semibold text-dark">Ex: {{ $wo->ex_flight ?: '-' }}</div>
-                                                <div class="small text-muted">To: {{ $wo->to_flight ?: '-' }}</div>
-                                            </td>
-                                            <td>
-                                                <div class="fw-medium text-dark"><i class="bx bx-parking me-1 text-primary"></i>Stand {{ $wo->parking_stand }}</div>
-                                                <div class="small text-muted"><i class="bx bx-time me-1"></i>{{ substr($wo->start_time, 0, 5) }} - {{ substr($wo->end_time, 0, 5) }} ({{ $wo->duration_minutes }} min)</div>
-                                            </td>
+                                            <td><strong class="text-dark fs-6">{{ $wo->aircraft_reg }}</strong></td>
+                                            <td><code class="font-monospace text-muted">WO: {{ $wo->wo_number }}</code></td>
+                                            <td><span class="small fw-semibold text-dark">{{ $wo->ex_flight ?: '-' }}</span></td>
+                                            <td><span class="small text-muted">{{ $wo->to_flight ?: '-' }}</span></td>
+                                            <td><div class="fw-medium text-dark"><i class="bx bx-parking me-1 text-primary"></i>Stand {{ $wo->parking_stand }}</div></td>
+                                            <td><span class="small text-muted"><i class="bx bx-time me-1"></i>{{ substr($wo->start_time, 0, 5) }} - {{ substr($wo->end_time, 0, 5) }} ({{ $wo->duration_minutes }} min)</span></td>
                                             <td>
                                                 @if($wo->photo_path)
                                                     <button type="button" class="btn btn-xs btn-label-primary py-1 px-2.5 rounded-pill btn-preview-photo" data-photo-url="{{ asset('storage/' . $wo->photo_path) }}" data-wo="{{ $wo->wo_number }}" title="Lihat Foto Bukti">
@@ -350,32 +357,24 @@
                                                     <span class="badge bg-label-warning px-3 py-1.5 rounded-pill fw-semibold"><i class="bx bx-loader-alt bx-spin me-1"></i>Proses</span>
                                                 @endif
                                             </td>
+                                            <td><div class="fw-semibold text-dark">{{ $wo->submittedBy ? $wo->submittedBy->fullname : '-' }}</div></td>
                                             <td>
                                                 @if($wo->users && $wo->users->count() > 0)
-                                                    @foreach($wo->users->take(2) as $st)
-                                                        <span class="badge bg-label-primary me-1 mb-1" style="font-size: 0.75rem;">{{ $st->fullname }}</span>
+                                                    @foreach($wo->users as $st)
+                                                        <span class="badge bg-label-primary me-1 mb-1 font-monospace" style="font-size: 0.75rem;">{{ $st->fullname }}</span>
                                                     @endforeach
-                                                    @if($wo->users->count() > 2)
-                                                        <span class="badge bg-label-secondary me-1 mb-1" style="font-size: 0.75rem;">+{{ $wo->users->count() - 2 }}</span>
-                                                    @endif
                                                 @else
                                                     <span class="text-muted small">-</span>
                                                 @endif
                                             </td>
                                             <td class="text-center">
                                                 <div class="d-flex align-items-center justify-content-center gap-1">
-                                                    <a href="{{ route('assignments.show', $wo->id) }}" class="action-btn" title="Detail Pekerjaan">
-                                                        <i class="bx bx-show"></i>
-                                                    </a>
+                                                    <x-action-button action="view" :href="route('assignments.show', $wo->id)" title="Detail Pekerjaan" />
                                                     @if(auth()->user()->hasRole(\App\Models\Assignment::LEADER_ROLES))
                                                         @if($wo->photo_path)
-                                                            <a href="{{ route('assignments.export_single_pdf', $wo->id) }}" class="action-btn action-edit" title="Cetak Hardcopy WO PDF" target="_blank">
-                                                                <i class="bx bx-printer"></i>
-                                                            </a>
+                                                            <x-action-button action="edit" icon="ti ti-printer" :href="route('assignments.export_single_pdf', $wo->id)" title="Cetak Hardcopy WO PDF" target="_blank" />
                                                         @else
-                                                            <button type="button" class="action-btn action-edit opacity-50 btn-no-photo-pdf" data-wo="{{ $wo->wo_number }}" title="Belum Ada Foto (Tidak Bisa Dicetak)">
-                                                                <i class="bx bx-printer"></i>
-                                                            </button>
+                                                            <x-action-button type="button" action="edit" icon="ti ti-printer" class="opacity-50 btn-no-photo-pdf" :data-wo="$wo->wo_number" title="Belum Ada Foto (Tidak Bisa Dicetak)" />
                                                         @endif
                                                     @endif
                                                 </div>
@@ -384,7 +383,7 @@
                                     @endforeach
                                 @else
                                     <tr>
-                                        <td colspan="8" class="text-center py-5 text-muted">
+                                        <td colspan="15" class="text-center py-5 text-muted">
                                             <i class="bx bx-folder-open fs-1 mb-2 opacity-50"></i>
                                             <p class="mb-0">Tidak ada pengerjaan yang ditugaskan kepada Anda dalam 1 bulan terakhir.</p>
                                         </td>

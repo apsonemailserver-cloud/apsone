@@ -81,11 +81,7 @@
                                     @if(strtolower((string) Auth::user()->role) === 'admin')
                                         <td onclick="event.stopPropagation();" class="no-modal-trigger">
                                             <div class="d-flex align-items-center gap-2" onclick="event.stopPropagation();">
-                                                <a href="{{ route('announcements.edit', $announcement->id) }}"
-                                                    class="btn btn-sm btn-warning"
-                                                    onclick="event.stopPropagation();">
-                                                    <i class="ti ti-pencil"></i> Edit
-                                                </a>
+                                                <x-action-button action="edit" :href="route('announcements.edit', $announcement->id)" title="Edit Pengumuman" onclick="event.stopPropagation();" />
 
                                                 <form action="{{ route('announcements.destroy', $announcement->id) }}"
                                                     method="POST"
@@ -94,13 +90,7 @@
                                                     onclick="event.stopPropagation();">
                                                     @csrf
                                                     @method('DELETE')
-
-                                                    <button type="button"
-                                                        class="action-btn action-delete border-0"
-                                                        title="Hapus Pengumuman"
-                                                        onclick="event.stopPropagation(); confirmDeleteAnnouncement(event, '{{ $announcement->id }}', '{{ e($announcement->title) }}');">
-                                                        <i class="ti ti-trash"></i>
-                                                    </button>
+                                                    <x-action-button type="button" action="delete" title="Hapus Pengumuman" onclick="event.stopPropagation(); confirmDeleteAnnouncement(event, '{{ $announcement->id }}', '{{ e($announcement->title) }}');" />
                                                 </form>
                                             </div>
                                         </td>
@@ -193,22 +183,12 @@
             event.stopPropagation();
             event.preventDefault();
         }
-        Swal.fire({
-            title: 'Yakin hapus?',
-            html: `<p>Pengumuman <b>"${title}"</b> akan dihapus secara permanen.</p>`,
-            icon: 'warning',
-            iconColor: '#dc2626',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#94a3b8',
-            confirmButtonText: 'Ya, hapus',
+        apsConfirmDelete({
+            title: 'Hapus Pengumuman?',
+            text: `Pengumuman "${title}" akan dihapus secara permanen.`,
+            confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal',
-            customClass: { confirmButton: 'btn-danger' },
-            reverseButtons: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('delete-form-' + id).submit();
-            }
+            formId: 'delete-form-' + id
         });
     }
 

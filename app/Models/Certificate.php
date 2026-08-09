@@ -40,6 +40,9 @@ class Certificate extends Model
         'start_date',
         'end_date',
         'certificate_file',
+        'status',
+        'submitted_by',
+        'rejection_reason',
     ];
 
     protected $casts = [

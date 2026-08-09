@@ -33,6 +33,52 @@ class OvertimeController extends Controller
         return view('overtime.create');
     }
 
+    public function calculateDuration(Request $request)
+    {
+        $date = $request->query('date');
+        $user = Auth::user();
+
+        if (!$date) {
+            return response()->json(['success' => false, 'message' => 'Tanggal belum dipilih.']);
+        }
+
+        $attendance = \App\Models\Attendance::where('user_id', $user->id)
+            ->whereDate('check_in_time', $date)
+            ->first();
+
+        if (!$attendance || !$attendance->check_out_time) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Absensi check-out belum ditemukan pada tanggal ini. Durasi dapat diisi manual.',
+                'duration' => null
+            ]);
+        }
+
+        $schedule = \App\Models\Schedule::with('shift')
+            ->where('user_id', $user->id)
+            ->where('date', $date)
+            ->first();
+
+        $checkOut = \Carbon\Carbon::parse($attendance->check_out_time);
+
+        if ($schedule && $schedule->shift) {
+            $shiftEndTime = \Carbon\Carbon::parse($date . ' ' . $schedule->shift->end_time);
+            $minutes = $checkOut->diffInMinutes($shiftEndTime, false);
+            $hours = round(max(0.5, $minutes / 60), 1);
+        } else {
+            $checkIn = \Carbon\Carbon::parse($attendance->check_in_time);
+            $minutes = $checkOut->diffInMinutes($checkIn);
+            $hours = round(max(0.5, $minutes / 60), 1);
+        }
+
+        return response()->json([
+            'success' => true,
+            'duration' => $hours,
+            'check_out' => $checkOut->format('H:i'),
+            'message' => "Durasi dikalkulasi otomatis dari jam check-out ({$checkOut->format('H:i')})"
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([

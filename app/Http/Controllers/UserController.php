@@ -6,6 +6,10 @@ use App\Models\Blacklist;
 use App\Models\Certificate;
 use App\Models\Station;
 use App\Models\User;
+use App\Models\JobTitle;
+use App\Models\Unit;
+use App\Models\SubUnit;
+use App\Models\Cluster;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,17 +18,25 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use RealRashid\SweetAlert\Facades\Alert;
 
+use App\Http\Controllers\Traits\PreservesIndexState;
+
 class UserController extends Controller
 {
+    use PreservesIndexState;
+
     // =================================================================
     // 1. DATA USER UTAMA (CRUD & FILTER)
     // =================================================================
 
-    public function index(): View
+    public function index(Request $request)
     {
         abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
-        $search = request('search');
+        if ($redirect = $this->checkIndexState($request, 'user', '#^/user(/\d+)?(/edit)?$|/user/create#')) {
+            return $redirect;
+        }
+
+        $search = $request->input('search');
 
         $user = User::when($search, function ($query, $search) {
             return $query->where('fullname', 'like', "%{$search}%")
@@ -138,8 +150,12 @@ class UserController extends Controller
         $stations = Station::where('is_active', 1)
             ->orderBy('code', 'ASC')
             ->get();
+        $jobTitles = JobTitle::orderBy('name')->get();
+        $units = Unit::orderBy('name')->get();
+        $subUnits = SubUnit::orderBy('name')->get();
+        $clusters = Cluster::orderBy('name')->get();
 
-        return view('user.create', compact('stations'));
+        return view('user.create', compact('stations', 'jobTitles', 'units', 'subUnits', 'clusters'));
     }
 
     // =========================================================================
@@ -336,8 +352,12 @@ class UserController extends Controller
             $redirectTo = route('staff.index');
         }
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
+        $jobTitles = JobTitle::orderBy('name')->get();
+        $units = Unit::orderBy('name')->get();
+        $subUnits = SubUnit::orderBy('name')->get();
+        $clusters = Cluster::orderBy('name')->get();
 
-        return view('user.edit', compact('user', 'page', 'redirectTo', 'stations'));
+        return view('user.edit', compact('user', 'page', 'redirectTo', 'stations', 'jobTitles', 'units', 'subUnits', 'clusters'));
     }
 
     public function update(Request $request, User $user)

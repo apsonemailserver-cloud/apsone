@@ -18,6 +18,7 @@
 
         <div class="card">
             <div class="card-body">
+                <x-dt-toolbar :searchFormAction="route('stations.index')" searchPlaceholder="Cari station..." />
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -68,10 +69,7 @@
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                     @if(Auth::user()->canAccess('station', 'edit'))
-                                    <a href="{{ route('stations.edit', $st->id) }}"
-                                        class="btn btn-sm btn-warning">
-                                        <i class="ti ti-pencil"></i> Edit
-                                    </a>
+                                    <x-action-button action="edit" :href="route('stations.edit', $st->id)" title="Edit Station" />
                                     @endif
 
                                     @if(Auth::user()->canAccess('station', 'delete'))
@@ -79,17 +77,9 @@
                                         method="POST"
                                         class="d-inline"
                                         id="delete-form-{{ $st->id }}">
-
                                         @csrf
                                         @method('DELETE')
-
-                                        <button type="button"
-                                            class="action-btn action-delete border-0"
-                                            title="Hapus Station"
-                                            onclick="confirmDeleteShift('{{ $st->id }}', '{{ $st->code }}')">
-
-                                            <i class="ti ti-trash"></i>
-                                        </button>
+                                        <x-action-button type="button" action="delete" onclick="confirmDeleteShift('{{ $st->id }}', '{{ $st->code }}')" title="Hapus Station" />
                                     </form>
                                     @endif
                                     </div>
@@ -115,25 +105,12 @@
 
 <script>
     function confirmDeleteShift(id, code) {
-        Swal.fire({
-            title: 'Yakin hapus?',
-            html: `
-                <p class="mb-1">Station ini akan dihapus.</p>
-                <p class="text-muted small mb-0">User dengan code <b>${code}</b> juga akan terhapus.</p>
-            `,
-            icon: 'warning',
-            iconColor: '#dc2626',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#94a3b8',
-            confirmButtonText: 'Ya, hapus',
+        apsConfirmDelete({
+            title: 'Hapus Station?',
+            text: `Station dengan kode ${code} akan dihapus dari sistem.`,
+            confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal',
-            customClass: { confirmButton: 'btn-danger' },
-            reverseButtons: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('delete-form-' + id).submit();
-            }
+            formId: 'delete-form-' + id
         });
     }
 </script>

@@ -30,11 +30,16 @@ class User extends Authenticatable
         'password',
         'is_active',
         'gender',
+        'job_title',
         'job_title_id',
+        'role',
         'role_id',
         'station',
+        'cluster',
         'cluster_id',
+        'unit',
         'unit_id',
+        'sub_unit',
         'sub_unit_id',
         'status',
         'manager',
@@ -64,6 +69,7 @@ class User extends Authenticatable
         'tim_registered',
         'tim_expired',
         'profile_picture',
+        'face_registered_at',
     ];
 
     /**
@@ -83,12 +89,12 @@ class User extends Authenticatable
 
     public function getRoleAttribute()
     {
-        return $this->roleRelation ? $this->roleRelation->name : null;
+        return $this->roleRelation ? $this->roleRelation->name : ($this->attributes['role'] ?? null);
     }
 
     public function hasRole($roles): bool
     {
-        $roleName = $this->roleRelation ? $this->roleRelation->name : null;
+        $roleName = $this->getRoleName();
         if (empty($roleName)) {
             return false;
         }
@@ -154,19 +160,34 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'pic_id');
     }
 
+    public function getRoleName(): ?string
+    {
+        if (!empty($this->attributes['role'])) {
+            return $this->attributes['role'];
+        }
+        if ($this->roleRelation) {
+            return $this->roleRelation->name;
+        }
+        return null;
+    }
+
     public function isAdmin()
     {
-        $roleName = $this->roleRelation ? $this->roleRelation->name : null;
+        $roleName = $this->getRoleName();
         return $roleName === 'Admin';
     }
 
     public function hasPermission(string $permissionName): bool
     {
-        if ($permissionName === 'profile.view') {
+        if (isset($this->is_active) && !$this->is_active) {
+            return false;
+        }
+
+        if ($permissionName === 'profile.view' || $permissionName === 'dashboard.view') {
             return true;
         }
 
-        $roleName = $this->roleRelation ? $this->roleRelation->name : null;
+        $roleName = $this->getRoleName();
 
         if ($this->isAdmin() || $roleName === 'Admin') {
             return true;
@@ -228,6 +249,38 @@ class User extends Authenticatable
         return $this->belongsTo(SubUnit::class, 'sub_unit_id');
     }
 
+    public function unitRelation()
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    public function subUnitRelation()
+    {
+        return $this->belongsTo(SubUnit::class, 'sub_unit_id');
+    }
+
+    public function leaveBalances()
+    {
+        return $this->hasMany(LeaveBalance::class, 'user_id');
+    }
+
+    public function leaveTypes()
+    {
+        return $this->belongsToMany(LeaveType::class, 'leave_balances', 'user_id', 'leave_type_id')
+            ->withPivot(['year', 'total_quota', 'used_days', 'pending_days', 'remaining_days'])
+            ->withTimestamps();
+    }
+
+    public function getNameAttribute()
+    {
+        return $this->fullname ?? $this->id;
+    }
+
+    public function station()
+    {
+        return $this->belongsTo(Station::class, 'station', 'code');
+    }
+
     public function jobTitle()
     {
         return $this->belongsTo(JobTitle::class, 'job_title_id');
@@ -236,5 +289,70 @@ class User extends Authenticatable
     public function cluster()
     {
         return $this->belongsTo(Cluster::class, 'cluster_id');
+    }
+
+    public function setRoleAttribute($value)
+    {
+        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('roles')) {
+            try {
+                $r = \App\Models\Role::firstOrCreate(['name' => trim($value)]);
+                $this->attributes['role_id'] = $r->id;
+            } catch (\Throwable $e) {}
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+            $this->attributes['role'] = $value;
+        }
+    }
+
+    public function setJobTitleAttribute($value)
+    {
+        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('job_titles')) {
+            try {
+                $jt = \App\Models\JobTitle::firstOrCreate(['name' => trim($value)]);
+                $this->attributes['job_title_id'] = $jt->id;
+            } catch (\Throwable $e) {}
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'job_title')) {
+            $this->attributes['job_title'] = $value;
+        }
+    }
+
+    public function setUnitAttribute($value)
+    {
+        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('units')) {
+            try {
+                $u = \App\Models\Unit::firstOrCreate(['name' => trim($value)]);
+                $this->attributes['unit_id'] = $u->id;
+            } catch (\Throwable $e) {}
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'unit')) {
+            $this->attributes['unit'] = $value;
+        }
+    }
+
+    public function setSubUnitAttribute($value)
+    {
+        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('sub_units')) {
+            try {
+                $su = \App\Models\SubUnit::firstOrCreate(['name' => trim($value)]);
+                $this->attributes['sub_unit_id'] = $su->id;
+            } catch (\Throwable $e) {}
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'sub_unit')) {
+            $this->attributes['sub_unit'] = $value;
+        }
+    }
+
+    public function setClusterAttribute($value)
+    {
+        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('clusters')) {
+            try {
+                $c = \App\Models\Cluster::firstOrCreate(['name' => trim($value)]);
+                $this->attributes['cluster_id'] = $c->id;
+            } catch (\Throwable $e) {}
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'cluster')) {
+            $this->attributes['cluster'] = $value;
+        }
     }
 }

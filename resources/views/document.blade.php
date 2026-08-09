@@ -573,15 +573,11 @@
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y document-page">
-        {{-- Hero Header Banner --}}
-        <div class="hero-banner">
-            <div class="hero-tag">
-                <i class="bx bx-folder-open"></i> Pusat Dokumen Resmi
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4 pt-3 pb-1">
+            <div>
+                <h4 class="fw-bold mb-1">Dokumen & Panduan</h4>
+                <p class="text-muted mb-0" style="font-size:0.875rem;">Daftar formulir, kebijakan, panduan kerja, dan laporan resmi perusahaan.</p>
             </div>
-            <h1 class="hero-title">Dokumen Operasional & Administrasi</h1>
-            <p class="hero-subtitle">
-                Akses cepat ke formulir, kebijakan, panduan kerja, dan laporan resmi APS sesuai peran Anda.
-            </p>
         </div>
 
         {{-- Statistics Overview --}}
@@ -717,19 +713,13 @@
                             <span>{{ $document->ukuran_file ?: 'File Resmi' }}</span>
                         </div>
                         <div class="doc-card-actions d-flex gap-1">
-                            <a href="{{ route('document.download', $document) }}" class="action-btn" title="Unduh Dokumen" aria-label="Unduh {{ $document->nama_dokumen }}">
-                                <i class="ti ti-download"></i>
-                            </a>
+                            <x-action-button action="download" :href="route('document.download', $document)" title="Unduh Dokumen" aria-label="Unduh {{ $document->nama_dokumen }}" />
                             @if ($canManage)
-                                <a href="{{ route('admin.documents.edit', $document) }}" class="action-btn action-edit" title="Edit Dokumen">
-                                    <i class="ti ti-pencil"></i>
-                                </a>
+                                <x-action-button action="edit" :href="route('admin.documents.edit', $document)" title="Edit Dokumen" />
                                 <form action="{{ route('admin.documents.destroy', $document) }}" method="POST" class="d-inline delete-document-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" class="action-btn action-delete btn-delete-doc" title="Hapus Dokumen">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
+                                    <x-action-button type="button" action="delete" class="btn-delete-doc" title="Hapus Dokumen" />
                                 </form>
                             @endif
                         </div>

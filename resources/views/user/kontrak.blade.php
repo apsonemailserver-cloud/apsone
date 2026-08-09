@@ -105,10 +105,7 @@
                             </td>
                             @if($canEditKontrak)
                             <td class="text-center">
-                                <a href="{{ route('users.KontrakEdit', ['id' => $user->id, 'page' => request('page')]) }}" 
-                                   class="action-btn action-edit" title="Edit Kontrak">
-                                    <i class="ti ti-pencil"></i>
-                                </a>
+                                <x-action-button action="edit" :href="route('users.KontrakEdit', ['id' => $user->id, 'page' => request('page')])" title="Edit Kontrak" />
                             </td>
                             @endif
                         </tr>

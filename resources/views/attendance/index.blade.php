@@ -196,9 +196,10 @@
     <div class="row">
         <div class="col-lg-12 mb-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1">
-                <h4 class="fw-bold pt-3 pb-1 mb-0">
-                    <span class="text-muted fw-light">Attendance /</span> Today's Presence
-                </h4>
+                <div>
+                    <h4 class="fw-bold mb-1">Kehadiran Hari Ini</h4>
+                    <p class="text-muted mb-0" style="font-size:0.875rem;">Daftar kehadiran, keterlambatan, dan status absen hari ini.</p>
+                </div>
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-primary">
                         <i class="bx bx-calendar me-1"></i>

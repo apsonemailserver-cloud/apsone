@@ -4,8 +4,8 @@
 <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <style>
     .station-form-shell {
-        max-width: 760px;
-        margin: 0 auto;
+        width: 100%;
+        margin: 0;
     }
 
     .station-form-card {
@@ -608,11 +608,6 @@
         color: #cbd5e1 !important;
     }
 
-    html.aps-dark .multiselect-option-item:hover {
-        background: #1e293b !important;
-        color: #f8fafc !important;
-    }
-
     html.aps-dark .multiselect-option-item.selected {
         color: #60a5fa !important;
         background: rgba(96, 165, 250, 0.14) !important;
@@ -627,178 +622,144 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">Station /</span> Buka Station Baru
-    </h4>
+    <div class="card mb-4">
+        <div class="card-header border-bottom">
+            <h5 class="mb-0 fw-bold">Tambah Station Baru</h5>
+        </div>
+        <div class="card-body pt-4">
+            <form id="stationForm" action="{{ route('stations.store') }}" method="POST">
+                @csrf
 
-    <div class="station-form-shell">
-            <div class="card mb-4 station-form-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Formulir Ekspansi Station</h5>
-                        <small class="text-muted">Isi koordinat untuk melihat titik lokasi station.</small>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Kode Station (IATA Code) <span class="text-danger">*</span></label>
+                        <input type="text" name="code" class="form-control" placeholder="Cth: SOC" maxlength="3" required style="text-transform: uppercase;" value="{{ old('code') }}" />
+                        <div class="form-text">Maksimal 3 Huruf (Contoh: CGK, SUB, SOC).</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Nama Lokasi / Kota <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="Cth: Solo (Adi Soemarmo)" required value="{{ old('name') }}" />
                     </div>
                 </div>
-                <div class="card-body">
-                    <form id="stationForm" action="{{ route('stations.store') }}" method="POST">
-                        @csrf
 
-                        <div class="station-location-grid mb-3">
-                            <div>
-                                <label class="form-label">Kode Station (IATA Code)</label>
-                                <div class="input-group input-group-merge">
-                                    <span class="input-group-text"><i class="ti ti-plane"></i></span>
-                                    <input type="text" name="code" class="form-control" placeholder="Cth: SOC" maxlength="3" required style="text-transform: uppercase;" value="{{ old('code') }}" />
-                                </div>
-                                <div class="form-text">Maksimal 3 Huruf (Contoh: CGK, SUB, SOC).</div>
-                            </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Latitude <span class="text-danger">*</span></label>
+                        <input
+                            type="number"
+                            name="latitude"
+                            class="form-control js-station-latitude"
+                            placeholder="Cth: -6.175392"
+                            value="{{ old('latitude', '-6.175392') }}"
+                            step="any"
+                            required />
+                    </div>
 
-                            <div>
-                                <label class="form-label">Nama Lokasi / Kota</label>
-                                <div class="input-group input-group-merge">
-                                    <span class="input-group-text"><i class="ti ti-map-2"></i></span>
-                                    <input type="text" name="name" class="form-control" placeholder="Cth: Solo (Adi Soemarmo)" required value="{{ old('name') }}" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="station-location-grid mb-3">
-                            <div>
-                                <label class="form-label">Latitude</label>
-                                <div class="input-group input-group-merge">
-                                    <span class="input-group-text">
-                                        <i class="ti ti-map-pin"></i>
-                                    </span>
-                                    <input
-                                        type="number"
-                                        name="latitude"
-                                        class="form-control js-station-latitude"
-                                        placeholder="Cth: -6.175392"
-                                        value="{{ old('latitude', '-6.175392') }}"
-                                        step="any"
-                                        required />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="form-label">Longitude</label>
-                                <div class="input-group input-group-merge">
-                                    <span class="input-group-text">
-                                        <i class="ti ti-map-pin"></i>
-                                    </span>
-                                    <input
-                                        type="number"
-                                        name="longitude"
-                                        class="form-control js-station-longitude"
-                                        placeholder="Cth: 106.827153"
-                                        value="{{ old('longitude', '106.827153') }}"
-                                        step="any"
-                                        required />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Radius Absen (Meter)</label>
-                            <div class="input-group input-group-merge">
-                                <span class="input-group-text"><i class="ti ti-radar"></i></span>
-                                <input
-                                    type="number"
-                                    name="radius"
-                                    class="form-control"
-                                    placeholder="Cth: 40"
-                                    min="1"
-                                    value="{{ old('radius', 40) }}"
-                                    required />
-                            </div>
-                            <div class="form-text">Radius toleransi absensi dalam satuan meter.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Role Operasional Station <span class="text-danger">*</span></label>
-                            
-                            <div class="custom-multiselect-wrapper js-custom-multiselect" id="stationRoleMultiselect">
-                                <!-- Trigger / Input Display -->
-                                <div class="multiselect-trigger js-multiselect-trigger" tabindex="0">
-                                    <div class="multiselect-tags js-multiselect-tags">
-                                        <span class="multiselect-placeholder">Select role...</span>
-                                    </div>
-                                    <div class="multiselect-controls">
-                                        <span class="multiselect-count-badge js-multiselect-count d-none">0</span>
-                                        <button type="button" class="multiselect-clear-btn js-multiselect-clear d-none" title="Clear all">&times;</button>
-                                        <i class="ti ti-chevron-down multiselect-arrow"></i>
-                                    </div>
-                                </div>
-
-                                <!-- Dropdown Panel -->
-                                <div class="multiselect-dropdown js-multiselect-dropdown d-none">
-                                    <div class="multiselect-search-box">
-                                        <input type="text" class="multiselect-search-input js-multiselect-search" placeholder="Search...">
-                                        <i class="ti ti-search search-icon"></i>
-                                    </div>
-                                    <div class="multiselect-options-list js-multiselect-options">
-                                        @php
-                                            $allRoles = $availableRoles ?? \App\Models\Role::orderBy('name', 'asc')->pluck('name')->toArray();
-                                            $stationRoles = old('role', []);
-                                            if (!is_array($stationRoles)) {
-                                                $stationRoles = explode(',', (string)$stationRoles);
-                                            }
-                                            $stationRoles = array_map('trim', (array)$stationRoles);
-                                        @endphp
-                                        @foreach($allRoles as $r)
-                                            @php $isChecked = in_array($r, $stationRoles); @endphp
-                                            <label class="multiselect-option-item {{ $isChecked ? 'selected' : '' }}" data-label="{{ strtolower($r) }}">
-                                                <input type="checkbox" name="role[]" value="{{ $r }}" form="stationForm" {{ $isChecked ? 'checked' : '' }} class="js-option-checkbox" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
-                                                <span class="custom-checkbox-box">
-                                                    <i class="ti ti-check"></i>
-                                                </span>
-                                                <span class="option-label-text">{{ $r }}</span>
-                                            </label>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-text">Pilih satu atau beberapa role pekerjaan yang beroperasi pada station ini.</div>
-                        </div>
-
-                        <div class="station-map-field mb-3">
-                            <label class="form-label">Pencarian & Preview Titik Lokasi</label>
-                            
-                            <div class="position-relative mb-2">
-                                <div class="input-group input-group-merge">
-                                    <span class="input-group-text"><i class="ti ti-search text-muted"></i></span>
-                                    <input type="text" id="stationMapSearchInput" class="form-control ps-0" placeholder="Cari nama lokasi / bandara / kota (cth: Soekarno-Hatta, Juanda, Kualanamu)..." autocomplete="off" />
-                                    <button type="button" id="stationMapSearchBtn" class="btn btn-primary px-3">
-                                        <i class="ti ti-search me-1"></i>Cari
-                                    </button>
-                                </div>
-                                <div id="stationMapSearchResults" class="list-group shadow-lg border-0 d-none mt-1 position-absolute w-100" style="z-index: 99999; max-height: 230px; overflow-y: auto; border-radius: 10px;"></div>
-                            </div>
-
-                            <div class="station-map-preview js-station-map-preview" aria-label="Preview titik lokasi station">
-                                <div id="leafletStationMap" style="width: 100%; height: 100%; z-index: 1;"></div>
-                                <div class="station-map-empty" style="z-index: 2;">
-                                    <i class="ti ti-map-search"></i>
-                                    <strong>Belum ada titik</strong>
-                                    <small>Masukkan latitude dan longitude untuk melihat preview.</small>
-                                </div>
-                                <div class="station-map-chip">
-                                    <i class="ti ti-map-pin-filled"></i>
-                                    <span class="js-station-map-coordinate">-</span>
-                                </div>
-                            </div>
-                            <div class="form-text mt-1"><i class="ti ti-info-circle me-1"></i>Cari lokasi di atas, geser marker, atau klik area pada peta untuk menentukan koordinat presisi.</div>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="ti ti-device-floppy"></i> Simpan Station Baru
-                            </button>
-                            <a href="{{ route('stations.index') }}" class="btn btn-label-secondary">Batal</a>
-                        </div>
-                    </form>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Longitude <span class="text-danger">*</span></label>
+                        <input
+                            type="number"
+                            name="longitude"
+                            class="form-control js-station-longitude"
+                            placeholder="Cth: 106.827153"
+                            value="{{ old('longitude', '106.827153') }}"
+                            step="any"
+                            required />
+                    </div>
                 </div>
-            </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Radius Absen (Meter) <span class="text-danger">*</span></label>
+                    <input
+                        type="number"
+                        name="radius"
+                        class="form-control"
+                        placeholder="Cth: 40"
+                        min="1"
+                        value="{{ old('radius', 40) }}"
+                        required />
+                    <div class="form-text">Radius toleransi absensi dalam satuan meter.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Role Operasional Station <span class="text-danger">*</span></label>
+                    
+                    <div class="custom-multiselect-wrapper js-custom-multiselect" id="stationRoleMultiselect">
+                        <!-- Trigger / Input Display -->
+                        <div class="multiselect-trigger js-multiselect-trigger" tabindex="0">
+                            <div class="multiselect-tags js-multiselect-tags">
+                                <span class="multiselect-placeholder">Pilih role...</span>
+                            </div>
+                            <div class="multiselect-controls">
+                                <span class="multiselect-count-badge js-multiselect-count d-none">0</span>
+                                <button type="button" class="multiselect-clear-btn js-multiselect-clear d-none" title="Clear all">&times;</button>
+                                <i class="ti ti-chevron-down multiselect-arrow"></i>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown Panel -->
+                        <div class="multiselect-dropdown js-multiselect-dropdown d-none">
+                            <div class="multiselect-search-box">
+                                <input type="text" class="multiselect-search-input js-multiselect-search" placeholder="Cari...">
+                                <i class="ti ti-search search-icon"></i>
+                            </div>
+                            <div class="multiselect-options-list js-multiselect-options">
+                                @php
+                                    $allRoles = $availableRoles ?? \App\Models\Role::orderBy('name', 'asc')->pluck('name')->toArray();
+                                    $stationRoles = old('role', []);
+                                    if (!is_array($stationRoles)) {
+                                        $stationRoles = explode(',', (string)$stationRoles);
+                                    }
+                                    $stationRoles = array_map('trim', (array)$stationRoles);
+                                @endphp
+                                @foreach($allRoles as $r)
+                                    @php $isChecked = in_array($r, $stationRoles); @endphp
+                                    <label class="multiselect-option-item {{ $isChecked ? 'selected' : '' }}" data-label="{{ strtolower($r) }}">
+                                        <input type="checkbox" name="role[]" value="{{ $r }}" form="stationForm" {{ $isChecked ? 'checked' : '' }} class="js-option-checkbox" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
+                                        <span class="custom-checkbox-box">
+                                            <i class="ti ti-check"></i>
+                                        </span>
+                                        <span class="option-label-text">{{ $r }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-text">Pilih satu atau beberapa role pekerjaan yang beroperasi pada station ini.</div>
+                </div>
+
+                <div class="station-map-field mb-4">
+                    <label class="form-label fw-semibold">Pencarian & Preview Titik Lokasi</label>
+                    
+                    <div class="position-relative mb-2">
+                        <div class="input-group">
+                            <input type="text" id="stationMapSearchInput" class="form-control" placeholder="Cari nama lokasi / bandara / kota (cth: Soekarno-Hatta, Juanda, Kualanamu)..." autocomplete="off" />
+                            <button type="button" id="stationMapSearchBtn" class="btn btn-primary px-3">
+                                <i class="ti ti-search me-1"></i>Cari
+                            </button>
+                        </div>
+                        <div id="stationMapSearchResults" class="list-group shadow-lg border-0 d-none mt-1 position-absolute w-100" style="z-index: 99999; max-height: 230px; overflow-y: auto; border-radius: 10px;"></div>
+                    </div>
+
+                    <div class="station-map-preview js-station-map-preview" aria-label="Preview titik lokasi station">
+                        <div id="leafletStationMap" style="width: 100%; height: 100%; z-index: 1;"></div>
+                        <div class="station-map-empty" style="z-index: 2;">
+                            <i class="ti ti-map-search"></i>
+                            <strong>Belum ada titik</strong>
+                            <small>Masukkan latitude dan longitude untuk melihat preview.</small>
+                        </div>
+                        <div class="station-map-chip">
+                            <i class="ti ti-map-pin-filled"></i>
+                            <span class="js-station-map-coordinate">-</span>
+                        </div>
+                    </div>
+                    <div class="form-text mt-1"><i class="ti ti-info-circle me-1"></i>Cari lokasi di atas, geser marker, atau klik area pada peta untuk menentukan koordinat presisi.</div>
+                </div>
+
+                <x-form-actions :cancelHref="route('stations.index')" submitText="Simpan Station Baru" />
+            </form>
+        </div>
     </div>
 </div>
 @endsection

@@ -101,9 +101,7 @@
                                     <td>{!! $statusBadge !!}</td>
                                     @if($canEditTIM)
                                     <td class="text-center">
-                                        <a href="{{ route('users.TIMEdit', $user->id) }}" class="action-btn action-edit" title="Update TIM">
-                                            <i class="ti ti-pencil"></i>
-                                        </a>
+                                        <x-action-button action="edit" :href="route('users.TIMEdit', $user->id)" title="Update TIM" />
                                     </td>
                                     @endif
                                 </tr>

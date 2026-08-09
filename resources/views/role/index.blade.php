@@ -19,30 +19,24 @@
                     <i class="ti ti-refresh me-1"></i> Refresh
                 </button>
                 @if(Auth::user()->canAccess('role', 'create') || Auth::user()->role === 'Admin')
-                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createRoleModal">
+                <a href="{{ route('roles.create') }}" class="btn btn-sm btn-primary">
                     <i class="ti ti-plus me-1"></i> Tambah Role
-                </button>
+                </a>
                 @endif
             </div>
         </div>
 
         <div class="card">
             <div class="card-body">
-                {{-- Toolbar --}}
-                <div class="dt-toolbar">
-                    <div class="dt-search">
-                        <i class="ti ti-search search-icon"></i>
-                        <input type="text" id="typeToSearchInput" class="form-control" placeholder="Cari Kode / Nama Role..." onkeyup="filterRolesList()">
-                    </div>
-                </div>
+                <x-dt-toolbar searchPlaceholder="Cari ID / Nama Role..." onkeyup="filterRolesList()" />
 
                 {{-- Tabel --}}
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
+                                <th>ID</th>
                                 <th>Nama Role</th>
-                                <th>Kode</th>
                                 <th>Deskripsi</th>
                                 <th>Aksi</th>
                             </tr>
@@ -54,17 +48,10 @@
                                 @endphp
                                 <tr class="role-master-row">
                                     <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar avatar-sm me-2 flex-shrink-0">
-                                                <span class="avatar-initial rounded-circle bg-label-primary font-monospace fw-bold" style="font-size:0.75rem;">
-                                                    {{ strtoupper(substr($role->name, 0, 2)) }}
-                                                </span>
-                                            </div>
-                                            <strong class="role-name-text">{{ $role->label ?: $role->name }}</strong>
-                                        </div>
+                                        <span class="font-monospace text-dark role-id-text">{{ $role->id }}</span>
                                     </td>
                                     <td>
-                                        <span class="font-monospace text-dark role-code-text">{{ $role->name }}</span>
+                                        <strong class="role-name-text">{{ $role->name }}</strong>
                                     </td>
                                     <td>
                                         <span class="text-muted role-desc-text" style="font-size:0.875rem;">{{ $role->description ?: '-' }}</span>
@@ -73,21 +60,12 @@
                                         <div class="d-flex gap-1">
                                             {{-- 1. Eye Button (Matriks Hak Akses) --}}
                                             @if(Auth::user()->canAccess('role', 'edit') || Auth::user()->role === 'Admin')
-                                                <a href="{{ route('roles.edit', $role->id) }}" class="action-btn" title="Matriks Hak Akses">
-                                                    <i class="ti ti-eye"></i>
-                                                </a>
+                                                <x-action-button action="view" :href="route('roles.permissions', $role->id)" title="Matriks Hak Akses" />
                                             @endif
 
-                                            {{-- 2. Pencil Button (Edit Detail) --}}
+                                            {{-- 2. Pencil Button (Edit Data Role) --}}
                                             @if(Auth::user()->canAccess('role', 'edit') || Auth::user()->role === 'Admin')
-                                                <button type="button" class="action-btn action-edit btn-edit-detail border-0" 
-                                                        data-id="{{ $role->id }}" 
-                                                        data-name="{{ $role->name }}" 
-                                                        data-label="{{ $role->label }}" 
-                                                        data-description="{{ $role->description }}" 
-                                                        title="Edit Detail">
-                                                    <i class="ti ti-pencil"></i>
-                                                </button>
+                                                <x-action-button action="edit" :href="route('roles.edit', $role->id)" title="Edit Data Role" />
                                             @endif
 
                                             {{-- 3. Delete Trash Button (SweetAlert2 Confirm) --}}
@@ -95,9 +73,7 @@
                                                 <form id="delete-form-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="button" class="action-btn action-delete border-0" onclick="confirmDeleteRole('{{ $role->id }}', '{{ addslashes($role->label ?: $role->name) }}')" title="Hapus Role">
-                                                        <i class="ti ti-trash"></i>
-                                                    </button>
+                                                    <x-action-button type="button" action="delete" onclick="confirmDeleteRole('{{ $role->id }}', '{{ addslashes($role->name) }}')" title="Hapus Role" />
                                                 </form>
                                             @endif
                                         </div>
@@ -109,78 +85,16 @@
                 </div>
 
                 {{-- Pagination --}}
-                <div class="dt-pagination-wrapper">
-                    <div class="text-muted small" id="rowsCounterText">
-                        Menampilkan 1-{{ count($roles) }} dari {{ count($roles) }} data
+                @if($roles->isNotEmpty())
+                    <div class="mt-4">
+                        {{ $roles->links('vendor.pagination.custom') }}
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
 
-{{-- MODAL CREATE ROLE --}}
-<div class="modal fade" id="createRoleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Tambah Role Baru</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="{{ route('roles.store') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Kode Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" placeholder="Contoh: Work Order CS" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Label Tampilan</label>
-                        <input type="text" name="label" class="form-control" placeholder="Contoh: CS Work Order Staff">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Deskripsi</label>
-                        <textarea name="description" class="form-control" rows="3" placeholder="Deskripsi peranan..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan Role</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-{{-- MODAL EDIT ROLE DETAILS --}}
-<div class="modal fade" id="editDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Detail Role</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editDetailForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Label Tampilan <span class="text-danger">*</span></label>
-                        <input type="text" name="label" id="editModalLabel" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Deskripsi</label>
-                        <textarea name="description" id="editModalDesc" class="form-control" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Update Detail</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 @endsection
 
 @section('scripts')
@@ -193,10 +107,10 @@
 
         rows.forEach(row => {
             const name = row.querySelector('.role-name-text')?.textContent.toLowerCase() || '';
-            const code = row.querySelector('.role-code-text')?.textContent.toLowerCase() || '';
+            const id = row.querySelector('.role-id-text')?.textContent.toLowerCase() || '';
             const desc = row.querySelector('.role-desc-text')?.textContent.toLowerCase() || '';
 
-            if (name.includes(input) || code.includes(input) || desc.includes(input)) {
+            if (name.includes(input) || id.includes(input) || desc.includes(input)) {
                 row.style.display = '';
                 visibleCount++;
             } else {
@@ -208,13 +122,13 @@
     }
 
     function exportRolesCSV() {
-        const rows = [["Kode", "Nama Role", "Description"]];
+        const rows = [["ID", "Nama Role", "Description"]];
         document.querySelectorAll('.role-master-row').forEach(row => {
             if (row.style.display !== 'none') {
-                const code = row.querySelector('.role-code-text')?.textContent.trim() || '';
+                const id = row.querySelector('.role-id-text')?.textContent.trim() || '';
                 const name = row.querySelector('.role-name-text')?.textContent.trim() || '';
                 const desc = row.querySelector('.role-desc-text')?.textContent.trim() || '';
-                rows.push([`"${code}"`, `"${name}"`, `"${desc}"`]);
+                rows.push([`"${id}"`, `"${name}"`, `"${desc}"`]);
             }
         });
         const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
@@ -228,46 +142,13 @@
     }
 
     function confirmDeleteRole(id, roleName) {
-        Swal.fire({
+        apsConfirmDelete({
             title: 'Hapus Role?',
-            html: `
-                <p class="mb-1">Role <b>${roleName}</b> akan dihapus dari sistem.</p>
-                <p class="text-muted small mb-0">Tindakan ini tidak dapat dibatalkan.</p>
-            `,
-            icon: 'warning',
-            iconColor: '#dc2626',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#94a3b8',
-            confirmButtonText: 'Ya, hapus',
+            text: `Role ${roleName} akan dihapus dari sistem.`,
+            confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal',
-            customClass: { confirmButton: 'btn-danger' },
-            reverseButtons: true,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('delete-form-' + id).submit();
-            }
+            formId: 'delete-form-' + id
         });
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Edit Detail Modal
-        document.querySelectorAll('.btn-edit-detail').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.dataset.id;
-                const label = this.dataset.label || this.dataset.name;
-                const desc = this.dataset.description;
-
-                const form = document.getElementById('editDetailForm');
-                form.action = `/roles/${id}`;
-
-                document.getElementById('editModalLabel').value = label;
-                document.getElementById('editModalDesc').value = desc;
-
-                const modal = new bootstrap.Modal(document.getElementById('editDetailModal'));
-                modal.show();
-            });
-        });
-    });
 </script>
 @endsection

@@ -13,10 +13,21 @@ use App\Exports\LeavesReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 use App\Services\RequestNotificationMailService;
+use App\Services\LeaveQuotaService;
+use App\Models\LeaveType;
+use App\Models\LeaveBalance;
+use App\Models\Station;
 
 class LeaveController extends Controller
 {
-    private const ANNUAL_LEAVE_QUOTA_DAYS = 12;
+    public const ANNUAL_LEAVE_QUOTA_DAYS = 12;
+
+    protected LeaveQuotaService $quotaService;
+
+    public function __construct(LeaveQuotaService $quotaService)
+    {
+        $this->quotaService = $quotaService;
+    }
 
     /**
      * Menampilkan daftar riwayat pengajuan cuti.
@@ -261,12 +272,24 @@ class LeaveController extends Controller
      */
     public function create()
     {
-        // Ambil data sisa cuti untuk ditampilkan di form
         $user = Auth::user();
+        
+        // Sync balances
+        $this->quotaService->syncBalancesForUser($user, date('Y'));
+
+        // Get active leave types
+        $leaveTypes = LeaveType::where('is_active', true)->get();
+
+        // Get user balances for active types in the current year
+        $balances = LeaveBalance::where('user_id', $user->id)
+            ->where('year', date('Y'))
+            ->get()
+            ->keyBy('leave_type_id');
+
         $annualLeaveUsage = $this->annualLeaveUsage($user->id);
         $leaveBalance = $annualLeaveUsage['balance'];
 
-        return view('leaves.create', compact('leaveBalance'));
+        return view('leaves.create', compact('leaveBalance', 'leaveTypes', 'balances', 'user'));
     }
 
     /**
@@ -275,24 +298,38 @@ class LeaveController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        // Validasi
+
+        // 1. Initial Validation of type ID and minimum date limit (allow backdate up to 7 days)
+        $minBackdate = Carbon::today()->subDays(7)->format('Y-m-d');
         $request->validate([
-            'leave_type' => 'required|string',
-            'start_date' => 'required|date',
+            'leave_type_id' => 'required|exists:leave_types,id',
+            'start_date' => 'required|date|after_or_equal:' . $minBackdate,
             'end_date'   => 'required|date|after_or_equal:start_date',
-            'reason'     => 'required|string|max:1000',
-            'attachment' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'replacement_employee_name' => 'nullable|string|max:255',
         ], [
+            'start_date.after_or_equal' => 'Tanggal mulai pengajuan cuti maksimal mundur (backdate) 7 hari dari hari ini.',
+        ]);
+
+        $leaveType = LeaveType::findOrFail($request->leave_type_id);
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+        $totalDays = $startDate->diffInDays($endDate) + 1;
+
+        // 2. Full validation based on leave type rules
+        $rules = [
+            'reason'     => 'required|string|max:1000',
+            'attachment' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'replacement_employee_name' => 'nullable|string|max:255',
+        ];
+        $request->validate($rules, [
+            'attachment.required' => 'File lampiran bukti cuti wajib diunggah untuk tipe cuti ini.',
             'attachment.image' => 'File lampiran harus berupa foto / gambar.',
             'attachment.mimes' => 'Format foto lampiran harus berupa JPG, JPEG, PNG, atau WEBP.',
-            'attachment.max'   => 'Ukuran foto lampiran maksimal 5MB.',
+            'attachment.max'   => 'Ukuran foto lampiran maksimal 2MB.',
         ]);
 
         // ===== CEK OVERLAP CUTI =====
-        // Tidak boleh mengajukan cuti jika sudah ada cuti (pending/approved) di rentang tanggal yang sama
         $overlappingLeave = Leave::where('user_id', $user->id)
-            ->whereNotIn('status', ['rejected by ho', 'rejected by leader'])
+            ->whereNotIn('status', ['rejected by ho', 'rejected by leader', 'canceled'])
             ->where(function ($q) use ($request) {
                 $q->whereBetween('start_date', [$request->start_date, $request->end_date])
                   ->orWhereBetween('end_date', [$request->start_date, $request->end_date])
@@ -313,39 +350,40 @@ class LeaveController extends Controller
             return redirect()->back()->withInput();
         }
 
+        // 3. Verify Eligibility (gender, notice days, quota)
         $status = 'pending';
+        $isAutomaticallyRejected = false;
+        $rejectionMessage = null;
 
-        if ($user->isAdmin()) {
-            $status = 'approved';
-        } else {
-            $userRole = $user->role ?? '';
-            $isLeaderOrSpv = (str_contains($userRole, 'Leader') && !str_contains($userRole, 'Ass'))
-                || str_contains($userRole, 'SPV')
-                || str_contains($userRole, 'Manager')
-                || str_contains($userRole, 'Head');
-
-            if (!$isLeaderOrSpv) {
-                if (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE') || str_contains($userRole, 'Baggage')) {
-                    $status = 'pending Bge';
-                } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
-                    $status = 'pending Apron';
-                }
+        $eligibility = $this->quotaService->verifyEligibility($user, $leaveType, $totalDays, $startDate, $endDate);
+        if (!$eligibility['eligible']) {
+            if ($leaveType->name === 'Cuti Tahunan') {
+                $status = 'rejected by ho';
+                $isAutomaticallyRejected = true;
+                $rejectionMessage = $eligibility['message'];
+            } else {
+                Alert::error('Gagal Mengajukan Cuti', $eligibility['message']);
+                return redirect()->back()->withInput();
             }
         }
 
-        $startDate = Carbon::parse($request->start_date);
-        $endDate = Carbon::parse($request->end_date);
-        $totalDays = $startDate->diffInDays($endDate) + 1;
-        $annualLeaveDecision = null;
-        $isAutomaticallyRejected = false;
+        if (!$isAutomaticallyRejected) {
+            if ($user->isAdmin()) {
+                $status = 'approved';
+            } else {
+                $userRole = $user->role ?? '';
+                $isLeaderOrSpv = (str_contains($userRole, 'Leader') && !str_contains($userRole, 'Ass'))
+                    || str_contains($userRole, 'SPV')
+                    || str_contains($userRole, 'Manager')
+                    || str_contains($userRole, 'Head');
 
-        // Cek sisa cuti jika jenisnya adalah 'Cuti Tahunan'
-        if ($request->leave_type === 'Cuti Tahunan') {
-            $annualLeaveDecision = $this->annualLeaveDecision($user->id, $startDate, $totalDays);
-
-            if ($annualLeaveDecision['exceeds']) {
-                $status = 'rejected by ho';
-                $isAutomaticallyRejected = true;
+                if (!$isLeaderOrSpv) {
+                    if (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE') || str_contains($userRole, 'Baggage')) {
+                        $status = 'pending Bge';
+                    } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
+                        $status = 'pending Apron';
+                    }
+                }
             }
         }
 
@@ -356,7 +394,8 @@ class LeaveController extends Controller
 
         $leaveData = [
             'user_id'       => Auth::id(),
-            'leave_type'    => $request->leave_type,
+            'leave_type_id' => $leaveType->id,
+            'leave_type'    => $leaveType->name,
             'start_date'    => $startDate,
             'end_date'      => $endDate,
             'reason'        => $request->reason,
@@ -367,32 +406,36 @@ class LeaveController extends Controller
         ];
 
         if ($isAutomaticallyRejected) {
-            $leaveData['manager_comment'] = $this->annualLeaveRejectionComment($annualLeaveDecision);
+            $leaveData['manager_comment'] = $rejectionMessage;
+            $leaveData['rejected_by'] = Auth::id();
         } elseif ($status === 'approved') {
             $leaveData['approved_by'] = Auth::id();
             $leaveData['approved_at'] = now();
         }
 
-        Leave::create($leaveData);
+        $leave = Leave::create($leaveData);
+
+        // Sync balance after creating
+        $this->quotaService->syncBalancesForUser($user, $startDate->year);
 
         if ($isAutomaticallyRejected) {
             RequestNotificationMailService::sendDecisionEmail(
                 $user,
-                'Cuti (' . $request->leave_type . ')',
+                'Cuti (' . $leaveType->name . ')',
                 'Rejected',
                 [
-                    'Jenis Cuti'         => $request->leave_type,
+                    'Jenis Cuti'         => $leaveType->name,
                     'Tanggal Mulai'      => $startDate->translatedFormat('d F Y'),
                     'Tanggal Selesai'    => $endDate->translatedFormat('d F Y'),
                     'Total Hari'         => $totalDays . ' Hari',
                     'Alasan'             => $request->reason,
-                    'Keterangan'         => 'Pengajuan cuti tahunan melebihi kuota 12 hari.',
+                    'Keterangan'         => $rejectionMessage,
                     'Status'             => 'Ditolak Otomatis (Kuota Terlampaui)',
                 ],
                 'Sistem (Kuota Terlampaui)'
             );
 
-            Alert::warning('Ditolak Otomatis', 'Pengajuan cuti tahunan melebihi kuota 12 hari dan otomatis ditolak.');
+            Alert::warning('Ditolak Otomatis', $rejectionMessage);
             return redirect()->route('leaves.pengajuan');
         }
 
@@ -400,10 +443,10 @@ class LeaveController extends Controller
         if ($status === 'approved') {
             RequestNotificationMailService::sendDecisionEmail(
                 $user,
-                'Cuti (' . $request->leave_type . ')',
+                'Cuti (' . $leaveType->name . ')',
                 'Approved',
                 [
-                    'Jenis Cuti'         => $request->leave_type,
+                    'Jenis Cuti'         => $leaveType->name,
                     'Tanggal Mulai'      => $startDate->translatedFormat('d F Y'),
                     'Tanggal Selesai'    => $endDate->translatedFormat('d F Y'),
                     'Total Hari'         => $totalDays . ' Hari',
@@ -416,9 +459,9 @@ class LeaveController extends Controller
         } else {
             RequestNotificationMailService::sendSubmissionEmail(
                 $user,
-                'Cuti (' . $request->leave_type . ')',
+                'Cuti (' . $leaveType->name . ')',
                 [
-                    'Jenis Cuti'         => $request->leave_type,
+                    'Jenis Cuti'         => $leaveType->name,
                     'Tanggal Mulai'      => $startDate->translatedFormat('d F Y'),
                     'Tanggal Selesai'    => $endDate->translatedFormat('d F Y'),
                     'Total Hari'         => $totalDays . ' Hari',
@@ -514,21 +557,32 @@ class LeaveController extends Controller
             }
         }
 
-        if ($status === 'approved' && $leave->leave_type === 'Cuti Tahunan') {
-            $annualLeaveDecision = $this->annualLeaveDecision(
-                $leave->user_id,
-                Carbon::parse($leave->start_date),
+        $leaveType = $leave->leaveType;
+        if (!$leaveType && $leave->leave_type === 'Cuti Tahunan') {
+            $leaveType = LeaveType::where('name', 'Cuti Tahunan')->first();
+        }
+
+        if ($status === 'approved' && $leaveType && !$leaveType->is_unlimited) {
+            $eligibility = $this->quotaService->verifyEligibility(
+                $leave->user,
+                $leaveType,
                 (int) $leave->total_days,
+                Carbon::parse($leave->start_date),
+                Carbon::parse($leave->end_date),
                 $leave->id
             );
 
-            if ($annualLeaveDecision['exceeds']) {
+            if (!$eligibility['eligible']) {
                 $leave->status = 'rejected by ho';
                 $leave->rejected_by = Auth::id();
                 $leave->approved_by = null;
                 $leave->approved_at = null;
-                $leave->manager_comment = $this->annualLeaveRejectionComment($annualLeaveDecision);
+                $leave->manager_comment = $eligibility['message'];
                 $leave->save();
+
+                if ($leave->user) {
+                    $this->quotaService->syncBalancesForUser($leave->user, Carbon::parse($leave->start_date)->year);
+                }
 
                 $leave->load('user');
                 if ($leave->user) {
@@ -541,14 +595,14 @@ class LeaveController extends Controller
                             'Tanggal Mulai'   => Carbon::parse($leave->start_date)->translatedFormat('d F Y'),
                             'Tanggal Selesai' => Carbon::parse($leave->end_date)->translatedFormat('d F Y'),
                             'Total Hari'      => $leave->total_days . ' Hari',
-                            'Keterangan'      => 'Pengajuan cuti tahunan melebihi kuota 12 hari.',
+                            'Keterangan'      => $eligibility['message'],
                             'Status'          => 'Ditolak Otomatis (Kuota Terlampaui)',
                         ],
                         Auth::user()->fullname
                     );
                 }
 
-                Alert::warning('Ditolak Otomatis', 'Cuti tahunan ini melebihi kuota 12 hari, sehingga otomatis ditolak.');
+                Alert::warning('Ditolak Otomatis', $eligibility['message']);
                 return redirect()->route('leaves.index');
             }
         }
@@ -571,6 +625,10 @@ class LeaveController extends Controller
         }
 
         $leave->save();
+
+        if ($leave->user) {
+            $this->quotaService->syncBalancesForUser($leave->user, Carbon::parse($leave->start_date)->year);
+        }
 
         // Kirim email pemberitahuan status keputusan ke pemohon
         if ($leave->user) {
@@ -617,22 +675,38 @@ class LeaveController extends Controller
     {
         $year ??= (int) date('Y');
 
-        $query = Leave::where('user_id', $userId)
-            ->where('status', 'approved')
-            ->where('leave_type', 'Cuti Tahunan')
-            ->whereYear('start_date', $year);
-
-        if ($excludeLeaveId !== null) {
-            $query->where('id', '!=', $excludeLeaveId);
+        $user = User::find($userId);
+        if ($user) {
+            $this->quotaService->syncBalancesForUser($user, $year);
         }
 
-        $used = (int) $query->sum('total_days');
+        $annualType = LeaveType::where('name', 'Cuti Tahunan')->first();
+        $balance = $annualType 
+            ? LeaveBalance::where('user_id', $userId)->where('leave_type_id', $annualType->id)->where('year', $year)->first() 
+            : null;
+
+        $quota = $balance ? $balance->total_quota : self::ANNUAL_LEAVE_QUOTA_DAYS;
+        
+        if ($balance) {
+            $used = $balance->used_days;
+        } else {
+            $query = Leave::where('user_id', $userId)
+                ->where('status', 'approved')
+                ->where('leave_type', 'Cuti Tahunan')
+                ->whereYear('start_date', $year);
+
+            if ($excludeLeaveId !== null) {
+                $query->where('id', '!=', $excludeLeaveId);
+            }
+
+            $used = (int) $query->sum('total_days');
+        }
 
         return [
-            'quota' => self::ANNUAL_LEAVE_QUOTA_DAYS,
+            'quota' => $quota,
             'used' => $used,
-            'balance' => max(0, self::ANNUAL_LEAVE_QUOTA_DAYS - $used),
-            'raw_balance' => self::ANNUAL_LEAVE_QUOTA_DAYS - $used,
+            'balance' => max(0, $quota - $used),
+            'raw_balance' => $quota - $used,
             'year' => $year,
         ];
     }
@@ -657,5 +731,51 @@ class LeaveController extends Controller
             $decision['projected'],
             $decision['quota']
         );
+    }
+
+    /**
+     * Display list of leave balances for all users (for Admin & Atasan).
+     */
+    public function balances(Request $request)
+    {
+        $currentUser = Auth::user();
+        $year = (int) $request->input('year', date('Y'));
+        $stationId = $request->input('station_id');
+        $search = trim($request->input('search'));
+
+        // Ensure balances exist for target year
+        $this->quotaService->syncAllBalances($year);
+
+        // Fetch active leave types
+        $leaveTypes = LeaveType::where('is_active', true)->orderBy('name')->get();
+
+        // Build User query with balances
+        $userQuery = User::where('is_active', true)
+            ->with(['station', 'leaveBalances' => function($q) use ($year) {
+                $q->where('year', $year)->with('leaveType');
+            }]);
+
+        // Access control: if not Admin, scope by station
+        if (!$currentUser->isAdmin()) {
+            if ($currentUser->station) {
+                $userQuery->where('station', $currentUser->station);
+            } else {
+                $userQuery->where('id', $currentUser->id);
+            }
+        } elseif ($stationId) {
+            $userQuery->where('station', $stationId);
+        }
+
+        if ($search) {
+            $userQuery->where(function($q) use ($search) {
+                $q->where('fullname', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $userQuery->orderBy('fullname')->paginate(15)->appends($request->all());
+        $stations = Station::all();
+
+        return view('leaves.balances', compact('users', 'leaveTypes', 'stations', 'year', 'stationId', 'search'));
     }
 }

@@ -12,9 +12,15 @@ class AdminTrainingCertificateController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Certificate::leftJoin('users', 'certificates.user_id', '=', 'users.id')
-        ->select('certificates.*', 'users.fullname');
+        $user = \Illuminate\Support\Facades\Auth::user();
 
+        $query = Certificate::leftJoin('users', 'certificates.user_id', '=', 'users.id')
+            ->select('certificates.*', 'users.fullname');
+
+        // User biasa hanya dapat melihat sertifikat miliknya sendiri, Admin dapat melihat semua
+        if (!$user->isAdmin() && $user->role !== 'Admin') {
+            $query->where('certificates.user_id', $user->id);
+        }
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -40,13 +46,24 @@ class AdminTrainingCertificateController extends Controller
 
     public function store(Request $request)
     {
+        if (!\Illuminate\Support\Facades\Auth::user()->isAdmin() && \Illuminate\Support\Facades\Auth::user()->role !== 'Admin') {
+            $request->merge(['user_id' => \Illuminate\Support\Facades\Auth::id()]);
+        }
+
         $validatedData = $request->validate([
             'user_id' => 'required|exists:users,id',
             'certificate_name' => 'required|string|max:255',
             'certificate_type' => 'nullable|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'user_id.required' => 'Staff wajib dipilih.',
+            'certificate_name.required' => 'Nama sertifikat wajib diisi.',
+            'start_date.required' => 'Tanggal mulai berlaku wajib diisi.',
+            'end_date.required' => 'Tanggal akhir berlaku wajib diisi.',
+            'certificate_file.mimes' => 'Format file sertifikat harus PDF, JPG, JPEG, atau PNG.',
+            'certificate_file.max' => 'Ukuran file sertifikat tidak boleh lebih dari 2MB.',
         ]);
 
         // Format tanggal
@@ -81,18 +98,41 @@ class AdminTrainingCertificateController extends Controller
 
     public function show(Certificate $certificate)
     {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user->isAdmin() && $user->role !== 'Admin' && $certificate->user_id !== $user->id) {
+            abort(403, 'Akses ditolak.');
+        }
+
         return view('training.admin.show', compact('certificate'));
     }
 
     public function edit(Certificate $certificate)
     {
-        $users = User::orderBy('fullname')->get(['id', 'fullname']);
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user->isAdmin() && $user->role !== 'Admin' && $certificate->user_id !== $user->id) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        if (!$user->isAdmin() && $user->role !== 'Admin') {
+            $users = User::where('id', $user->id)->get(['id', 'fullname']);
+        } else {
+            $users = User::orderBy('fullname')->get(['id', 'fullname']);
+        }
 
         return view('training.admin.edit', compact('certificate', 'users'));
     }
 
     public function update(Request $request, Certificate $certificate)
     {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user->isAdmin() && $user->role !== 'Admin' && $certificate->user_id !== $user->id) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        if (!$user->isAdmin() && $user->role !== 'Admin') {
+            $request->merge(['user_id' => $certificate->user_id]);
+        }
+
         $validatedData = $request->validate([
             'user_id' => [
                 'required',
@@ -102,7 +142,14 @@ class AdminTrainingCertificateController extends Controller
             'certificate_type' => 'nullable|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'user_id.required' => 'Staff wajib dipilih.',
+            'certificate_name.required' => 'Nama sertifikat wajib diisi.',
+            'start_date.required' => 'Tanggal mulai berlaku wajib diisi.',
+            'end_date.required' => 'Tanggal akhir berlaku wajib diisi.',
+            'certificate_file.mimes' => 'Format file sertifikat harus PDF, JPG, JPEG, atau PNG.',
+            'certificate_file.max' => 'Ukuran file sertifikat tidak boleh lebih dari 2MB.',
         ]);
 
         if ($request->hasFile('certificate_file')) {
@@ -145,6 +192,10 @@ class AdminTrainingCertificateController extends Controller
 
     public function destroy(Certificate $certificate)
     {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user->isAdmin() && $user->role !== 'Admin' && $certificate->user_id !== $user->id) {
+            abort(403, 'Akses ditolak.');
+        }
         if ($certificate->certificate_file) {
             $oldPath = public_path('storage/' . $certificate->certificate_file);
             if (file_exists($oldPath) && is_file($oldPath)) {

@@ -38,8 +38,7 @@ class AutoCreateScheduleTest extends TestCase
         ]);
 
         // Shifts required by ScheduleController::autoCreate
-        Shift::create([
-            'id' => 'off',
+        Shift::firstOrCreate(['id' => 'off'], [
             'name' => 'OFF',
             'description' => 'Libur',
             'start_time' => '00:00:00',
@@ -47,12 +46,11 @@ class AutoCreateScheduleTest extends TestCase
             'use_manpower' => 0,
         ]);
 
-        Shift::create([
-            'id' => 'P1',
-            'name' => 'Pagi 1',
-            'description' => 'Shift Pagi 1',
-            'start_time' => '06:00:00',
-            'end_time' => '14:00:00',
+        Shift::firstOrCreate(['id' => 'pagi'], [
+            'name' => 'Pagi',
+            'description' => 'Shift Pagi',
+            'start_time' => '07:00:00',
+            'end_time' => '15:00:00',
             'use_manpower' => 6,
         ]);
 
@@ -88,8 +86,7 @@ class AutoCreateScheduleTest extends TestCase
             'join_date' => now()->toDateString(),
         ]);
 
-        Shift::create([
-            'id' => 'off',
+        Shift::firstOrCreate(['id' => 'off'], [
             'name' => 'OFF',
             'description' => 'Libur',
             'start_time' => '00:00:00',
@@ -97,11 +94,10 @@ class AutoCreateScheduleTest extends TestCase
             'use_manpower' => 0,
         ]);
 
-        Shift::create([
-            'id' => 'A',
-            'name' => 'Shift A',
-            'description' => 'Pagi',
-            'start_time' => '05:00:00',
+        Shift::firstOrCreate(['id' => 'pagi'], [
+            'name' => 'Pagi',
+            'description' => 'Shift Pagi',
+            'start_time' => '07:00:00',
             'end_time' => '15:00:00',
             'use_manpower' => 10,
         ]);

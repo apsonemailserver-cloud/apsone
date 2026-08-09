@@ -45,10 +45,19 @@ class AttendanceCorrectionController extends Controller
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
                 }
                 $query->whereHas('user', function ($q) {
-                    $q->whereHas('roleRelation', function ($rq) {
-                        $rq->where('name', 'LIKE', '%Bge%')
-                          ->orWhere('name', 'LIKE', '%BGE%')
-                          ->orWhere('name', 'LIKE', '%Baggage%');
+                    $q->where(function ($sq) {
+                        if (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
+                            $sq->whereHas('roleRelation', function ($rq) {
+                                $rq->where('name', 'LIKE', '%Bge%')
+                                  ->orWhere('name', 'LIKE', '%BGE%')
+                                  ->orWhere('name', 'LIKE', '%Baggage%');
+                            });
+                        }
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+                            $sq->orWhere('users.role', 'LIKE', '%Bge%')
+                              ->orWhere('users.role', 'LIKE', '%BGE%')
+                              ->orWhere('users.role', 'LIKE', '%Baggage%');
+                        }
                     });
                 });
             } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
@@ -56,9 +65,17 @@ class AttendanceCorrectionController extends Controller
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
                 }
                 $query->whereHas('user', function ($q) {
-                    $q->whereHas('roleRelation', function ($rq) {
-                        $rq->where('name', 'LIKE', '%Apron%')
-                          ->orWhere('name', 'LIKE', '%APRON%');
+                    $q->where(function ($sq) {
+                        if (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
+                            $sq->whereHas('roleRelation', function ($rq) {
+                                $rq->where('name', 'LIKE', '%Apron%')
+                                  ->orWhere('name', 'LIKE', '%APRON%');
+                            });
+                        }
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+                            $sq->orWhere('users.role', 'LIKE', '%Apron%')
+                              ->orWhere('users.role', 'LIKE', '%APRON%');
+                        }
                     });
                 });
             } else {
@@ -414,8 +431,10 @@ class AttendanceCorrectionController extends Controller
                 abort(403, 'Leader Apron hanya dapat menyetujui/menolak koreksi divisi Apron.');
             }
         } else {
-            $isConfiguredManager = trim((string) $correction->user->manager) === trim((string) $actor->fullname);
-            abort_unless($isConfiguredManager, 403);
+            $isConfiguredManager = (trim((string) $applicant->manager) === trim((string) $actor->fullname))
+                || ($applicant->pic_id && (string) $applicant->pic_id === (string) $actor->id)
+                || ($applicant->unit_id && $actor->unit_id && $applicant->unit_id === $actor->unit_id && (str_contains($userRole, 'Leader') || str_contains($userRole, 'Supervisor') || str_contains($userRole, 'Head')));
+            abort_unless($isConfiguredManager, 403, 'Anda tidak memiliki wewenang struktural untuk memproses pengajuan ini.');
         }
     }
 

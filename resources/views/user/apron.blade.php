@@ -18,13 +18,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    {{-- Toolbar --}}
-                    <div class="dt-toolbar">
-                        <form action="{{ route('users.apron') }}" method="GET" class="dt-search">
-                            <i class="bx bx-search search-icon"></i>
-                            <input type="text" name="search" class="form-control" placeholder="Cari NIP atau Nama..." value="{{ request('search') }}">
-                        </form>
-                    </div>
+                    <x-dt-toolbar :searchFormAction="route('users.apron')" searchPlaceholder="Cari NIP atau Nama..." />
 
                     {{-- Tabel --}}
                     <div class="table-responsive">
@@ -49,21 +43,13 @@
                                         <td>{{ \Carbon\Carbon::parse($users->updated_at)->translatedFormat('d M Y H:i') }}</td>
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <a href="{{ route('users.show', ['user' => $users->id, 'page' => request('page')]) }}" class="action-btn" title="Lihat Detail">
-                                                    <i class="bx bx-show"></i>
-                                                </a>
+                                                <x-action-button action="view" :href="route('users.show', ['user' => $users->id, 'page' => request('page')])" title="Lihat Detail" />
                                                 @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
-                                                <a href="{{ route('users.edit', ['user' => $users->id, 'page' => request('page'), 'redirect_to' => url()->full()]) }}" class="action-btn action-edit" title="Edit Data">
-                                                    <i class="ti ti-pencil"></i>
-                                                </a>
-                                                <button type="button" class="action-btn border-0" onclick="confirmReset({{ $users->id }}, '{{ $users->fullname }}')" title="Reset Password">
-                                                    <i class="bx bx-refresh"></i>
-                                                </button>
+                                                <x-action-button action="edit" :href="route('users.edit', ['user' => $users->id, 'page' => request('page'), 'redirect_to' => url()->full()])" title="Edit Data" />
+                                                <x-action-button type="button" action="reset" onclick="confirmReset({{ $users->id }}, '{{ $users->fullname }}')" title="Reset Password" />
                                                 @endif
                                                 @if(Auth::user()->canAccess('user', 'delete') || Auth::user()->role === 'Admin')
-                                                <button type="button" class="action-btn border-0" onclick="confirmDelete({{ $users->id }}, '{{ $users->fullname }}')" title="Hapus User" style="color:#dc2626; border-color:#fecaca;">
-                                                    <i class="bx bx-trash"></i>
-                                                </button>
+                                                <x-action-button type="button" action="delete" onclick="confirmDelete({{ $users->id }}, '{{ $users->fullname }}')" title="Hapus User" />
                                                 @endif
                                             </div>
 

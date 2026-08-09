@@ -108,18 +108,7 @@
 
         <div class="card">
             <div class="card-body">
-                {{-- Toolbar: Search --}}
-                <div class="dt-toolbar">
-                    <form action="{{ route('leaves.index') }}" method="GET" class="d-flex flex-wrap gap-3 align-items-center flex-grow-1">
-                        <div class="dt-search">
-                            <i class="bx bx-search search-icon"></i>
-                            <input type="text" name="search" class="form-control" placeholder="Cari Nama, NIP, atau Alasan..." value="{{ request('search') }}">
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bx bx-filter-alt me-1"></i>Filter
-                        </button>
-                    </form>
-                </div>
+                <x-dt-toolbar :searchFormAction="route('leaves.index')" searchPlaceholder="Cari nama, NIP, atau alasan..." />
 
                 <div class="table-responsive">
                     <table class="table">

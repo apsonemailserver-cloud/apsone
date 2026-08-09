@@ -255,44 +255,10 @@
                     </li>
                     @endif
 
-                    @if (Auth::user()->canAccess('station', 'view') || Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view'))
+                    @if (Auth::user()->canAccess('station', 'view') || Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view') || Auth::user()->canAccess('job_title', 'view') || Auth::user()->canAccess('unit', 'view') || Auth::user()->canAccess('sub_unit', 'view') || Auth::user()->canAccess('cluster', 'view'))
                         {{-- HEADER KHUSUS ADMIN --}}
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">Administrator</span>
-                        </li>
-
-                        {{-- MENU BARU: MASTER DATA --}}
-                        <li class="menu-item {{ request()->routeIs('master.*') ? 'active open' : '' }}">
-                            <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
-                                <i class="menu-icon tf-icons ti ti-database"></i>
-                                <div data-i18n="Master Data">Master Data</div>
-                            </a>
-                            <ul class="menu-sub">
-                                <li class="menu-item {{ request()->routeIs('master.units.*') ? 'active' : '' }}">
-                                    <a href="{{ route('master.units.index') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-category"></i>
-                                        <div data-i18n="Units">Units</div>
-                                    </a>
-                                </li>
-                                <li class="menu-item {{ request()->routeIs('master.sub_units.*') ? 'active' : '' }}">
-                                    <a href="{{ route('master.sub_units.index') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-box"></i>
-                                        <div data-i18n="Sub Units">Sub Units</div>
-                                    </a>
-                                </li>
-                                <li class="menu-item {{ request()->routeIs('master.job_titles.*') ? 'active' : '' }}">
-                                    <a href="{{ route('master.job_titles.index') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-briefcase"></i>
-                                        <div data-i18n="Job Titles">Job Titles</div>
-                                    </a>
-                                </li>
-                                <li class="menu-item {{ request()->routeIs('master.clusters.*') ? 'active' : '' }}">
-                                    <a href="{{ route('master.clusters.index') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-layout-grid"></i>
-                                        <div data-i18n="Clusters">Clusters</div>
-                                    </a>
-                                </li>
-                            </ul>
                         </li>
 
                         {{-- MENU BARU: STATION MANAGEMENT (ON/OFF) --}}
@@ -305,9 +271,9 @@
                         </li>
                         @endif
 
-                        @if(Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view'))
+                        @if(Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view') || Auth::user()->canAccess('job_title', 'view') || Auth::user()->canAccess('unit', 'view') || Auth::user()->canAccess('sub_unit', 'view') || Auth::user()->canAccess('cluster', 'view'))
                         <li
-                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('roles.*') || request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') || request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') || request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
+                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('roles.*') || request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') || request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') || request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') || request()->routeIs('master_data.*') || request()->routeIs('master.clusters.*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
                             <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                                 <i class="menu-icon tf-icons ti ti-users"></i>
                                 <div data-i18n="User Management">User Management</div>
@@ -357,6 +323,38 @@
                                     </a>
                                 </li>
                                 @endif
+                                @if(Auth::user()->canAccess('job_title', 'view'))
+                                <li class="menu-item {{ request()->routeIs('master_data.job_titles.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master_data.job_titles.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-briefcase"></i>
+                                        <div data-i18n="Job Titles">Job Titles</div>
+                                    </a>
+                                </li>
+                                @endif
+                                @if(Auth::user()->canAccess('unit', 'view'))
+                                <li class="menu-item {{ request()->routeIs('master_data.units.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master_data.units.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-building"></i>
+                                        <div data-i18n="Units">Units</div>
+                                    </a>
+                                </li>
+                                @endif
+                                @if(Auth::user()->canAccess('sub_unit', 'view'))
+                                <li class="menu-item {{ request()->routeIs('master_data.sub_units.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master_data.sub_units.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-hierarchy-2"></i>
+                                        <div data-i18n="Sub Units">Sub Units</div>
+                                    </a>
+                                </li>
+                                @endif
+                                @if(Auth::user()->canAccess('cluster', 'view') || Auth::user()->canAccess('user', 'view'))
+                                <li class="menu-item {{ request()->routeIs('master_data.clusters.*') || request()->routeIs('master.clusters.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master_data.clusters.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-layout-grid"></i>
+                                        <div data-i18n="Clusters">Clusters</div>
+                                    </a>
+                                </li>
+                                @endif
                             </ul>
                         </li>
                         @endif
@@ -380,24 +378,23 @@
                     @endif
 
                     @if (Auth::user()->canAccess('training', 'view'))
-                    <li class="menu-item {{ (request()->is('training*') || request()->is('my-certificates*') || request()->routeIs('my.certificates*')) ? 'active open' : '' }}">
+                    <li class="menu-item {{ (request()->is('training*') || request()->is('my-certificates*') || request()->routeIs('my.certificates*') || request()->routeIs('training.*')) ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-award"></i>
                             <div data-i18n="Training">Training</div>
                         </a>
                         <ul class="menu-sub">
-                            @if (Auth::user()->canAccess('training', 'create') || Auth::user()->canAccess('training', 'edit'))
+                            <li class="menu-item {{ request()->routeIs('my.certificates') ? 'active' : '' }}">
+                                <a href="{{ route('my.certificates') }}" class="menu-link">
+                                    <i class="menu-icon tf-icons ti ti-certificate"></i>
+                                    <div data-i18n="My Certificates">Sertifikat Saya</div>
+                                </a>
+                            </li>
+                            @if (Auth::user()->canAccess('training', 'create') || Auth::user()->canAccess('training', 'edit') || Auth::user()->isAdmin())
                                 <li class="menu-item {{ request()->routeIs('admin.training.certificates.*') ? 'active' : '' }}">
                                     <a href="{{ route('admin.training.certificates.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-book"></i>
                                         <div data-i18n="Training Management">Training Management</div>
-                                    </a>
-                                </li>
-                            @else
-                                <li class="menu-item {{ request()->routeIs('my.certificates') ? 'active' : '' }}">
-                                    <a href="{{ route('my.certificates') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-certificate"></i>
-                                        <div data-i18n="My Certificates">My Certificates</div>
                                     </a>
                                 </li>
                             @endif
@@ -405,8 +402,8 @@
                     </li>
                     @endif
 
-                    @if (Auth::user()->canAccess('leave', 'view') || Auth::user()->canAccess('leave', 'create') || Auth::user()->canAccess('leave', 'approve') || Auth::user()->canAccess('leave', 'export'))
-                    <li class="menu-item {{ request()->is('leaves*') ? 'active open' : '' }}">
+                    @if (Auth::user()->canAccess('leave', 'view') || Auth::user()->canAccess('leave', 'create') || Auth::user()->canAccess('leave', 'approve') || Auth::user()->canAccess('leave', 'export') || Auth::user()->canAccess('master_leave', 'view'))
+                    <li class="menu-item {{ request()->is('leaves*') || request()->is('master-leaves*') ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-logout-2"></i>
                             <div data-i18n="Apply Leave">Apply Leave</div>
@@ -428,11 +425,27 @@
                                     </a>
                                 </li>
                             @endif
+                            @if (Auth::user()->canAccess('leave', 'view') || Auth::user()->canAccess('leave', 'approve') || Auth::user()->isAdmin())
+                                <li class="menu-item {{ request()->routeIs('leaves.balances') ? 'active' : '' }}">
+                                    <a href="{{ route('leaves.balances') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-chart-bar"></i>
+                                        <div data-i18n="Leave Balance">Leave Balance</div>
+                                    </a>
+                                </li>
+                            @endif
                             @if (Auth::user()->canAccess('leave', 'export'))
                                 <li class="menu-item {{ request()->routeIs('leaves.laporan') ? 'active' : '' }}">
                                     <a href="{{ route('leaves.laporan') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
                                         <div data-i18n="Leave Report">Leave Report</div>
+                                    </a>
+                                </li>
+                            @endif
+                            @if (Auth::user()->canAccess('master_leave', 'view'))
+                                <li class="menu-item {{ request()->routeIs('master_leaves.*') ? 'active' : '' }}">
+                                    <a href="{{ route('master_leaves.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-settings"></i>
+                                        <div data-i18n="Master Cuti">Master Cuti</div>
                                     </a>
                                 </li>
                             @endif
@@ -539,6 +552,18 @@
                     if ($currentUser->canAccess('blacklist', 'view')) {
                         $topbarMenuLinks[] = ['label' => 'Blacklist', 'category' => 'Administrator', 'hint' => 'Data staff blacklist', 'icon' => 'ti-user-x', 'url' => route('blacklist.index')];
                     }
+                    if ($currentUser->canAccess('job_title', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Job Titles', 'category' => 'Administrator', 'hint' => 'Kelola data master job titles', 'icon' => 'ti-briefcase', 'url' => route('master_data.job_titles.index')];
+                    }
+                    if ($currentUser->canAccess('unit', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Units', 'category' => 'Administrator', 'hint' => 'Kelola data master unit', 'icon' => 'ti-building', 'url' => route('master_data.units.index')];
+                    }
+                    if ($currentUser->canAccess('sub_unit', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Sub Units', 'category' => 'Administrator', 'hint' => 'Kelola data master sub unit', 'icon' => 'ti-hierarchy-2', 'url' => route('master_data.sub_units.index')];
+                    }
+                    if ($currentUser->canAccess('cluster', 'view') || $currentUser->canAccess('user', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Clusters', 'category' => 'Administrator', 'hint' => 'Kelola data master cluster', 'icon' => 'ti-layout-grid', 'url' => route('master_data.clusters.index')];
+                    }
 
                     if ($currentUser->canAccess('document', 'view')) {
                         $topbarMenuLinks[] = ['label' => 'Cetak Dokumen', 'category' => 'General', 'hint' => 'Dokumen dan surat', 'icon' => 'ti-file-text', 'url' => route('document')];
@@ -567,6 +592,10 @@
 
                     if ($canManageLeave || $currentUser->canAccess('leave', 'export')) {
                         $topbarMenuLinks[] = ['label' => 'Laporan Leave', 'category' => 'Apply Leave', 'hint' => 'Rekap leave staff', 'icon' => 'ti-file-text', 'url' => route('leaves.laporan')];
+                    }
+
+                    if ($currentUser->canAccess('master_leave', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Master Cuti', 'category' => 'Apply Leave', 'hint' => 'Kelola tipe cuti & aturan masa kerja', 'icon' => 'ti-settings', 'url' => route('master_leaves.index')];
                     }
 
                     if ($currentUser->canAccess('announcement', 'view')) {
@@ -908,6 +937,27 @@
         html.no-transitions *::after {
             transition: none !important;
             animation: none !important;
+        }
+
+        .aps-picker-day.is-disabled,
+        .aps-picker-day[disabled] {
+            opacity: 0.3 !important;
+            pointer-events: none !important;
+            cursor: not-allowed !important;
+            background: transparent !important;
+        }
+
+        /* Global Toggle Switch Styling (Light & Dark Mode) */
+        .form-check-input:checked,
+        .form-switch .form-check-input:checked {
+            background-color: #2f80ed !important;
+            border-color: #2f80ed !important;
+        }
+
+        html.aps-dark .form-check-input:checked,
+        html.aps-dark .form-switch .form-check-input:checked {
+            background-color: #3b82f6 !important;
+            border-color: #3b82f6 !important;
         }
     </style>
 
@@ -1458,15 +1508,23 @@
 	                    daysHtml += '<span class="aps-picker-day is-empty"></span>';
 	                }
 
+	                const minDateVal = input.getAttribute('min') || (input.min || '');
+	                const maxDateVal = input.getAttribute('max') || (input.max || '');
+
 	                for (let day = 1; day <= daysInMonth; day += 1) {
 	                    const itemDate = new Date(data.viewYear, data.viewMonth, day);
 	                    const key = dateKey(itemDate);
+	                    let isDisabled = false;
+	                    if (minDateVal && key < minDateVal) isDisabled = true;
+	                    if (maxDateVal && key > maxDateVal) isDisabled = true;
+
 	                    const classes = [
 	                        'aps-picker-day',
 	                        key === selected ? 'is-selected' : '',
-	                        key === today ? 'is-today' : ''
+	                        key === today ? 'is-today' : '',
+	                        isDisabled ? 'is-disabled' : ''
 	                    ].filter(Boolean).join(' ');
-	                    daysHtml += '<button type="button" class="' + classes + '" data-picker-date="' + key + '">' + day + '</button>';
+	                    daysHtml += '<button type="button" class="' + classes + '" ' + (isDisabled ? 'disabled' : '') + ' data-picker-date="' + key + '">' + day + '</button>';
 	                }
 
 	                return [
@@ -1704,7 +1762,7 @@
 	                            return;
 	                        }
 
-	                        if (day) {
+	                        if (day && !day.disabled && !day.classList.contains('is-disabled')) {
 	                            readTimeInputs(input);
 	                            input._apsPicker.date = parseDate(day.dataset.pickerDate);
 	                            if (input._apsPicker.type === 'date') {
@@ -2367,8 +2425,8 @@
             document.addEventListener('DOMContentLoaded', restoreSidebarScroll);
         })();
     </script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
     @include('sweetalert::alert')
-    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}" defer></script>
     <script>
         document.addEventListener('click', function(event) {
             const logoutLink = event.target.closest('#profile-logout-link');
@@ -2389,24 +2447,42 @@
             Swal.fire({
                 title: 'Yakin ingin logout?',
                 text: 'Sesi akun akan diakhiri dan Anda perlu login kembali.',
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                reverseButtons: true,
-                focusCancel: true,
                 confirmButtonText: 'Ya, Logout',
                 cancelButtonText: 'Batal',
-                buttonsStyling: false,
-                customClass: {
-                    popup: 'logout-confirm-popup',
-                    confirmButton: 'btn logout-confirm-button',
-                    cancelButton: 'btn logout-cancel-button'
-                }
+                reverseButtons: false,
+                focusCancel: true
             }).then(function(result) {
                 if (result.isConfirmed) {
                     logoutForm.submit();
                 }
             });
         });
+
+        // Universal SweetAlert Delete Confirmation Helper
+        window.apsConfirmDelete = function(options) {
+            return Swal.fire({
+                title: options.title || 'Apakah Anda yakin?',
+                text: options.text || 'Data yang dihapus tidak dapat dikembalikan!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: options.confirmButtonText || 'Ya, Hapus!',
+                cancelButtonText: options.cancelButtonText || 'Batal',
+                reverseButtons: false,
+                focusCancel: true
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    if (options.formId) {
+                        const form = document.getElementById(options.formId);
+                        if (form) form.submit();
+                    } else if (typeof options.onConfirm === 'function') {
+                        options.onConfirm();
+                    }
+                }
+                return result;
+            });
+        };
 
         function markSingleRead(readUrl, event, targetUrl) {
             if (event) event.preventDefault();
@@ -2454,6 +2530,28 @@
                     });
                 }
             @endif
+
+            // GLOBAL FILE UPLOAD SIZE & EXTENSION VALIDATOR (MAX 2MB)
+            document.addEventListener('change', function(e) {
+                if (e.target && e.target.type === 'file' && e.target.files && e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const maxBytes = 2 * 1024 * 1024; // 2MB in bytes
+                    if (file.size > maxBytes) {
+                        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                        e.target.value = ''; // Instantly clear input so file is NOT sent to server
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Ukuran File Terlalu Besar!',
+                                text: `Ukuran file (${fileSizeMB} MB) melebihi batas maksimal 2MB. File dibatalkan dan tidak diunggah ke server.`,
+                                confirmButtonColor: '#2f80ed'
+                            });
+                        } else {
+                            alert(`Ukuran file (${fileSizeMB} MB) melebihi batas maksimal 2MB. File tidak diunggah!`);
+                        }
+                    }
+                }
+            });
         });
     </script>
 </body>

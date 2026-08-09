@@ -15,6 +15,7 @@ class Blacklist extends Model
         'reason',
         'station',
         'banned_by',
+        'attachment_file',
     ];
 
 }

@@ -69,7 +69,9 @@ class AttendanceController extends Controller
             }
         }
 
-        return view('attendance.camera', compact('type'));
+        $hasFaceSamples = \App\Http\Controllers\FaceSampleController::isComplete($user->id);
+
+        return view('attendance.camera', compact('type', 'hasFaceSamples'));
     }
 
     public function process(Request $request)
@@ -184,6 +186,24 @@ class AttendanceController extends Controller
                 return back()->with('error', 'Anda sudah check-in hari ini.');
             }
 
+            $schedule = Schedule::with('shift')
+                ->where('user_id', $user->id)
+                ->where('date', $today)
+                ->first();
+
+            if ($schedule && $schedule->shift) {
+                $shiftStartTime = Carbon::parse($today . ' ' . $schedule->shift->start_time);
+                $toleranceMinutes = $schedule->shift->tolerance_minutes ?? 15;
+                $deadline = (clone $shiftStartTime)->addMinutes($toleranceMinutes);
+
+                if ($now->isAfter($deadline)) {
+                    return redirect()->route('attendance.corrections.create', ['date' => $today])
+                        ->with('error', "Anda terlambat melakukan check-in (Batas toleransi: {$toleranceMinutes} menit). Absensi biasa diblokir, silakan ajukan Koreksi Absen.");
+                }
+            }
+
+            $status = ($schedule && $schedule->shift && $now->isAfter(Carbon::parse($today . ' ' . $schedule->shift->start_time))) ? 'Terlambat' : 'Tepat Waktu';
+
             Attendance::create([
                 'user_id' => $user->id,
                 'station_id' => $station->id,
@@ -191,6 +211,7 @@ class AttendanceController extends Controller
                 'check_in_photo' => $fileName,
                 'check_in_latitude' => $request->latitude,
                 'check_in_longitude' => $request->longitude,
+                'status' => $status,
             ]);
         } else {
 
@@ -311,6 +332,18 @@ class AttendanceController extends Controller
         }
 
         $shiftStartTime = Carbon::parse($schedule->date . ' ' . $schedule->shift->start_time);
+        $toleranceMinutes = $schedule->shift->tolerance_minutes ?? 15;
+        $deadline = (clone $shiftStartTime)->addMinutes($toleranceMinutes);
+
+        if ($now->isAfter($deadline)) {
+            return response()->json([
+                'success' => false,
+                'is_late_blocked' => true,
+                'redirect_url' => route('attendance.corrections.create', ['date' => $today]),
+                'message' => "Anda terlambat melakukan check-in (Batas toleransi: {$toleranceMinutes} menit). Check-in diblokir, silakan ajukan Koreksi Absen."
+            ]);
+        }
+
         $status = ($now->isAfter($shiftStartTime)) ? 'Terlambat' : 'Tepat Waktu';
 
         // 7. Simpan Data Absensi dengan Koordinat

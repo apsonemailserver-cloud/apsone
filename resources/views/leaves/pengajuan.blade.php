@@ -38,18 +38,7 @@
                 </div>
                 @endif
 
-                {{-- Toolbar: Search --}}
-                <div class="dt-toolbar">
-                    <form action="{{ route('leaves.pengajuan') }}" method="GET" class="d-flex flex-wrap gap-3 align-items-center flex-grow-1">
-                        <div class="dt-search">
-                            <i class="bx bx-search search-icon"></i>
-                            <input type="text" name="search" class="form-control" placeholder="Cari Jenis atau Alasan..." value="{{ request('search') }}">
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bx bx-filter-alt me-1"></i>Filter
-                        </button>
-                    </form>
-                </div>
+                <x-dt-toolbar :searchFormAction="route('leaves.pengajuan')" searchPlaceholder="Cari jenis atau alasan..." />
 
                 {{-- Tabel --}}
                 <div class="table-responsive">
@@ -70,7 +59,7 @@
                                 <td><strong>{{ $leave->user->fullname ?? 'N/A' }}</strong></td>
                                 <td>{{ $leave->leave_type }}</td>
                                 <td>{{ \Carbon\Carbon::parse($leave->start_date)->format('d M') }} - {{ \Carbon\Carbon::parse($leave->end_date)->format('d M Y') }}</td>
-                                <td>{{ $leave->total_days }}</td>
+                                <td>{{ $leave->total_days }} hari</td>
                                 <td>
                                     @php
                                     $statusConfig = match ($leave->status) {
@@ -86,10 +75,8 @@
                                     <span class="status-badge {{ $statusConfig['class'] }}">{{ $statusConfig['text'] }}</span>
                                 </td>
                                 <td>
-                                    <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}">
-                                            Detail
-                                        </button>
+                                    <div class="d-flex gap-1">
+                                        <x-action-button action="detail" type="button" data-bs-toggle="modal" data-bs-target="#leaveDetailModal{{ $leave->id }}" title="Detail Pengajuan" />
                                         @php
                                             $authUser = Auth::user();
                                             $isOwner = (string) $leave->user_id === (string) $authUser->id;
@@ -97,20 +84,16 @@
                                             $isPending = in_array($leave->status, ['pending', 'pending Apron', 'pending Bge']);
                                             $isApproved = $leave->status === 'approved';
 
-                                            // Bawahan hanya dapat membatalkan jika status masih Menunggu.
-                                            // Atasan / Admin dapat membatalkan jika status Menunggu atau Disetujui.
                                             $canCancel = ($isOwner && $isPending) || ($isAdminOrApprover && ($isPending || $isApproved));
                                         @endphp
                                         @if ($canCancel)
                                             <form action="{{ route('leaves.cancel', $leave->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button type="button" class="btn btn-sm btn-outline-danger btn-cancel-leave" 
+                                                <x-action-button type="button" action="delete" class="btn-cancel-leave" 
                                                     data-type="{{ addslashes($leave->leave_type ?? 'Izin/Cuti') }}"
                                                     data-status="{{ $leave->status }}"
-                                                    title="Batalkan Pengajuan">
-                                                    <i class="bx bx-x me-1"></i>Batalkan
-                                                </button>
+                                                    title="Batalkan Pengajuan" />
                                             </form>
                                         @endif
                                     </div>
@@ -119,11 +102,9 @@
                             @include('leaves.partials.modal_detail', ['leave' => $leave, 'statusConfig' => $statusConfig])
                             @empty
                             <tr>
-                                <td colspan="6">
-                                    <div class="empty-state">
-                                        <i class="bx bx-calendar-check d-block"></i>
-                                        <p>Tidak ada data pengajuan.</p>
-                                    </div>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="bx bx-calendar-check d-block fs-2 mb-1 opacity-50"></i>
+                                    <p class="mb-0">Tidak ada data pengajuan ditemukan.</p>
                                 </td>
                             </tr>
                             @endforelse

@@ -6,35 +6,15 @@
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="py-4">
 
-            {{-- Header dengan Breadcrumb --}}
-            <div
-                class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
-                <h4 class="fw-bold mb-0">Edit Data User</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="javascript:void(0);">User Management</a></li>
-                        @if(isset($redirectTo) && str_contains($redirectTo, 'staff'))
-                            <li class="breadcrumb-item"><a href="{{ route('staff.index') }}">Monitor Station</a></li>
-                        @else
-                            <li class="breadcrumb-item"><a href="{{ route('users.apron') }}">Daftar User</a></li>
-                        @endif
-                        <li class="breadcrumb-item active">Edit User</li>
-                    </ol>
-                </nav>
-            </div>
-
             {{-- Card Form Edit --}}
-            <div class="row">
-                <div class="col-md-10 offset-md-1">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="card-title mb-0">
-                                <i class="bx bx-edit me-2"></i>Edit Data Staff
-                            </h5>
-                            <p class="mb-0 mt-1 small opacity-75">Perbarui informasi data user {{ $user->fullname }}</p>
-                        </div>
-                        <div class="card-body">
+            <div class="card mb-4">
+                <div class="card-header border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">Edit Data User: {{ $user->fullname }}</h5>
+                    <a href="{{ route('users.face-samples.index', $user->id) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bx bx-camera me-1"></i> Foto Wajah (Face Recognition)
+                    </a>
+                </div>
+                <div class="card-body pt-4">
 
                             @if ($errors->any())
                                 <div class="alert alert-danger">
@@ -98,39 +78,31 @@
                                         <div class="mb-3">
                                             <label class="form-label">Job Title <span class="text-danger">*</span></label>
                                             <select name="job_title" class="form-select" required>
-                                                <option value="PASSENGER HANDLING"
-                                                    {{ old('job_title', $user->job_title) == 'PASSENGER HANDLING' ? 'selected' : '' }}>
-                                                    PASSENGER HANDLING</option>
-                                                <option value="BAGGAGE HANDLING"
-                                                    {{ old('job_title', $user->job_title) == 'BAGGAGE HANDLING' ? 'selected' : '' }}>
-                                                    BAGGAGE HANDLING</option>
-                                                <option value="RAMP HANDLING"
-                                                    {{ old('job_title', $user->job_title) == 'RAMP HANDLING' ? 'selected' : '' }}>
-                                                    RAMP HANDLING</option>
-                                                <option value="CARGO HANDLING"
-                                                    {{ old('job_title', $user->job_title) == 'CARGO HANDLING' ? 'selected' : '' }}>
-                                                    CARGO HANDLING</option>
-                                                <option value="AIRCRAFT SERVICE"
-                                                    {{ old('job_title', $user->job_title) == 'AIRCRAFT SERVICE' ? 'selected' : '' }}>
-                                                    AIRCRAFT SERVICE</option>
-                                                <option value="SUPPORTING UNIT"
-                                                    {{ old('job_title', $user->job_title) == 'SUPPORTING UNIT' ? 'selected' : '' }}>
-                                                    SUPPORTING UNIT</option>
-                                                <option value="OFFICE / ADMINISTRATION"
-                                                    {{ old('job_title', $user->job_title) == 'OFFICE / ADMINISTRATION' ? 'selected' : '' }}>
-                                                    OFFICE / ADMINISTRATION</option>
+                                                <option value="">-- Pilih Job Title --</option>
+                                                @if(isset($jobTitles))
+                                                    @foreach($jobTitles as $jt)
+                                                        <option value="{{ $jt->name }}" {{ old('job_title', $user->jobTitle?->name) == $jt->name ? 'selected' : '' }}>
+                                                            {{ $jt->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Cluster <span class="text-danger">*</span></label>
                                             <select name="cluster" class="form-select" required>
-                                                <option value="GROUND HANDLING"
-                                                    {{ old('cluster', $user->cluster) == 'GROUND HANDLING' ? 'selected' : '' }}>
-                                                    GROUND HANDLING</option>
-                                                <option value="OFFICE"
-                                                    {{ old('cluster', $user->cluster) == 'OFFICE' ? 'selected' : '' }}>
-                                                    OFFICE</option>
+                                                <option value="">-- Pilih Cluster --</option>
+                                                @if(isset($clusters) && count($clusters) > 0)
+                                                    @foreach($clusters as $c)
+                                                        <option value="{{ $c->name }}" {{ old('cluster', $user->cluster?->name) == $c->name ? 'selected' : '' }}>
+                                                            {{ $c->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @else
+                                                    <option value="GROUND HANDLING" {{ old('cluster', $user->cluster?->name) == 'GROUND HANDLING' ? 'selected' : '' }}>GROUND HANDLING</option>
+                                                    <option value="OFFICE" {{ old('cluster', $user->cluster?->name) == 'OFFICE' ? 'selected' : '' }}>OFFICE</option>
+                                                @endif
                                             </select>
                                         </div>
 
@@ -153,72 +125,28 @@
                                         <div class="mb-3">
                                             <label class="form-label">Unit <span class="text-danger">*</span></label>
                                             <select name="unit" class="form-select" required>
-                                                <option value="FLIGHT OPERATION"
-                                                    {{ old('unit', $user->unit) == 'FLIGHT OPERATION' ? 'selected' : '' }}>
-                                                    FLIGHT OPERATION</option>
-                                                <option value="RAMP HANDLING"
-                                                    {{ old('unit', $user->unit) == 'RAMP HANDLING' ? 'selected' : '' }}>
-                                                    RAMP HANDLING</option>
-                                                <option value="BAGGAGE HANDLING"
-                                                    {{ old('unit', $user->unit) == 'BAGGAGE HANDLING' ? 'selected' : '' }}>
-                                                    BAGGAGE HANDLING</option>
-                                                <option value="HEAD OFFICE"
-                                                    {{ old('unit', $user->unit) == 'HEAD OFFICE' ? 'selected' : '' }}>HEAD
-                                                    OFFICE</option>
-                                                <option value="PASSENGER HANDLING"
-                                                    {{ old('unit', $user->unit) == 'PASSENGER HANDLING' ? 'selected' : '' }}>
-                                                    PASSENGER HANDLING</option>
-                                                <option value="SUPPORTING / MANAGEMENT"
-                                                    {{ old('unit', $user->unit) == 'SUPPORTING / MANAGEMENT' ? 'selected' : '' }}>
-                                                    SUPPORTING / MANAGEMENT</option>
+                                                <option value="">-- Pilih Unit --</option>
+                                                @if(isset($units))
+                                                    @foreach($units as $u)
+                                                        <option value="{{ $u->name }}" {{ old('unit', $user->unit?->name) == $u->name ? 'selected' : '' }}>
+                                                            {{ $u->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Sub Unit <span class="text-danger">*</span></label>
                                             <select name="sub_unit" class="form-select" required>
-                                                <option value="PORTER APRON"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'PORTER APRON' ? 'selected' : '' }}>
-                                                    PORTER APRON</option>
-                                                <option value="PORTER CARGO"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'PORTER CARGO' ? 'selected' : '' }}>
-                                                    PORTER CARGO</option>
-                                                <option value="PORTER MAKE-UP"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'PORTER MAKE-UP' ? 'selected' : '' }}>
-                                                    PORTER MAKE-UP</option>
-                                                <option value="AIRCRAFT INTERIOR CLEANING"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'AIRCRAFT INTERIOR CLEANING' ? 'selected' : '' }}>
-                                                    AIRCRAFT INTERIOR CLEANING</option>
-                                                <option value="DISPATCHER"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'DISPATCHER' ? 'selected' : '' }}>
-                                                    DISPATCHER</option>
-                                                <option value="CONTROLLER"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'CONTROLLER' ? 'selected' : '' }}>
-                                                    CONTROLLER</option>
-                                                <option value="DRIVER"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'DRIVER' ? 'selected' : '' }}>
-                                                    DRIVER</option>
-                                                <option value="AVSEC"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'AVSEC' ? 'selected' : '' }}>AVSEC
-                                                </option>
-                                                <option value="RAMP"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'RAMP' ? 'selected' : '' }}>RAMP
-                                                </option>
-                                                <option value="PASASI"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'PASASI' ? 'selected' : '' }}>
-                                                    PASASI</option>
-                                                <option value="QUALITY CONTROL"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'QUALITY CONTROL' ? 'selected' : '' }}>
-                                                    QUALITY CONTROL</option>
-                                                <option value="HEALTH, SAFETY, AND ENVIRONMENT"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'HEALTH, SAFETY, AND ENVIRONMENT' ? 'selected' : '' }}>
-                                                    HEALTH, SAFETY, AND ENVIRONMENT (HSE)</option>
-                                                <option value="HEAD OF AIRPORT SERVICES"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'HEAD OF AIRPORT SERVICES' ? 'selected' : '' }}>
-                                                    HEAD OF AIRPORT SERVICES</option>
-                                                <option value="HEAD STATION"
-                                                    {{ old('sub_unit', $user->sub_unit) == 'HEAD STATION' ? 'selected' : '' }}>
-                                                    HEAD STATION</option>
+                                                <option value="">-- Pilih Sub Unit --</option>
+                                                @if(isset($subUnits))
+                                                    @foreach($subUnits as $su)
+                                                        <option value="{{ $su->name }}" {{ old('sub_unit', $user->subUnit?->name) == $su->name ? 'selected' : '' }}>
+                                                            {{ $su->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                         </div>
 
@@ -289,21 +217,10 @@
                                     </div>
                                 </div>
 
-                                <div class="text-end mt-4">
-                                    <button type="submit" class="btn btn-info">
-                                        <i class="bx bx-save me-1"></i>UPDATE DATA
-                                    </button>
-                                    <a href="{{ $redirectTo ?? route('staff.index') }}" class="btn btn-secondary">
-                                        <i class="bx bx-arrow-back me-1"></i>KEMBALI
-                                    </a>
-                                </div>
+                                <x-form-actions :cancelHref="$redirectTo ?? route('staff.index')" submitText="Update Data" />
                             </form>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @section('scripts')

@@ -44,6 +44,19 @@ class LoginController extends Controller
             return back()->with('error', 'NIP / Username atau password salah')->withInput();
         }
 
+        // Cek apakah NIP / NIK user terdaftar di tabel Blacklist
+        $isBlacklisted = false;
+        if (\Illuminate\Support\Facades\Schema::hasTable('blacklists')) {
+            $userKey = trim((string) ($user->no_nik ?: $user->id));
+            $isBlacklisted = \App\Models\Blacklist::where('nik', $userKey)
+                ->orWhere('nik', (string) $user->id)
+                ->exists();
+        }
+
+        if ($isBlacklisted || (isset($user->is_active) && !$user->is_active)) {
+            return back()->with('error', 'Akun Anda telah di-blacklist / dinonaktifkan. Akses login ditolak. Silakan hubungi Administrator.')->withInput();
+        }
+
         Auth::login($user, $request->boolean('remember'));
 
         // paksa ganti jika masih default

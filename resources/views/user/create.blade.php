@@ -8,16 +8,11 @@
 
 
             {{-- Card Form Create --}}
-            <div class="row">
-                <div class="col-md-10 offset-md-1">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="card-title mb-0">
-                                <i class="bx bx-user-plus me-2"></i>Form Tambah User Baru
-                            </h5>
-                            <p class="mb-0 mt-1 small opacity-75">Isi form berikut untuk menambahkan user baru ke sistem</p>
-                        </div>
-                        <div class="card-body">
+            <div class="card mb-4">
+                <div class="card-header border-bottom">
+                    <h5 class="mb-0 fw-bold">Tambah User Baru</h5>
+                </div>
+                <div class="card-body pt-4">
 
                             @if ($errors->any())
                                 <div class="alert alert-danger">
@@ -72,38 +67,30 @@
                                             <label class="form-label">Job Title <span class="text-danger">*</span></label>
                                             <select name="job_title" class="form-select" required>
                                                 <option value="">-- Pilih Job Title --</option>
-                                                <option value="PASSENGER HANDLING"
-                                                    {{ old('job_title') == 'PASSENGER HANDLING' ? 'selected' : '' }}>
-                                                    PASSENGER HANDLING</option>
-                                                <option value="BAGGAGE HANDLING"
-                                                    {{ old('job_title') == 'BAGGAGE HANDLING' ? 'selected' : '' }}>BAGGAGE
-                                                    HANDLING</option>
-                                                <option value="RAMP HANDLING"
-                                                    {{ old('job_title') == 'RAMP HANDLING' ? 'selected' : '' }}>RAMP
-                                                    HANDLING</option>
-                                                <option value="CARGO HANDLING"
-                                                    {{ old('job_title') == 'CARGO HANDLING' ? 'selected' : '' }}>CARGO
-                                                    HANDLING</option>
-                                                <option value="AIRCRAFT SERVICE"
-                                                    {{ old('job_title') == 'AIRCRAFT SERVICE' ? 'selected' : '' }}>AIRCRAFT
-                                                    SERVICE</option>
-                                                <option value="SUPPORTING UNIT"
-                                                    {{ old('job_title') == 'SUPPORTING UNIT' ? 'selected' : '' }}>SUPPORTING
-                                                    UNIT</option>
-                                                <option value="OFFICE / ADMINISTRATION"
-                                                    {{ old('job_title') == 'OFFICE / ADMINISTRATION' ? 'selected' : '' }}>
-                                                    OFFICE / ADMINISTRATION</option>
+                                                @if(isset($jobTitles))
+                                                    @foreach($jobTitles as $jt)
+                                                        <option value="{{ $jt->name }}" {{ old('job_title') == $jt->name ? 'selected' : '' }}>
+                                                            {{ $jt->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label">Cluster <span class="text-danger">*</span></label>
                                             <select name="cluster" class="form-select" required>
-                                                <option value="GROUND HANDLING"
-                                                    {{ old('cluster') == 'GROUND HANDLING' ? 'selected' : '' }}>GROUND
-                                                    HANDLING</option>
-                                                <option value="OFFICE" {{ old('cluster') == 'OFFICE' ? 'selected' : '' }}>
-                                                    OFFICE</option>
+                                                <option value="">-- Pilih Cluster --</option>
+                                                @if(isset($clusters) && count($clusters) > 0)
+                                                    @foreach($clusters as $c)
+                                                        <option value="{{ $c->name }}" {{ old('cluster') == $c->name ? 'selected' : '' }}>
+                                                            {{ $c->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @else
+                                                    <option value="GROUND HANDLING" {{ old('cluster') == 'GROUND HANDLING' ? 'selected' : '' }}>GROUND HANDLING</option>
+                                                    <option value="OFFICE" {{ old('cluster') == 'OFFICE' ? 'selected' : '' }}>OFFICE</option>
+                                                @endif
                                             </select>
                                         </div>
 
@@ -126,24 +113,13 @@
                                             <label class="form-label">Unit <span class="text-danger">*</span></label>
                                             <select name="unit" class="form-select" required>
                                                 <option value="">-- Pilih Unit --</option>
-                                                <option value="FLIGHT OPERATION"
-                                                    {{ old('unit') == 'FLIGHT OPERATION' ? 'selected' : '' }}>FLIGHT
-                                                    OPERATION</option>
-                                                <option value="RAMP HANDLING"
-                                                    {{ old('unit') == 'RAMP HANDLING' ? 'selected' : '' }}>RAMP HANDLING
-                                                </option>
-                                                <option value="BAGGAGE HANDLING"
-                                                    {{ old('unit') == 'BAGGAGE HANDLING' ? 'selected' : '' }}>BAGGAGE
-                                                    HANDLING</option>
-                                                <option value="HEAD OFFICE"
-                                                    {{ old('unit') == 'HEAD OFFICE' ? 'selected' : '' }}>HEAD OFFICE
-                                                </option>
-                                                <option value="PASSENGER HANDLING"
-                                                    {{ old('unit') == 'PASSENGER HANDLING' ? 'selected' : '' }}>PASSENGER
-                                                    HANDLING</option>
-                                                <option value="SUPPORTING / MANAGEMENT"
-                                                    {{ old('unit') == 'SUPPORTING / MANAGEMENT' ? 'selected' : '' }}>
-                                                    SUPPORTING / MANAGEMENT</option>
+                                                @if(isset($units))
+                                                    @foreach($units as $u)
+                                                        <option value="{{ $u->name }}" {{ old('unit') == $u->name ? 'selected' : '' }}>
+                                                            {{ $u->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                         </div>
 
@@ -151,44 +127,13 @@
                                             <label class="form-label">Sub Unit <span class="text-danger">*</span></label>
                                             <select name="sub_unit" class="form-select" required>
                                                 <option value="">-- Pilih Sub Unit --</option>
-                                                <option value="PORTER APRON"
-                                                    {{ old('sub_unit') == 'PORTER APRON' ? 'selected' : '' }}>PORTER APRON
-                                                </option>
-                                                <option value="PORTER CARGO"
-                                                    {{ old('sub_unit') == 'PORTER CARGO' ? 'selected' : '' }}>PORTER CARGO
-                                                </option>
-                                                <option value="PORTER MAKE-UP"
-                                                    {{ old('sub_unit') == 'PORTER MAKE-UP' ? 'selected' : '' }}>PORTER
-                                                    MAKE-UP</option>
-                                                <option value="AIRCRAFT INTERIOR CLEANING"
-                                                    {{ old('sub_unit') == 'AIRCRAFT INTERIOR CLEANING' ? 'selected' : '' }}>
-                                                    AIRCRAFT INTERIOR CLEANING</option>
-                                                <option value="DISPATCHER"
-                                                    {{ old('sub_unit') == 'DISPATCHER' ? 'selected' : '' }}>DISPATCHER
-                                                </option>
-                                                <option value="CONTROLLER"
-                                                    {{ old('sub_unit') == 'CONTROLLER' ? 'selected' : '' }}>CONTROLLER
-                                                </option>
-                                                <option value="DRIVER" {{ old('sub_unit') == 'DRIVER' ? 'selected' : '' }}>
-                                                    DRIVER</option>
-                                                <option value="AVSEC" {{ old('sub_unit') == 'AVSEC' ? 'selected' : '' }}>
-                                                    AVSEC</option>
-                                                <option value="RAMP" {{ old('sub_unit') == 'RAMP' ? 'selected' : '' }}>
-                                                    RAMP</option>
-                                                <option value="PASASI" {{ old('sub_unit') == 'PASASI' ? 'selected' : '' }}>
-                                                    PASASI</option>
-                                                <option value="QUALITY CONTROL"
-                                                    {{ old('sub_unit') == 'QUALITY CONTROL' ? 'selected' : '' }}>QUALITY
-                                                    CONTROL</option>
-                                                <option value="HEALTH, SAFETY, AND ENVIRONMENT"
-                                                    {{ old('sub_unit') == 'HEALTH, SAFETY, AND ENVIRONMENT' ? 'selected' : '' }}>
-                                                    HEALTH, SAFETY, AND ENVIRONMENT (HSE)</option>
-                                                <option value="HEAD OF AIRPORT SERVICES"
-                                                    {{ old('sub_unit') == 'HEAD OF AIRPORT SERVICES' ? 'selected' : '' }}>
-                                                    HEAD OF AIRPORT SERVICES</option>
-                                                <option value="HEAD STATION"
-                                                    {{ old('sub_unit') == 'HEAD STATION' ? 'selected' : '' }}>HEAD STATION
-                                                </option>
+                                                @if(isset($subUnits))
+                                                    @foreach($subUnits as $su)
+                                                        <option value="{{ $su->name }}" {{ old('sub_unit') == $su->name ? 'selected' : '' }}>
+                                                            {{ $su->name }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                         </div>
 
@@ -260,19 +205,10 @@
                                     </div>
                                 </div>
 
-                                <div class="text-end mt-4">
-                                    <button type="submit" class="btn btn-info">
-                                        <i class="bx bx-save me-1"></i>CREATE USER
-                                    </button>
-                                    <a href="{{ route('staff.index') }}" class="btn btn-warning">
-                                        <i class="bx bx-arrow-back me-1"></i>KEMBALI
-                                    </a>
-                                </div>
+                                <x-form-actions :cancelHref="route('staff.index')" submitText="Simpan User" />
                             </form>
                         </div>
                     </div>
-                </div>
-            </div>
         </div>
     </div>
 @endsection

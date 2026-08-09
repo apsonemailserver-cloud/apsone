@@ -9,9 +9,12 @@ use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Auth; // Tambahkan ini agar Auth::user() terbaca
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Http\Controllers\Traits\PreservesIndexState;
 
 class StationController extends Controller
 {
+    use PreservesIndexState;
+
     // =================================================================
     // 1. FITUR BUKA STATION BARU
     // =================================================================
@@ -61,11 +64,15 @@ class StationController extends Controller
     // =================================================================
 
     // Menampilkan Daftar Station
-    public function index()
+    public function index(Request $request)
     {
         abort_unless(Auth::user()->canAccess('station', 'view'), 403, 'Akses Ditolak');
 
-        $perPage = request()->input('per_page', 10);
+        if ($redirect = $this->checkIndexState($request, 'stations', '#^/stations(/\d+)?(/edit)?$|/stations/create#')) {
+            return $redirect;
+        }
+
+        $perPage = $request->input('per_page', 10);
         $stations = Station::paginate($perPage)->withQueryString();
         return view('stations.index', compact('stations'));
     }

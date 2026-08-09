@@ -692,11 +692,11 @@
         <!-- Header -->
         <div class="row">
             <div class="col-lg-12 mb-4">
-                <div
-                    class="schedule-page-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-                    <h4 class="schedule-title fw-bold pt-3 pb-1 mb-0">
-                        <span class="text-muted fw-light">Schedule /</span> Data Schedule
-                    </h4>
+                <div class="schedule-page-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4 pt-3 pb-1">
+                    <div>
+                        <h4 class="fw-bold mb-1">Schedule Karyawan</h4>
+                        <p class="text-muted mb-0" style="font-size:0.875rem;">Daftar rencana jadwal kerja dan status penugasan shift karyawan.</p>
+                    </div>
                     <div class="schedule-actions">
                         <span class="period-pill">
                             <i class="bx bx-calendar"></i>

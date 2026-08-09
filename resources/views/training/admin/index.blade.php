@@ -21,28 +21,27 @@
 
         <div class="card">
             <div class="card-body">
-                {{-- Toolbar --}}
-                <div class="dt-toolbar">
-                    <form action="{{ route('admin.training.certificates.index') }}" method="GET" class="dt-search">
-                        <i class="ti ti-search search-icon"></i>
-                        <input type="text" name="search" class="form-control" placeholder="Cari NIP, Nama, atau Sertifikat..." value="{{ request('search') }}">
-                    </form>
-                    <div class="dt-actions">
-                        <a href="{{ route('admin.training.certificates.create') }}" class="btn btn-primary">
-                            <i class="ti ti-plus"></i>Tambah Sertifikat
+                <x-dt-toolbar :searchFormAction="route('admin.training.certificates.index')" searchPlaceholder="Cari NIP, Nama, atau Sertifikat...">
+                    <x-slot name="actions">
+                        <a href="{{ route('admin.training.certificates.create') }}" class="btn btn-primary btn-sm">
+                            <i class="ti ti-plus me-1"></i>Tambah Sertifikat
                         </a>
-                    </div>
-                </div>
+                    </x-slot>
+                </x-dt-toolbar>
 
                 {{-- Tabel --}}
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Staff</th>
-                                <th>Sertifikat</th>
+                                <th>NIP</th>
+                                <th>Nama Staff</th>
+                                <th>Nama Sertifikat</th>
+                                <th>Tipe Sertifikat</th>
+                                <th>Masa Mulai</th>
                                 <th>Masa Berlaku</th>
                                 <th>Status</th>
+                                <th>Sisa Hari</th>
                                 <th class="text-center">File</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
@@ -58,63 +57,57 @@
                                     }
                                 @endphp
                                 <tr class="{{ $rowClass }}">
+                                    <td><strong>{{ $certificate->user_id ?? 'N/A' }}</strong></td>
+                                    <td>{{ $certificate->fullname ?? 'N/A' }}</td>
+                                    <td><strong>{{ $certificate->certificate_name }}</strong></td>
                                     <td>
-                                        <strong>{{ $certificate->fullname ?? 'N/A' }}</strong>
-                                        <div class="small text-muted">NIP: {{ $certificate->user_id ?? 'N/A' }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold text-dark">{{ $certificate->certificate_name }}</div>
                                         @if ($certificate->certificate_type)
-                                            <span class="badge bg-label-info font-monospace mt-1" style="font-size: 0.68rem;">{{ $certificate->certificate_type }}</span>
+                                            <span class="badge bg-label-info font-monospace" style="font-size: 0.68rem;">{{ $certificate->certificate_type }}</span>
+                                        @else
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <div class="small text-muted">Mulai: {{ $certificate->start_date->format('d M Y') }}</div>
-                                        <div class="fw-bold">Hingga: {{ $certificate->end_date->format('d M Y') }}</div>
-                                    </td>
+                                    <td>{{ $certificate->start_date->format('d M Y') }}</td>
+                                    <td class="fw-bold">{{ $certificate->end_date->format('d M Y') }}</td>
                                     <td>
                                         @if ($certificate->is_expired)
                                             <span class="badge bg-danger">Kadaluarsa</span>
-                                            <div class="small text-danger" style="font-size: 0.7rem;">
-                                                {{ $certificate->end_date->diffForHumans(now(), true) }} lalu
-                                            </div>
                                         @elseif ($certificate->is_expiring_soon)
                                             <span class="badge bg-warning text-dark">Mendekati Expired</span>
-                                            <div class="small text-warning" style="font-size: 0.7rem;">
-                                                Sisa {{ $certificate->remaining_days }} hari
-                                            </div>
                                         @else
                                             <span class="badge bg-success">Aktif</span>
                                         @endif
                                     </td>
+                                    <td>
+                                        @if ($certificate->is_expired)
+                                            <span class="text-danger small fw-semibold">{{ $certificate->end_date->diffForHumans(now(), true) }} lalu</span>
+                                        @elseif ($certificate->is_expiring_soon)
+                                            <span class="text-warning small fw-semibold">Sisa {{ $certificate->remaining_days }} hari</span>
+                                        @else
+                                            <span class="text-muted small">-</span>
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         @if ($certificate->certificate_file)
-                                            <a href="{{ Storage::url($certificate->certificate_file) }}" target="_blank"
-                                                class="action-btn" title="Lihat File">
-                                                <i class="ti ti-file-text"></i>
-                                            </a>
+                                            <x-action-button action="view" icon="ti ti-file-text" :href="Storage::url($certificate->certificate_file)" target="_blank" title="Lihat File" />
                                         @else
                                             <span class="text-muted small">-</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
-                                            <a href="{{ route('admin.training.certificates.edit', $certificate->id) }}" class="action-btn" title="Edit">
-                                                <i class="ti ti-pencil"></i>
-                                            </a>
+                                            <x-action-button action="edit" :href="route('admin.training.certificates.edit', $certificate->id)" title="Edit" />
                                             <form action="{{ route('admin.training.certificates.destroy', $certificate->id) }}" method="POST" class="d-inline" id="delete-form-{{ $certificate->id }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="action-btn action-delete" title="Hapus" onclick="confirmDeleteCertificate('{{ $certificate->id }}')">
-                                                    <i class="ti ti-trash"></i>
-                                                </button>
+                                                <x-action-button type="button" action="delete" title="Hapus" onclick="confirmDeleteCertificate('{{ $certificate->id }}')" />
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-5">
+                                    <td colspan="10" class="text-center py-5">
                                         <div class="empty-state">
                                             <i class="ti ti-certificate d-block"></i>
                                             <p>Tidak ada data sertifikat training.</p>

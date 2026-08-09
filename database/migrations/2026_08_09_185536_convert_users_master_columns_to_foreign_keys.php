@@ -12,12 +12,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Add new foreign key columns to users table
+        // 1. Add new foreign key columns to users table if not already present
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('unit_id')->nullable()->after('unit')->constrained('units')->nullOnDelete();
-            $table->foreignId('sub_unit_id')->nullable()->after('sub_unit')->constrained('sub_units')->nullOnDelete();
-            $table->foreignId('job_title_id')->nullable()->after('job_title')->constrained('job_titles')->nullOnDelete();
-            $table->foreignId('cluster_id')->nullable()->after('cluster')->constrained('clusters')->nullOnDelete();
+            if (!Schema::hasColumn('users', 'unit_id')) {
+                $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
+            }
+            if (!Schema::hasColumn('users', 'sub_unit_id')) {
+                $table->foreignId('sub_unit_id')->nullable()->constrained('sub_units')->nullOnDelete();
+            }
+            if (!Schema::hasColumn('users', 'job_title_id')) {
+                $table->foreignId('job_title_id')->nullable()->constrained('job_titles')->nullOnDelete();
+            }
+            if (!Schema::hasColumn('users', 'cluster_id')) {
+                $table->foreignId('cluster_id')->nullable()->constrained('clusters')->nullOnDelete();
+            }
         });
 
         // 2. Populate new FK columns based on existing string names
@@ -28,30 +36,37 @@ return new class extends Migration
             $jobTitleId = null;
             $clusterId = null;
 
-            if (!empty($user->unit)) {
+            if (isset($user->unit) && !empty($user->unit)) {
                 $unitId = DB::table('units')->where('name', trim($user->unit))->value('id');
             }
-            if (!empty($user->sub_unit)) {
+            if (isset($user->sub_unit) && !empty($user->sub_unit)) {
                 $subUnitId = DB::table('sub_units')->where('name', trim($user->sub_unit))->value('id');
             }
-            if (!empty($user->job_title)) {
+            if (isset($user->job_title) && !empty($user->job_title)) {
                 $jobTitleId = DB::table('job_titles')->where('name', trim($user->job_title))->value('id');
             }
-            if (!empty($user->cluster)) {
+            if (isset($user->cluster) && !empty($user->cluster)) {
                 $clusterId = DB::table('clusters')->where('name', trim($user->cluster))->value('id');
             }
 
-            DB::table('users')->where('id', $user->id)->update([
+            $updateData = array_filter([
                 'unit_id' => $unitId,
                 'sub_unit_id' => $subUnitId,
                 'job_title_id' => $jobTitleId,
                 'cluster_id' => $clusterId,
-            ]);
+            ], fn($v) => !is_null($v));
+
+            if (!empty($updateData)) {
+                DB::table('users')->where('id', $user->id)->update($updateData);
+            }
         }
 
-        // 3. Drop old string columns
+        // 3. Drop old string columns if present
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['unit', 'sub_unit', 'job_title', 'cluster']);
+            $colsToDrop = array_filter(['unit', 'sub_unit', 'job_title', 'cluster'], fn($col) => Schema::hasColumn('users', $col));
+            if (!empty($colsToDrop)) {
+                $table->dropColumn(array_values($colsToDrop));
+            }
         });
     }
 

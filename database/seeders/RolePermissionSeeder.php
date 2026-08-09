@@ -69,7 +69,6 @@ class RolePermissionSeeder extends Seeder
             $role = Role::firstOrCreate(
                 ['name' => $roleName],
                 [
-                    'label' => $roleName,
                     'description' => $desc,
                     'is_system' => in_array($roleName, ['Admin', 'Manager', 'Staff']),
                 ]
@@ -106,6 +105,11 @@ class RolePermissionSeeder extends Seeder
                             }
                         }
                     }
+                }
+
+                // Head Of Airport Service gets view access to Master Cuti
+                if ($roleName === 'Head Of Airport Service' && isset($allPermissionIds['master_leave.view'])) {
+                    $rolePerms[] = $allPermissionIds['master_leave.view'];
                 }
 
                 $role->permissions()->sync(array_unique($rolePerms));

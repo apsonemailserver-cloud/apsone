@@ -25,9 +25,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (app()->environment('production')) {
+        if (
+            app()->environment('production') ||
+            request()->header('x-forwarded-proto') === 'https' ||
+            str_contains(request()->header('host', ''), 'ngrok') ||
+            request()->isSecure()
+        ) {
             URL::forceScheme('https');
-            URL::forceRootUrl(config('app.url'));
         }
 
         View::composer('layout.admin', function ($view) {

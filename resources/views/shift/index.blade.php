@@ -135,9 +135,10 @@
             <div class="col-lg-12 mb-4">
                 <div
                     class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1">
-                    <h4 class="fw-bold pt-3 pb-1 mb-0">
-                        <span class="text-muted fw-light">Schedule /</span> Shift Management
-                    </h4>
+                    <div>
+                        <h4 class="fw-bold mb-1">Manajemen Shift</h4>
+                        <p class="text-muted mb-0" style="font-size:0.875rem;">Daftar jam kerja, kode shift, dan toleransi keterlambatan.</p>
+                    </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-primary">
                             <i class="ti ti-clock me-1"></i>
@@ -231,21 +232,14 @@
                                             </td>
                                             <td class="d-flex align-items-center gap-2">
                                                 @if (Auth::user()->canAccess('shift', 'edit'))
-                                                    <a href="{{ route('shift.edit', $shift->id) }}" class="action-btn action-edit"
-                                                        title="Edit Shift">
-                                                        <i class="ti ti-pencil"></i>
-                                                    </a>
+                                                    <x-action-button action="edit" :href="route('shift.edit', $shift->id)" title="Edit Shift" />
                                                 @endif
                                                 @if (Auth::user()->canAccess('shift', 'delete'))
                                                     <form action="{{ route('shift.destroy', $shift->id) }}" method="POST"
                                                         class="d-inline" id="delete-form-{{ $shift->id }}">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="button" class="action-btn bg-danger border-0"
-                                                            title="Delete Shift"
-                                                            onclick="confirmDeleteShift('{{ $shift->id }}')">
-                                                            <i class="ti ti-trash"></i>
-                                                        </button>
+                                                        <x-action-button type="button" action="delete" title="Delete Shift" onclick="confirmDeleteShift('{{ $shift->id }}')" />
                                                     </form>
                                                 @endif
                                             </td>
@@ -371,33 +365,12 @@
         });
 
         function confirmDeleteShift(id) {
-            Swal.fire({
+            apsConfirmDelete({
                 title: 'Apakah Anda yakin?',
-                text: "Data shift yang dihapus tidak dapat dikembalikan!",
-                icon: 'warning',
-                iconColor: '#ff3e1d',
-                showCancelButton: true,
-                confirmButtonColor: '#ff3e1d',
-                cancelButtonColor: '#8592a3',
-                confirmButtonText: '<i class="bx bx-trash me-1"></i> Ya, Hapus!',
+                text: 'Data shift yang dihapus tidak dapat dikembalikan!',
+                confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal',
-                customClass: {
-                    popup: 'delete-confirm-popup',
-                    confirmButton: 'btn btn-danger me-3',
-                    cancelButton: 'btn btn-label-secondary'
-                },
-                buttonsStyling: false,
-                showClass: {
-                    popup: 'animate__animated animate__fadeInDown'
-                },
-                hideClass: {
-                    popup: 'animate__animated animate__fadeOutUp'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Gunakan encoding atau escape jika ID mengandung karakter khusus
-                    document.getElementById('delete-form-' + id).submit();
-                }
+                formId: 'delete-form-' + id
             });
         }
     </script>

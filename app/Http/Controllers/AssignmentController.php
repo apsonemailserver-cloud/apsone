@@ -456,11 +456,11 @@ class AssignmentController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls|max:5120',
+            'file' => 'required|mimes:xlsx,xls|max:2048',
         ], [
             'file.required' => 'Silakan pilih file Excel terlebih dahulu.',
             'file.mimes' => 'Format file meharus berupa Excel (.xlsx atau .xls).',
-            'file.max' => 'Ukuran file Excel maksimal 5MB.'
+            'file.max' => 'Ukuran file Excel maksimal 2MB.'
         ]);
 
         try {

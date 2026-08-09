@@ -467,11 +467,10 @@
         <!-- Header -->
         <div class="row">
             <div class="col-lg-12 mb-4">
-                <div class="schedule-page-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-                    <h4 class="schedule-title fw-bold pt-3 pb-1 mb-0">
-                        <span class="text-muted fw-light">Schedule /</span> Edit Schedule
-                    </h4>
-                </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">Edit Jadwal Karyawan</h4>
+                        <p class="text-muted mb-0" style="font-size:0.875rem;">Ubah jam kerja, tanggal, dan status keaktifan shift karyawan.</p>
+                    </div>
             </div>
         </div>
 

@@ -274,8 +274,8 @@
 
 @section('content')
 @php
-    $canAutoCreateSchedule = in_array(Auth::user()->role, ['SPV Bge', 'SPV Apron', 'Admin']);
-    $canImportSchedule = in_array(Auth::user()->role, ['SPV Bge', 'SPV Apron', 'Admin']);
+    $canAutoCreateSchedule = Auth::user()->isAdmin() || Auth::user()->canAccess('schedule', 'sync');
+    $canImportSchedule = Auth::user()->isAdmin() || Auth::user()->canAccess('schedule', 'create') || Auth::user()->canAccess('schedule', 'sync');
     $hasScheduleActions = $canAutoCreateSchedule || $canImportSchedule;
 @endphp
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -283,9 +283,10 @@
     <div class="row">
         <div class="col-lg-12 mb-4">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1">
-                <h4 class="fw-bold pt-3 pb-1 mb-0">
-                    <span class="text-muted fw-light">Schedule /</span> Create / Update Schedule
-                </h4>
+                <div>
+                    <h4 class="fw-bold mb-1">Kelola Jadwal Karyawan</h4>
+                    <p class="text-muted mb-0" style="font-size:0.875rem;">Buat dan perbarui jadwal kerja operasional karyawan.</p>
+                </div>
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-primary">
                         <i class="bx bx-user me-1"></i>

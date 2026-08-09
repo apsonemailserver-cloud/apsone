@@ -6,30 +6,12 @@
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="py-4">
 
-        {{-- Header dengan Breadcrumb --}}
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
-            <h4 class="fw-bold mb-0">Edit PAS Tahunan</h4>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="javascript:void(0);">User Management</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('users.pas') }}">PAS Tahunan</a></li>
-                    <li class="breadcrumb-item active">Edit PAS</li>
-                </ol>
-            </nav>
-        </div>
-
         {{-- Card Form Edit --}}
-        <div class="row">
-            <div class="col-md-8 offset-md-2">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="bx bx-edit me-2"></i>Edit Data PAS
-                        </h5>
-                        <p class="mb-0 mt-1 small opacity-75">Perbarui informasi masa berlaku PAS karyawan</p>
-                    </div>
-                    <div class="card-body">
+        <div class="card mb-4">
+            <div class="card-header border-bottom">
+                <h5 class="mb-0 fw-bold">Edit PAS Tahunan: {{ $user->fullname }}</h5>
+            </div>
+            <div class="card-body pt-4">
 
                         @if ($errors->any())
                         <div class="alert alert-danger">
@@ -121,19 +103,10 @@
                                 </div>
                             </div>
                             
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bx bx-save me-1"></i>UPDATE
-                                </button>
-                                <a href="{{ route('users.pas') }}" class="btn btn-warning">
-                                    <i class="bx bx-arrow-back me-1"></i>BACK
-                                </a>
-                            </div>
+                            <x-form-actions :cancelHref="route('users.pas')" submitText="Update" />
                         </form>
                     </div>
                 </div>
-            </div>
-        </div>
     </div>
 </div>
 @endsection

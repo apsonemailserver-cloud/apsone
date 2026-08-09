@@ -329,7 +329,7 @@
                 <div
                     class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
                     <h4 class="fw-bold pt-3 pb-1 mb-0">
-                        <span class="text-muted fw-light">Profile /</span> {{ $user->fullname }}
+                        {{ $user->fullname }}
                     </h4>
                     <div class="d-flex align-items-center gap-2">
                         <a href="{{ route('staff.index') }}" class="btn btn-sm btn-outline-secondary">

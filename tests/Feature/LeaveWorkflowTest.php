@@ -156,4 +156,34 @@ class LeaveWorkflowTest extends TestCase
         $leave->refresh();
         $this->assertEquals('approved', $leave->status);
     }
+
+    public function test_leave_submission_allows_up_to_7_days_backdate(): void
+    {
+        $porter = $this->createUser('10005', 'Test Porter Backdate', 'Porter Apron');
+        $leaveType = \App\Models\LeaveType::create([
+            'name' => 'Cuti Tahunan Test',
+            'gender_restriction' => 'All',
+            'default_quota' => 12,
+            'is_unlimited' => false,
+            'is_active' => true,
+        ]);
+
+        // 1. Backdate 5 days ago (should pass validation)
+        $responseSuccess = $this->actingAs($porter)->post(route('leaves.store'), [
+            'leave_type_id' => $leaveType->id,
+            'start_date'    => Carbon::today()->subDays(5)->format('Y-m-d'),
+            'end_date'      => Carbon::today()->subDays(3)->format('Y-m-d'),
+            'reason'        => 'Izin urusan keluarga mendesak',
+        ]);
+        $responseSuccess->assertSessionHasNoErrors();
+
+        // 2. Backdate 8 days ago (should fail validation)
+        $responseFail = $this->actingAs($porter)->post(route('leaves.store'), [
+            'leave_type_id' => $leaveType->id,
+            'start_date'    => Carbon::today()->subDays(8)->format('Y-m-d'),
+            'end_date'      => Carbon::today()->subDays(6)->format('Y-m-d'),
+            'reason'        => 'Izin terlambat',
+        ]);
+        $responseFail->assertSessionHasErrors(['start_date']);
+    }
 }

@@ -48,9 +48,10 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
-    <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">General /</span> FAQ
-    </h4>
+    <div class="mb-4 pt-3 pb-1">
+        <h4 class="fw-bold mb-1">Pertanyaan Umum (FAQ)</h4>
+        <p class="text-muted mb-0" style="font-size:0.875rem;">Jawaban untuk pertanyaan yang sering ditanyakan mengenai sistem.</p>
+    </div>
 
     <div class="card">
         <h5 class="card-header">Frequently Asked Questions</h5>

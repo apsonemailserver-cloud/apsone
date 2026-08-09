@@ -11,12 +11,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RealRashid\SweetAlert\Facades\Alert;
 
+use App\Http\Controllers\Traits\PreservesIndexState;
+
 class BlacklistController extends Controller
 {
+    use PreservesIndexState;
+
     // Tampilkan Daftar Blacklist
     public function index(Request $request)
     {
         abort_unless(Auth::user()->canAccess('blacklist', 'view'), 403);
+
+        if ($redirect = $this->checkIndexState($request, 'blacklist', '#^/blacklist(-data)?(/\d+)?(/edit)?$#')) {
+            return $redirect;
+        }
 
         $query = Blacklist::query();
 
@@ -39,12 +47,16 @@ class BlacklistController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'reason'  => 'required|string|min:3'
+            'reason'  => 'required|string|min:3',
+            'attachment_file' => 'required|file|mimes:pdf|max:2048',
         ], [
             'user_id.required' => 'Staff wajib dipilih.',
             'user_id.exists'   => 'Data staff tidak ditemukan.',
             'reason.required'  => 'Alasan pelanggaran wajib diisi.',
-            'reason.min'       => 'Alasan pelanggaran minimal 3 karakter.'
+            'reason.min'       => 'Alasan pelanggaran minimal 3 karakter.',
+            'attachment_file.required' => 'Dokumen PDF (Surat SK / Bukti Pelanggaran) wajib diunggah.',
+            'attachment_file.mimes'    => 'Dokumen lampiran wajib berformat PDF (.pdf).',
+            'attachment_file.max'      => 'Ukuran file lampiran PDF maksimal 2MB.',
         ]);
 
         try {
@@ -56,9 +68,30 @@ class BlacklistController extends Controller
                 return back();
             }
 
+            $attachmentPath = null;
+            if ($request->hasFile('attachment_file')) {
+                $file = $request->file('attachment_file');
+                $filename = 'blacklist_' . $blacklistKey . '_' . time() . '.' . ($file->getClientOriginalExtension() ?: 'pdf');
+
+                // 1. Simpan di storage disk public
+                $storedPath = $file->storeAs('blacklist_attachments', $filename, 'public');
+
+                // 2. Duplikasi ke public/storage/blacklist_attachments agar langsung terakses via HTTP asset
+                $publicDir = public_path('storage/blacklist_attachments');
+                if (!file_exists($publicDir)) {
+                    @mkdir($publicDir, 0775, true);
+                }
+                @copy(storage_path('app/public/' . $storedPath), $publicDir . '/' . $filename);
+
+                $attachmentPath = $storedPath;
+            }
+
             $alreadyBlacklisted = Blacklist::where('nik', $blacklistKey)->first();
 
             if ($alreadyBlacklisted) {
+                if ($attachmentPath) {
+                    $alreadyBlacklisted->update(['attachment_file' => $attachmentPath]);
+                }
                 $user->forceFill(['is_active' => 0])->save();
                 Alert::warning('Sudah Blacklist', "{$user->fullname} sudah ada di daftar blacklist dan akun telah dinonaktifkan.");
                 return redirect()->route('blacklist.index');
@@ -67,14 +100,15 @@ class BlacklistController extends Controller
             $bannedBy = Auth::user()->fullname ?? Auth::user()->name ?? 'Admin';
             $station  = $user->station ?: (Auth::user()->station ?: '-');
 
-            DB::transaction(function () use ($user, $request, $blacklistKey, $bannedBy, $station) {
+            DB::transaction(function () use ($user, $request, $blacklistKey, $bannedBy, $station, $attachmentPath) {
                 // 1. Simpan ke Tabel Blacklist
                 Blacklist::create([
-                    'nik'       => $blacklistKey,
-                    'fullname'  => $user->fullname,
-                    'reason'    => trim($request->reason),
-                    'station'   => $station,
-                    'banned_by' => $bannedBy
+                    'nik'             => $blacklistKey,
+                    'fullname'        => $user->fullname,
+                    'reason'          => trim($request->reason),
+                    'station'         => $station,
+                    'banned_by'       => $bannedBy,
+                    'attachment_file' => $attachmentPath,
                 ]);
 
                 // 2. Nonaktifkan Akun User (Kill Switch)

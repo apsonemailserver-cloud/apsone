@@ -1093,3 +1093,40 @@ html.aps-dark .pagination .page-item.disabled .page-link {
     border-color: #334155 !important;
     color: #64748b !important;
 }
+
+/* FORM SWITCH & TOGGLE STYLES FOR LIGHT & DARK MODE */
+.form-switch .form-check-input,
+.form-check-input[type="checkbox"][role="switch"] {
+    width: 2.2em !important;
+    height: 1.1em !important;
+    cursor: pointer;
+    background-color: #cbd5e1;
+    border-color: #cbd5e1;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-position 0.15s ease-in-out;
+}
+
+.form-switch .form-check-input:checked,
+.form-check-input[type="checkbox"][role="switch"]:checked {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35) !important;
+}
+
+/* DARK MODE OVERRIDES FOR FORM SWITCHES */
+html.aps-dark .form-check-input[type="checkbox"][role="switch"]:not(:checked),
+html.aps-dark .form-switch .form-check-input:not(:checked),
+[data-aps-theme="dark"] .form-check-input[type="checkbox"][role="switch"]:not(:checked) {
+    background-color: #334155 !important;
+    border-color: #475569 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2394a3b8'/%3e%3c/svg%3e") !important;
+}
+
+html.aps-dark .form-check-input[type="checkbox"][role="switch"]:checked,
+html.aps-dark .form-switch .form-check-input:checked,
+[data-aps-theme="dark"] .form-check-input[type="checkbox"][role="switch"]:checked {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.5) !important;
+}"
+}

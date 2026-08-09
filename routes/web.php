@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 
 // --- DAFTAR SEMUA CONTROLLER DI SINI ---
-use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\OvertimeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\HomeController;
@@ -24,6 +23,15 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\RoleController;
+// Master Data Controllers (per table)
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\SubUnitController;
+use App\Http\Controllers\JobTitleController;
+use App\Http\Controllers\ClusterController;
+// Master Leave Controllers (per table)
+use App\Http\Controllers\LeaveTypeController;
+use App\Http\Controllers\LeaveRuleController;
+use App\Http\Controllers\FaceSampleController;
 use App\Models\Blacklist;
 
 /*
@@ -85,6 +93,12 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class);
     Route::put('/reset-password/{id}', [UserController::class, 'resetPassword'])->name('user.resetPassword');
 
+    // Face Recognition Sample Management (Admin)
+    Route::get('/users/{user}/face-samples', [FaceSampleController::class, 'index'])->name('users.face-samples.index');
+    Route::post('/users/{user}/face-samples', [FaceSampleController::class, 'store'])->name('users.face-samples.store');
+    Route::post('/users/{user}/face-samples/upload', [FaceSampleController::class, 'storeFile'])->name('users.face-samples.store-file');
+    Route::delete('/users/{user}/face-samples', [FaceSampleController::class, 'destroy'])->name('users.face-samples.destroy');
+
     // Kontrak User
     Route::get('/kontrak', [UserController::class, 'kontrak'])->name('users.kontrak');
     Route::get('/kontrak/edit/{id}', [UserController::class, 'KontrakEdit'])->name('users.KontrakEdit');
@@ -116,6 +130,38 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/stations/{station}/update', [StationController::class, 'update'])->name('stations.update');
     Route::delete('/stations/{id}', [StationController::class, 'destroy'])->name('stations.destroy');
 
+    // --- MASTER DATA (per table, masing-masing controller sendiri) ---
+    Route::prefix('master-data')->name('master_data.')->group(function () {
+        // Units
+        Route::resource('units', UnitController::class)->except(['show']);
+        // Sub Units
+        Route::resource('sub-units', SubUnitController::class)
+            ->parameters(['sub-units' => 'subUnit'])
+            ->names([
+                'index'   => 'sub_units.index',
+                'create'  => 'sub_units.create',
+                'store'   => 'sub_units.store',
+                'edit'    => 'sub_units.edit',
+                'update'  => 'sub_units.update',
+                'destroy' => 'sub_units.destroy',
+            ])
+            ->except(['show']);
+        // Job Titles
+        Route::resource('job-titles', JobTitleController::class)
+            ->parameters(['job-titles' => 'jobTitle'])
+            ->names([
+                'index'   => 'job_titles.index',
+                'create'  => 'job_titles.create',
+                'store'   => 'job_titles.store',
+                'edit'    => 'job_titles.edit',
+                'update'  => 'job_titles.update',
+                'destroy' => 'job_titles.destroy',
+            ])
+            ->except(['show']);
+        // Clusters
+        Route::resource('clusters', ClusterController::class)->except(['show']);
+    });
+
     // --- FLIGHTS ---
     Route::resource('flights', FlightController::class)->only(['index', 'store', 'update']);
     Route::get('/flights/{id}/details', [FlightController::class, 'getDetails'])->name('flights.details');
@@ -125,7 +171,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/schedule/auto-create', [ScheduleController::class, 'autoCreate'])->name('schedule.autoCreate');
     Route::post('/schedule/import', [ScheduleController::class, 'import'])->name('schedule.import');
     Route::post('/schedule/update/{userId}/{date}', [ScheduleController::class, 'update'])->name('schedule.update_details');
-    Route::post('/schedules/update-active', [ScheduleController::class, 'updateActive']);
+    Route::post('/schedules/update-active', [ScheduleController::class, 'updateActive'])->name('schedule.updateActive');
     Route::get('/schedule-now', [ScheduleController::class, 'now'])->name('schedule.now');
     Route::get('/schedule/show', [ScheduleController::class, 'show'])->name('schedule.view');
     Route::resource('schedule', ScheduleController::class)->only(['index', 'edit']);
@@ -136,6 +182,7 @@ Route::middleware(['auth'])->group(function () {
     // --- ATTENDANCE (ABSENSI) ---
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::get('/attendance/camera', [AttendanceController::class, 'camera'])->name('attendance.camera'); // Jika pakai kamera
+    Route::get('/attendance/face-samples/api', [FaceSampleController::class, 'apiShow'])->name('attendance.face-samples.api');
     Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.checkIn');
     Route::post('/attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.checkOut');
     Route::post('/attendance/process', [AttendanceController::class, 'process'])->name('attendance.process'); // Alternatif proses
@@ -162,13 +209,49 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/leaves/pengajuan', [LeaveController::class, 'pengajuan'])->name('leaves.pengajuan');
     Route::get('/leaves/approval', [LeaveController::class, 'index'])->name('leaves.index');
     Route::get('/leaves/laporan', [LeaveController::class, 'laporan'])->name('leaves.laporan');
+    Route::get('/leaves/balances', [LeaveController::class, 'balances'])->name('leaves.balances');
     Route::patch('leaves/{leave}/status', [LeaveController::class, 'updateStatus'])->name('leaves.updateStatus');
     Route::patch('leaves/{leave}/cancel', [LeaveController::class, 'cancel'])->name('leaves.cancel');
     Route::get('/leaves/export', [LeaveController::class, 'export'])->name('leaves.export');
 
+    // --- MASTER LEAVES (MANAGEMENT) ---
+    // --- MASTER LEAVE (per table: LeaveType & LeaveRule) ---
+    Route::prefix('master-leaves')->name('master_leaves.')->group(function () {
+        // Leave Types
+        Route::resource('/', LeaveTypeController::class)
+            ->parameters(['' => 'leaveType'])
+            ->except(['show'])
+            ->names([
+                'index'   => 'index',
+                'create'  => 'create',
+                'store'   => 'store',
+                'edit'    => 'edit',
+                'update'  => 'update',
+                'destroy' => 'destroy',
+            ]);
+        Route::post('/sync', [LeaveTypeController::class, 'syncBalances'])->name('sync');
+
+        // Leave Rules (nested under leave type)
+        Route::prefix('{leaveType}/rules')->name('rules.')->group(function () {
+            Route::get('/', [LeaveRuleController::class, 'index'])->name('index');
+            Route::get('/create', [LeaveRuleController::class, 'create'])->name('create');
+            Route::post('/', [LeaveRuleController::class, 'store'])->name('store');
+        });
+        Route::prefix('rules')->name('rules.')->group(function () {
+            Route::get('/{leaveRule}/edit', [LeaveRuleController::class, 'edit'])->name('edit');
+            Route::put('/{leaveRule}', [LeaveRuleController::class, 'update'])->name('update');
+            Route::delete('/{leaveRule}', [LeaveRuleController::class, 'destroy'])->name('destroy');
+        });
+    });
+
     // --- TRAINING & CERTIFICATES ---
     // User View
     Route::get('/my-certificates', [TrainingController::class, 'myCertificates'])->name('my.certificates');
+    Route::get('/training/certificates/create', [TrainingController::class, 'create'])->name('training.certificates.create');
+    Route::post('/training/certificates/store', [TrainingController::class, 'store'])->name('training.certificates.store');
+    Route::get('/training/approval', [TrainingController::class, 'approval'])->name('training.approval');
+    Route::post('/training/{id}/approve', [TrainingController::class, 'approve'])->name('training.approve');
+    Route::post('/training/{id}/reject', [TrainingController::class, 'reject'])->name('training.reject');
 
     // Admin View
     Route::get('/training', [AdminTrainingCertificateController::class, 'index'])->name('admin.training.certificates.index');
@@ -195,6 +278,7 @@ Route::middleware(['auth'])->group(function () {
         // Staff
         Route::get('/overtime', 'index')->name('overtime.index');
         Route::get('/overtime/create', 'create')->name('overtime.create');
+        Route::get('/overtime/calculate-duration', 'calculateDuration')->name('overtime.calculate_duration');
         Route::post('/overtime/store', 'store')->name('overtime.store');
 
         // Leader Approval
@@ -256,35 +340,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/work-results/{id}', [AssignmentController::class, 'show'])->name('work_results.show');
 
     // --- MANAJEMEN ROLE & HAK AKSES ---
+    Route::get('/roles/{id}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
+    Route::put('/roles/{id}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.update-permissions');
     Route::post('/roles/{id}/toggle-user', [RoleController::class, 'toggleUserRole'])->name('roles.toggle-user');
     Route::resource('roles', RoleController::class)->except(['show']);
 
-    // --- MASTER DATA MANAGEMENT ---
-    Route::prefix('master')->name('master.')->group(function () {
-        // Units
-        Route::get('units', [MasterDataController::class, 'unitsIndex'])->name('units.index');
-        Route::post('units', [MasterDataController::class, 'unitsStore'])->name('units.store');
-        Route::put('units/{unit}', [MasterDataController::class, 'unitsUpdate'])->name('units.update');
-        Route::delete('units/{unit}', [MasterDataController::class, 'unitsDestroy'])->name('units.destroy');
-
-        // Sub Units
-        Route::get('sub-units', [MasterDataController::class, 'subUnitsIndex'])->name('sub_units.index');
-        Route::post('sub-units', [MasterDataController::class, 'subUnitsStore'])->name('sub_units.store');
-        Route::put('sub-units/{subUnit}', [MasterDataController::class, 'subUnitsUpdate'])->name('sub_units.update');
-        Route::delete('sub-units/{subUnit}', [MasterDataController::class, 'subUnitsDestroy'])->name('sub_units.destroy');
-
-        // Job Titles
-        Route::get('job-titles', [MasterDataController::class, 'jobTitlesIndex'])->name('job_titles.index');
-        Route::post('job-titles', [MasterDataController::class, 'jobTitlesStore'])->name('job_titles.store');
-        Route::put('job-titles/{jobTitle}', [MasterDataController::class, 'jobTitlesUpdate'])->name('job_titles.update');
-        Route::delete('job-titles/{jobTitle}', [MasterDataController::class, 'jobTitlesDestroy'])->name('job_titles.destroy');
-
-        // Clusters
-        Route::get('clusters', [MasterDataController::class, 'clustersIndex'])->name('clusters.index');
-        Route::post('clusters', [MasterDataController::class, 'clustersStore'])->name('clusters.store');
-        Route::put('clusters/{cluster}', [MasterDataController::class, 'clustersUpdate'])->name('clusters.update');
-        Route::delete('clusters/{cluster}', [MasterDataController::class, 'clustersDestroy'])->name('clusters.destroy');
-    });
+    // (Master Data routes sudah terdaftar di atas, di bagian /master-data prefix)
 
     // --- BANTUAN & LAINNYA ---
     Route::view('/faq', 'faq')->name('faq');

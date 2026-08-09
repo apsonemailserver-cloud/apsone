@@ -82,7 +82,7 @@ class AssignmentTest extends TestCase
     {
         $response = $this->actingAs($this->user)->get(route('assignments.create'));
         $response->assertStatus(200);
-        $response->assertSee('Create Assignment');
+        $response->assertSee('Tambah Assignment Baru');
     }
 
     public function test_user_can_submit_work_result_as_dci(): void
@@ -278,5 +278,53 @@ class AssignmentTest extends TestCase
         $workOrder->refresh();
         $this->assertNotNull($workOrder->photo_path);
         Storage::disk('public')->assertExists($workOrder->photo_path);
+    }
+
+    public function test_hoas_can_see_all_assignments_at_their_station(): void
+    {
+        $hoas = User::create([
+            'id' => '102240243',
+            'fullname' => 'ADE IRWAN EFFENDI',
+            'email' => 'ade.hoas@apsone.test',
+            'password' => bcrypt('password'),
+            'role' => 'Head Of Airport Service',
+            'station' => 'CGK',
+            'is_active' => true,
+            'gender' => 'Male',
+            'join_date' => '2026-01-01',
+            'salary' => '4000000',
+        ]);
+
+        $otherLeader = User::create([
+            'id' => '2207005',
+            'fullname' => 'OTHER LEADER',
+            'email' => 'otherleader@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'Leader Porter Apron',
+            'station' => 'CGK',
+            'is_active' => true,
+            'gender' => 'Male',
+            'join_date' => '2026-01-01',
+            'salary' => '4000000',
+        ]);
+
+        $assignment = Assignment::create([
+            'date' => '2026-08-08',
+            'station' => 'CGK',
+            'aircraft_reg' => 'PK-LGH',
+            'parking_stand' => 'A12',
+            'wo_number' => 'WO-2026-001',
+            'start_time' => '08:00',
+            'end_time' => '09:30',
+            'type' => 'DCI',
+            'submitted_by' => $otherLeader->id,
+        ]);
+
+        $response = $this->actingAs($hoas)->get(route('assignments.index', [
+            'date_from' => '2026-08-01',
+            'date_to' => '2026-08-31',
+        ]));
+        $response->assertStatus(200);
+        $response->assertSee('WO-2026-001');
     }
 }

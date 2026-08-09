@@ -167,9 +167,7 @@
                                         </td>
                                         @if($canEditPAS)
                                         <td class="text-center">
-                                            <a href="{{ route('users.PASEdit', $user->id) }}" class="action-btn action-edit" title="Edit Pas">
-                                                <i class="ti ti-pencil"></i>
-                                            </a>
+                                            <x-action-button action="edit" :href="route('users.PASEdit', $user->id)" title="Edit Pas" />
                                         </td>
                                         @endif
                                     </tr>

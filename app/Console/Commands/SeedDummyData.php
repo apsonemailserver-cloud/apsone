@@ -66,7 +66,7 @@ class SeedDummyData extends Command
         }
 
         // 3. Define shifts mapping
-        $shifts = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'off'];
+        $shifts = ['pagi', 'siang', 'malam', 'off'];
         $shiftModels = Shift::all()->keyBy('id');
 
         // 4. Time parameters

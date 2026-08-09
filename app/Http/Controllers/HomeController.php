@@ -245,13 +245,22 @@ class HomeController extends Controller
         }
 
         // Doughnut Chart: Distribusi Role (Filtered)
-        $doughnutQuery = User::where('users.is_active', 1)
-            ->join('roles', 'users.role_id', '=', 'roles.id')
-            ->select('roles.name as role', DB::raw('count(*) as total'));
-        if ($selectedStation !== 'All') {
-            $doughnutQuery->where('users.station', $selectedStation);
+        if (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
+            $doughnutQuery = User::where('users.is_active', 1)
+                ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
+                ->select(DB::raw("COALESCE(roles.name, 'Unassigned') as role"), DB::raw('count(*) as total'));
+            if ($selectedStation !== 'All') {
+                $doughnutQuery->where('users.station', $selectedStation);
+            }
+            $doughnutData = $doughnutQuery->groupBy(DB::raw("COALESCE(roles.name, 'Unassigned')"))->get();
+        } else {
+            $doughnutQuery = User::where('is_active', 1)
+                ->select(DB::raw("'Unassigned' as role"), DB::raw('count(*) as total'));
+            if ($selectedStation !== 'All') {
+                $doughnutQuery->where('station', $selectedStation);
+            }
+            $doughnutData = $doughnutQuery->groupBy(DB::raw("'Unassigned'"))->get();
         }
-        $doughnutData = $doughnutQuery->groupBy('roles.name')->get();
 
         $doughnutChartLabels = $doughnutData->pluck('role');
         $doughnutChartData = $doughnutData->pluck('total');

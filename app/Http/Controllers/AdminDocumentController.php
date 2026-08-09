@@ -114,14 +114,22 @@ class AdminDocumentController extends Controller
                 $requireFile ? 'required' : 'nullable',
                 'file',
                 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
-                'max:10240',
+                'max:2048',
             ],
         ];
     }
 
     private function validatedData(Request $request, bool $requireFile): array
     {
-        $validated = $request->validate($this->rules($requireFile));
+        $messages = [
+            'nama_dokumen.required' => 'Nama dokumen wajib diisi.',
+            'deskripsi_dokumen.required' => 'Deskripsi dokumen wajib diisi.',
+            'role_akses_dokumen.required' => 'Minimal 1 role akses wajib dipilih.',
+            'document_file.required' => 'File dokumen wajib diunggah.',
+            'document_file.mimes' => 'Format file dokumen tidak diizinkan.',
+            'document_file.max' => 'Ukuran file dokumen tidak boleh lebih dari 2MB.',
+        ];
+        $validated = $request->validate($this->rules($requireFile), $messages);
         $validated['role_akses_dokumen'] = $this->normalizeRoleAccess($validated['role_akses_dokumen']);
         unset($validated['document_file']);
 

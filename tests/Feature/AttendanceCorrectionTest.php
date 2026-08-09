@@ -293,15 +293,15 @@ class AttendanceCorrectionTest extends TestCase
             'id' => 'P',
             'name' => 'Pagi',
             'description' => 'Shift Pagi',
-            'start_time' => '08:00:00',
-            'end_time' => '17:00:00',
+            'start_time' => now()->subMinutes(5)->format('H:i:s'),
+            'end_time' => now()->addHours(8)->format('H:i:s'),
             'use_manpower' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         DB::table('schedules')->insert([
             'user_id' => $user->id,
-            'date' => '2026-07-26',
+            'date' => now()->toDateString(),
             'shift_id' => 'P',
             'is_active' => true,
         ]);

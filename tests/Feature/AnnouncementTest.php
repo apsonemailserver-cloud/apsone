@@ -162,7 +162,7 @@ class AnnouncementTest extends TestCase
 
         $createResponse = $this->actingAs($admin)->get(route('announcements.create'));
         $createResponse->assertStatus(200);
-        $createResponse->assertSee('Formulir Tambah Pengumuman');
+        $createResponse->assertSee('Tambah Pengumuman');
 
         $announcement = Announcement::create([
             'title' => 'Pengumuman Uji',
@@ -173,6 +173,6 @@ class AnnouncementTest extends TestCase
 
         $editResponse = $this->actingAs($admin)->get(route('announcements.edit', $announcement->id));
         $editResponse->assertStatus(200);
-        $editResponse->assertSee('Formulir Edit Pengumuman');
+        $editResponse->assertSee('Edit Pengumuman');
     }
 }
