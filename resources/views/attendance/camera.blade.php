@@ -1091,17 +1091,11 @@
                 btnWizardAction.addEventListener('click', async function() {
                     let poseCheck = await detectFacePoseInVideo(wizardStep);
                     if (!poseCheck.valid) {
-                        if (isFaceDetected) {
-                            poseCheck = { valid: true, reason: 'Pose Dikirim' };
-                        } else {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Wajah Belum Terdeteksi',
-                                text: poseCheck.reason + '. Posisikan wajah Anda jelas di tengah frame kamera.',
-                                confirmButtonColor: '#2f80ed'
-                            });
-                            return;
+                        if (wizardSub) {
+                            wizardSub.style.color = '#f87171';
+                            wizardSub.textContent = '⚠️ ' + poseCheck.reason + '. Posisikan wajah Anda di tengah oval.';
                         }
+                        return;
                     }
 
                     const tempCanvas = document.createElement('canvas');
@@ -1541,7 +1535,10 @@
                                             cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Pose Pas</span>';
                                         }
                                         if (faceGuide) faceGuide.classList.add('is-valid');
-                                        if (wizardSub) wizardSub.textContent = '✓ ' + poseCheck.reason + ' Klik Ambil Foto atau tahan posisi.';
+                                        if (wizardSub) {
+                                            wizardSub.style.color = '#4ade80';
+                                            wizardSub.textContent = '✓ ' + poseCheck.reason + ' Tahan posisi 1 detik atau klik tombol.';
+                                        }
 
                                         if (!holdTimer) {
                                             holdTimer = setTimeout(() => {
@@ -1549,7 +1546,7 @@
                                                     btnWizardAction.click();
                                                 }
                                                 holdTimer = null;
-                                            }, 1000);
+                                            }, 1200);
                                         }
                                     } else {
                                         if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
@@ -1558,11 +1555,22 @@
                                             cameraStatus.innerHTML = '<i class="bx bx-error-circle"></i><span>' + poseCheck.reason + '</span>';
                                         }
                                         if (faceGuide) faceGuide.classList.remove('is-valid');
-                                        if (wizardSub) wizardSub.textContent = poseCheck.reason;
+                                        if (wizardSub) {
+                                            wizardSub.style.color = '#f87171';
+                                            wizardSub.textContent = '⚠️ ' + poseCheck.reason;
+                                        }
                                     }
                                 } else {
                                     if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-                                    updateFaceStatusUI(false);
+                                    if (cameraStatus) {
+                                        cameraStatus.className = 'camera-status-pill is-warning';
+                                        cameraStatus.innerHTML = '<i class="bx bx-error-circle"></i><span>Wajah Tidak Terdeteksi</span>';
+                                    }
+                                    if (faceGuide) faceGuide.classList.remove('is-valid');
+                                    if (wizardSub) {
+                                        wizardSub.style.color = '#94a3b8';
+                                        wizardSub.textContent = 'Posisikan wajah Anda lurus di tengah oval frame.';
+                                    }
                                 }
                             } else {
                                 setContextMode(false);
