@@ -952,11 +952,6 @@
             } else {
                 isModelReady = true;
             }
-                    isModelReady = true; // Fallback to Laplacian edge detector
-                });
-            } else {
-                isModelReady = true;
-            }
 
             if ('FaceDetector' in window) {
                 try {
@@ -1146,7 +1141,12 @@
                 audio: false
             }).then((stream) => {
                 video.srcObject = stream;
-                video.onloadedmetadata = () => {
+                
+                let isStreamReady = false;
+                const startCameraPreview = () => {
+                    if (isStreamReady) return;
+                    isStreamReady = true;
+                    video.play().catch(e => console.warn('Video play error:', e));
                     loader.classList.add('is-hidden');
                     
                     setInterval(async () => {
@@ -1168,7 +1168,15 @@
                         }
                     }, 400);
                 };
-            }).catch(() => {
+
+                video.onloadedmetadata = startCameraPreview;
+                video.onloadeddata = startCameraPreview;
+                
+                if (video.readyState >= 1) {
+                    startCameraPreview();
+                }
+            }).catch((err) => {
+                console.error('Camera access error:', err);
                 setErrorState('Tidak bisa membuka kamera', 'Periksa izin kamera di browser, lalu coba buka halaman ini kembali.');
                 Swal.fire({
                     icon: 'error',
