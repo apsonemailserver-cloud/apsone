@@ -84,9 +84,12 @@ class LoginController extends Controller
         }
 
         $otp = rand(100000, 999999);
+        $expiresAt = now()->addMinutes(10)->timestamp;
+
         session([
-            'reset_otp_user_id' => $user->id,
-            'reset_otp_code'    => $otp,
+            'reset_otp_user_id'    => $user->id,
+            'reset_otp_code'       => $otp,
+            'reset_otp_expires_at' => $expiresAt,
         ]);
 
         try {
@@ -117,6 +120,14 @@ class LoginController extends Controller
             'otp' => 'required',
         ]);
 
+        $expiresAt = session('reset_otp_expires_at');
+        if ($expiresAt && now()->timestamp > $expiresAt) {
+            return back()
+                ->with('error', 'Kode OTP telah kadaluarsa (berlaku 10 menit). Silakan kirim ulang OTP.')
+                ->with('otp_sent', true)
+                ->withInput(['id' => $request->id]);
+        }
+
         $defaultOtp = 666666;
 
         $validBySession = session('reset_otp_user_id') == $request->id
@@ -132,7 +143,7 @@ class LoginController extends Controller
         }
 
         // OTP benar -> hapus OTP agar tidak bisa dipakai ulang
-        session()->forget(['reset_otp_user_id', 'reset_otp_code', 'reset_password_user_id']);
+        session()->forget(['reset_otp_user_id', 'reset_otp_code', 'reset_otp_expires_at', 'reset_password_user_id']);
 
         return redirect()
             ->route('change.password.form', ['id' => $request->id])
@@ -164,7 +175,7 @@ class LoginController extends Controller
         $user->save();
 
         // bersihkan session reset (kalau ada)
-        session()->forget(['reset_password_user_id', 'reset_otp_user_id', 'reset_otp_code']);
+        session()->forget(['reset_password_user_id', 'reset_otp_user_id', 'reset_otp_code', 'reset_otp_expires_at']);
 
         return redirect()
             ->route('login')

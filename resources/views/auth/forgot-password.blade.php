@@ -74,8 +74,7 @@
                         {{ session('error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                @endif
-                @if (session('otp_sent'))
+                @elseif (session('otp_sent'))
                     <div class="alert alert-success alert-dismissible" role="alert">
                         OTP telah dikirim ke email Anda.
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -119,6 +118,21 @@
                 <div class="text-center mt-3">
                     <a href="{{ route('login') }}"><small>&larr; Kembali ke Login</small></a>
                 </div>
+
+                @if (session('otp_sent'))
+                    <form id="resendForm" method="POST" action="{{ route('forgot.password.send') }}" class="d-none">
+                        @csrf
+                        <input type="hidden" name="id" value="{{ old('id') }}">
+                    </form>
+
+                    <div class="text-center mt-2">
+                        <span id="otpCountdown" class="text-muted small"></span>
+                        <button type="button" id="resendOtpBtn" class="btn btn-link btn-sm text-primary p-0 fw-semibold d-none"
+                            onclick="document.getElementById('resendForm').submit();">
+                            Kirim Ulang OTP
+                        </button>
+                    </div>
+                @endif
             </section>
         </main>
     </div>
@@ -143,6 +157,41 @@
             document.querySelectorAll('[data-auth-theme]').forEach((btn) => {
                 btn.addEventListener('click', () => applyTheme(btn.dataset.authTheme));
             });
+
+            const otpExpiresAt = {{ session('reset_otp_expires_at') ? session('reset_otp_expires_at') : 0 }};
+            if (otpExpiresAt > 0) {
+                const countdownEl = document.getElementById('otpCountdown');
+                const resendBtn = document.getElementById('resendOtpBtn');
+
+                function updateCountdown() {
+                    const now = Math.floor(Date.now() / 1000);
+                    const diff = otpExpiresAt - now;
+
+                    if (diff > 0) {
+                        const mins = Math.floor(diff / 60);
+                        const secs = diff % 60;
+                        if (countdownEl) {
+                            countdownEl.textContent = `Kirim ulang OTP dalam ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                            countdownEl.classList.remove('d-none');
+                        }
+                        if (resendBtn) resendBtn.classList.add('d-none');
+                    } else {
+                        if (countdownEl) countdownEl.classList.add('d-none');
+                        if (resendBtn) resendBtn.classList.remove('d-none');
+                    }
+                }
+
+                updateCountdown();
+                const timerId = setInterval(function() {
+                    const now = Math.floor(Date.now() / 1000);
+                    if (otpExpiresAt - now <= 0) {
+                        clearInterval(timerId);
+                        updateCountdown();
+                    } else {
+                        updateCountdown();
+                    }
+                }, 1000);
+            }
         });
     </script>
 </body>

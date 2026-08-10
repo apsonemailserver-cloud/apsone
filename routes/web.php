@@ -185,6 +185,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/attendance/camera', [AttendanceController::class, 'camera'])->name('attendance.camera'); // Jika pakai kamera
     Route::get('/attendance/face-samples/api', [FaceSampleController::class, 'apiShow'])->name('attendance.face-samples.api');
     Route::post('/attendance/face-samples/save-self', [FaceSampleController::class, 'storeSelf'])->name('attendance.face-samples.save-self');
+    Route::post('/attendance/face-verify', [FaceSampleController::class, 'verifyFace'])->name('attendance.face-verify');
     Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.checkIn');
     Route::post('/attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.checkOut');
     Route::post('/attendance/process', [AttendanceController::class, 'process'])->name('attendance.process'); // Alternatif proses
