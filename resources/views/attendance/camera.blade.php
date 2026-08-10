@@ -1,6 +1,6 @@
 @php
     $isCheckOut = $type === 'out';
-    $actionTitle = $isCheckOut ? 'Absen Out' : 'Absen In';
+    $actionTitle = $isCheckOut ? 'Presensi Out' : 'Presensi In';
     $actionSub = $isCheckOut ? 'Akhiri shift dengan verifikasi wajah dan GPS.' : 'Mulai shift dengan verifikasi wajah dan GPS.';
     $user = auth()->user();
 @endphp
@@ -11,6 +11,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $actionTitle }} - Attendance</title>
     <link rel="icon" href="{{ asset('storage/aps_mini.png') }}" sizes="48x48" type="image/png">
     <link href="{{ asset('template/assets/vendor/fonts/boxicons.css') }}" rel="stylesheet">
@@ -897,8 +898,6 @@
         </form>
     </main>
 
-    <script src="{{ asset('vendor/tensorflow/tf.min.js') }}"></script>
-    <script src="{{ asset('vendor/tensorflow/blazeface.min.js') }}"></script>
     <script src="{{ asset('vendor/face-api/face-api.min.js') }}"></script>
     <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
 
@@ -1038,6 +1037,14 @@
             let wizardStep = 'front';
             let holdTimer = null;
 
+            // Server-side ML state (dlib ResNet via Python face_recognition)
+            let serverMlResult = null;  // { matched: bool, distance: float, match_pct: float, method: string }
+            let isVerifyingML = false;
+            let lastMlVerifyTime = 0;
+            const ML_COOLDOWN_MS = 4000; // verify every 4 seconds via server ML
+            const CSRF = '{{ csrf_token() }}';
+            const faceVerifyUrl = '{{ route("attendance.face-verify") }}';
+
             const btnWizardAction = document.getElementById('btnWizardAction');
             const btnWizardActionText = document.getElementById('btnWizardActionText');
             const wizardTitle = document.getElementById('wizardTitle');
@@ -1082,39 +1089,45 @@
                     return { valid: false, reason: 'Kamera belum siap' };
                 }
 
-                if (!blazefaceModel) {
-                    return { valid: true, reason: 'OK' };
+                if (!lastFaceDetectionResult || !lastFaceDetectionResult.landmarks) {
+                    try {
+                        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.35 })).withFaceLandmarks(true);
+                        if (det) {
+                            lastFaceDetectionResult = det;
+                        } else {
+                            return { valid: false, reason: 'Wajah Tidak Terdeteksi' };
+                        }
+                    } catch(e) {
+                        return { valid: false, reason: 'Gagal mendeteksi wajah' };
+                    }
                 }
 
                 try {
-                    const predictions = await blazefaceModel.estimateFaces(video, false);
-                    if (!predictions || predictions.length === 0) {
-                        return { valid: false, reason: 'Wajah Tidak Terdeteksi' };
-                    }
+                    const landmarks = lastFaceDetectionResult.landmarks;
+                    const leftEyePts = landmarks.getLeftEye();
+                    const rightEyePts = landmarks.getRightEye();
+                    const nosePts = landmarks.getNose();
 
-                    const pred = predictions[0];
-                    const prob = pred.probability ? pred.probability[0] : 1;
-                    const landmarks = pred.landmarks;
-
-                    if (prob < 0.55 || !landmarks || landmarks.length < 3) {
+                    if (!leftEyePts.length || !rightEyePts.length || !nosePts.length) {
                         return { valid: false, reason: 'Posisikan Wajah Jelas di Frame' };
                     }
 
-                    const rightEye = landmarks[0]; // [x, y]
-                    const leftEye = landmarks[1];  // [x, y]
-                    const nose = landmarks[2];     // [x, y]
+                    const leftEyeX = leftEyePts.reduce((sum, p) => sum + p.x, 0) / leftEyePts.length;
+                    const leftEyeY = leftEyePts.reduce((sum, p) => sum + p.y, 0) / leftEyePts.length;
+                    const rightEyeX = rightEyePts.reduce((sum, p) => sum + p.x, 0) / rightEyePts.length;
+                    const rightEyeY = rightEyePts.reduce((sum, p) => sum + p.y, 0) / rightEyePts.length;
+                    const noseX = (nosePts[3] || nosePts[0] || {x: 0}).x;
 
-                    const dx = Math.abs(leftEye[0] - rightEye[0]);
-                    const dy = Math.abs(leftEye[1] - rightEye[1]);
+                    const dx = Math.abs(leftEyeX - rightEyeX);
+                    const dy = Math.abs(leftEyeY - rightEyeY);
                     const tiltRatio = dx > 0 ? (dy / dx) : 0;
 
-                    // Check if head is tilted sideways ("miring")
                     if (tiltRatio > 0.40) {
                         return { valid: false, reason: 'Tegakkan Kepala (Jangan Miringkan Wajah)' };
                     }
 
-                    const eyeCenter = (rightEye[0] + leftEye[0]) / 2;
-                    const noseOffset = dx > 0 ? ((nose[0] - eyeCenter) / dx) : 0;
+                    const eyeCenter = (rightEyeX + leftEyeX) / 2;
+                    const noseOffset = dx > 0 ? ((noseX - eyeCenter) / dx) : 0;
 
                     if (expectedPose === 'front') {
                         if (Math.abs(noseOffset) > 0.35) {
@@ -1122,13 +1135,11 @@
                         }
                         return { valid: true, reason: 'Pose Depan Pas!' };
                     } else if (expectedPose === 'right') {
-                        // Unmirrored frame: Nose shifts towards right eye (negative offset)
                         if (noseOffset > -0.10) {
                             return { valid: false, reason: 'Tengokkan Wajah ke Kanan (~30°)' };
                         }
                         return { valid: true, reason: 'Pose Kanan Pas!' };
                     } else if (expectedPose === 'left') {
-                        // Unmirrored frame: Nose shifts towards left eye (positive offset)
                         if (noseOffset < 0.10) {
                             return { valid: false, reason: 'Tengokkan Wajah ke Kiri (~30°)' };
                         }
@@ -1137,7 +1148,6 @@
 
                     return { valid: true, reason: 'OK' };
                 } catch (e) {
-                    console.warn('Pose estimation error:', e);
                     return { valid: true, reason: 'OK' };
                 }
             }
@@ -1261,11 +1271,13 @@
                 });
             }
 
-            const updateFaceStatusUI = (hasFace, matchDistance = null) => {
+            const updateFaceStatusUI = (hasFace) => {
                 isFaceDetected = hasFace;
+                isFaceMatched = hasFace; // actual matching done on button click
                 const cameraHint = document.querySelector('.camera-hint');
                 const hintIcon = document.querySelector('.camera-hint i');
 
+                // ── 1. Wajah tidak terdeteksi ──
                 if (!hasFace) {
                     if (cameraStatus) {
                         cameraStatus.className = 'camera-status-pill is-warning';
@@ -1279,8 +1291,8 @@
                     return;
                 }
 
+                // ── 2. Belum registrasi wajah ──
                 if (!userFaceRegistered) {
-                    // Gojek Interactive 3-Pose Registration Mode
                     setContextMode(true);
                     if (enrollmentWizard) enrollmentWizard.classList.remove('d-none');
                     if (cameraHint) cameraHint.classList.add('d-none');
@@ -1292,69 +1304,134 @@
                     if (cameraHint) cameraHint.classList.remove('d-none');
                 }
 
-                if (isStrictMode && hasFaceSamples) {
-                    if (!isRefDescriptorsLoaded) {
-                        if (cameraStatus) {
-                            cameraStatus.className = 'camera-status-pill';
-                            cameraStatus.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i><span>Memuat Referensi...</span>';
-                        }
-                        if (hintText) hintText.textContent = 'Menganalisis foto referensi NIP...';
-                        btnSubmit.disabled = true;
-                        return;
-                    }
-
-                    if (refDescriptors.length > 0) {
-                        if (matchDistance !== null && matchDistance < 0.55) {
-                            isFaceMatched = true;
-                            const matchPct = Math.min(99, Math.round((1 - matchDistance) * 100));
-                            if (cameraStatus) {
-                                cameraStatus.className = 'camera-status-pill is-success';
-                                cameraStatus.innerHTML = `<i class="bx bx-check-double"></i><span>Wajah Cocok (${matchPct}%)</span>`;
-                            }
-                            if (faceGuide) faceGuide.classList.add('is-valid');
-                            if (cameraHint) cameraHint.className = 'camera-hint is-success';
-                            if (hintIcon) hintIcon.className = 'bx bx-check-circle';
-                            if (hintText) hintText.textContent = `Verifikasi wajah berhasil (${matchPct}% kecocokan). Silakan klik {{ $actionTitle }}.`;
-                            btnSubmit.disabled = false;
-                        } else {
-                            isFaceMatched = false;
-                            if (cameraStatus) {
-                                cameraStatus.className = 'camera-status-pill is-warning';
-                                cameraStatus.innerHTML = '<i class="bx bx-user-x"></i><span>Wajah Tidak Cocok</span>';
-                            }
-                            if (faceGuide) faceGuide.classList.remove('is-valid');
-                            if (cameraHint) cameraHint.className = 'camera-hint is-warning';
-                            if (hintIcon) hintIcon.className = 'bx bx-error';
-                            if (hintText) hintText.textContent = 'Wajah di kamera tidak cocok dengan 3 foto referensi terdaftar NIP Anda.';
-                            btnSubmit.disabled = true;
-                        }
-                    } else {
-                        isFaceMatched = false;
-                        if (cameraStatus) {
-                            cameraStatus.className = 'camera-status-pill is-warning';
-                            cameraStatus.innerHTML = '<i class="bx bx-user-x"></i><span>Gagal Referensi</span>';
-                        }
-                        if (faceGuide) faceGuide.classList.remove('is-valid');
-                        if (cameraHint) cameraHint.className = 'camera-hint is-warning';
-                        if (hintIcon) hintIcon.className = 'bx bx-error';
-                        if (hintText) hintText.textContent = 'Foto referensi NIP tidak terbaca. Lakukan registrasi ulang foto wajah.';
-                        btnSubmit.disabled = true;
-                    }
-                } else {
-                    isFaceMatched = true;
-                    if (cameraStatus) {
-                        cameraStatus.className = 'camera-status-pill is-success';
-                        cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Wajah Terdeteksi</span>';
-                    }
-                    if (faceGuide) faceGuide.classList.add('is-valid');
-                    if (cameraHint) cameraHint.className = 'camera-hint is-success';
-                    if (hintIcon) hintIcon.className = 'bx bx-check-circle';
-                    if (hintText) hintText.textContent = `Wajah terdeteksi. Silakan klik {{ $actionTitle }}.`;
-                    btnSubmit.disabled = false;
+                // ── 3. Wajah terdeteksi & siap — verifikasi ML akan dilakukan saat klik ──
+                if (cameraStatus) {
+                    cameraStatus.className = 'camera-status-pill is-success';
+                    cameraStatus.style.cursor = 'default';
+                    cameraStatus.onclick = null;
+                    cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Wajah Terdeteksi</span>';
                 }
+                if (faceGuide) faceGuide.classList.add('is-valid');
+                if (cameraHint) cameraHint.className = 'camera-hint is-success';
+                if (hintIcon) hintIcon.className = 'bx bx-check-circle';
+                if (hintText) hintText.textContent = `Wajah terdeteksi. Klik tombol {{ $actionTitle }} untuk verifikasi & absen.`;
+                btnSubmit.disabled = false;
             };
 
             setStatus('bx-loader-alt bx-spin', 'Memuat AI...');
+
+
+
+            async function imageToCanvas(imgSrc) {
+                return new Promise((resolve) => {
+                    if (!imgSrc) return resolve(null);
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        try {
+                            const c = document.createElement('canvas');
+                            c.width = img.naturalWidth || img.width || 480;
+                            c.height = img.naturalHeight || img.height || 360;
+                            const ctx = c.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            resolve(c);
+                        } catch(e) {
+                            resolve(null);
+                        }
+                    };
+                    img.onerror = () => {
+                        const img2 = new Image();
+                        img2.onload = () => {
+                            try {
+                                const c = document.createElement('canvas');
+                                c.width = img2.naturalWidth || img2.width || 480;
+                                c.height = img2.naturalHeight || img2.height || 360;
+                                const ctx = c.getContext('2d');
+                                ctx.drawImage(img2, 0, 0);
+                                resolve(c);
+                            } catch(e) { resolve(null); }
+                        };
+                        img2.onerror = () => resolve(null);
+                        img2.src = imgSrc;
+                    };
+                    img.src = imgSrc;
+                });
+            }
+
+            function normalizeCanvas(srcCanvas) {
+                // Auto-levels: scan ~1000 sample pixels, stretch luminance range to 0-255
+                const ctx = srcCanvas.getContext('2d');
+                const w = srcCanvas.width;
+                const h = srcCanvas.height;
+                const data = ctx.getImageData(0, 0, w, h);
+                const pixels = data.data;
+                let min = 255, max = 0, sum = 0, count = 0;
+                const step = Math.max(1, Math.floor(pixels.length / 4000));
+                for (let i = 0; i < pixels.length; i += 4 * step) {
+                    const luma = 0.299 * pixels[i] + 0.587 * pixels[i+1] + 0.114 * pixels[i+2];
+                    if (luma < min) min = luma;
+                    if (luma > max) max = luma;
+                    sum += luma;
+                    count++;
+                }
+                const mean = count > 0 ? sum / count : 128;
+                const range = max - min;
+
+                if (range < 30 && mean > 100) return srcCanvas; // already well-lit
+
+                const out = document.createElement('canvas');
+                out.width = w; out.height = h;
+                const outCtx = out.getContext('2d');
+                outCtx.drawImage(srcCanvas, 0, 0);
+                const outData = outCtx.getImageData(0, 0, w, h);
+                const od = outData.data;
+
+                // Compute boost for backlit dark face
+                const brightnessBoost = mean < 100 ? Math.min(80, (100 - mean) * 0.85) : 0;
+
+                for (let i = 0; i < od.length; i += 4) {
+                    for (let c = 0; c < 3; c++) {
+                        let v = od[i + c];
+                        // Auto-levels stretch
+                        if (range > 30) {
+                            v = Math.round((v - min) / range * 255);
+                        }
+                        // Brightness boost
+                        v = Math.min(255, Math.max(0, v + brightnessBoost));
+                        od[i + c] = v;
+                    }
+                }
+                outCtx.putImageData(outData, 0, 0);
+                return out;
+            }
+
+            async function getDescriptorFromCanvas(canvas) {
+                if (!canvas) return null;
+
+                // Normalize brightness for backlit photos
+                const normalizedCanvas = normalizeCanvas(canvas);
+
+                const optionTiers = [
+                    new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.10 }),
+                    new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.05 }),
+                    new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.02 }),
+                    new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.01 }),
+                    new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.01 }),
+                ];
+
+                // Try normalized first, fallback to original if needed
+                for (const canvasToTry of [normalizedCanvas, canvas]) {
+                    for (const opt of optionTiers) {
+                        try {
+                            const detection = await faceapi.detectSingleFace(canvasToTry, opt).withFaceLandmarks(true).withFaceDescriptor();
+                            if (detection && detection.descriptor) {
+                                return detection.descriptor;
+                            }
+                        } catch(e) {}
+                    }
+                }
+                return null;
+            }
 
             // Load face-api.js models and reference descriptors if registered
             async function initFaceRecognition() {
@@ -1364,7 +1441,7 @@
                             console.warn('FaceAPI loading timeout fallback');
                             isRefDescriptorsLoaded = true;
                         }
-                    }, 2500);
+                    }, 4000);
 
                     try {
                         const MODEL_URL = '{{ asset("vendor/face-api/models") }}';
@@ -1384,25 +1461,6 @@
                             if (data && data.descriptors && Array.isArray(data.descriptors) && data.descriptors.length > 0) {
                                 refDescriptors = data.descriptors.map(arr => new Float32Array(arr));
                                 console.log('Instant-loaded ' + refDescriptors.length + ' descriptors from JSON cache.');
-                            } else if (data && data.photos) {
-                                setStatus('bx-loader-alt bx-spin', 'Menganalisis Foto Referensi...');
-                                const positions = ['front', 'right', 'left'].filter(p => !!data.photos[p]);
-                                
-                                const results = await Promise.all(positions.map(async (pos) => {
-                                    try {
-                                        const img = await faceapi.fetchImage(data.photos[pos]);
-                                        let detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
-                                        if (!detection) {
-                                            detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.15 })).withFaceLandmarks(true).withFaceDescriptor();
-                                        }
-                                        return detection && detection.descriptor ? detection.descriptor : null;
-                                    } catch(e) {
-                                        return null;
-                                    }
-                                }));
-
-                                refDescriptors = results.filter(d => d !== null);
-                                console.log('Parallel-extracted ' + refDescriptors.length + ' descriptors from images.');
                             }
                         }
                     } catch (err) {
@@ -1416,20 +1474,7 @@
                 }
             }
             initFaceRecognition();
-
-            // Load BlazeFace AI Neural Model
-            if (typeof blazeface !== 'undefined') {
-                blazeface.load().then(model => {
-                    blazefaceModel = model;
-                    isModelReady = true;
-                    console.log('BlazeFace AI model loaded.');
-                }).catch(err => {
-                    console.warn('BlazeFace model load error:', err);
-                    isModelReady = true;
-                });
-            } else {
-                isModelReady = true;
-            }
+            isModelReady = true;
 
             if ('FaceDetector' in window) {
                 try {
@@ -1477,6 +1522,8 @@
                 return (lapSqSum / count) - (meanLap * meanLap);
             }
 
+            let lastFaceDetectionResult = null;
+
             async function detectFaceInVideo() {
                 if (!video.videoWidth || !video.videoHeight || video.paused || video.ended) {
                     return false;
@@ -1493,35 +1540,21 @@
 
                     // If camera is covered by hand/object, edge variance is extremely low (< 25)
                     if (edgeVariance < 25) {
+                        lastFaceDetectionResult = null;
                         return false; // Lens covered by hand or object!
                     }
                 } catch (e) {}
 
-                // 1. AI Neural Network BlazeFace
-                if (blazefaceModel) {
+                // 1. AI Neural Network face-api.js TinyFaceDetector (super fast and robust)
+                if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
                     try {
-                        const predictions = await blazefaceModel.estimateFaces(video, false);
-                        if (predictions && predictions.length > 0) {
-                            const pred = predictions[0];
-                            const prob = pred.probability ? pred.probability[0] : 1;
-                            const landmarks = pred.landmarks;
-
-                            if (prob > 0.55 && landmarks && landmarks.length >= 3) {
-                                const rightEye = landmarks[0]; // [x, y]
-                                const leftEye = landmarks[1];  // [x, y]
-                                const nose = landmarks[2];     // [x, y]
-
-                                const eyesVisible = rightEye[1] > (vh * 0.01) && leftEye[1] > (vh * 0.01) &&
-                                                    rightEye[1] < (vh * 0.88) && leftEye[1] < (vh * 0.88);
-                                const noseVisible = nose[1] > (vh * 0.02) && nose[1] < (vh * 0.95);
-
-                                if (eyesVisible && noseVisible) {
-                                    return true;
-                                }
-                            }
+                        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.35 })).withFaceLandmarks(true);
+                        if (det) {
+                            lastFaceDetectionResult = det;
+                            return true;
                         }
                     } catch (e) {
-                        console.warn('BlazeFace detection error:', e);
+                        console.warn('FaceAPI detection error:', e);
                     }
                 }
 
@@ -1532,6 +1565,7 @@
                         if (faces && faces.length > 0) {
                             const box = faces[0].boundingBox;
                             if (box.top > (vh * 0.04) && box.height > (vh * 0.22)) {
+                                lastFaceDetectionResult = null;
                                 return true;
                             }
                         }
@@ -1675,19 +1709,82 @@
                                 }
                             } else {
                                 setContextMode(false);
-                                let minDistance = null;
-                                if (detected && hasFaceSamples && isFaceApiLoaded && refDescriptors.length > 0) {
-                                    try {
-                                        const liveDetection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
-                                        if (liveDetection && liveDetection.descriptor) {
-                                            const distances = refDescriptors.map(ref => faceapi.euclideanDistance(liveDetection.descriptor, ref));
-                                            minDistance = Math.min(...distances);
-                                        }
-                                    } catch (e) {
-                                        console.warn('Face match error:', e);
+
+                                // ── PRIORITAS 1: Server-side ML (Python dlib ResNet) ──
+                                // Ambil snapshot kamera → kirim ke server → hasil match
+                                const now = Date.now();
+                                if (detected && hasFaceSamples && !isVerifyingML && (now - lastMlVerifyTime) > ML_COOLDOWN_MS) {
+                                    isVerifyingML = true;
+                                    lastMlVerifyTime = now;
+
+                                    // Ambil snapshot dari video
+                                    const snapCanvas = document.createElement('canvas');
+                                    snapCanvas.width = video.videoWidth || 480;
+                                    snapCanvas.height = video.videoHeight || 360;
+                                    const snapCtx = snapCanvas.getContext('2d');
+                                    snapCtx.drawImage(video, 0, 0);
+                                    const liveB64 = snapCanvas.toDataURL('image/jpeg', 0.85);
+
+                                    // Update status UI: sedang memverifikasi
+                                    if (cameraStatus) {
+                                        cameraStatus.className = 'camera-status-pill';
+                                        cameraStatus.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i><span>Verifikasi ML...</span>';
                                     }
+
+                                    fetch(faceVerifyUrl, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': CSRF,
+                                            'Accept': 'application/json',
+                                        },
+                                        body: JSON.stringify({ live_b64: liveB64 }),
+                                    })
+                                    .then(r => r.json())
+                                    .then(result => {
+                                        serverMlResult = result;
+                                        console.debug('[ML] method:', result.method, '| distance:', result.distance, '| matched:', result.matched);
+
+                                        if (result.method === 'dlib_resnet') {
+                                            // Server ML result available — use it directly
+                                            updateFaceStatusUI(detected, result.matched ? (result.distance ?? 0.3) : 0.9);
+                                        } else {
+                                            // Server ML unavailable — fallback to face-api.js
+                                            serverMlResult = null;
+                                        }
+                                    })
+                                    .catch(err => {
+                                        console.warn('[ML] Server verification failed, using browser fallback:', err);
+                                        serverMlResult = null;
+                                    })
+                                    .finally(() => {
+                                        isVerifyingML = false;
+                                    });
+
+                                } else if (!detected) {
+                                    // No face — reset ML state
+                                    serverMlResult = null;
+                                    updateFaceStatusUI(false, null);
+                                } else if (!isVerifyingML) {
+                                    // ── FALLBACK: face-api.js (browser-only) ──
+                                    let minDistance = null;
+                                    if (detected && hasFaceSamples && isFaceApiLoaded && refDescriptors.length > 0) {
+                                        try {
+                                            let liveDetection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.2 })).withFaceLandmarks(true).withFaceDescriptor();
+                                            if (!liveDetection) {
+                                                liveDetection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.1 })).withFaceLandmarks(true).withFaceDescriptor();
+                                            }
+                                            if (liveDetection && liveDetection.descriptor) {
+                                                const distances = refDescriptors.map(ref => faceapi.euclideanDistance(liveDetection.descriptor, ref));
+                                                minDistance = Math.min(...distances);
+                                                console.debug('[face-api.js] matchDistance:', minDistance);
+                                            }
+                                        } catch (e) {
+                                            console.warn('Face match error:', e);
+                                        }
+                                    }
+                                    updateFaceStatusUI(detected, minDistance);
                                 }
-                                updateFaceStatusUI(detected, minDistance);
                             }
                         }
                     }, 350);
@@ -1728,16 +1825,6 @@
                         icon: 'warning',
                         title: 'Wajah Tidak Terdeteksi',
                         text: 'Posisikan wajah Anda dengan jelas di tengah kamera sebelum menekan tombol {{ $actionTitle }}.',
-                        confirmButtonColor: '#2f80ed'
-                    });
-                    return;
-                }
-
-                if (hasFaceSamples && !isFaceMatched) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Verifikasi Wajah Gagal',
-                        text: 'Wajah di kamera tidak cocok dengan foto referensi terdaftar NIP Anda.',
                         confirmButtonColor: '#2f80ed'
                     });
                     return;
@@ -1788,37 +1875,94 @@
                     });
                 };
 
-                // INSTANT SUBMIT IF PRE-WARMED POSITION IS READY (0-SEC LAG)
-                if (cachedPosition) {
-                    processFormSubmission(cachedPosition);
-                    return;
-                }
+                const proceedWithGpsAndSubmit = () => {
+                    if (cachedPosition) {
+                        processFormSubmission(cachedPosition);
+                        return;
+                    }
 
-                // FALLBACK IF GPS IS STILL LOADING COLD
-                Swal.fire({
-                    title: 'Mengambil lokasi',
-                    text: 'Mohon tunggu sejenak, sistem sedang mengunci GPS Anda...',
-                    allowOutsideClick: false,
-                    confirmButtonColor: '#2f80ed',
-                    didOpen: () => Swal.showLoading()
-                });
+                    Swal.fire({
+                        title: 'Mengambil lokasi',
+                        text: 'Mohon tunggu sejenak, sistem sedang mengunci GPS Anda...',
+                        allowOutsideClick: false,
+                        confirmButtonColor: '#2f80ed',
+                        didOpen: () => Swal.showLoading()
+                    });
 
-                // Try fast low-accuracy / cached location first (instant ~100ms response)
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => processFormSubmission(pos),
-                    (error) => {
-                        if (error.code === error.PERMISSION_DENIED) {
-                            handleFailure(error);
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => processFormSubmission(pos),
+                        (error) => {
+                            if (error.code === error.PERMISSION_DENIED) {
+                                handleFailure(error);
+                            } else {
+                                navigator.geolocation.getCurrentPosition(
+                                    (pos2) => processFormSubmission(pos2),
+                                    (error2) => handleFailure(error2),
+                                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+                                );
+                            }
+                        },
+                        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+                    );
+                };
+
+                // Jika strict mode & user punya foto referensi, jalankan validasi ML server-side
+                if (isStrictMode && hasFaceSamples) {
+                    Swal.fire({
+                        title: 'Memverifikasi Wajah AI...',
+                        text: 'Sistem sedang mencocokkan wajah Anda dengan data NIP terdaftar.',
+                        allowOutsideClick: false,
+                        confirmButtonColor: '#2f80ed',
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    // Ambil snapshot langsung saat tombol diklik
+                    const snapCanvas = document.createElement('canvas');
+                    snapCanvas.width = video.videoWidth || 480;
+                    snapCanvas.height = video.videoHeight || 360;
+                    snapCanvas.getContext('2d').drawImage(video, 0, 0);
+                    const liveB64 = snapCanvas.toDataURL('image/jpeg', 0.85);
+
+                    fetch(faceVerifyUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': CSRF,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ live_b64: liveB64 })
+                    })
+                    .then(r => r.json())
+                    .then(result => {
+                        console.log('[Face ML Verify Result]:', result);
+                        if (result.matched === true) {
+                            // ✅ Wajah cocok! Lanjut ke GPS dan submit
+                            proceedWithGpsAndSubmit();
                         } else {
-                            navigator.geolocation.getCurrentPosition(
-                                (pos2) => processFormSubmission(pos2),
-                                (error2) => handleFailure(error2),
-                                { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
-                            );
+                            // ❌ Wajah TIDAK cocok atau verifikasi gagal — TOLAK ABSENSI
+                            const matchPct = result.match_pct ?? 0;
+                            const errDetail = result.error ? `<br><small class="text-danger">${result.error}</small>` : '';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Verifikasi Wajah Gagal',
+                                html: `Wajah di kamera tidak cocok dengan foto referensi NIP terdaftar Anda.<br><small class="text-muted">Tingkat Kemiripan: <b>${matchPct}%</b></small>${errDetail}`,
+                                confirmButtonColor: '#2f80ed'
+                            });
                         }
-                    },
-                    { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
-                );
+                    })
+                    .catch(err => {
+                        console.error('Face verification request error:', err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Verifikasi Gagal',
+                            text: 'Gagal menghubungkan ke server verifikasi wajah. Silakan coba beberapa saat lagi.',
+                            confirmButtonColor: '#2f80ed'
+                        });
+                    });
+                } else {
+                    // Non-strict mode atau belum ada sampel - langsung submit
+                    proceedWithGpsAndSubmit();
+                }
             });
         });
     </script>

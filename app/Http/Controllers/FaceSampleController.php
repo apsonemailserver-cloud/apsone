@@ -159,11 +159,16 @@ class FaceSampleController extends Controller
         $status = self::getStatus($user->id);
         $photos = [];
 
+        $photos_b64 = [];
         foreach (self::POSITIONS as $pos) {
             $path = self::userDir($user->id) . '/' . $pos . '.jpg';
-            $photos[$pos] = $status[$pos]
-                ? Storage::disk(self::STORAGE_DISK)->url($path)
-                : null;
+            if ($status[$pos] && Storage::disk(self::STORAGE_DISK)->exists($path)) {
+                $content = Storage::disk(self::STORAGE_DISK)->get($path);
+                $enhanced = self::enhanceImageForFaceDetection($content);
+                $photos_b64[$pos] = 'data:image/jpeg;base64,' . base64_encode($enhanced ?? $content);
+            } else {
+                $photos_b64[$pos] = null;
+            }
         }
 
         $descriptorsPath = self::userDir($user->id) . '/descriptors.json';
@@ -176,9 +181,88 @@ class FaceSampleController extends Controller
             'user_id'     => $user->id,
             'is_complete' => self::isComplete($user->id),
             'photos'      => $photos,
+            'photos_b64'  => $photos_b64,
             'descriptors' => $descriptors,
             'positions'   => self::POSITIONS,
         ]);
+    }
+
+    /**
+     * Enhance backlit / low-contrast face photos using PHP GD:
+     * 1. Auto-levels (stretch histogram to full 0-255 range)
+     * 2. Adaptive brightness boost if image is too dark (median < 100)
+     * 3. Mild contrast boost
+     * Returns enhanced JPEG binary string, or null if GD not available.
+     */
+    private static function enhanceImageForFaceDetection(string $jpegData): ?string
+    {
+        if (!function_exists('imagecreatefromstring')) {
+            return null;
+        }
+        $img = @imagecreatefromstring($jpegData);
+        if (!$img) {
+            return null;
+        }
+
+        $w = imagesx($img);
+        $h = imagesy($img);
+
+        // Build luminance histogram to find min/max brightness
+        $min = 255; $max = 0; $sum = 0; $count = 0;
+        $step = max(1, (int)($w * $h / 2000)); // sample ~2000 pixels for speed
+        for ($y = 0; $y < $h; $y += $step) {
+            for ($x = 0; $x < $w; $x += $step) {
+                $rgb = imagecolorat($img, $x, $y);
+                $r = ($rgb >> 16) & 0xFF;
+                $g = ($rgb >> 8) & 0xFF;
+                $b = $rgb & 0xFF;
+                // Luminance (perceived brightness)
+                $luma = (int)(0.299 * $r + 0.587 * $g + 0.114 * $b);
+                if ($luma < $min) $min = $luma;
+                if ($luma > $max) $max = $luma;
+                $sum += $luma;
+                $count++;
+            }
+        }
+        $mean = $count > 0 ? $sum / $count : 128;
+
+        // Auto-levels stretch: remap [min, max] → [0, 255]
+        // Only apply if there's meaningful dynamic range to stretch
+        if ($max - $min > 30) {
+            $range = $max - $min;
+            for ($y = 0; $y < $h; $y++) {
+                for ($x = 0; $x < $w; $x++) {
+                    $rgb = imagecolorat($img, $x, $y);
+                    $r = ($rgb >> 16) & 0xFF;
+                    $g = ($rgb >> 8) & 0xFF;
+                    $b = $rgb & 0xFF;
+                    $r = (int)(($r - $min) / $range * 255);
+                    $g = (int)(($g - $min) / $range * 255);
+                    $b = (int)(($b - $min) / $range * 255);
+                    $r = max(0, min(255, $r));
+                    $g = max(0, min(255, $g));
+                    $b = max(0, min(255, $b));
+                    imagesetpixel($img, $x, $y, imagecolorallocate($img, $r, $g, $b));
+                }
+            }
+        }
+
+        // Adaptive brightness boost for backlit / dark face scenarios
+        // Mean < 100 = face area is underexposed; boost brightness
+        if ($mean < 100) {
+            $boost = (int)(min(80, (100 - $mean) * 0.9));
+            imagefilter($img, IMG_FILTER_BRIGHTNESS, $boost);
+        }
+
+        // Mild contrast enhancement
+        imagefilter($img, IMG_FILTER_CONTRAST, -15);
+
+        ob_start();
+        imagejpeg($img, null, 90);
+        $output = ob_get_clean();
+        imagedestroy($img);
+
+        return $output ?: null;
     }
 
     /**
@@ -238,4 +322,137 @@ class FaceSampleController extends Controller
         Alert::success('Berhasil', 'Semua foto referensi wajah ' . $user->fullname . ' telah dihapus.');
         return redirect()->route('users.face-samples.index', $user->id);
     }
+
+    /**
+     * API: Server-side ML face verification via Python face_recognition (dlib ResNet)
+     * POST /attendance/face-verify
+     * Body: { live_b64: "data:image/jpeg;base64,..." }
+     * Returns: { matched: bool, distance: float, match_pct: float, method: string }
+     */
+    public function verifyFace(Request $request)
+    {
+        $user = Auth::user();
+        $request->validate(['live_b64' => 'required|string']);
+
+        // Check if reference photos exist
+        if (!self::isComplete($user->id)) {
+            return response()->json([
+                'matched'   => false,
+                'distance'  => null,
+                'match_pct' => 0,
+                'method'    => 'none',
+                'error'     => 'Foto referensi NIP belum mendaftar.',
+            ], 200);
+        }
+
+        // Build reference photo paths
+        $refPaths = [];
+        foreach (self::POSITIONS as $pos) {
+            $relPath = self::userDir($user->id) . '/' . $pos . '.jpg';
+            $absPath = Storage::disk(self::STORAGE_DISK)->path($relPath);
+            if (file_exists($absPath)) {
+                $refPaths[] = $absPath;
+            }
+        }
+
+        \Log::info('[FaceVerifyDebug] Starting verifyFace for NIP: ' . $user->id);
+        \Log::info('[FaceVerifyDebug] Reference paths found: ' . implode(', ', $refPaths));
+
+        if (empty($refPaths)) {
+            \Log::warning('[FaceVerifyDebug] No reference paths found.');
+            return response()->json([
+                'matched'   => false,
+                'distance'  => null,
+                'match_pct' => 0,
+                'method'    => 'none',
+                'error'     => 'File foto referensi tidak ditemukan di server.',
+            ], 200);
+        }
+
+        $scriptPath = base_path('scripts/face_compare.py');
+        $pythonBin = self::getPythonBinary();
+
+        \Log::info('[FaceVerifyDebug] pythonBin found: ' . ($pythonBin ?? 'NULL') . ' | scriptPath exists: ' . (file_exists($scriptPath) ? 'YES' : 'NO'));
+
+        if (file_exists($scriptPath) && $pythonBin) {
+            $payload = json_encode([
+                'live_b64'  => $request->live_b64,
+                'ref_paths' => $refPaths,
+            ]);
+
+            $descriptors = [
+                0 => ['pipe', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w'],
+            ];
+
+            $cmd = escapeshellcmd($pythonBin) . ' ' . escapeshellarg($scriptPath);
+            $process = proc_open($cmd, $descriptors, $pipes);
+
+            if (is_resource($process)) {
+                fwrite($pipes[0], $payload);
+                fclose($pipes[0]);
+
+                $output = stream_get_contents($pipes[1]);
+                $errorOutput = stream_get_contents($pipes[2]);
+                fclose($pipes[1]);
+                fclose($pipes[2]);
+
+                $exitCode = proc_close($process);
+
+                \Log::info("[FaceVerifyDebug] Python exitCode: $exitCode | output length: " . strlen($output) . " | error output: $errorOutput");
+
+                if ($output) {
+                    $result = json_decode(trim($output), true);
+                    if (is_array($result) && !isset($result['error'])) {
+                        \Log::info('[FaceVerifyDebug] Success: ' . json_encode($result));
+                        return response()->json(array_merge($result, ['method' => 'dlib_resnet']));
+                    }
+                    \Log::error('[FaceVerify] Python ML error output: ' . json_encode($result ?? $output) . ' stderr: ' . $errorOutput);
+                    return response()->json(array_merge($result ?? [], ['method' => 'dlib_resnet_error']), 200);
+                } else {
+                    \Log::error('[FaceVerify] Python process empty output. stderr: ' . $errorOutput);
+                }
+            }
+        }
+
+        \Log::warning('[FaceVerifyDebug] Falling back to default failed response.');
+        // Error / Python failed -> STRICT: Reject verification
+        return response()->json([
+            'matched'   => false,
+            'distance'  => null,
+            'match_pct' => 0,
+            'method'    => 'failed',
+            'error'     => 'Server ML verification process failed.',
+        ], 200);
+    }
+
+    /**
+     * Locate working Python 3 binary with face_recognition installed
+     */
+    private static function getPythonBinary(): ?string
+    {
+        static $cachedBin = false;
+        if ($cachedBin !== false) return $cachedBin;
+
+        $candidates = [
+            'python3',
+            '/usr/local/bin/python3',
+            '/usr/bin/python3',
+            '/opt/homebrew/bin/python3',
+            '/Library/Frameworks/Python.framework/Versions/Current/bin/python3',
+        ];
+
+        foreach ($candidates as $bin) {
+            $test = shell_exec(escapeshellcmd($bin) . ' -c "import face_recognition; print(1)" 2>/dev/null');
+            if (trim($test ?? '') === '1') {
+                $cachedBin = $bin;
+                return $cachedBin;
+            }
+        }
+
+        $cachedBin = null;
+        return null;
+    }
 }
+
