@@ -37,7 +37,18 @@
             });
 
             @if (Session::has('alert.config'))
-                Swal.fire({!! Session::pull('alert.config') !!});
+                (function() {
+                    var rawConfig = `{!! Session::get('alert.config') !!}`;
+                    // Create a simple hash/key of the config string to identify this alert
+                    var alertKey = 'swal_shown_' + btoa(unescape(encodeURIComponent(rawConfig))).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
+                    if (!sessionStorage.getItem(alertKey)) {
+                        Swal.fire({!! Session::pull('alert.config') !!});
+                        sessionStorage.setItem(alertKey, '1');
+                    } else {
+                        // Clean up session if already shown
+                        {!! Session::pull('alert.config') !!}
+                    }
+                })();
             @endif
         </script>
     @endif
