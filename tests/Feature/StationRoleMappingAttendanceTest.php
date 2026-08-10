@@ -197,4 +197,34 @@ class StationRoleMappingAttendanceTest extends TestCase
                 'message' => 'Absensi gagal! Anda tidak dapat melakukan absensi karena sedang dalam masa cuti.'
             ]);
     }
+
+    public function test_station_update_supports_put_and_post(): void
+    {
+        $admin = User::create([
+            'id' => '1005',
+            'name' => 'Admin User',
+            'role' => 'Administrator',
+            'station' => 'CGK',
+            'is_active' => 1,
+        ]);
+
+        $station = Station::create([
+            'code' => 'SUB',
+            'name' => 'Surabaya',
+            'is_active' => true,
+            'latitude' => -7.3798,
+            'longitude' => 112.7877,
+            'radius' => 5000,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->put(route('stations.update', $station->id), [
+                'latitude' => -7.3800,
+                'longitude' => 112.7880,
+                'radius' => 3000,
+            ]);
+
+        $response->assertRedirect(route('stations.index'));
+        $this->assertEquals(-7.3800, $station->fresh()->latitude);
+    }
 }
