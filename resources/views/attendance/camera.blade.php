@@ -1194,34 +1194,41 @@
                         btnWizardAction.disabled = true;
                         if (btnWizardActionText) btnWizardActionText.textContent = 'Mendaftarkan Foto NIP...';
 
+                        // Pre-compute face descriptors for instant future loading
+                        let descriptorsPayload = [];
+                        if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
+                            for (const pos of ['front', 'right', 'left']) {
+                                if (capturedPoses[pos]) {
+                                    try {
+                                        const img = await faceapi.fetchImage(capturedPoses[pos]);
+                                        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
+                                        if (detection && detection.descriptor) {
+                                            refDescriptors.push(detection.descriptor);
+                                            descriptorsPayload.push(Array.from(detection.descriptor));
+                                        }
+                                    } catch(e) {}
+                                }
+                            }
+                        }
+
+                        const payload = {
+                            ...capturedPoses,
+                            descriptors: descriptorsPayload
+                        };
+
                         fetch('{{ route("attendance.face-samples.save-self") }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
-                            body: JSON.stringify(capturedPoses)
+                            body: JSON.stringify(payload)
                         })
                         .then(res => res.json())
                         .then(async data => {
                             if (data.success) {
                                 userFaceRegistered = true;
                                 setContextMode(false);
-                                
-                                // Extract descriptors from newly captured 3 base64 photos
-                                if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
-                                    for (const pos of ['front', 'right', 'left']) {
-                                        if (capturedPoses[pos]) {
-                                            try {
-                                                const img = await faceapi.fetchImage(capturedPoses[pos]);
-                                                const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
-                                                if (detection && detection.descriptor) {
-                                                    refDescriptors.push(detection.descriptor);
-                                                }
-                                            } catch(e) {}
-                                        }
-                                    }
-                                }
 
                                 if (enrollmentWizard) enrollmentWizard.classList.add('d-none');
                                 const cameraHint = document.querySelector('.camera-hint');
@@ -1357,42 +1364,56 @@
             // Load face-api.js models and reference descriptors if registered
             async function initFaceRecognition() {
                 if (typeof faceapi !== 'undefined') {
+                    const timeoutId = setTimeout(() => {
+                        if (!isRefDescriptorsLoaded) {
+                            console.warn('FaceAPI loading timeout fallback');
+                            isRefDescriptorsLoaded = true;
+                        }
+                    }, 2500);
+
                     try {
                         const MODEL_URL = '{{ asset("vendor/face-api/models") }}';
                         setStatus('bx-loader-alt bx-spin', 'Memuat AI Face Recognition...');
-                        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                        await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
-                        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                        
+                        await Promise.all([
+                            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                            faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+                            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                        ]);
                         isFaceApiLoaded = true;
 
                         if (userFaceRegistered) {
                             const resp = await fetch('{{ route("attendance.face-samples.api") }}');
                             const data = await resp.json();
 
-                            if (data && data.photos) {
+                            if (data && data.descriptors && Array.isArray(data.descriptors) && data.descriptors.length > 0) {
+                                refDescriptors = data.descriptors.map(arr => new Float32Array(arr));
+                                console.log('Instant-loaded ' + refDescriptors.length + ' descriptors from JSON cache.');
+                            } else if (data && data.photos) {
                                 setStatus('bx-loader-alt bx-spin', 'Menganalisis Foto Referensi...');
-                                for (const pos of ['front', 'right', 'left']) {
-                                    if (data.photos[pos]) {
-                                        try {
-                                            const img = await faceapi.fetchImage(data.photos[pos]);
-                                            let detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
-                                            if (!detection) {
-                                                detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.15 })).withFaceLandmarks(true).withFaceDescriptor();
-                                            }
-                                            if (detection && detection.descriptor) {
-                                                refDescriptors.push(detection.descriptor);
-                                            }
-                                        } catch (e) {
-                                            console.warn('Error loading ref photo ' + pos + ':', e);
+                                const positions = ['front', 'right', 'left'].filter(p => !!data.photos[p]);
+                                
+                                const results = await Promise.all(positions.map(async (pos) => {
+                                    try {
+                                        const img = await faceapi.fetchImage(data.photos[pos]);
+                                        let detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
+                                        if (!detection) {
+                                            detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.15 })).withFaceLandmarks(true).withFaceDescriptor();
                                         }
+                                        return detection && detection.descriptor ? detection.descriptor : null;
+                                    } catch(e) {
+                                        return null;
                                     }
-                                }
+                                }));
+
+                                refDescriptors = results.filter(d => d !== null);
+                                console.log('Parallel-extracted ' + refDescriptors.length + ' descriptors from images.');
                             }
-                            console.log('Face Recognition initialized with ' + refDescriptors.length + ' descriptors.');
                         }
                     } catch (err) {
                         console.warn('FaceAPI init error:', err);
                     } finally {
+                        clearTimeout(timeoutId);
                         isRefDescriptorsLoaded = true;
                     }
                 } else {

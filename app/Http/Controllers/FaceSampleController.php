@@ -166,17 +166,24 @@ class FaceSampleController extends Controller
                 : null;
         }
 
+        $descriptorsPath = self::userDir($user->id) . '/descriptors.json';
+        $descriptors = null;
+        if (Storage::disk(self::STORAGE_DISK)->exists($descriptorsPath)) {
+            $descriptors = json_decode(Storage::disk(self::STORAGE_DISK)->get($descriptorsPath), true);
+        }
+
         return response()->json([
             'user_id'     => $user->id,
             'is_complete' => self::isComplete($user->id),
             'photos'      => $photos,
+            'descriptors' => $descriptors,
             'positions'   => self::POSITIONS,
         ]);
     }
 
     /**
      * Self-service API: Simpan foto referensi wajah user saat verifikasi pertama kali di kamera absensi
-     * Menerima payload JSON: { front: base64, right: base64, left: base64 }
+     * Menerima payload JSON: { front: base64, right: base64, left: base64, descriptors?: array }
      */
     public function storeSelf(Request $request)
     {
@@ -200,6 +207,11 @@ class FaceSampleController extends Controller
                 $path = $dir . '/' . $pos . '.jpg';
                 Storage::disk(self::STORAGE_DISK)->put($path, $decodedData);
             }
+        }
+
+        if ($request->has('descriptors') && is_array($request->descriptors)) {
+            $descriptorsPath = $dir . '/descriptors.json';
+            Storage::disk(self::STORAGE_DISK)->put($descriptorsPath, json_encode($request->descriptors));
         }
 
         $user->update(['face_registered_at' => now()]);
