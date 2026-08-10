@@ -28,7 +28,7 @@ return new class extends Migration
             }
         });
 
-        // 2. Populate new FK columns based on existing string names
+        // 2. Populate new FK columns based on existing string names, dynamically creating master entries if missing
         $users = DB::table('users')->get();
         foreach ($users as $user) {
             $unitId = null;
@@ -37,16 +37,48 @@ return new class extends Migration
             $clusterId = null;
 
             if (isset($user->unit) && !empty($user->unit)) {
-                $unitId = DB::table('units')->where('name', trim($user->unit))->value('id');
+                $trimmed = trim($user->unit);
+                $unitId = DB::table('units')->where('name', $trimmed)->value('id');
+                if (!$unitId) {
+                    $unitId = DB::table('units')->insertGetId([
+                        'name' => $trimmed,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
             if (isset($user->sub_unit) && !empty($user->sub_unit)) {
-                $subUnitId = DB::table('sub_units')->where('name', trim($user->sub_unit))->value('id');
+                $trimmed = trim($user->sub_unit);
+                $subUnitId = DB::table('sub_units')->where('name', $trimmed)->value('id');
+                if (!$subUnitId) {
+                    $subUnitId = DB::table('sub_units')->insertGetId([
+                        'name' => $trimmed,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
             if (isset($user->job_title) && !empty($user->job_title)) {
-                $jobTitleId = DB::table('job_titles')->where('name', trim($user->job_title))->value('id');
+                $trimmed = trim($user->job_title);
+                $jobTitleId = DB::table('job_titles')->where('name', $trimmed)->value('id');
+                if (!$jobTitleId) {
+                    $jobTitleId = DB::table('job_titles')->insertGetId([
+                        'name' => $trimmed,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
             if (isset($user->cluster) && !empty($user->cluster)) {
-                $clusterId = DB::table('clusters')->where('name', trim($user->cluster))->value('id');
+                $trimmed = trim($user->cluster);
+                $clusterId = DB::table('clusters')->where('name', $trimmed)->value('id');
+                if (!$clusterId) {
+                    $clusterId = DB::table('clusters')->insertGetId([
+                        'name' => $trimmed,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
 
             $updateData = array_filter([

@@ -30,9 +30,10 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
 
         foreach ($mapping as $oldId => $newId) {
-            DB::table('shifts')->where('id', $oldId)->update(['id' => $newId]);
+            $oldIdStr = (string)$oldId;
+            DB::table('shifts')->where('id', $oldIdStr)->update(['id' => $newId]);
             if (Schema::hasTable('schedules')) {
-                DB::table('schedules')->where('shift_id', $oldId)->update(['shift_id' => $newId]);
+                DB::table('schedules')->where('shift_id', $oldIdStr)->update(['shift_id' => $newId]);
             }
         }
 
@@ -63,9 +64,11 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
 
         foreach ($reverseMapping as $newId => $oldId) {
-            DB::table('shifts')->where('id', $newId)->update(['id' => $oldId]);
+            $newIdStr = (string)$newId;
+            $oldIdStr = (string)$oldId;
+            DB::table('shifts')->where('id', $newIdStr)->update(['id' => $oldIdStr]);
             if (Schema::hasTable('schedules')) {
-                DB::table('schedules')->where('shift_id', $newId)->update(['shift_id' => $oldId]);
+                DB::table('schedules')->where('shift_id', $newIdStr)->update(['shift_id' => $oldIdStr]);
             }
         }
 

@@ -18,16 +18,47 @@ return new class extends Migration
             $table->foreignId('sub_unit_id')->nullable()->after('unit')->constrained('sub_units')->nullOnDelete();
         });
 
-        // Migrate existing string data to IDs
-        $jobTitles = DB::table('job_titles')->pluck('id', 'name');
-        $units = DB::table('units')->pluck('id', 'name');
-        $subUnits = DB::table('sub_units')->pluck('id', 'name');
-
+        // Migrate existing string data to IDs, dynamically creating master entries if missing
         $users = DB::table('users')->get();
         foreach ($users as $user) {
-            $jtId = isset($user->job_title) && isset($jobTitles[$user->job_title]) ? $jobTitles[$user->job_title] : null;
-            $uId = isset($user->unit) && isset($units[$user->unit]) ? $units[$user->unit] : null;
-            $suId = isset($user->sub_unit) && isset($subUnits[$user->sub_unit]) ? $subUnits[$user->sub_unit] : null;
+            $jtId = null;
+            if (isset($user->job_title) && !empty($user->job_title)) {
+                $trimmed = trim($user->job_title);
+                $jtId = DB::table('job_titles')->where('name', $trimmed)->value('id');
+                if (!$jtId) {
+                    $jtId = DB::table('job_titles')->insertGetId([
+                        'name' => $trimmed,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            $uId = null;
+            if (isset($user->unit) && !empty($user->unit)) {
+                $trimmed = trim($user->unit);
+                $uId = DB::table('units')->where('name', $trimmed)->value('id');
+                if (!$uId) {
+                    $uId = DB::table('units')->insertGetId([
+                        'name' => $trimmed,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            $suId = null;
+            if (isset($user->sub_unit) && !empty($user->sub_unit)) {
+                $trimmed = trim($user->sub_unit);
+                $suId = DB::table('sub_units')->where('name', $trimmed)->value('id');
+                if (!$suId) {
+                    $suId = DB::table('sub_units')->insertGetId([
+                        'name' => $trimmed,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
 
             if ($jtId || $uId || $suId) {
                 DB::table('users')->where('id', $user->id)->update([
