@@ -177,6 +177,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('schedule', ScheduleController::class)->only(['index', 'edit']);
 
     // --- SHIFTS ---
+    Route::get('/shift/next-id', [ShiftController::class, 'getNextId'])->name('shift.next-id');
     Route::resource('shift', ShiftController::class)->except(['show']);
 
     // --- ATTENDANCE (ABSENSI) ---

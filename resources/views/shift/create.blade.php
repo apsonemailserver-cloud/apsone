@@ -125,6 +125,29 @@
         const form = document.getElementById('shiftForm');
         const startTime = document.getElementById('start_time');
         const endTime = document.getElementById('end_time');
+        const shiftNameSelect = document.getElementById('name');
+        const shiftIdInput = document.getElementById('id');
+
+        if (shiftNameSelect && shiftIdInput) {
+            function updateShiftId() {
+                const selectedName = shiftNameSelect.value;
+                if (!selectedName) return;
+
+                fetch(`{{ route('shift.next-id') }}?name=${encodeURIComponent(selectedName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.id) {
+                            shiftIdInput.value = data.id;
+                        }
+                    })
+                    .catch(err => console.error('Error fetching next shift ID:', err));
+            }
+
+            shiftNameSelect.addEventListener('change', updateShiftId);
+            if (shiftNameSelect.value) {
+                updateShiftId();
+            }
+        }
 
         if (!form || !startTime || !endTime) return;
 

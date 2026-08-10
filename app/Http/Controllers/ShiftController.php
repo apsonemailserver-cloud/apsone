@@ -26,9 +26,18 @@ class ShiftController extends Controller
         }
 
         $perPage = $request->input('per_page', 30);
-        $shifts = Shift::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
+        $shifts = Shift::orderByRaw("CASE WHEN id LIKE 'P%' THEN 1 WHEN id LIKE 'S%' THEN 2 WHEN id LIKE 'M%' THEN 3 WHEN LOWER(id) = 'off' THEN 5 ELSE 4 END, LENGTH(id) ASC, id ASC")
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('shift.index', compact('shifts'));
+    }
+
+    public function getNextId(Request $request)
+    {
+        $name = $request->query('name', 'Pagi');
+        $nextId = Shift::generateNextId($name);
+        return response()->json(['id' => $nextId]);
     }
 
     public function create(): View
@@ -37,25 +46,17 @@ class ShiftController extends Controller
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        $count = Shift::count() + 1;
-        $autoShiftId = 'SFT-' . str_pad($count, 3, '0', STR_PAD_LEFT);
-        while (Shift::where('id', $autoShiftId)->exists()) {
-            $count++;
-            $autoShiftId = 'SFT-' . str_pad($count, 3, '0', STR_PAD_LEFT);
-        }
+        $autoShiftId = Shift::generateNextId('Pagi');
 
         return view('shift.create', compact('autoShiftId'));
     }
 
     public function store(Request $request)
     {
+        $shiftName = $request->input('name', 'Pagi');
+
         if (!$request->filled('id')) {
-            $count = Shift::count() + 1;
-            $autoShiftId = 'SFT-' . str_pad($count, 3, '0', STR_PAD_LEFT);
-            while (Shift::where('id', $autoShiftId)->exists()) {
-                $count++;
-                $autoShiftId = 'SFT-' . str_pad($count, 3, '0', STR_PAD_LEFT);
-            }
+            $autoShiftId = Shift::generateNextId($shiftName);
             $request->merge(['id' => $autoShiftId]);
         }
 
