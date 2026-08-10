@@ -734,6 +734,9 @@
                             </div>
                         </div>
                     </div>
+                    @error('role')
+                        <div class="text-danger small mt-1 fw-semibold">{{ $message }}</div>
+                    @enderror
                     <div class="form-text">Pilih satu atau beberapa role pekerjaan yang beroperasi pada station ini.</div>
                 </div>
 

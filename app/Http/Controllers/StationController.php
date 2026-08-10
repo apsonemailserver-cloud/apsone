@@ -37,7 +37,15 @@ class StationController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'radius' => 'required|integer|min:1',
-            'role' => 'nullable',
+            'role' => 'required',
+        ], [
+            'code.required' => 'Kode station wajib diisi.',
+            'code.unique' => 'Kode station sudah ada.',
+            'name.required' => 'Nama lokasi wajib diisi.',
+            'latitude.required' => 'Latitude wajib diisi.',
+            'longitude.required' => 'Longitude wajib diisi.',
+            'radius.required' => 'Radius absensi wajib diisi.',
+            'role.required' => 'Role operasional station wajib diisi.',
         ]);
 
         $roles = $request->role;
@@ -116,7 +124,12 @@ class StationController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'radius' => 'required|integer|min:1',
-            'role' => 'nullable',
+            'role' => 'required',
+        ], [
+            'latitude.required' => 'Latitude wajib diisi.',
+            'longitude.required' => 'Longitude wajib diisi.',
+            'radius.required' => 'Radius absensi wajib diisi.',
+            'role.required' => 'Role operasional station wajib diisi.',
         ]);
 
         $roles = $request->role;

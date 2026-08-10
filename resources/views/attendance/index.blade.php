@@ -260,7 +260,7 @@
                             </div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">Absen In</div>
+                            <div class="info-label">Presensi In</div>
                             <div class="info-value">
                                 @if($todayAttendance && $todayAttendance->check_in_time)
                                     {{ \Carbon\Carbon::parse($todayAttendance->check_in_time)->format('H:i') }}
@@ -270,7 +270,7 @@
                             </div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">Absen Out</div>
+                            <div class="info-label">Presensi Out</div>
                             <div class="info-value">
                                 @if($todayAttendance && $todayAttendance->check_out_time)
                                     {{ \Carbon\Carbon::parse($todayAttendance->check_out_time)->format('H:i') }}
@@ -310,13 +310,13 @@
                                 @else
                                     <a href="{{ route('attendance.camera', ['type' => 'in']) }}" 
                                        class="btn-attendance btn-checkin">
-                                        <i class="bx bx-log-in"></i> Absen In Sekarang
+                                        <i class="bx bx-log-in"></i> Presensi In Sekarang
                                     </a>
                                 @endif
                             @elseif($todayAttendance && $todayAttendance->check_in_time && !$todayAttendance->check_out_time)
                                 <a href="{{ route('attendance.camera', ['type' => 'out']) }}" 
                                    class="btn-attendance btn-checkout">
-                                    <i class="bx bx-log-out"></i> Absen Out Sekarang
+                                    <i class="bx bx-log-out"></i> Presensi Out Sekarang
                                 </a>
                             @elseif($todayAttendance && $todayAttendance->check_in_time && $todayAttendance->check_out_time)
                                 @php
@@ -359,8 +359,8 @@
                                 <span class="avatar-initial rounded bg-label-success"><i class="bx bx-check-circle"></i></span>
                             </div>
                             <div>
-                                <h6 class="mb-1 fw-bold">Absen In</h6>
-                                <p class="mb-0 small text-muted">Lakukan absensi saat mulai shift.</p>
+                                <h6 class="mb-1 fw-bold">Presensi In</h6>
+                                <p class="mb-0 small text-muted">Lakukan presensi saat mulai shift.</p>
                             </div>
                         </div>
                     </div>
@@ -370,8 +370,8 @@
                                 <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-time"></i></span>
                             </div>
                             <div>
-                                <h6 class="mb-1 fw-bold">Absen Out</h6>
-                                <p class="mb-0 small text-muted">Lakukan absensi saat shift selesai.</p>
+                                <h6 class="mb-1 fw-bold">Presensi Out</h6>
+                                <p class="mb-0 small text-muted">Lakukan presensi saat shift selesai.</p>
                             </div>
                         </div>
                     </div>

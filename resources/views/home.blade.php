@@ -69,20 +69,20 @@
                         @elseif ($todayAttendance)
                             @if (!$todayAttendance->check_in_time)
                                 <a href="{{ route('attendance.camera', ['type' => 'in']) }}" class="btn btn-primary-custom text-white shadow-sm">
-                                    <i class="bx bx-log-in me-1"></i> Absen In
+                                    <i class="bx bx-log-in me-1"></i> Presensi In
                                 </a>
                             @elseif ($todayAttendance->check_in_time && !$todayAttendance->check_out_time)
                                 <a href="{{ route('attendance.camera', ['type' => 'out']) }}" class="btn btn-primary-custom text-white shadow-sm">
-                                    <i class="bx bx-log-out me-1"></i> Absen Out
+                                    <i class="bx bx-log-out me-1"></i> Presensi Out
                                 </a>
                             @else
                                 <button class="btn btn-outline-secondary shadow-sm" disabled>
-                                    <i class="bx bx-check-circle me-1"></i> Sudah Absen
+                                    <i class="bx bx-check-circle me-1"></i> Sudah Presensi
                                 </button>
                             @endif
                         @else
                             <a href="{{ route('attendance.camera', ['type' => 'in']) }}" class="btn btn-primary-custom text-white shadow-sm">
-                                <i class="bx bx-log-in me-1"></i> Absen In
+                                <i class="bx bx-log-in me-1"></i> Presensi In
                             </a>
                         @endif
                     </div>

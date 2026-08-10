@@ -104,10 +104,22 @@ class AttendanceController extends Controller
         }
 
         $strictMode = config('attendance.face_recognition_strict', true);
+        $hasFaceSamples = \App\Http\Controllers\FaceSampleController::isComplete($user->id);
+
         if ($strictMode) {
-            $hasFaceSamples = \App\Http\Controllers\FaceSampleController::isComplete($user->id);
             if (!$hasFaceSamples) {
                 return back()->with('error', 'Absensi diblokir! Konfigurasi FACE_RECOGNITION_STRICT aktif dan Anda belum menyelesaikan registrasi 3 foto referensi wajah NIP.');
+            }
+
+            // Server-side strict face verification on submit
+            $faceSampleController = new \App\Http\Controllers\FaceSampleController();
+            $verifyReq = \Illuminate\Http\Request::create('/attendance/face-verify', 'POST', ['live_b64' => $request->photo]);
+            $verifyRes = $faceSampleController->verifyFace($verifyReq)->getData(true);
+
+            if (empty($verifyRes['matched']) || $verifyRes['matched'] !== true) {
+                $matchPct = $verifyRes['match_pct'] ?? 0;
+                $errMessage = $verifyRes['error'] ?? 'Wajah pada foto tidak cocok dengan foto referensi terdaftar NIP Anda.';
+                return back()->with('error', 'Absensi Ditolak! Verifikasi Wajah Gagal: ' . $errMessage . ' (Tingkat kemiripan: ' . $matchPct . '%)');
             }
         }
 
