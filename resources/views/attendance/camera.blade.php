@@ -941,6 +941,7 @@
             const hintText = document.querySelector('.camera-hint span');
 
             let isFaceDetected = false;
+            let isRefDescriptorsLoaded = false;
             let isModelReady = false;
             let blazefaceModel = null;
             let nativeDetector = null;
@@ -1289,29 +1290,52 @@
                     if (cameraHint) cameraHint.classList.remove('d-none');
                 }
 
-                if (userFaceRegistered && refDescriptors.length > 0) {
-                    if (matchDistance !== null && matchDistance < 0.55) {
-                        isFaceMatched = true;
-                        const matchPct = Math.min(99, Math.round((1 - matchDistance) * 100));
+                if (isStrictMode && hasFaceSamples) {
+                    if (!isRefDescriptorsLoaded) {
                         if (cameraStatus) {
-                            cameraStatus.className = 'camera-status-pill is-success';
-                            cameraStatus.innerHTML = `<i class="bx bx-check-double"></i><span>Wajah Cocok (${matchPct}%)</span>`;
+                            cameraStatus.className = 'camera-status-pill';
+                            cameraStatus.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i><span>Memuat Referensi...</span>';
                         }
-                        if (faceGuide) faceGuide.classList.add('is-valid');
-                        if (cameraHint) cameraHint.className = 'camera-hint is-success';
-                        if (hintIcon) hintIcon.className = 'bx bx-check-circle';
-                        if (hintText) hintText.textContent = `Verifikasi wajah berhasil (${matchPct}% kecocokan). Silakan klik {{ $actionTitle }}.`;
-                        btnSubmit.disabled = false;
+                        if (hintText) hintText.textContent = 'Menganalisis foto referensi NIP...';
+                        btnSubmit.disabled = true;
+                        return;
+                    }
+
+                    if (refDescriptors.length > 0) {
+                        if (matchDistance !== null && matchDistance < 0.55) {
+                            isFaceMatched = true;
+                            const matchPct = Math.min(99, Math.round((1 - matchDistance) * 100));
+                            if (cameraStatus) {
+                                cameraStatus.className = 'camera-status-pill is-success';
+                                cameraStatus.innerHTML = `<i class="bx bx-check-double"></i><span>Wajah Cocok (${matchPct}%)</span>`;
+                            }
+                            if (faceGuide) faceGuide.classList.add('is-valid');
+                            if (cameraHint) cameraHint.className = 'camera-hint is-success';
+                            if (hintIcon) hintIcon.className = 'bx bx-check-circle';
+                            if (hintText) hintText.textContent = `Verifikasi wajah berhasil (${matchPct}% kecocokan). Silakan klik {{ $actionTitle }}.`;
+                            btnSubmit.disabled = false;
+                        } else {
+                            isFaceMatched = false;
+                            if (cameraStatus) {
+                                cameraStatus.className = 'camera-status-pill is-warning';
+                                cameraStatus.innerHTML = '<i class="bx bx-user-x"></i><span>Wajah Tidak Cocok</span>';
+                            }
+                            if (faceGuide) faceGuide.classList.remove('is-valid');
+                            if (cameraHint) cameraHint.className = 'camera-hint is-warning';
+                            if (hintIcon) hintIcon.className = 'bx bx-error';
+                            if (hintText) hintText.textContent = 'Wajah di kamera tidak cocok dengan 3 foto referensi terdaftar NIP Anda.';
+                            btnSubmit.disabled = true;
+                        }
                     } else {
                         isFaceMatched = false;
                         if (cameraStatus) {
                             cameraStatus.className = 'camera-status-pill is-warning';
-                            cameraStatus.innerHTML = '<i class="bx bx-user-x"></i><span>Wajah Tidak Cocok</span>';
+                            cameraStatus.innerHTML = '<i class="bx bx-user-x"></i><span>Gagal Referensi</span>';
                         }
                         if (faceGuide) faceGuide.classList.remove('is-valid');
                         if (cameraHint) cameraHint.className = 'camera-hint is-warning';
                         if (hintIcon) hintIcon.className = 'bx bx-error';
-                        if (hintText) hintText.textContent = 'Wajah di kamera tidak cocok dengan 3 foto referensi terdaftar NIP Anda.';
+                        if (hintText) hintText.textContent = 'Foto referensi NIP tidak terbaca. Lakukan registrasi ulang foto wajah.';
                         btnSubmit.disabled = true;
                     }
                 } else {
@@ -1351,7 +1375,10 @@
                                     if (data.photos[pos]) {
                                         try {
                                             const img = await faceapi.fetchImage(data.photos[pos]);
-                                            const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
+                                            let detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
+                                            if (!detection) {
+                                                detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.15 })).withFaceLandmarks(true).withFaceDescriptor();
+                                            }
                                             if (detection && detection.descriptor) {
                                                 refDescriptors.push(detection.descriptor);
                                             }
@@ -1365,7 +1392,11 @@
                         }
                     } catch (err) {
                         console.warn('FaceAPI init error:', err);
+                    } finally {
+                        isRefDescriptorsLoaded = true;
                     }
+                } else {
+                    isRefDescriptorsLoaded = true;
                 }
             }
             initFaceRecognition();

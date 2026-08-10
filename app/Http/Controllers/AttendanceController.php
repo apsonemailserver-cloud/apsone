@@ -103,6 +103,14 @@ class AttendanceController extends Controller
             }
         }
 
+        $strictMode = config('attendance.face_recognition_strict', true);
+        if ($strictMode) {
+            $hasFaceSamples = \App\Http\Controllers\FaceSampleController::isComplete($user->id);
+            if (!$hasFaceSamples) {
+                return back()->with('error', 'Absensi diblokir! Konfigurasi FACE_RECOGNITION_STRICT aktif dan Anda belum menyelesaikan registrasi 3 foto referensi wajah NIP.');
+            }
+        }
+
         /*
     |--------------------------------------------------------------------------
     | 1️⃣ VALIDASI GEOFENCING
