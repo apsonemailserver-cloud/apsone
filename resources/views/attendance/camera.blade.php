@@ -1041,21 +1041,20 @@
                     const prob = pred.probability ? pred.probability[0] : 1;
                     const landmarks = pred.landmarks;
 
-                    if (prob < 0.70 || !landmarks || landmarks.length < 4) {
+                    if (prob < 0.55 || !landmarks || landmarks.length < 3) {
                         return { valid: false, reason: 'Posisikan Wajah Jelas di Frame' };
                     }
 
                     const rightEye = landmarks[0]; // [x, y]
                     const leftEye = landmarks[1];  // [x, y]
                     const nose = landmarks[2];     // [x, y]
-                    const mouth = landmarks[3];    // [x, y]
 
                     const dx = Math.abs(leftEye[0] - rightEye[0]);
                     const dy = Math.abs(leftEye[1] - rightEye[1]);
                     const tiltRatio = dx > 0 ? (dy / dx) : 0;
 
                     // Check if head is tilted sideways ("miring")
-                    if (tiltRatio > 0.20) {
+                    if (tiltRatio > 0.40) {
                         return { valid: false, reason: 'Tegakkan Kepala (Jangan Miringkan Wajah)' };
                     }
 
@@ -1063,19 +1062,19 @@
                     const noseOffset = dx > 0 ? ((nose[0] - eyeCenter) / dx) : 0;
 
                     if (expectedPose === 'front') {
-                        if (Math.abs(noseOffset) > 0.18) {
-                            return { valid: false, reason: 'Tatap Lurus ke Depan (Wajah Menoleh)' };
+                        if (Math.abs(noseOffset) > 0.35) {
+                            return { valid: false, reason: 'Tatap Lurus ke Depan' };
                         }
                         return { valid: true, reason: 'Pose Depan Pas!' };
                     } else if (expectedPose === 'right') {
                         // Unmirrored frame: Nose shifts towards right eye (negative offset)
-                        if (noseOffset > -0.16) {
+                        if (noseOffset > -0.10) {
                             return { valid: false, reason: 'Tengokkan Wajah ke Kanan (~30°)' };
                         }
                         return { valid: true, reason: 'Pose Kanan Pas!' };
                     } else if (expectedPose === 'left') {
                         // Unmirrored frame: Nose shifts towards left eye (positive offset)
-                        if (noseOffset < 0.16) {
+                        if (noseOffset < 0.10) {
                             return { valid: false, reason: 'Tengokkan Wajah ke Kiri (~30°)' };
                         }
                         return { valid: true, reason: 'Pose Kiri Pas!' };
@@ -1090,25 +1089,19 @@
 
             if (btnWizardAction) {
                 btnWizardAction.addEventListener('click', async function() {
-                    if (!isFaceDetected) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Wajah Tidak Terdeteksi',
-                            text: 'Posisikan wajah Anda lurus di dalam oval frame sebelum mengambil foto.',
-                            confirmButtonColor: '#2f80ed'
-                        });
-                        return;
-                    }
-
-                    const poseCheck = await detectFacePoseInVideo(wizardStep);
+                    let poseCheck = await detectFacePoseInVideo(wizardStep);
                     if (!poseCheck.valid) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Pose Wajah Belum Pas',
-                            text: poseCheck.reason + '. Ikuti petunjuk pose sebelum mengambil foto.',
-                            confirmButtonColor: '#2f80ed'
-                        });
-                        return;
+                        if (isFaceDetected) {
+                            poseCheck = { valid: true, reason: 'Pose Dikirim' };
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Wajah Belum Terdeteksi',
+                                text: poseCheck.reason + '. Posisikan wajah Anda jelas di tengah frame kamera.',
+                                confirmButtonColor: '#2f80ed'
+                            });
+                            return;
+                        }
                     }
 
                     const tempCanvas = document.createElement('canvas');
@@ -1409,7 +1402,7 @@
                     }
                 } catch (e) {}
 
-                // 1. AI Neural Network BlazeFace (Strict Full-Face Landmark Visibility Test)
+                // 1. AI Neural Network BlazeFace
                 if (blazefaceModel) {
                     try {
                         const predictions = await blazefaceModel.estimateFaces(video, false);
@@ -1418,25 +1411,20 @@
                             const prob = pred.probability ? pred.probability[0] : 1;
                             const landmarks = pred.landmarks;
 
-                            if (prob > 0.75 && landmarks && landmarks.length >= 4) {
+                            if (prob > 0.55 && landmarks && landmarks.length >= 3) {
                                 const rightEye = landmarks[0]; // [x, y]
                                 const leftEye = landmarks[1];  // [x, y]
                                 const nose = landmarks[2];     // [x, y]
-                                const mouth = landmarks[3];    // [x, y]
 
-                                // CRITICAL VALIDATION: Both Eyes, Nose, AND Mouth MUST be clearly inside video frame!
-                                // Prevents neck/chest/chin (where eyes are cut off at the top) from passing
-                                const eyesVisible = rightEye[1] > (vh * 0.06) && leftEye[1] > (vh * 0.06) &&
-                                                    rightEye[1] < (vh * 0.65) && leftEye[1] < (vh * 0.65);
-                                const noseVisible = nose[1] > rightEye[1] && nose[1] < (vh * 0.82);
-                                const mouthVisible = mouth[1] > nose[1] && mouth[1] < (vh * 0.95);
+                                const eyesVisible = rightEye[1] > (vh * 0.01) && leftEye[1] > (vh * 0.01) &&
+                                                    rightEye[1] < (vh * 0.88) && leftEye[1] < (vh * 0.88);
+                                const noseVisible = nose[1] > (vh * 0.02) && nose[1] < (vh * 0.95);
 
-                                if (eyesVisible && noseVisible && mouthVisible) {
-                                    return true; // Full face with eyes, nose, and mouth present!
+                                if (eyesVisible && noseVisible) {
+                                    return true;
                                 }
                             }
                         }
-                        return false; // Neck, chin, chest, or cut-off face returns false!
                     } catch (e) {
                         console.warn('BlazeFace detection error:', e);
                     }
