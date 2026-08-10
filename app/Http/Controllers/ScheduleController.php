@@ -90,7 +90,7 @@ class ScheduleController extends Controller
                 // Filter porter berdasarkan station yang sama
                 $rolePorters = DB::table('users')
                     ->join('roles', 'users.role_id', '=', 'roles.id')
-                    ->where('users.station', $user->station)
+                    ->where('users.' . User::getStationColumn(), $user->station)
                     ->whereIn('roles.name', ['Porter Bge', 'Porter Apron'])
                     ->pluck('roles.name')
                     ->unique()
@@ -439,7 +439,7 @@ class ScheduleController extends Controller
         if (! $authUser->isAdmin()) {
             $porterRoles = DB::table('users')
                 ->join('roles', 'users.role_id', '=', 'roles.id')
-                ->where('users.station', $authUser->station)
+                ->where('users.' . User::getStationColumn(), $authUser->station)
                 ->whereIn('roles.name', ['Porter Bge', 'Porter Apron'])
                 ->pluck('roles.name')
                 ->unique()

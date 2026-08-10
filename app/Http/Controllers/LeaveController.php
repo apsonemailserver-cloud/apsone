@@ -62,15 +62,15 @@ class LeaveController extends Controller
             $query->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
         } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
             // Leader / SPV BGE melihat pengajuan pending BGE di station miliknya
-            $query->where('users.station', $user->station)
+            $query->where('users.' . User::getStationColumn(), $user->station)
                   ->where('leaves.status', 'pending Bge');
         } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
             // Leader / SPV Apron melihat pengajuan pending Apron di station miliknya
-            $query->where('users.station', $user->station)
+            $query->where('users.' . User::getStationColumn(), $user->station)
                   ->where('leaves.status', 'pending Apron');
         } else {
             // Atasan/Supervisor lain hanya melihat pengajuan pending di station miliknya
-            $query->where('users.station', $user->station)
+            $query->where('users.' . User::getStationColumn(), $user->station)
                   ->where('leaves.status', 'pending');
         }
 
@@ -107,13 +107,13 @@ class LeaveController extends Controller
             // Admin sees all leaves
         } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
             // HOAS sees leaves in their station
-            $query->where('users.station', $user->station);
+            $query->where('users.' . User::getStationColumn(), $user->station);
         } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
             // Leader Bge sees own leaves + Bge subordinates
             $query->where(function ($q) use ($user) {
                 $q->where('leaves.user_id', $user->id)
                   ->orWhere(function ($q2) use ($user) {
-                      $q2->where('users.station', $user->station)
+                      $q2->where('users.' . User::getStationColumn(), $user->station)
                          ->where(function ($q3) {
                              $q3->where('users.role', 'LIKE', '%Bge%')
                                 ->orWhere('users.role', 'LIKE', '%BGE%')
@@ -126,7 +126,7 @@ class LeaveController extends Controller
             $query->where(function ($q) use ($user) {
                 $q->where('leaves.user_id', $user->id)
                   ->orWhere(function ($q2) use ($user) {
-                      $q2->where('users.station', $user->station)
+                      $q2->where('users.' . User::getStationColumn(), $user->station)
                          ->where(function ($q3) {
                              $q3->where('users.role', 'LIKE', '%Apron%')
                                 ->orWhere('users.role', 'LIKE', '%APRON%');
@@ -751,7 +751,7 @@ class LeaveController extends Controller
 
         // Build User query with balances
         $userQuery = User::where('is_active', true)
-            ->with(['station', 'leaveBalances' => function($q) use ($year) {
+            ->with(['stationRelation', 'leaveBalances' => function($q) use ($year) {
                 $q->where('year', $year)->with('leaveType');
             }]);
 

@@ -35,6 +35,7 @@ class User extends Authenticatable
         'role',
         'role_id',
         'station',
+        'station_id',
         'cluster',
         'cluster_id',
         'unit',
@@ -276,9 +277,34 @@ class User extends Authenticatable
         return $this->fullname ?? $this->id;
     }
 
-    public function station()
+    public static function getStationColumn(): string
     {
-        return $this->belongsTo(Station::class, 'station', 'code');
+        static $col = null;
+        if ($col === null) {
+            $col = \Illuminate\Support\Facades\Schema::hasColumn('users', 'station_id') ? 'station_id' : 'station';
+        }
+        return $col;
+    }
+
+    public function getStationAttribute()
+    {
+        $col = static::getStationColumn();
+        return $this->attributes[$col] ?? $this->attributes['station'] ?? $this->attributes['station_id'] ?? null;
+    }
+
+    public function setStationAttribute($value)
+    {
+        $col = static::getStationColumn();
+        $this->attributes[$col] = $value;
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'station')) {
+            $this->attributes['station'] = $value;
+        }
+    }
+
+    public function stationRelation()
+    {
+        $foreignKey = static::getStationColumn();
+        return $this->belongsTo(Station::class, $foreignKey, 'code');
     }
 
     public function jobTitle()

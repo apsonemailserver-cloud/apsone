@@ -176,7 +176,7 @@ class HomeController extends Controller
             ->where('leaves.status', 'approved');
 
         if ($selectedStation !== 'All') {
-            $absentQuery->where('users.station', $selectedStation);
+            $absentQuery->where('users.' . User::getStationColumn(), $selectedStation);
         }
 
         $absentUsers = $absentQuery->select('users.id', 'users.fullname', 'leaves.leave_type', 'leaves.status')->get();
@@ -215,7 +215,7 @@ class HomeController extends Controller
             ->whereBetween('leaves.start_date', [$chartStartDate->toDateString(), $chartEndDate->toDateString()])
             ->whereIn('leaves.leave_type', ['Cuti Sakit', 'Cuti Tahunan']);
         if ($selectedStation !== 'All') {
-            $dailyLeaveQ->where('users.station', $selectedStation);
+            $dailyLeaveQ->where('users.' . User::getStationColumn(), $selectedStation);
         }
         $dailyLeaveCounts = $dailyLeaveQ->groupBy(DB::raw('DATE(leaves.start_date)'), 'leaves.leave_type')
             ->get();
@@ -250,7 +250,7 @@ class HomeController extends Controller
                 ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
                 ->select(DB::raw("COALESCE(roles.name, 'Unassigned') as role"), DB::raw('count(*) as total'));
             if ($selectedStation !== 'All') {
-                $doughnutQuery->where('users.station', $selectedStation);
+                $doughnutQuery->where('users.' . User::getStationColumn(), $selectedStation);
             }
             $doughnutData = $doughnutQuery->groupBy(DB::raw("COALESCE(roles.name, 'Unassigned')"))->get();
         } else {
@@ -292,10 +292,11 @@ class HomeController extends Controller
                 ->where('code', $user->station)
                 ->get();
         }
+        $stationCol = User::getStationColumn();
         $stationStats = User::where('is_active', 1)
-            ->select('station', DB::raw('count(*) as total'))
-            ->groupBy('station')
-            ->pluck('total', 'station');
+            ->select($stationCol, DB::raw('count(*) as total'))
+            ->groupBy($stationCol)
+            ->pluck('total', $stationCol);
 
         // =================================================================
         // BAGIAN 4B: WORK RESULTS STATS (BARU)
