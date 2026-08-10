@@ -40,7 +40,10 @@ class AttendanceController extends Controller
                 ->exists();
         }
 
-        return view('attendance.index', compact('todayAttendance', 'todaySchedule', 'user', 'onLeaveToday'));
+        $hasFaceSamples = \App\Http\Controllers\FaceSampleController::isComplete($user->id);
+        $strictMode = config('attendance.face_recognition_strict', true);
+
+        return view('attendance.index', compact('todayAttendance', 'todaySchedule', 'user', 'onLeaveToday', 'hasFaceSamples', 'strictMode'));
     }
 
     public function camera(Request $request)
@@ -70,8 +73,9 @@ class AttendanceController extends Controller
         }
 
         $hasFaceSamples = \App\Http\Controllers\FaceSampleController::isComplete($user->id);
+        $strictMode = config('attendance.face_recognition_strict', true);
 
-        return view('attendance.camera', compact('type', 'hasFaceSamples'));
+        return view('attendance.camera', compact('type', 'hasFaceSamples', 'strictMode'));
     }
 
     public function process(Request $request)

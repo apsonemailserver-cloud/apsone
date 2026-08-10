@@ -982,7 +982,8 @@
             };
 
             const hasFaceSamples = @json($hasFaceSamples ?? false);
-            let userFaceRegistered = hasFaceSamples;
+            const isStrictMode = @json($strictMode ?? config('attendance.face_recognition_strict', true));
+            let userFaceRegistered = !isStrictMode || hasFaceSamples;
             let refDescriptors = [];
             let isFaceApiLoaded = false;
             let capturedPoses = { front: null, right: null, left: null };
