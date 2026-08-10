@@ -175,6 +175,43 @@ class FaceSampleController extends Controller
     }
 
     /**
+     * Self-service API: Simpan foto referensi wajah user saat verifikasi pertama kali di kamera absensi
+     * Menerima payload JSON: { front: base64, right: base64, left: base64 }
+     */
+    public function storeSelf(Request $request)
+    {
+        $user = Auth::user();
+        $request->validate([
+            'front' => 'required|string',
+            'right' => 'required|string',
+            'left'  => 'required|string',
+        ]);
+
+        $dir = self::userDir($user->id);
+        Storage::disk(self::STORAGE_DISK)->makeDirectory($dir);
+
+        foreach (self::POSITIONS as $pos) {
+            $photoData = $request->$pos;
+            if (str_contains($photoData, ',')) {
+                $photoData = explode(',', $photoData)[1];
+            }
+            $decodedData = base64_decode($photoData);
+            if ($decodedData) {
+                $path = $dir . '/' . $pos . '.jpg';
+                Storage::disk(self::STORAGE_DISK)->put($path, $decodedData);
+            }
+        }
+
+        $user->update(['face_registered_at' => now()]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto referensi NIP berhasil didaftarkan.',
+            'face_registered_at' => $user->face_registered_at,
+        ]);
+    }
+
+    /**
      * Hapus semua foto referensi user (Admin)
      */
     public function destroy(User $user)

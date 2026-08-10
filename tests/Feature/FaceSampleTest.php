@@ -99,6 +99,30 @@ class FaceSampleTest extends TestCase
         ]);
     }
 
+    public function test_user_can_self_register_3_pose_face_samples()
+    {
+        $user = User::factory()->create(['role' => 'staff']);
+        $dummyBase64 = 'data:image/jpeg;base64,' . base64_encode('fake-image-content');
+
+        $response = $this->actingAs($user)->postJson(route('attendance.face-samples.save-self'), [
+            'front' => $dummyBase64,
+            'right' => $dummyBase64,
+            'left'  => $dummyBase64,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Foto referensi NIP berhasil didaftarkan.',
+        ]);
+
+        Storage::disk('public')->assertExists(FaceSampleController::userDir($user->id) . '/front.jpg');
+        Storage::disk('public')->assertExists(FaceSampleController::userDir($user->id) . '/right.jpg');
+        Storage::disk('public')->assertExists(FaceSampleController::userDir($user->id) . '/left.jpg');
+        $this->assertTrue(FaceSampleController::isComplete($user->id));
+        $this->assertNotNull($user->fresh()->face_registered_at);
+    }
+
     public function test_admin_can_delete_user_face_samples()
     {
         $admin = User::factory()->create(['role' => 'Admin']);

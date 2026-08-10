@@ -236,9 +236,125 @@
         }
 
         .camera-hint.is-warning {
-            background: rgba(220, 38, 38, 0.85) !important;
             border-color: rgba(239, 68, 68, 0.4) !important;
             color: #ffffff !important;
+        }
+
+        /* Gojek-style Enrollment Wizard Overlay */
+        .enrollment-wizard {
+            position: absolute;
+            z-index: 5;
+            left: 50%;
+            bottom: 1.1rem;
+            transform: translateX(-50%);
+            width: min(480px, calc(100% - 1.5rem));
+            padding: 1.1rem 1.2rem;
+            border-radius: 24px;
+            background: rgba(11, 18, 32, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            color: #ffffff;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .wizard-step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.28rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(47, 128, 237, 0.2);
+            color: #8fc2ff;
+            font-size: 0.72rem;
+            font-weight: 750;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .wizard-title {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.05rem;
+            font-weight: 780;
+            color: #ffffff;
+        }
+
+        .wizard-sub {
+            margin: 0 0 0.85rem 0;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.45;
+        }
+
+        .wizard-poses {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .pose-pill {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.55rem 0.35rem;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            font-size: 0.72rem;
+            font-weight: 650;
+            transition: all 0.25s ease;
+        }
+
+        .pose-pill i {
+            font-size: 1.25rem;
+        }
+
+        .pose-pill.active {
+            background: rgba(47, 128, 237, 0.22);
+            border-color: rgba(47, 128, 237, 0.6);
+            color: #ffffff;
+            box-shadow: 0 0 16px rgba(47, 128, 237, 0.3);
+        }
+
+        .pose-pill.completed {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+            color: #4ade80;
+        }
+
+        .wizard-btn {
+            width: 100%;
+            height: 46px;
+            border: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #2f80ed, #1f64c8);
+            color: #ffffff;
+            font-size: 0.88rem;
+            font-weight: 750;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(47, 128, 237, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .wizard-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(47, 128, 237, 0.4);
+        }
+
+        .wizard-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .camera-loader {
@@ -675,6 +791,36 @@
                 <i class="bx bx-face"></i>
                 <span>Posisikan wajah di tengah frame, lalu pastikan GPS aktif.</span>
             </div>
+
+            <!-- Gojek Style Interactive Face Enrollment Wizard -->
+            <div class="enrollment-wizard d-none" id="enrollmentWizard">
+                <div class="wizard-step-badge">
+                    <i class="bx bx-shield-quarter"></i>
+                    <span id="wizardStepBadge">Registrasi Wajah NIP</span>
+                </div>
+                <h4 class="wizard-title" id="wizardTitle">1. Tatap Lurus ke Depan</h4>
+                <p class="wizard-sub" id="wizardSub">Posisikan wajah Anda tepat di tengah oval untuk mendaftarkan foto referensi NIP Anda.</p>
+                
+                <div class="wizard-poses">
+                    <div class="pose-pill active" id="poseFront">
+                        <i class="bx bx-face"></i>
+                        <span>1. Depan</span>
+                    </div>
+                    <div class="pose-pill" id="poseRight">
+                        <i class="bx bx-right-arrow-circle"></i>
+                        <span>2. Kanan</span>
+                    </div>
+                    <div class="pose-pill" id="poseLeft">
+                        <i class="bx bx-left-arrow-circle"></i>
+                        <span>3. Kiri</span>
+                    </div>
+                </div>
+
+                <button type="button" class="wizard-btn" id="btnWizardAction">
+                    <i class="bx bx-camera"></i>
+                    <span id="btnWizardActionText">Ambil Foto Wajah Depan</span>
+                </button>
+            </div>
             <div class="camera-loader" id="cameraLoader">
                 <div class="loader-card">
                     <div class="loader-icon"><i class="bx bx-camera"></i></div>
@@ -836,9 +982,137 @@
             };
 
             const hasFaceSamples = @json($hasFaceSamples ?? false);
-            let isFaceMatched = !hasFaceSamples; // If no face samples, default true (grace mode)
+            let userFaceRegistered = hasFaceSamples;
             let refDescriptors = [];
             let isFaceApiLoaded = false;
+            let capturedPoses = { front: null, right: null, left: null };
+            let wizardStep = 'front';
+
+            const btnWizardAction = document.getElementById('btnWizardAction');
+            const btnWizardActionText = document.getElementById('btnWizardActionText');
+            const wizardTitle = document.getElementById('wizardTitle');
+            const wizardSub = document.getElementById('wizardSub');
+            const poseFront = document.getElementById('poseFront');
+            const poseRight = document.getElementById('poseRight');
+            const poseLeft = document.getElementById('poseLeft');
+            const enrollmentWizard = document.getElementById('enrollmentWizard');
+
+            if (btnWizardAction) {
+                btnWizardAction.addEventListener('click', function() {
+                    if (!isFaceDetected) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Wajah Tidak Terdeteksi',
+                            text: 'Posisikan wajah Anda lurus di dalam oval frame sebelum mengambil foto.',
+                            confirmButtonColor: '#2f80ed'
+                        });
+                        return;
+                    }
+
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = 480;
+                    tempCanvas.height = 360;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.drawImage(video, 0, 0, 480, 360);
+                    const b64 = tempCanvas.toDataURL('image/jpeg', 0.85);
+
+                    if (wizardStep === 'front') {
+                        capturedPoses.front = b64;
+                        if (poseFront) {
+                            poseFront.className = 'pose-pill completed';
+                            poseFront.innerHTML = '<i class="bx bx-check-circle"></i><span>1. Depan ✓</span>';
+                        }
+                        if (poseRight) poseRight.className = 'pose-pill active';
+
+                        if (wizardTitle) wizardTitle.textContent = '2. Tengok Perlahan ke Kanan (~30°)';
+                        if (wizardSub) wizardSub.textContent = 'Putar posisi wajah Anda sedikit ke kanan untuk foto referensi sudut kanan.';
+                        if (btnWizardActionText) btnWizardActionText.textContent = 'Ambil Foto Tengok Kanan';
+                        wizardStep = 'right';
+                    } else if (wizardStep === 'right') {
+                        capturedPoses.right = b64;
+                        if (poseRight) {
+                            poseRight.className = 'pose-pill completed';
+                            poseRight.innerHTML = '<i class="bx bx-check-circle"></i><span>2. Kanan ✓</span>';
+                        }
+                        if (poseLeft) poseLeft.className = 'pose-pill active';
+
+                        if (wizardTitle) wizardTitle.textContent = '3. Tengok Perlahan ke Kiri (~30°)';
+                        if (wizardSub) wizardSub.textContent = 'Putar posisi wajah Anda sedikit ke kiri untuk foto referensi sudut kiri.';
+                        if (btnWizardActionText) btnWizardActionText.textContent = 'Ambil Foto Tengok Kiri';
+                        wizardStep = 'left';
+                    } else if (wizardStep === 'left') {
+                        capturedPoses.left = b64;
+                        if (poseLeft) {
+                            poseLeft.className = 'pose-pill completed';
+                            poseLeft.innerHTML = '<i class="bx bx-check-circle"></i><span>3. Kiri ✓</span>';
+                        }
+
+                        btnWizardAction.disabled = true;
+                        if (btnWizardActionText) btnWizardActionText.textContent = 'Mendaftarkan Foto NIP...';
+
+                        fetch('{{ route("attendance.face-samples.save-self") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify(capturedPoses)
+                        })
+                        .then(res => res.json())
+                        .then(async data => {
+                            if (data.success) {
+                                userFaceRegistered = true;
+                                
+                                // Extract descriptors from newly captured 3 base64 photos
+                                if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
+                                    for (const pos of ['front', 'right', 'left']) {
+                                        if (capturedPoses[pos]) {
+                                            try {
+                                                const img = await faceapi.fetchImage(capturedPoses[pos]);
+                                                const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
+                                                if (detection && detection.descriptor) {
+                                                    refDescriptors.push(detection.descriptor);
+                                                }
+                                            } catch(e) {}
+                                        }
+                                    }
+                                }
+
+                                if (enrollmentWizard) enrollmentWizard.classList.add('d-none');
+                                const cameraHint = document.querySelector('.camera-hint');
+                                if (cameraHint) cameraHint.classList.remove('d-none');
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Registrasi Wajah Berhasil!',
+                                    text: 'Foto referensi 3 pose wajah NIP Anda telah disimpan. Sekarang Anda dapat melanjutkan {{ $actionTitle }}.',
+                                    confirmButtonColor: '#2f80ed'
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal Pendaftaran Wajah',
+                                    text: data.message || 'Terjadi kesalahan saat menyimpan foto referensi.',
+                                    confirmButtonColor: '#2f80ed'
+                                });
+                                btnWizardAction.disabled = false;
+                                if (btnWizardActionText) btnWizardActionText.textContent = 'Coba Lagi';
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error save self face samples:', err);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal Pendaftaran Wajah',
+                                text: 'Koneksi terputus. Silakan coba kembali.',
+                                confirmButtonColor: '#2f80ed'
+                            });
+                            btnWizardAction.disabled = false;
+                            if (btnWizardActionText) btnWizardActionText.textContent = 'Coba Lagi';
+                        });
+                    }
+                });
+            }
 
             const updateFaceStatusUI = (hasFace, matchDistance = null) => {
                 isFaceDetected = hasFace;
@@ -858,7 +1132,23 @@
                     return;
                 }
 
-                if (hasFaceSamples && refDescriptors.length > 0) {
+                if (!userFaceRegistered) {
+                    // Gojek Interactive 3-Pose Registration Mode
+                    if (enrollmentWizard) enrollmentWizard.classList.remove('d-none');
+                    if (cameraHint) cameraHint.classList.add('d-none');
+                    if (cameraStatus) {
+                        cameraStatus.className = 'camera-status-pill is-warning';
+                        cameraStatus.innerHTML = '<i class="bx bx-user-plus"></i><span>Registrasi 3 Pose Wajah</span>';
+                    }
+                    if (faceGuide) faceGuide.classList.add('is-valid');
+                    btnSubmit.disabled = true;
+                    return;
+                } else {
+                    if (enrollmentWizard) enrollmentWizard.classList.add('d-none');
+                    if (cameraHint) cameraHint.classList.remove('d-none');
+                }
+
+                if (userFaceRegistered && refDescriptors.length > 0) {
                     if (matchDistance !== null && matchDistance < 0.55) {
                         isFaceMatched = true;
                         const matchPct = Math.min(99, Math.round((1 - matchDistance) * 100));
@@ -884,16 +1174,15 @@
                         btnSubmit.disabled = true;
                     }
                 } else {
-                    // Grace Mode (No reference photos uploaded yet)
                     isFaceMatched = true;
                     if (cameraStatus) {
                         cameraStatus.className = 'camera-status-pill is-success';
-                        cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Wajah Terdeteksi (Mode Presensi)</span>';
+                        cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Wajah Terdeteksi</span>';
                     }
                     if (faceGuide) faceGuide.classList.add('is-valid');
                     if (cameraHint) cameraHint.className = 'camera-hint is-success';
                     if (hintIcon) hintIcon.className = 'bx bx-check-circle';
-                    if (hintText) hintText.textContent = 'Wajah terdeteksi (Foto referensi NIP belum diisi oleh Admin). Silakan klik {{ $actionTitle }}.';
+                    if (hintText) hintText.textContent = `Wajah terdeteksi. Silakan klik {{ $actionTitle }}.`;
                     btnSubmit.disabled = false;
                 }
             };
@@ -902,36 +1191,37 @@
 
             // Load face-api.js models and reference descriptors if registered
             async function initFaceRecognition() {
-                if (hasFaceSamples && typeof faceapi !== 'undefined') {
+                if (typeof faceapi !== 'undefined') {
                     try {
                         const MODEL_URL = '{{ asset("vendor/face-api/models") }}';
                         setStatus('bx-loader-alt bx-spin', 'Memuat AI Face Recognition...');
                         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
                         await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
                         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                        isFaceApiLoaded = true;
 
-                        // Fetch reference photos API
-                        const resp = await fetch('{{ route("attendance.face-samples.api") }}');
-                        const data = await resp.json();
+                        if (userFaceRegistered) {
+                            const resp = await fetch('{{ route("attendance.face-samples.api") }}');
+                            const data = await resp.json();
 
-                        if (data && data.photos) {
-                            setStatus('bx-loader-alt bx-spin', 'Menganalisis Foto Referensi...');
-                            for (const pos of ['front', 'right', 'left']) {
-                                if (data.photos[pos]) {
-                                    try {
-                                        const img = await faceapi.fetchImage(data.photos[pos]);
-                                        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
-                                        if (detection && detection.descriptor) {
-                                            refDescriptors.push(detection.descriptor);
+                            if (data && data.photos) {
+                                setStatus('bx-loader-alt bx-spin', 'Menganalisis Foto Referensi...');
+                                for (const pos of ['front', 'right', 'left']) {
+                                    if (data.photos[pos]) {
+                                        try {
+                                            const img = await faceapi.fetchImage(data.photos[pos]);
+                                            const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
+                                            if (detection && detection.descriptor) {
+                                                refDescriptors.push(detection.descriptor);
+                                            }
+                                        } catch (e) {
+                                            console.warn('Error loading ref photo ' + pos + ':', e);
                                         }
-                                    } catch (e) {
-                                        console.warn('Error loading ref photo ' + pos + ':', e);
                                     }
                                 }
                             }
+                            console.log('Face Recognition initialized with ' + refDescriptors.length + ' descriptors.');
                         }
-                        isFaceApiLoaded = true;
-                        console.log('Face Recognition initialized with ' + refDescriptors.length + ' descriptors.');
                     } catch (err) {
                         console.warn('FaceAPI init error:', err);
                     }
