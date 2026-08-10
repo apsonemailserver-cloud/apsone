@@ -768,8 +768,8 @@
                 <i class="bx bx-arrow-back"></i>
             </a>
             <div class="camera-title">
-                <small>Attendance Verification</small>
-                <strong>{{ $actionTitle }} - {{ $user->fullname ?? 'Staff APS' }}</strong>
+                <small id="cameraTitleSmall">Attendance Verification</small>
+                <strong id="cameraTitleStrong">{{ $actionTitle }} - {{ $user->fullname ?? 'Staff APS' }}</strong>
             </div>
             <div class="camera-topbar-pills">
                 <div class="camera-status-pill" id="cameraStatus">
@@ -838,14 +838,14 @@
             <input type="hidden" name="type" value="{{ $type }}">
 
             <div class="camera-meta">
-                <strong>{{ $actionTitle }} Sekarang</strong>
+                <strong id="cameraMetaTitle">{{ $actionTitle }} Sekarang</strong>
                 <span id="gpsInfoText">
                     <i class="bx bx-map-pin"></i> Mengunci lokasi GPS...
                 </span>
             </div>
             <button type="submit" id="btnSubmit" class="camera-submit" disabled>
                 <i class="bx {{ $isCheckOut ? 'bx-log-out' : 'bx-log-in' }}"></i>
-                <span>{{ $actionTitle }}</span>
+                <span id="btnSubmitText">{{ $actionTitle }}</span>
             </button>
         </form>
     </main>
@@ -987,6 +987,7 @@
             let isFaceApiLoaded = false;
             let capturedPoses = { front: null, right: null, left: null };
             let wizardStep = 'front';
+            let holdTimer = null;
 
             const btnWizardAction = document.getElementById('btnWizardAction');
             const btnWizardActionText = document.getElementById('btnWizardActionText');
@@ -997,13 +998,113 @@
             const poseLeft = document.getElementById('poseLeft');
             const enrollmentWizard = document.getElementById('enrollmentWizard');
 
+            const setContextMode = (isRegistration) => {
+                const cameraTitleSmall = document.getElementById('cameraTitleSmall');
+                const cameraTitleStrong = document.getElementById('cameraTitleStrong');
+                const cameraMetaTitle = document.getElementById('cameraMetaTitle');
+                const btnSubmitText = document.getElementById('btnSubmitText');
+
+                if (isRegistration) {
+                    if (cameraTitleSmall) cameraTitleSmall.textContent = 'FACE ID REGISTRATION';
+                    if (cameraTitleStrong) cameraTitleStrong.textContent = 'Pendaftaran Wajah NIP - {{ $user->fullname ?? "Staff APS" }}';
+                    if (cameraMetaTitle) cameraMetaTitle.textContent = 'Registrasi Wajah NIP';
+                    if (btnSubmitText) btnSubmitText.textContent = 'Registrasi Wajah Diperlukan';
+                    btnSubmit.disabled = true;
+                } else {
+                    if (cameraTitleSmall) cameraTitleSmall.textContent = 'Attendance Verification';
+                    if (cameraTitleStrong) cameraTitleStrong.textContent = '{{ $actionTitle }} - {{ $user->fullname ?? "Staff APS" }}';
+                    if (cameraMetaTitle) cameraMetaTitle.textContent = '{{ $actionTitle }} Sekarang';
+                    if (btnSubmitText) btnSubmitText.textContent = '{{ $actionTitle }}';
+                }
+            };
+
+            // Set initial context mode
+            setContextMode(!userFaceRegistered);
+
+            async function detectFacePoseInVideo(expectedPose) {
+                if (!video.videoWidth || !video.videoHeight || video.paused || video.ended) {
+                    return { valid: false, reason: 'Kamera belum siap' };
+                }
+
+                if (!blazefaceModel) {
+                    return { valid: true, reason: 'OK' };
+                }
+
+                try {
+                    const predictions = await blazefaceModel.estimateFaces(video, false);
+                    if (!predictions || predictions.length === 0) {
+                        return { valid: false, reason: 'Wajah Tidak Terdeteksi' };
+                    }
+
+                    const pred = predictions[0];
+                    const prob = pred.probability ? pred.probability[0] : 1;
+                    const landmarks = pred.landmarks;
+
+                    if (prob < 0.70 || !landmarks || landmarks.length < 4) {
+                        return { valid: false, reason: 'Posisikan Wajah Jelas di Frame' };
+                    }
+
+                    const rightEye = landmarks[0]; // [x, y]
+                    const leftEye = landmarks[1];  // [x, y]
+                    const nose = landmarks[2];     // [x, y]
+                    const mouth = landmarks[3];    // [x, y]
+
+                    const dx = Math.abs(leftEye[0] - rightEye[0]);
+                    const dy = Math.abs(leftEye[1] - rightEye[1]);
+                    const tiltRatio = dx > 0 ? (dy / dx) : 0;
+
+                    // Check if head is tilted sideways ("miring")
+                    if (tiltRatio > 0.20) {
+                        return { valid: false, reason: 'Tegakkan Kepala (Jangan Miringkan Wajah)' };
+                    }
+
+                    const eyeCenter = (rightEye[0] + leftEye[0]) / 2;
+                    const noseOffset = dx > 0 ? ((nose[0] - eyeCenter) / dx) : 0;
+
+                    if (expectedPose === 'front') {
+                        if (Math.abs(noseOffset) > 0.18) {
+                            return { valid: false, reason: 'Tatap Lurus ke Depan (Wajah Menoleh)' };
+                        }
+                        return { valid: true, reason: 'Pose Depan Pas!' };
+                    } else if (expectedPose === 'right') {
+                        // Unmirrored frame: Nose shifts towards right eye (negative offset)
+                        if (noseOffset > -0.16) {
+                            return { valid: false, reason: 'Tengokkan Wajah ke Kanan (~30°)' };
+                        }
+                        return { valid: true, reason: 'Pose Kanan Pas!' };
+                    } else if (expectedPose === 'left') {
+                        // Unmirrored frame: Nose shifts towards left eye (positive offset)
+                        if (noseOffset < 0.16) {
+                            return { valid: false, reason: 'Tengokkan Wajah ke Kiri (~30°)' };
+                        }
+                        return { valid: true, reason: 'Pose Kiri Pas!' };
+                    }
+
+                    return { valid: true, reason: 'OK' };
+                } catch (e) {
+                    console.warn('Pose estimation error:', e);
+                    return { valid: true, reason: 'OK' };
+                }
+            }
+
             if (btnWizardAction) {
-                btnWizardAction.addEventListener('click', function() {
+                btnWizardAction.addEventListener('click', async function() {
                     if (!isFaceDetected) {
                         Swal.fire({
                             icon: 'warning',
                             title: 'Wajah Tidak Terdeteksi',
                             text: 'Posisikan wajah Anda lurus di dalam oval frame sebelum mengambil foto.',
+                            confirmButtonColor: '#2f80ed'
+                        });
+                        return;
+                    }
+
+                    const poseCheck = await detectFacePoseInVideo(wizardStep);
+                    if (!poseCheck.valid) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Pose Wajah Belum Pas',
+                            text: poseCheck.reason + '. Ikuti petunjuk pose sebelum mengambil foto.',
                             confirmButtonColor: '#2f80ed'
                         });
                         return;
@@ -1062,6 +1163,7 @@
                         .then(async data => {
                             if (data.success) {
                                 userFaceRegistered = true;
+                                setContextMode(false);
                                 
                                 // Extract descriptors from newly captured 3 base64 photos
                                 if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
@@ -1134,16 +1236,13 @@
 
                 if (!userFaceRegistered) {
                     // Gojek Interactive 3-Pose Registration Mode
+                    setContextMode(true);
                     if (enrollmentWizard) enrollmentWizard.classList.remove('d-none');
                     if (cameraHint) cameraHint.classList.add('d-none');
-                    if (cameraStatus) {
-                        cameraStatus.className = 'camera-status-pill is-warning';
-                        cameraStatus.innerHTML = '<i class="bx bx-user-plus"></i><span>Registrasi 3 Pose Wajah</span>';
-                    }
-                    if (faceGuide) faceGuide.classList.add('is-valid');
                     btnSubmit.disabled = true;
                     return;
                 } else {
+                    setContextMode(false);
                     if (enrollmentWizard) enrollmentWizard.classList.add('d-none');
                     if (cameraHint) cameraHint.classList.remove('d-none');
                 }
@@ -1442,21 +1541,58 @@
                     setInterval(async () => {
                         if (loader.classList.contains('is-hidden')) {
                             const detected = await detectFaceInVideo();
-                            let minDistance = null;
-                            if (detected && hasFaceSamples && isFaceApiLoaded && refDescriptors.length > 0) {
-                                try {
-                                    const liveDetection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
-                                    if (liveDetection && liveDetection.descriptor) {
-                                        const distances = refDescriptors.map(ref => faceapi.euclideanDistance(liveDetection.descriptor, ref));
-                                        minDistance = Math.min(...distances);
+
+                            if (!userFaceRegistered) {
+                                setContextMode(true);
+                                if (detected) {
+                                    const poseCheck = await detectFacePoseInVideo(wizardStep);
+                                    if (poseCheck.valid) {
+                                        if (cameraStatus) {
+                                            cameraStatus.className = 'camera-status-pill is-success';
+                                            cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Pose Pas</span>';
+                                        }
+                                        if (faceGuide) faceGuide.classList.add('is-valid');
+                                        if (wizardSub) wizardSub.textContent = '✓ ' + poseCheck.reason + ' Klik Ambil Foto atau tahan posisi.';
+
+                                        if (!holdTimer) {
+                                            holdTimer = setTimeout(() => {
+                                                if (btnWizardAction && !btnWizardAction.disabled) {
+                                                    btnWizardAction.click();
+                                                }
+                                                holdTimer = null;
+                                            }, 1000);
+                                        }
+                                    } else {
+                                        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+                                        if (cameraStatus) {
+                                            cameraStatus.className = 'camera-status-pill is-warning';
+                                            cameraStatus.innerHTML = '<i class="bx bx-error-circle"></i><span>' + poseCheck.reason + '</span>';
+                                        }
+                                        if (faceGuide) faceGuide.classList.remove('is-valid');
+                                        if (wizardSub) wizardSub.textContent = poseCheck.reason;
                                     }
-                                } catch (e) {
-                                    console.warn('Face match error:', e);
+                                } else {
+                                    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+                                    updateFaceStatusUI(false);
                                 }
+                            } else {
+                                setContextMode(false);
+                                let minDistance = null;
+                                if (detected && hasFaceSamples && isFaceApiLoaded && refDescriptors.length > 0) {
+                                    try {
+                                        const liveDetection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceLandmarks(true).withFaceDescriptor();
+                                        if (liveDetection && liveDetection.descriptor) {
+                                            const distances = refDescriptors.map(ref => faceapi.euclideanDistance(liveDetection.descriptor, ref));
+                                            minDistance = Math.min(...distances);
+                                        }
+                                    } catch (e) {
+                                        console.warn('Face match error:', e);
+                                    }
+                                }
+                                updateFaceStatusUI(detected, minDistance);
                             }
-                            updateFaceStatusUI(detected, minDistance);
                         }
-                    }, 400);
+                    }, 350);
                 };
 
                 video.onloadedmetadata = startCameraPreview;
