@@ -1194,41 +1194,36 @@
                         btnWizardAction.disabled = true;
                         if (btnWizardActionText) btnWizardActionText.textContent = 'Mendaftarkan Foto NIP...';
 
-                        // Pre-compute face descriptors for instant future loading
-                        let descriptorsPayload = [];
-                        if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
-                            for (const pos of ['front', 'right', 'left']) {
-                                if (capturedPoses[pos]) {
-                                    try {
-                                        const img = await faceapi.fetchImage(capturedPoses[pos]);
-                                        const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
-                                        if (detection && detection.descriptor) {
-                                            refDescriptors.push(detection.descriptor);
-                                            descriptorsPayload.push(Array.from(detection.descriptor));
-                                        }
-                                    } catch(e) {}
-                                }
-                            }
-                        }
-
-                        const payload = {
-                            ...capturedPoses,
-                            descriptors: descriptorsPayload
-                        };
-
+                        // Send POST request immediately to server (~100ms)
                         fetch('{{ route("attendance.face-samples.save-self") }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
-                            body: JSON.stringify(payload)
+                            body: JSON.stringify(capturedPoses)
                         })
                         .then(res => res.json())
-                        .then(async data => {
+                        .then(data => {
                             if (data.success) {
                                 userFaceRegistered = true;
                                 setContextMode(false);
+
+                                // Asynchronously extract face descriptors in background
+                                if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
+                                    Promise.all(['front', 'right', 'left'].map(async (pos) => {
+                                        if (capturedPoses[pos]) {
+                                            try {
+                                                const img = await faceapi.fetchImage(capturedPoses[pos]);
+                                                const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
+                                                return detection && detection.descriptor ? detection.descriptor : null;
+                                            } catch(e) { return null; }
+                                        }
+                                        return null;
+                                    })).then(results => {
+                                        refDescriptors = results.filter(d => d !== null);
+                                    });
+                                }
 
                                 if (enrollmentWizard) enrollmentWizard.classList.add('d-none');
                                 const cameraHint = document.querySelector('.camera-hint');
