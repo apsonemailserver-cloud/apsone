@@ -357,6 +357,53 @@
             transform: none;
         }
 
+        @media (max-width: 600px) {
+            .enrollment-wizard {
+                bottom: 0.5rem;
+                width: calc(100% - 0.8rem);
+                padding: 0.75rem 0.85rem;
+                border-radius: 18px;
+                z-index: 10;
+            }
+
+            .wizard-step-badge {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.55rem;
+                margin-bottom: 0.35rem;
+            }
+
+            .wizard-title {
+                font-size: 0.92rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .wizard-sub {
+                font-size: 0.73rem;
+                margin-bottom: 0.55rem;
+            }
+
+            .wizard-poses {
+                gap: 0.35rem;
+                margin-bottom: 0.55rem;
+            }
+
+            .pose-pill {
+                padding: 0.4rem 0.2rem;
+                font-size: 0.66rem;
+                border-radius: 10px;
+            }
+
+            .pose-pill i {
+                font-size: 1.05rem;
+            }
+
+            .wizard-btn {
+                height: 38px;
+                font-size: 0.8rem;
+                border-radius: 12px;
+            }
+        }
+
         .camera-loader {
             position: absolute;
             inset: 0;
@@ -1004,6 +1051,7 @@
                 const cameraTitleStrong = document.getElementById('cameraTitleStrong');
                 const cameraMetaTitle = document.getElementById('cameraMetaTitle');
                 const btnSubmitText = document.getElementById('btnSubmitText');
+                const cameraHint = document.querySelector('.camera-hint');
 
                 if (isRegistration) {
                     if (cameraTitleSmall) cameraTitleSmall.textContent = 'FACE ID REGISTRATION';
@@ -1011,11 +1059,17 @@
                     if (cameraMetaTitle) cameraMetaTitle.textContent = 'Registrasi Wajah NIP';
                     if (btnSubmitText) btnSubmitText.textContent = 'Registrasi Wajah Diperlukan';
                     btnSubmit.disabled = true;
+
+                    if (enrollmentWizard) enrollmentWizard.classList.remove('d-none');
+                    if (cameraHint) cameraHint.classList.add('d-none');
                 } else {
                     if (cameraTitleSmall) cameraTitleSmall.textContent = 'Attendance Verification';
                     if (cameraTitleStrong) cameraTitleStrong.textContent = '{{ $actionTitle }} - {{ $user->fullname ?? "Staff APS" }}';
                     if (cameraMetaTitle) cameraMetaTitle.textContent = '{{ $actionTitle }} Sekarang';
                     if (btnSubmitText) btnSubmitText.textContent = '{{ $actionTitle }}';
+
+                    if (enrollmentWizard) enrollmentWizard.classList.add('d-none');
+                    if (cameraHint) cameraHint.classList.remove('d-none');
                 }
             };
 
