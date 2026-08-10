@@ -2498,7 +2498,11 @@
             });
         }
 
+        // Guard flag: only fire flash notifications ONCE (prevents PJAX synthetic DOMContentLoaded re-triggering)
+        var __apsNotifShown = false;
         document.addEventListener('DOMContentLoaded', function() {
+            if (__apsNotifShown) return;
+            __apsNotifShown = true;
             @if(session('error'))
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({

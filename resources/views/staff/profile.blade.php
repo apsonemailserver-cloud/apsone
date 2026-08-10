@@ -18,6 +18,7 @@
             border: 4px solid #fff;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
         .profile-photo-container:hover {
@@ -26,9 +27,11 @@
         }
 
         .profile-photo {
+            display: block;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center top;
         }
 
         .photo-overlay {
@@ -267,8 +270,8 @@
             }
 
             .profile-photo-container {
-                width: 120px;
-                height: 120px;
+                width: 110px;
+                height: 110px;
             }
 
             .profile-info-item {
@@ -362,7 +365,7 @@
                             <div class="text-center mb-4">
                                 <div class="profile-photo-container">
                                     @if($canEditProfile)
-                                    <label for="fileInput" class="w-100 h-100 d-block m-0" style="cursor: pointer;">
+                                    <label for="fileInput" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; display: block; margin: 0; padding: 0;">
                                         <img src="{{ $user->profile_picture ? asset('storage/photo/' . $user->profile_picture) : asset('storage/photo/user.jpg') }}"
                                             alt="User Photo" class="profile-photo">
                                         <div class="photo-overlay">
@@ -371,10 +374,8 @@
                                         </div>
                                     </label>
                                     @else
-                                    <div class="w-100 h-100 d-block m-0">
-                                        <img src="{{ $user->profile_picture ? asset('storage/photo/' . $user->profile_picture) : asset('storage/photo/user.jpg') }}"
-                                            alt="User Photo" class="profile-photo">
-                                    </div>
+                                    <img src="{{ $user->profile_picture ? asset('storage/photo/' . $user->profile_picture) : asset('storage/photo/user.jpg') }}"
+                                        alt="User Photo" class="profile-photo">
                                     @endif
                                 </div>
                                 <h4 class="mt-3 mb-1 fw-bold text-dark">{{ $user->fullname }}</h4>

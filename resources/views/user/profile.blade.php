@@ -26,9 +26,11 @@
         }
 
         .profile-photo {
+            display: block;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center top;
         }
 
         .photo-overlay {
@@ -723,7 +725,7 @@
                             <div class="text-center mb-4">
                                 <div class="profile-photo-container">
                                     @if($canEditProfile)
-                                    <label for="fileInput" class="w-100 h-100 d-block m-0" style="cursor: pointer;">
+                                    <label for="fileInput" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; display: block; margin: 0; padding: 0;">
                                         <img src="{{ $user->profile_picture ? asset('storage/photo/' . $user->profile_picture) : asset('storage/photo/user.jpg') }}"
                                             alt="User Photo" class="profile-photo">
                                         <div class="photo-overlay">
@@ -732,10 +734,8 @@
                                         </div>
                                     </label>
                                     @else
-                                    <div class="w-100 h-100 d-block m-0">
-                                        <img src="{{ $user->profile_picture ? asset('storage/photo/' . $user->profile_picture) : asset('storage/photo/user.jpg') }}"
-                                            alt="User Photo" class="profile-photo">
-                                    </div>
+                                    <img src="{{ $user->profile_picture ? asset('storage/photo/' . $user->profile_picture) : asset('storage/photo/user.jpg') }}"
+                                        alt="User Photo" class="profile-photo">
                                     @endif
                                 </div>
                                 <h4 class="profile-summary-name mt-3 mb-1 fw-bold text-dark">{{ $user->fullname }}</h4>

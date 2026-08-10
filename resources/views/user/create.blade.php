@@ -139,7 +139,7 @@
 
                                         <div class="mb-3">
                                             <label class="form-label">Role <span class="text-danger">*</span></label>
-                                            <select name="role" class="form-select" required>
+                                            <select name="role" class="form-select {{ $errors->has('role') ? 'is-invalid' : '' }}" required>
                                                 <option value="">-- Pilih Role --</option>
                                                 <option value="Admin" {{ old('role') == 'Admin' ? 'selected' : '' }}>Admin</option>
                                                 <option value="Finance" {{ old('role') == 'Finance' ? 'selected' : '' }}>Finance</option>
@@ -161,6 +161,11 @@
                                                 <option value="Controller" {{ old('role') == 'Controller' ? 'selected' : '' }}>Controller</option>
                                                 <option value="Quality Control" {{ old('role') == 'Quality Control' ? 'selected' : '' }}>Quality Control</option>
                                             </select>
+                                            @error('role')
+                                                <div class="invalid-feedback d-block">
+                                                    <i class="ti ti-alert-circle me-1"></i>{{ $message }}
+                                                </div>
+                                            @enderror
                                         </div>
 
                                         <div class="mb-3">

@@ -80,14 +80,14 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar avatar-sm me-2">
+                                        <div class="avatar avatar-sm me-2 flex-shrink-0" style="width: 36px; height: 36px; min-width: 36px; min-height: 36px;">
                                             @if($staff->profile_picture)
                                             <img src="{{ asset('storage/photo/'.$staff->profile_picture) }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
                                             @else
-                                            <img src="{{ asset('storage/photo/user.jpg') }}" alt="Avatar" class="rounded-circle">
+                                            <img src="{{ asset('storage/photo/user.jpg') }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
                                             @endif
                                         </div>
-                                        <strong>{{ $staff->fullname }}</strong>
+                                        <strong class="text-truncate">{{ $staff->fullname }}</strong>
                                     </div>
                                 </td>
                                 <td>{{ $staff->id }}</td>

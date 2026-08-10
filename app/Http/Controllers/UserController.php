@@ -178,6 +178,15 @@ class UserController extends Controller
             'is_qantas' => 'required|boolean',
             'join_date' => 'required|date',
             'salary' => 'required|numeric|min:0',
+        ], [
+            'role.required' => 'Role wajib diisi.',
+            'station.required' => 'Station wajib diisi.',
+            'fullname.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'job_title.required' => 'Job title wajib diisi.',
+            'unit.required' => 'Unit wajib diisi.',
+            'sub_unit.required' => 'Sub unit wajib diisi.',
         ]);
 
         try {
@@ -379,6 +388,15 @@ class UserController extends Controller
             'is_qantas' => 'required|boolean',
             'join_date' => 'required|date',
             'salary' => 'required|numeric|min:0',
+        ], [
+            'role.required' => 'Role wajib diisi.',
+            'station.required' => 'Station wajib diisi.',
+            'fullname.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'job_title.required' => 'Job title wajib diisi.',
+            'unit.required' => 'Unit wajib diisi.',
+            'sub_unit.required' => 'Sub unit wajib diisi.',
         ]);
 
         try {
