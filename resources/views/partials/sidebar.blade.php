@@ -14,14 +14,13 @@
             @if (in_array(strtolower((string) Auth::user()->role), ['admin']))
                 <a href="{{ route('schedule.view') }}" style="padding-left: 30px;">Create / Update Schedule</a>
             @endif
+            @if (in_array(strtolower((string) Auth::user()->role), ['admin', 'ass leader', 'Head Of Airport Service', 'leader']))
+                <a href="{{ route('shift.index') }}" style="padding-left: 30px;">
+                    <i class="bi bi-clock"></i> Shift
+                </a>
+            @endif
         </div>
     </div>
-
-    @if (in_array(strtolower((string) Auth::user()->role), ['admin', 'ass leader', 'Head Of Airport Service', 'leader']))
-        <a href="{{ route('shift.index') }}">
-            <i class="bi bi-clock"></i> Shift
-        </a>
-    @endif
 
     <div class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="collapse" data-target="#attendanceDropdown">

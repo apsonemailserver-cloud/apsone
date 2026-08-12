@@ -132,13 +132,14 @@
                         </a>
                     </li>
 
-                    @if (Auth::user()->canAccess('schedule', 'view'))
-                    <li class="menu-item {{ request()->is('schedule*') || request()->routeIs('schedule.*') ? 'active open' : '' }}">
+                    @if (Auth::user()->canAccess('schedule', 'view') || Auth::user()->canAccess('shift', 'view'))
+                    <li class="menu-item {{ request()->is('schedule*') || request()->routeIs('schedule.*') || request()->routeIs('shift.*') ? 'active open' : '' }}">
                         <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                             <i class="menu-icon tf-icons ti ti-calendar-week"></i>
                             <div data-i18n="Schedule">Schedule</div>
                         </a>
                         <ul class="menu-sub">
+                            @if (Auth::user()->canAccess('schedule', 'view'))
                             <li class="menu-item {{ request()->routeIs('schedule.now') ? 'active' : '' }}">
                                 <a href="{{ route('schedule.now') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-calendar-check"></i>
@@ -160,16 +161,17 @@
                                     </a>
                                 </li>
                             @endif
-                        </ul>
-                    </li>
-                    @endif
+                            @endif
 
-                    @if (Auth::user()->canAccess('shift', 'view'))
-                    <li class="menu-item {{ request()->routeIs('shift.*') ? 'active' : '' }}">
-                        <a href="{{ route('shift.index') }}" class="menu-link">
-                            <i class="menu-icon tf-icons ti ti-clock"></i>
-                            <div data-i18n="Shift">Shift</div>
-                        </a>
+                            @if (Auth::user()->canAccess('shift', 'view'))
+                            <li class="menu-item {{ request()->routeIs('shift.*') ? 'active' : '' }}">
+                                <a href="{{ route('shift.index') }}" class="menu-link">
+                                    <i class="menu-icon tf-icons ti ti-clock"></i>
+                                    <div data-i18n="Shift">Shift</div>
+                                </a>
+                            </li>
+                            @endif
+                        </ul>
                     </li>
                     @endif
 
@@ -513,7 +515,7 @@
                     }
 
                     if ($currentUser->canAccess('shift', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Shift', 'category' => 'Menu', 'hint' => 'Data shift kerja', 'icon' => 'ti-clock', 'url' => route('shift.index')];
+                        $topbarMenuLinks[] = ['label' => 'Shift', 'category' => 'Schedule', 'hint' => 'Data shift kerja', 'icon' => 'ti-clock', 'url' => route('shift.index')];
                     }
 
                     if ($currentUser->canAccess('attendance', 'view')) {
