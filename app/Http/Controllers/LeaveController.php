@@ -37,8 +37,9 @@ class LeaveController extends Controller
     {
         $user = Auth::user();
 
-        // Hanya yang punya akses leave.approve atau Admin yang bisa melihat daftar approval
-        if (!$user->canAccess('leave', 'approve') && !$user->isAdmin()) {
+        // Hanya yang punya akses leave.approve, Admin, atau yang memiliki bawahan (atasan) yang bisa melihat daftar approval
+        $hasSubordinates = User::where('pic_id', $user->id)->exists();
+        if (!$user->canAccess('leave', 'approve') && !$user->isAdmin() && !$hasSubordinates) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
@@ -51,27 +52,50 @@ class LeaveController extends Controller
             $query->where('leaves.user_id', '!=', $user->id);
         }
 
-        $userRole = $user->role ?? '';
-
         // Halaman Approval HANYA menampilkan pengajuan yang MASIH MENUNGGU PERSETUJUAN (Pending)
         if ($user->isAdmin()) {
             // Admin dapat melihat semua pengajuan pending
             $query->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
-        } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
-            // Head of Airport Service / HO dapat melihat pengajuan pending
-            $query->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
-        } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
-            // Leader / SPV BGE melihat pengajuan pending BGE di station miliknya
-            $query->where('users.' . User::getStationColumn(), $user->station)
-                  ->where('leaves.status', 'pending Bge');
-        } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
-            // Leader / SPV Apron melihat pengajuan pending Apron di station miliknya
-            $query->where('users.' . User::getStationColumn(), $user->station)
-                  ->where('leaves.status', 'pending Apron');
         } else {
-            // Atasan/Supervisor lain hanya melihat pengajuan pending di station miliknya
-            $query->where('users.' . User::getStationColumn(), $user->station)
-                  ->where('leaves.status', 'pending');
+            // Non-admin hanya melihat pengajuan pending dari bawahan langsungnya (pic_id)
+            // Atau untuk tier 2, jika statusnya pending dan $user adalah supervisor dari supervisor pemohon
+            $query->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge'])
+                ->where(function ($q) use ($user) {
+                    // Case 1: Status pending Bge/Apron dan supervisor langsung adalah $user
+                    $q->where(function ($q1) use ($user) {
+                        $q1->whereIn('leaves.status', ['pending Apron', 'pending Bge'])
+                           ->where('users.pic_id', $user->id);
+                    });
+
+                    // Case 2: Status pending dan:
+                    $q->orWhere(function ($q2) use ($user) {
+                        $q2->where('leaves.status', 'pending')
+                           ->where(function ($q3) use ($user) {
+                               // Direct supervisor (hanya jika pemohon adalah Leader/SPV, yaitu punya bawahan)
+                               $q3->where(function ($qDirect) use ($user) {
+                                   $qDirect->where('users.pic_id', $user->id)
+                                           ->whereExists(function ($subExists) {
+                                               $subExists->selectRaw('1')
+                                                   ->from('users as subs')
+                                                   ->whereColumn('subs.pic_id', 'users.id');
+                                           });
+                               })
+                               // Or supervisor's supervisor (jika pemohon adalah staff biasa, yaitu tidak punya bawahan)
+                               ->orWhere(function ($qIndirect) use ($user) {
+                                   $qIndirect->whereIn('users.pic_id', function ($sub) use ($user) {
+                                       $sub->select('id')
+                                           ->from('users')
+                                           ->where('pic_id', $user->id);
+                                   })
+                                   ->whereNotExists(function ($subNotExists) {
+                                       $subNotExists->selectRaw('1')
+                                           ->from('users as subs')
+                                           ->whereColumn('subs.pic_id', 'users.id');
+                                   });
+                               });
+                           });
+                    });
+                });
         }
 
         // Search Filter
@@ -512,7 +536,8 @@ class LeaveController extends Controller
     public function updateStatus(Request $request, Leave $leave)
     {
         $user = Auth::user();
-        if (!$user->canAccess('leave', 'approve') && !$user->isAdmin()) {
+        $hasSubordinates = User::where('pic_id', $user->id)->exists();
+        if (!$user->canAccess('leave', 'approve') && !$user->isAdmin() && !$hasSubordinates) {
             abort(403, 'Anda tidak memiliki akses untuk menyetujui pengajuan ini.');
         }
 
@@ -526,34 +551,44 @@ class LeaveController extends Controller
             'status' => ['required', Rule::in($validStatuses)]
         ]);
 
-        $userRole = $user->role ?? '';
         $status = $request->status;
 
-        // Validasi transisi status dan hak akses
-        if ($user->isAdmin() || $userRole === 'Head Of Airport Service') {
-            if (!in_array($status, ['approved', 'rejected by ho'])) {
-                abort(400, 'Status tidak valid untuk HOAS/Admin.');
+        // Validasi transisi status dan hak akses menggunakan pic_id
+        if (!$user->isAdmin()) {
+            $applicant = $leave->user;
+            if (!$applicant) {
+                abort(404, 'Data pemohon tidak ditemukan.');
             }
-        } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
-            if ($leave->status !== 'pending Bge') {
-                abort(403, 'Leader BGE hanya dapat menyetujui pengajuan berstatus Menunggu BGE.');
-            }
-            if (!in_array($status, ['pending', 'rejected by leader'])) {
-                abort(400, 'Status tidak valid untuk Leader BGE.');
-            }
-        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
-            if ($leave->status !== 'pending Apron') {
-                abort(403, 'Leader Apron hanya dapat menyetujui pengajuan berstatus Menunggu Apron.');
-            }
-            if (!in_array($status, ['pending', 'rejected by leader'])) {
-                abort(400, 'Status tidak valid untuk Leader Apron.');
-            }
-        } else {
-            if ($leave->status !== 'pending') {
-                abort(403, 'Anda hanya dapat menyetujui pengajuan berstatus Menunggu HO.');
-            }
-            if (!in_array($status, ['approved', 'rejected by leader'])) {
-                abort(400, 'Status tidak valid.');
+
+            if (in_array($leave->status, ['pending Apron', 'pending Bge'])) {
+                // Harus merupakan atasan langsung
+                if ((string) $applicant->pic_id !== (string) $user->id) {
+                    abort(403, 'Anda hanya dapat menyetujui pengajuan dari bawahan langsung Anda.');
+                }
+                if (!in_array($status, ['pending', 'rejected by leader'])) {
+                    abort(400, 'Status tidak valid untuk tingkat persetujuan pertama.');
+                }
+            } elseif ($leave->status === 'pending') {
+                // Harus merupakan atasan langsung (jika tingkat 1 langsung ke HOAS) atau atasan dari atasan langsung (HOAS)
+                $hasSubordinates = User::where('pic_id', $applicant->id)->exists();
+                if ($hasSubordinates) {
+                    // Pemohon adalah Leader/SPV, maka yang boleh menyetujui adalah atasan langsungnya
+                    $isDirectSuper = (string) $applicant->pic_id === (string) $user->id;
+                    if (!$isDirectSuper) {
+                        abort(403, 'Anda tidak memiliki wewenang struktural untuk menyetujui pengajuan ini.');
+                    }
+                } else {
+                    // Pemohon adalah staff biasa, maka yang boleh menyetujui adalah atasan dari atasan langsungnya (HOAS)
+                    $isSuperOfSuper = $applicant->pic && (string) $applicant->pic->pic_id === (string) $user->id;
+                    if (!$isSuperOfSuper) {
+                        abort(403, 'Anda tidak memiliki wewenang struktural untuk menyetujui pengajuan ini.');
+                    }
+                }
+                if (!in_array($status, ['approved', 'rejected by ho'])) {
+                    abort(400, 'Status tidak valid untuk tingkat persetujuan akhir.');
+                }
+            } else {
+                abort(403, 'Pengajuan ini tidak sedang dalam status menunggu persetujuan.');
             }
         }
 

@@ -133,9 +133,10 @@ class OvertimeController extends Controller
     public function approvalList(Request $request)
     {
         $user = Auth::user();
+        $hasSubordinates = User::where('pic_id', $user->id)->exists();
 
-        // Security Check: Hanya yg punya overtime.approve yg boleh masuk
-        abort_unless(Auth::user()->canAccess('overtime', 'approve'), 403);
+        // Security Check: Hanya yg punya overtime.approve, Admin, atau atasan yg boleh masuk
+        abort_unless(Auth::user()->canAccess('overtime', 'approve') || $user->isAdmin() || $hasSubordinates, 403);
 
         $query = Overtime::with('user')
             ->select('overtimes.*')
@@ -154,30 +155,14 @@ class OvertimeController extends Controller
             });
         }
 
-        $userRole = $user->role ?? '';
-
         // Filter Station dan Divisi berdasarkan hak akses
         if ($user->isAdmin()) {
             if ($request->filled('station')) {
                 $query->where('users.' . User::getStationColumn(), $request->station);
             }
-        } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
-            $query->where('users.' . User::getStationColumn(), $user->station);
-        } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
-            $query->where('users.' . User::getStationColumn(), $user->station)
-                  ->where(function($q) {
-                      $q->where('users.role', 'LIKE', '%Bge%')
-                        ->orWhere('users.role', 'LIKE', '%BGE%')
-                        ->orWhere('users.role', 'LIKE', '%Baggage%');
-                  });
-        } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
-            $query->where('users.' . User::getStationColumn(), $user->station)
-                  ->where(function($q) {
-                      $q->where('users.role', 'LIKE', '%Apron%')
-                        ->orWhere('users.role', 'LIKE', '%APRON%');
-                  });
         } else {
-            $query->where('users.' . User::getStationColumn(), $user->station);
+            // Non-admin hanya melihat pengajuan dari bawahan langsungnya (pic_id)
+            $query->where('users.pic_id', $user->id);
         }
 
         $perPage = $request->input('per_page', 20);
@@ -360,35 +345,14 @@ class OvertimeController extends Controller
             abort(403, 'Anda tidak dapat menyetujui/menolak pengajuan lembur Anda sendiri.');
         }
 
-        $userRole = $user->role ?? '';
         $applicant = $ot->user;
 
         if (!$applicant) {
             abort(404, 'Data pemohon tidak ditemukan.');
         }
 
-        // Station must match
-        if ($applicant->station !== $user->station) {
-            abort(403, 'Anda hanya dapat menyetujui/menolak pengajuan lembur di station yang sama.');
-        }
-
-        if ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
-            // HOAS has access to all at station
-            return;
-        }
-
-        $applicantRole = $applicant->role ?? '';
-
-        if (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
-            $isBgeSub = str_contains($applicantRole, 'Bge') || str_contains($applicantRole, 'BGE') || str_contains($applicantRole, 'Baggage');
-            if (!$isBgeSub) {
-                abort(403, 'Leader BGE hanya dapat menyetujui/menolak pengajuan divisi Baggage.');
-            }
-        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
-            $isApronSub = str_contains($applicantRole, 'Apron') || str_contains($applicantRole, 'APRON');
-            if (!$isApronSub) {
-                abort(403, 'Leader Apron hanya dapat menyetujui/menolak pengajuan divisi Apron.');
-            }
-        }
+        // Harus merupakan atasan langsung
+        $isDirectSupervisor = $applicant->pic_id && (string) $applicant->pic_id === (string) $user->id;
+        abort_unless($isDirectSupervisor, 403, 'Anda tidak memiliki wewenang struktural untuk memproses pengajuan ini (harus atasan langsung).');
     }
 }

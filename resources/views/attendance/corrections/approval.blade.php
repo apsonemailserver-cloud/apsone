@@ -72,7 +72,7 @@
                                     </td>
                                     <td style="min-width: 220px;">{{ $correction->reason }}</td>
                                     <td>
-                                        @if(Auth::user()->canAccess('attendance', 'approve'))
+                                        @if(Auth::user()->canAccess('attendance', 'approve') || \App\Models\User::where('pic_id', Auth::id())->exists())
                                         <div class="d-flex gap-2">
                                             <form id="approveForm-{{ $correction->id }}" action="{{ route('attendance.corrections.approve', $correction) }}" method="POST">
                                                 @csrf

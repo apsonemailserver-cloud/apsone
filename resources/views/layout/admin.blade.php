@@ -275,13 +275,19 @@
 
                         @if(Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view') || Auth::user()->canAccess('job_title', 'view') || Auth::user()->canAccess('unit', 'view') || Auth::user()->canAccess('sub_unit', 'view') || Auth::user()->canAccess('cluster', 'view'))
                         <li
-                            class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('roles.*') || request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') || request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') || request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') || request()->routeIs('master_data.*') || request()->routeIs('master.clusters.*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
+                            class="menu-item {{ request()->routeIs('employee.structure.*') || request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('roles.*') || request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') || request()->routeIs('users.pas*') || request()->routeIs('users.PAS*') || request()->routeIs('users.tim*') || request()->routeIs('users.TIM*') || request()->routeIs('master_data.*') || request()->routeIs('master.clusters.*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active open' : '' }}">
                             <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
                                 <i class="menu-icon tf-icons ti ti-users"></i>
                                 <div data-i18n="User Management">User Management</div>
                             </a>
                             <ul class="menu-sub">
                                 @if(Auth::user()->canAccess('user', 'view'))
+                                <li class="menu-item {{ request()->routeIs('employee.structure.*') ? 'active' : '' }}">
+                                    <a href="{{ route('employee.structure.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-sitemap"></i>
+                                        <div data-i18n="Structure Karyawan">Structure Karyawan</div>
+                                    </a>
+                                </li>
                                 <li class="menu-item {{ request()->routeIs('staff.*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active' : '' }}">
                                     <a href="{{ route('staff.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-device-desktop"></i>

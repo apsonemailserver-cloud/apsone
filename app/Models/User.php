@@ -43,6 +43,7 @@ class User extends Authenticatable
         'sub_unit',
         'sub_unit_id',
         'status',
+        'pic_id',
         'manager',
         'senior_manager',
         'is_qantas',

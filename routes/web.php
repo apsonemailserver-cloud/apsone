@@ -32,6 +32,7 @@ use App\Http\Controllers\ClusterController;
 use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\LeaveRuleController;
 use App\Http\Controllers\FaceSampleController;
+use App\Http\Controllers\EmployeeStructureController;
 use App\Models\Blacklist;
 
 /*
@@ -103,6 +104,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kontrak', [UserController::class, 'kontrak'])->name('users.kontrak');
     Route::get('/kontrak/edit/{id}', [UserController::class, 'KontrakEdit'])->name('users.KontrakEdit');
     Route::put('/kontrak/update/{user}', [UserController::class, 'KontrakUpdate'])->name('users.KontrakUpdate');
+
+    // --- STRUKTUR HIRARKI KARYAWAN ---
+    Route::get('/employee-structure', [EmployeeStructureController::class, 'index'])->name('employee.structure.index');
+    Route::post('/employee-structure/update-superior', [EmployeeStructureController::class, 'updateSuperior'])->name('employee.structure.update-superior');
+    Route::post('/employee-structure/simulate', [EmployeeStructureController::class, 'simulateHierarchy'])->name('employee.structure.simulate');
 
     // PAS Bandara User
     Route::get('/pas', [UserController::class, 'pas'])->name('users.pas');

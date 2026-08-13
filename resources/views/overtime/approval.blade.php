@@ -67,7 +67,7 @@
                                 </td>
                                 <td><span class="badge bg-label-primary">{{ $ot->duration }} Jam</span></td>
                                 <td>
-                                    @if(Auth::user()->canAccess('overtime', 'approve'))
+                                    @if(Auth::user()->canAccess('overtime', 'approve') || \App\Models\User::where('pic_id', Auth::id())->exists())
                                     <div class="d-flex gap-2">
                                         <form id="approveForm-{{ $ot->id }}" action="{{ route('overtime.approve', $ot->id) }}" method="POST">
                                             @csrf

@@ -31,6 +31,7 @@ class AttendanceCorrectionTest extends TestCase
             $table->string('role');
             $table->string('station');
             $table->string('manager')->nullable();
+            $table->string('pic_id')->nullable();
             $table->date('join_date');
             $table->string('salary')->default('0');
             $table->timestamps();
@@ -466,12 +467,13 @@ class AttendanceCorrectionTest extends TestCase
     private function makePendingCorrection(bool $withAttendance = false): array
     {
         [, $station] = $this->makeUserAndStation();
+        $manager = $this->makeUser('102001', 'Manager Satu', 'Leader Apron');
         $applicant = User::findOrFail('101001');
         $applicant->update([
             'fullname' => 'Staff Koreksi',
             'manager' => 'Manager Satu',
+            'pic_id' => $manager->id,
         ]);
-        $manager = $this->makeUser('102001', 'Manager Satu', 'Leader Apron');
 
         $attendance = null;
 

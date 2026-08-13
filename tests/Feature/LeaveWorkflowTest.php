@@ -43,9 +43,11 @@ class LeaveWorkflowTest extends TestCase
 
     public function test_leave_approval_workflow_requires_two_tiers(): void
     {
-        $porter = $this->createUser('10001', 'Test Porter Apron', 'Porter Apron');
-        $leader = $this->createUser('10002', 'Test Leader Apron', 'Leader Apron');
         $hoas   = $this->createUser('10003', 'Test HOAS', 'Head Of Airport Service');
+        $leader = $this->createUser('10002', 'Test Leader Apron', 'Leader Apron');
+        $leader->update(['pic_id' => $hoas->id]);
+        $porter = $this->createUser('10001', 'Test Porter Apron', 'Porter Apron');
+        $porter->update(['pic_id' => $leader->id]);
 
         // 1. Porter submits leave
         $leave = Leave::create([

@@ -75,12 +75,19 @@ class TrainingController extends Controller
     public function approval(Request $request)
     {
         $user = Auth::user();
-        if (!$user->isAdmin() && !$user->canAccess('training', 'approve')) {
+        $hasSubordinates = User::where('pic_id', $user->id)->exists();
+        if (!$user->isAdmin() && !$user->canAccess('training', 'approve') && !$hasSubordinates) {
             abort(403, 'Anda tidak memiliki hak akses untuk approval training.');
         }
 
         $query = Certificate::with('user')
             ->where('status', 'Pending');
+
+        if (!$user->isAdmin()) {
+            $query->whereHas('user', function ($q) use ($user) {
+                $q->where('pic_id', $user->id);
+            });
+        }
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -102,11 +109,20 @@ class TrainingController extends Controller
     public function approve($id)
     {
         $user = Auth::user();
-        if (!$user->isAdmin() && !$user->canAccess('training', 'approve')) {
+        $hasSubordinates = User::where('pic_id', $user->id)->exists();
+        if (!$user->isAdmin() && !$user->canAccess('training', 'approve') && !$hasSubordinates) {
             abort(403, 'Akses ditolak.');
         }
 
         $cert = Certificate::findOrFail($id);
+
+        if (!$user->isAdmin()) {
+            $applicant = $cert->user;
+            if (!$applicant || (string) $applicant->pic_id !== (string) $user->id) {
+                abort(403, 'Anda hanya dapat memproses sertifikat dari bawahan langsung Anda.');
+            }
+        }
+
         $cert->update(['status' => 'Approved']);
 
         Alert::success('Disetujui', 'Sertifikat training telah disetujui.');
@@ -116,11 +132,20 @@ class TrainingController extends Controller
     public function reject(Request $request, $id)
     {
         $user = Auth::user();
-        if (!$user->isAdmin() && !$user->canAccess('training', 'approve')) {
+        $hasSubordinates = User::where('pic_id', $user->id)->exists();
+        if (!$user->isAdmin() && !$user->canAccess('training', 'approve') && !$hasSubordinates) {
             abort(403, 'Akses ditolak.');
         }
 
         $cert = Certificate::findOrFail($id);
+
+        if (!$user->isAdmin()) {
+            $applicant = $cert->user;
+            if (!$applicant || (string) $applicant->pic_id !== (string) $user->id) {
+                abort(403, 'Anda hanya dapat memproses sertifikat dari bawahan langsung Anda.');
+            }
+        }
+
         $cert->update([
             'status' => 'Rejected',
             'rejection_reason' => $request->input('reason', 'Ditolak oleh atasan.')

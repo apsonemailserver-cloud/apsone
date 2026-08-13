@@ -23,71 +23,25 @@ class AttendanceCorrectionController extends Controller
     {
         $actor = Auth::user();
         $isAdmin = $this->isAdmin($actor);
+        $hasSubordinates = User::where('pic_id', $actor->id)->exists();
+        if (!$isAdmin && !$actor->canAccess('attendance', 'approve') && !$hasSubordinates) {
+            abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
+        }
+
         $query = AttendanceCorrection::with(['user', 'station', 'attendance'])
             ->where('status', AttendanceCorrection::STATUS_PENDING);
 
-        $rawStation = trim((string) $actor->station);
-        $userStations = ($rawStation !== '' && strtoupper($rawStation) !== 'ALL' && strtoupper($rawStation) !== 'SEMUA')
-            ? array_filter(array_map('trim', explode(',', $rawStation)))
-            : [];
-
         if (! $isAdmin) {
             $query->where('user_id', '!=', $actor->id);
-
-            $userRole = $actor->role ?? '';
-
-            if ($userRole === 'Head Of Airport Service' || $actor->station === 'Ho') {
-                if (! empty($userStations)) {
-                    $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
-                }
-            } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
-                if (! empty($userStations)) {
-                    $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
-                }
-                $query->whereHas('user', function ($q) {
-                    $q->where(function ($sq) {
-                        if (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
-                            $sq->whereHas('roleRelation', function ($rq) {
-                                $rq->where('name', 'LIKE', '%Bge%')
-                                  ->orWhere('name', 'LIKE', '%BGE%')
-                                  ->orWhere('name', 'LIKE', '%Baggage%');
-                            });
-                        }
-                        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
-                            $sq->orWhere('users.role', 'LIKE', '%Bge%')
-                              ->orWhere('users.role', 'LIKE', '%BGE%')
-                              ->orWhere('users.role', 'LIKE', '%Baggage%');
-                        }
-                    });
-                });
-            } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
-                if (! empty($userStations)) {
-                    $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
-                }
-                $query->whereHas('user', function ($q) {
-                    $q->where(function ($sq) {
-                        if (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
-                            $sq->whereHas('roleRelation', function ($rq) {
-                                $rq->where('name', 'LIKE', '%Apron%')
-                                  ->orWhere('name', 'LIKE', '%APRON%');
-                            });
-                        }
-                        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
-                            $sq->orWhere('users.role', 'LIKE', '%Apron%')
-                              ->orWhere('users.role', 'LIKE', '%APRON%');
-                        }
-                    });
-                });
-            } else {
-                $query->whereHas(
-                    'user',
-                    fn ($builder) => $builder->where('manager', $actor->fullname)
-                );
-                if (! empty($userStations)) {
-                    $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
-                }
-            }
+            $query->whereHas('user', function ($q) use ($actor) {
+                $q->where('pic_id', $actor->id);
+            });
         } else {
+            $rawStation = trim((string) $actor->station);
+            $userStations = ($rawStation !== '' && strtoupper($rawStation) !== 'ALL' && strtoupper($rawStation) !== 'SEMUA')
+                ? array_filter(array_map('trim', explode(',', $rawStation)))
+                : [];
+
             if (count($userStations) === 1) {
                 $singleCode = reset($userStations);
                 $query->whereHas('station', fn ($b) => $b->where('code', $singleCode));
@@ -399,43 +353,14 @@ class AttendanceCorrectionController extends Controller
             abort(403, 'Anda tidak dapat menyetujui/menolak koreksi absensi Anda sendiri.');
         }
 
-        $rawStation = trim((string) $actor->station);
-        $userStations = ($rawStation !== '' && strtoupper($rawStation) !== 'ALL' && strtoupper($rawStation) !== 'SEMUA')
-            ? array_filter(array_map('trim', explode(',', $rawStation)))
-            : [];
-
-        // Station must match if actor has specific stations configured
-        if (!empty($userStations) && $correction->station) {
-            if (!in_array($correction->station->code, $userStations)) {
-                abort(403, 'Anda tidak dapat memproses koreksi absensi dari station lain.');
-            }
-        }
-
-        $userRole = $actor->role ?? '';
         $applicant = $correction->user;
-        $applicantRole = $applicant->role ?? '';
-
-        if ($userRole === 'Head Of Airport Service' || $actor->station === 'Ho') {
-            // HOAS has access to all at station
-            return;
+        if (!$applicant) {
+            abort(404, 'Data pemohon tidak ditemukan.');
         }
 
-        if (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
-            $isBgeSub = str_contains($applicantRole, 'Bge') || str_contains($applicantRole, 'BGE') || str_contains($applicantRole, 'Baggage');
-            if (!$isBgeSub) {
-                abort(403, 'Leader BGE hanya dapat menyetujui/menolak koreksi divisi Baggage.');
-            }
-        } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
-            $isApronSub = str_contains($applicantRole, 'Apron') || str_contains($applicantRole, 'APRON');
-            if (!$isApronSub) {
-                abort(403, 'Leader Apron hanya dapat menyetujui/menolak koreksi divisi Apron.');
-            }
-        } else {
-            $isConfiguredManager = (trim((string) $applicant->manager) === trim((string) $actor->fullname))
-                || ($applicant->pic_id && (string) $applicant->pic_id === (string) $actor->id)
-                || ($applicant->unit_id && $actor->unit_id && $applicant->unit_id === $actor->unit_id && (str_contains($userRole, 'Leader') || str_contains($userRole, 'Supervisor') || str_contains($userRole, 'Head')));
-            abort_unless($isConfiguredManager, 403, 'Anda tidak memiliki wewenang struktural untuk memproses pengajuan ini.');
-        }
+        // Harus merupakan atasan langsung
+        $isDirectSupervisor = $applicant->pic_id && (string) $applicant->pic_id === (string) $actor->id;
+        abort_unless($isDirectSupervisor, 403, 'Anda tidak memiliki wewenang struktural untuk memproses pengajuan ini (harus atasan langsung).');
     }
 
     private function ensurePending(AttendanceCorrection $correction): void

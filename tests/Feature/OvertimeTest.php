@@ -37,6 +37,7 @@ class OvertimeTest extends TestCase
             'gender' => 'Male',
             'join_date' => '2026-01-01',
             'salary' => '0',
+            'pic_id' => $leader->id,
         ]);
 
         $overtime = Overtime::create([

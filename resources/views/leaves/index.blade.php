@@ -133,29 +133,34 @@
                                 $approveStatus = 'approved';
                                 $rejectStatus = 'rejected by ho';
 
-                                if ($isPending && ($authUser->canAccess('leave', 'approve') || $authUser->isAdmin())) {
-                                    if ($authUser->isAdmin() || $userRole === 'Head Of Airport Service') {
+                                if ($isPending) {
+                                    if ($authUser->isAdmin()) {
                                         $canApproveThis = true;
                                         $approveStatus = 'approved';
                                         $rejectStatus = 'rejected by ho';
-                                    } elseif (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) {
-                                        if ($leave->status === 'pending Bge') {
+                                    } elseif (in_array($leave->status, ['pending Apron', 'pending Bge'])) {
+                                        if ((string) $leave->user->pic_id === (string) $authUser->id) {
                                             $canApproveThis = true;
                                             $approveStatus = 'pending';
                                             $rejectStatus = 'rejected by leader';
                                         }
-                                    } elseif (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) {
-                                        if ($leave->status === 'pending Apron') {
-                                            $canApproveThis = true;
-                                            $approveStatus = 'pending';
-                                            $rejectStatus = 'rejected by leader';
-                                        }
-                                    } else {
-                                        if ($leave->status === 'pending') {
-                                            $canApproveThis = true;
-                                            $approveStatus = 'approved';
-                                            $rejectStatus = 'rejected by leader';
-                                        }
+                                    } elseif ($leave->status === 'pending') {
+                                         $hasSubordinates = \App\Models\User::where('pic_id', $leave->user->id)->exists();
+                                         if ($hasSubordinates) {
+                                             $isDirectSuper = (string) $leave->user->pic_id === (string) $authUser->id;
+                                             if ($isDirectSuper) {
+                                                 $canApproveThis = true;
+                                                 $approveStatus = 'approved';
+                                                 $rejectStatus = 'rejected by ho';
+                                             }
+                                         } else {
+                                             $isSuperOfSuper = $leave->user->pic && (string) $leave->user->pic->pic_id === (string) $authUser->id;
+                                             if ($isSuperOfSuper) {
+                                                 $canApproveThis = true;
+                                                 $approveStatus = 'approved';
+                                                 $rejectStatus = 'rejected by ho';
+                                             }
+                                         }
                                     }
                                 }
 
