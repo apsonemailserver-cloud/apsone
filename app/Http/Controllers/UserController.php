@@ -507,29 +507,26 @@ class UserController extends Controller
         abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses untuk mengubah data kontrak.');
 
         $request->validate([
-            'contract_start' => 'nullable|date',
-            'contract_end' => 'nullable|date',
+            'contract_start' => 'required|date|after_or_equal:today',
+            'contract_end' => 'required|date|after_or_equal:contract_start',
+        ], [
+            'contract_start.required' => 'Tanggal mulai kontrak wajib diisi.',
+            'contract_start.date' => 'Format tanggal mulai kontrak tidak valid.',
+            'contract_start.after_or_equal' => 'Tanggal mulai kontrak tidak boleh backdate (kurang dari hari ini).',
+            'contract_end.required' => 'Tanggal selesai kontrak wajib diisi.',
+            'contract_end.date' => 'Format tanggal selesai kontrak tidak valid.',
+            'contract_end.after_or_equal' => 'Tanggal selesai kontrak tidak boleh kurang dari tanggal mulai.',
         ]);
-
-        if (
-            $request->filled('contract_start')
-            && $request->filled('contract_end')
-            && Carbon::parse($request->contract_start)->gt(Carbon::parse($request->contract_end))
-        ) {
-            Alert::error('Gagal', 'Tanggal mulai kontrak tidak boleh lebih besar dari tanggal selesai.');
-
-            return back()->withInput();
-        }
 
         try {
             $user->update($request->only(['contract_start', 'contract_end']));
             Alert::success('Berhasil', 'Data kontrak berhasil diperbarui');
 
-            return redirect()->route('users.kontrak');
+            return redirect()->route('users.kontrak')->with('success', 'Data kontrak berhasil diperbarui');
         } catch (\Exception $e) {
             Alert::error('Gagal', 'Gagal update kontrak: '.$e->getMessage());
 
-            return back()->withInput();
+            return back()->withInput()->with('error', 'Gagal update kontrak: '.$e->getMessage());
         }
     }
 
@@ -578,19 +575,26 @@ class UserController extends Controller
         abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses untuk mengubah data PAS.');
 
         $request->validate([
-            'pas_expired' => 'nullable|date',
-            'pas_registered' => 'nullable|date',
+            'pas_registered' => 'required|date|after_or_equal:today',
+            'pas_expired' => 'required|date|after_or_equal:pas_registered',
+        ], [
+            'pas_registered.required' => 'Tanggal PAS terdaftar wajib diisi.',
+            'pas_registered.date' => 'Format tanggal PAS terdaftar tidak valid.',
+            'pas_registered.after_or_equal' => 'Tanggal PAS terdaftar tidak boleh backdate (kurang dari hari ini).',
+            'pas_expired.required' => 'Tanggal PAS berakhir wajib diisi.',
+            'pas_expired.date' => 'Format tanggal PAS berakhir tidak valid.',
+            'pas_expired.after_or_equal' => 'Tanggal PAS berakhir tidak boleh kurang dari tanggal terdaftar.',
         ]);
 
         try {
             $user->update($request->only(['pas_expired', 'pas_registered']));
             Alert::success('Berhasil', 'Data PAS berhasil diperbarui');
 
-            return redirect()->route('users.pas');
+            return redirect()->route('users.pas')->with('success', 'Data PAS berhasil diperbarui');
         } catch (\Exception $e) {
             Alert::error('Gagal', 'Gagal update PAS: '.$e->getMessage());
 
-            return back()->withInput();
+            return back()->withInput()->with('error', 'Gagal update PAS: '.$e->getMessage());
         }
     }
 

@@ -44,20 +44,20 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Nama Lengkap</label>
+                                <label class="form-label">Station</label>
                                 <input type="text" class="form-control" name="station" value="{{ $user->station }}" readonly>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label">PAS Terdaftar</label>
-                                <input type="date" class="form-control" name="pas_registered" value="{{ $user->pas_registered }}">
-                                <small class="text-muted">Tanggal ketika PAS pertama kali terdaftar</small>
+                                <label class="form-label fw-semibold">PAS Terdaftar <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" name="pas_registered" required min="{{ date('Y-m-d') }}" value="{{ old('pas_registered', $user->pas_registered ? \Carbon\Carbon::parse($user->pas_registered)->format('Y-m-d') : '') }}">
+                                <small class="text-muted d-block">Tanggal ketika PAS pertama kali terdaftar</small>
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label">PAS Berakhir</label>
-                                <input type="date" class="form-control" name="pas_expired" value="{{ $user->pas_expired }}">
-                                <small class="text-muted">Tanggal berakhirnya masa berlaku PAS</small>
+                                <label class="form-label fw-semibold">PAS Berakhir <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" name="pas_expired" required min="{{ date('Y-m-d') }}" value="{{ old('pas_expired', $user->pas_expired ? \Carbon\Carbon::parse($user->pas_expired)->format('Y-m-d') : '') }}">
+                                <small class="text-muted d-block">Tanggal berakhirnya masa berlaku PAS</small>
                             </div>
 
                             {{-- Status Info --}}
@@ -117,9 +117,32 @@
         // Validasi tanggal
         const pasRegistered = document.querySelector('input[name="pas_registered"]');
         const pasExpired = document.querySelector('input[name="pas_expired"]');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        function parseDate(value) {
+            if (!value) return null;
+            const parts = value.split('-');
+            if (parts.length === 3) {
+                return new Date(parts[0], parts[1] - 1, parts[2]);
+            }
+            return new Date(value);
+        }
         
         if (pasRegistered && pasExpired) {
             pasRegistered.addEventListener('change', function() {
+                const regDate = parseDate(this.value);
+                if (regDate && regDate < today) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Tanggal PAS terdaftar tidak boleh backdate (kurang dari hari ini)',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    this.value = '';
+                    return;
+                }
                 if (pasExpired.value && this.value > pasExpired.value) {
                     Swal.fire({
                         icon: 'warning',
@@ -133,6 +156,18 @@
             });
             
             pasExpired.addEventListener('change', function() {
+                const expDate = parseDate(this.value);
+                if (expDate && expDate < today) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Tanggal PAS berakhir tidak boleh backdate (kurang dari hari ini)',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    this.value = '';
+                    return;
+                }
                 if (pasRegistered.value && this.value < pasRegistered.value) {
                     Swal.fire({
                         icon: 'warning',
@@ -158,6 +193,19 @@
                     icon: 'error',
                     title: 'Data Belum Lengkap',
                     text: 'Harap isi kedua tanggal (PAS Terdaftar dan PAS Berakhir)',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            const regDate = parseDate(pasRegisteredValue);
+            if (regDate && regDate < today) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tanggal Tidak Valid',
+                    text: 'Tanggal PAS terdaftar tidak boleh backdate (kurang dari hari ini)',
                     timer: 3000,
                     showConfirmButton: false
                 });

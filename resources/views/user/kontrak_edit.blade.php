@@ -41,13 +41,13 @@
                 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Kontrak Mulai <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" name="contract_start"
+                    <input type="date" class="form-control" name="contract_start" required min="{{ date('Y-m-d') }}"
                         value="{{ old('contract_start', $user->contract_start ? \Carbon\Carbon::parse($user->contract_start)->format('Y-m-d') : '') }}">
                 </div>
                 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Kontrak Selesai <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" name="contract_end"
+                    <input type="date" class="form-control" name="contract_end" required min="{{ date('Y-m-d') }}"
                         value="{{ old('contract_end', $user->contract_end ? \Carbon\Carbon::parse($user->contract_end)->format('Y-m-d') : '') }}">
                 </div>
                 
@@ -65,6 +65,8 @@
         // Validasi tanggal
         const contractStart = document.querySelector('input[name="contract_start"]');
         const contractEnd = document.querySelector('input[name="contract_end"]');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         
         function parseContractDate(value) {
             if (!value) return null;
@@ -102,10 +104,40 @@
             const startDate = parseContractDate(contractStart.value);
             const endDate = parseContractDate(contractEnd.value);
 
+            if (changedInput === contractStart && startDate && startDate < today) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Tanggal mulai kontrak tidak boleh backdate (kurang dari hari ini)',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                contractStart.value = '';
+                return;
+            }
+
+            if (changedInput === contractEnd && endDate && endDate < today) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Tanggal selesai kontrak tidak boleh backdate (kurang dari hari ini)',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                contractEnd.value = '';
+                return;
+            }
+
             if (!startDate || !endDate) return;
 
             if (startDate > endDate) {
-                alert('Tanggal mulai kontrak tidak boleh lebih besar dari tanggal selesai');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Tanggal mulai kontrak tidak boleh lebih besar dari tanggal selesai',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
                 changedInput.value = '';
             }
         }
@@ -117,6 +149,79 @@
 
             contractEnd.addEventListener('change', function() {
                 validateContractDates(this);
+            });
+        }
+
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const startDate = parseContractDate(contractStart.value);
+                const endDate = parseContractDate(contractEnd.value);
+
+                if (!contractStart.value || !contractEnd.value) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Data Belum Lengkap',
+                        text: 'Tanggal mulai dan selesai kontrak wajib diisi',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+
+                if (startDate && startDate < today) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Tanggal Tidak Valid',
+                        text: 'Tanggal mulai kontrak tidak boleh backdate (kurang dari hari ini)',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+
+                if (endDate && endDate < today) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Tanggal Tidak Valid',
+                        text: 'Tanggal selesai kontrak tidak boleh backdate (kurang dari hari ini)',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+
+                if (startDate && endDate && startDate > endDate) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Tanggal Tidak Valid',
+                        text: 'Tanggal mulai kontrak tidak boleh lebih besar dari tanggal selesai',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+
+                // Konfirmasi sebelum submit
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Konfirmasi Update',
+                    text: 'Apakah Anda yakin ingin memperbarui data kontrak ini?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#4180c3',
+                    cancelButtonColor: '#8592a3',
+                    confirmButtonText: 'Ya, Update!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
         }
     });
