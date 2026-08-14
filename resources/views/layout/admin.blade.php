@@ -288,24 +288,10 @@
                                         <div data-i18n="Station Monitoring">Station Monitoring</div>
                                     </a>
                                 </li>
-                                @endif
-                                @if(Auth::user()->canAccess('role', 'view'))
-                                <li class="menu-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                                    <a href="{{ route('roles.index') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-shield-lock"></i>
-                                        <div data-i18n="Role & Permissions">Role & Permissions</div>
-                                    </a>
+
+                                <li class="menu-header small text-uppercase mt-3 mb-1" style="padding-left: 2.5rem !important;">
+                                    <span class="menu-header-text" style="font-size: 0.68rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em;">DATA OPERASIONAL</span>
                                 </li>
-                                @endif
-                                @if(Auth::user()->canAccess('blacklist', 'view'))
-                                <li class="menu-item {{ request()->routeIs('blacklist.*') ? 'active' : '' }}">
-                                    <a href="{{ route('blacklist.index') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-user-x"></i>
-                                        <div data-i18n="Blacklist Staff">Blacklist Staff</div>
-                                    </a>
-                                </li>
-                                @endif
-                                @if(Auth::user()->canAccess('user', 'view'))
                                 <li class="menu-item {{ request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') ? 'active' : '' }}">
                                     <a href="{{ route('users.kontrak') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-file-text"></i>
@@ -325,6 +311,22 @@
                                     </a>
                                 </li>
                                 @endif
+
+                                @if(Auth::user()->canAccess('role', 'view') || Auth::user()->canAccess('job_title', 'view') || Auth::user()->canAccess('unit', 'view') || Auth::user()->canAccess('sub_unit', 'view') || Auth::user()->canAccess('cluster', 'view'))
+                                <li class="menu-header small text-uppercase mt-3 mb-1" style="padding-left: 2.5rem !important;">
+                                    <span class="menu-header-text" style="font-size: 0.68rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em;">DATA MASTER</span>
+                                </li>
+                                @endif
+
+                                @if(Auth::user()->canAccess('role', 'view'))
+                                <li class="menu-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                                    <a href="{{ route('roles.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-shield-lock"></i>
+                                        <div data-i18n="Role & Permissions">Role & Permissions</div>
+                                    </a>
+                                </li>
+                                @endif
+
                                 @if(Auth::user()->canAccess('job_title', 'view'))
                                 <li class="menu-item {{ request()->routeIs('master_data.job_titles.*') ? 'active' : '' }}">
                                     <a href="{{ route('master_data.job_titles.index') }}" class="menu-link">
@@ -333,6 +335,7 @@
                                     </a>
                                 </li>
                                 @endif
+
                                 @if(Auth::user()->canAccess('unit', 'view'))
                                 <li class="menu-item {{ request()->routeIs('master_data.units.*') ? 'active' : '' }}">
                                     <a href="{{ route('master_data.units.index') }}" class="menu-link">
@@ -341,6 +344,7 @@
                                     </a>
                                 </li>
                                 @endif
+
                                 @if(Auth::user()->canAccess('sub_unit', 'view'))
                                 <li class="menu-item {{ request()->routeIs('master_data.sub_units.*') ? 'active' : '' }}">
                                     <a href="{{ route('master_data.sub_units.index') }}" class="menu-link">
@@ -349,11 +353,21 @@
                                     </a>
                                 </li>
                                 @endif
+
                                 @if(Auth::user()->canAccess('cluster', 'view') || Auth::user()->canAccess('user', 'view'))
                                 <li class="menu-item {{ request()->routeIs('master_data.clusters.*') || request()->routeIs('master.clusters.*') ? 'active' : '' }}">
                                     <a href="{{ route('master_data.clusters.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-layout-grid"></i>
                                         <div data-i18n="Clusters">Clusters</div>
+                                    </a>
+                                </li>
+                                @endif
+
+                                @if(Auth::user()->canAccess('blacklist', 'view'))
+                                <li class="menu-item {{ request()->routeIs('blacklist.*') ? 'active' : '' }}">
+                                    <a href="{{ route('blacklist.index') }}" class="menu-link">
+                                        <i class="menu-icon tf-icons ti ti-user-x"></i>
+                                        <div data-i18n="Blacklist Staff">Blacklist Staff</div>
                                     </a>
                                 </li>
                                 @endif
