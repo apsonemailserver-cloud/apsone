@@ -314,10 +314,24 @@
                                     </a>
                                 @endif
                             @elseif($todayAttendance && $todayAttendance->check_in_time && !$todayAttendance->check_out_time)
-                                <a href="{{ route('attendance.camera', ['type' => 'out']) }}" 
-                                   class="btn-attendance btn-checkout">
-                                    <i class="bx bx-log-out"></i> Presensi Out Sekarang
-                                </a>
+                                @if(!($hasFaceSamples ?? false) && ($strictMode ?? true))
+                                    <div class="alert alert-warning d-flex align-items-center justify-content-center gap-2 mb-3 mx-auto text-start" style="max-width: 480px; border-radius: 14px;">
+                                        <i class="bx bx-shield-quarter fs-4 flex-shrink-0 text-warning"></i>
+                                        <div>
+                                            <div class="fw-bold small text-dark">Registrasi Wajah NIP Diperlukan</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">Foto referensi wajah Anda belum terdaftar atau telah di-reset. Selesaikan pendaftaran foto wajah sebelum melakukan presensi out.</div>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('attendance.camera', ['type' => 'out']) }}" 
+                                       class="btn-attendance btn-checkout" style="background: linear-gradient(135deg, #2f80ed, #1f64c8);">
+                                        <i class="bx bx-shield-quarter me-1"></i> Daftarkan Wajah & Presensi Out
+                                    </a>
+                                @else
+                                    <a href="{{ route('attendance.camera', ['type' => 'out']) }}" 
+                                       class="btn-attendance btn-checkout">
+                                        <i class="bx bx-log-out"></i> Presensi Out Sekarang
+                                    </a>
+                                @endif
                             @elseif($todayAttendance && $todayAttendance->check_in_time && $todayAttendance->check_out_time)
                                 @php
                                     $in = \Carbon\Carbon::parse($todayAttendance->check_in_time);
