@@ -149,7 +149,7 @@
                             <li class="menu-item {{ request()->routeIs('schedule.index') ? 'active' : '' }}">
                                 <a href="{{ route('schedule.index') }}" class="menu-link">
                                     <i class="menu-icon tf-icons ti ti-calendar"></i>
-                                    <div data-i18n="Schedule List">Schedule List</div>
+                                    <div data-i18n="Calendar View">Calendar View</div>
                                 </a>
                             </li>
                             @if (Auth::user()->isAdmin() || strtolower((string) Auth::user()->role) === 'admin')
@@ -521,7 +521,7 @@
 
                     if ($currentUser->canAccess('schedule', 'view')) {
                         $topbarMenuLinks[] = ['label' => "Today's Schedule", 'category' => 'Schedule', 'icon' => 'ti-calendar-check', 'url' => route('schedule.now'), 'keywords' => 'jadwal hari ini schedule now'];
-                        $topbarMenuLinks[] = ['label' => 'Schedule List', 'category' => 'Schedule', 'icon' => 'ti-calendar', 'url' => route('schedule.index'), 'keywords' => 'data schedule jadwal bulanan'];
+                        $topbarMenuLinks[] = ['label' => 'Calendar View', 'category' => 'Schedule', 'icon' => 'ti-calendar', 'url' => route('schedule.index'), 'keywords' => 'data schedule jadwal bulanan calendar view'];
                     }
 
                     if ($canManageSchedule && ($currentUser->canAccess('schedule', 'create') || $currentUser->canAccess('schedule', 'edit'))) {
