@@ -515,111 +515,117 @@
                     $canManageLeave = in_array($currentUser->role, ['Admin', 'Head Of Airport Service']);
                     $topbarMenuLinks = [];
                     if ($currentUser->canAccess('dashboard', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Dashboard', 'category' => 'Menu', 'hint' => 'Overview operasional dan statistik', 'icon' => 'ti-layout-dashboard', 'url' => route('home')];
+                        $topbarMenuLinks[] = ['label' => 'Dashboard', 'category' => 'Menu', 'icon' => 'ti-layout-dashboard', 'url' => route('home'), 'keywords' => 'dashboard beranda overview'];
                     }
-                    $topbarMenuLinks[] = ['label' => 'Profile', 'category' => 'Menu', 'hint' => 'Data akun dan biodata staff', 'icon' => 'ti-user-circle', 'url' => route('users.profile', $currentUser->id)];
+                    $topbarMenuLinks[] = ['label' => 'Profile', 'category' => 'Menu', 'icon' => 'ti-user-circle', 'url' => route('users.profile', $currentUser->id), 'keywords' => 'profile profil biodata staff user'];
 
                     if ($currentUser->canAccess('schedule', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Jadwal Hari Ini', 'category' => 'Schedule', 'hint' => 'Lihat jadwal aktif hari ini', 'icon' => 'ti-calendar-check', 'url' => route('schedule.now')];
-                        $topbarMenuLinks[] = ['label' => 'Data Schedule', 'category' => 'Schedule', 'hint' => 'Kalender dan data jadwal bulanan', 'icon' => 'ti-calendar', 'url' => route('schedule.index')];
+                        $topbarMenuLinks[] = ['label' => "Today's Schedule", 'category' => 'Schedule', 'icon' => 'ti-calendar-check', 'url' => route('schedule.now'), 'keywords' => 'jadwal hari ini schedule now'];
+                        $topbarMenuLinks[] = ['label' => 'Schedule List', 'category' => 'Schedule', 'icon' => 'ti-calendar', 'url' => route('schedule.index'), 'keywords' => 'data schedule jadwal bulanan'];
                     }
 
                     if ($canManageSchedule && ($currentUser->canAccess('schedule', 'create') || $currentUser->canAccess('schedule', 'edit'))) {
-                        $topbarMenuLinks[] = ['label' => 'Create / Update Schedule', 'category' => 'Schedule', 'hint' => 'Kelola pembuatan jadwal staff', 'icon' => 'ti-calendar-plus', 'url' => route('schedule.view')];
+                        $topbarMenuLinks[] = ['label' => 'Create / Update', 'category' => 'Schedule', 'icon' => 'ti-calendar-plus', 'url' => route('schedule.view'), 'keywords' => 'create update schedule buat jadwal tambah'];
                     }
 
                     if ($currentUser->canAccess('shift', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Shift', 'category' => 'Schedule', 'hint' => 'Data shift kerja', 'icon' => 'ti-clock', 'url' => route('shift.index')];
+                        $topbarMenuLinks[] = ['label' => 'Shift', 'category' => 'Schedule', 'icon' => 'ti-clock', 'url' => route('shift.index'), 'keywords' => 'shift kerja jam data shift'];
                     }
 
                     if ($currentUser->canAccess('attendance', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Absensi Hari Ini', 'category' => 'Attendance', 'hint' => 'Monitoring absensi staff', 'icon' => 'ti-stopwatch', 'url' => route('attendance.index')];
+                        $topbarMenuLinks[] = ['label' => "Today's Attendance", 'category' => 'Attendance', 'icon' => 'ti-stopwatch', 'url' => route('attendance.index'), 'keywords' => 'absensi hari ini presensi'];
                     }
 
                     if ($canViewAdminAttendance || $currentUser->canAccess('attendance', 'export')) {
-                        $topbarMenuLinks[] = ['label' => 'Laporan Absensi', 'category' => 'Attendance', 'hint' => 'Rekap dan export absensi', 'icon' => 'ti-file-text', 'url' => route('attendance.reports')];
+                        $topbarMenuLinks[] = ['label' => 'Attendance Report', 'category' => 'Attendance', 'icon' => 'ti-file-text', 'url' => route('attendance.reports'), 'keywords' => 'laporan absensi rekap export'];
                     }
 
                     if ($canApproveAttendanceCorrections || $currentUser->canAccess('attendance', 'approve')) {
-                        $topbarMenuLinks[] = ['label' => 'Approval Koreksi Absensi', 'category' => 'Attendance', 'hint' => 'Validasi koreksi waktu absensi', 'icon' => 'ti-user-check', 'url' => route('attendance.corrections.approval')];
+                        $topbarMenuLinks[] = ['label' => 'Correction Approvals', 'category' => 'Attendance', 'icon' => 'ti-user-check', 'url' => route('attendance.corrections.approval'), 'keywords' => 'approval koreksi absensi validasi'];
                     }
 
                     if ($currentUser->canAccess('overtime', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Lembur Saya', 'category' => 'Attendance', 'hint' => 'Pengajuan dan status lembur', 'icon' => 'ti-hourglass', 'url' => route('overtime.index')];
+                        $topbarMenuLinks[] = ['label' => 'My Overtime', 'category' => 'Attendance', 'icon' => 'ti-hourglass', 'url' => route('overtime.index'), 'keywords' => 'lembur saya pengajuan lembur overtime'];
                     }
 
                     if ($canApproveOvertime || $currentUser->canAccess('overtime', 'approve')) {
-                        $topbarMenuLinks[] = ['label' => 'Approval Lembur', 'category' => 'Attendance', 'hint' => 'Validasi pengajuan lembur', 'icon' => 'ti-circle-check', 'url' => route('overtime.approval')];
+                        $topbarMenuLinks[] = ['label' => 'Overtime Approvals', 'category' => 'Attendance', 'icon' => 'ti-circle-check', 'url' => route('overtime.approval'), 'keywords' => 'approval lembur validasi persetujuan'];
                     }
 
                     if ($currentUser->role === 'Admin' || $currentUser->canAccess('overtime', 'export')) {
-                        $topbarMenuLinks[] = ['label' => 'Laporan Lembur', 'category' => 'Attendance', 'hint' => 'Rekap lembur operasional', 'icon' => 'ti-chart-line', 'url' => route('overtime.report')];
+                        $topbarMenuLinks[] = ['label' => 'Overtime Report', 'category' => 'Attendance', 'icon' => 'ti-chart-line', 'url' => route('overtime.report'), 'keywords' => 'laporan lembur rekap export overtime'];
+                    }
+
+                    if ($currentUser->canAccess('assignment', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Assignment', 'category' => 'Menu', 'icon' => 'ti-plane-arrival', 'url' => route('assignments.index'), 'keywords' => 'assignment tugas penerbangan pekerjaan order'];
                     }
 
                     if ($currentUser->canAccess('station', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Manajemen Station', 'category' => 'Administrator', 'hint' => 'Kelola status dan koordinat station', 'icon' => 'ti-building-store', 'url' => route('stations.index')];
+                        $topbarMenuLinks[] = ['label' => 'Station Management', 'category' => 'Administrator', 'icon' => 'ti-building-store', 'url' => route('stations.index'), 'keywords' => 'station management kelola status stasiun'];
                     }
                     if ($currentUser->canAccess('user', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Monitor Station', 'category' => 'Administrator', 'hint' => 'Pantau staff tiap station', 'icon' => 'ti-device-desktop', 'url' => route('staff.index')];
-                        $topbarMenuLinks[] = ['label' => 'Kontrak', 'category' => 'Administrator', 'hint' => 'Masa kontrak staff', 'icon' => 'ti-file-text', 'url' => route('users.kontrak')];
-                        $topbarMenuLinks[] = ['label' => 'PAS Bandara', 'category' => 'Administrator', 'hint' => 'Masa aktif PAS bandara', 'icon' => 'ti-id', 'url' => route('users.pas')];
-                        $topbarMenuLinks[] = ['label' => 'TIM Bandara', 'category' => 'Administrator', 'hint' => 'Data TIM bandara', 'icon' => 'ti-badge', 'url' => route('users.tim')];
+                        $topbarMenuLinks[] = ['label' => 'Station Monitoring', 'category' => 'Administrator', 'icon' => 'ti-device-desktop', 'url' => route('staff.index'), 'keywords' => 'station monitoring staff pantau station'];
+                        $topbarMenuLinks[] = ['label' => 'Contracts', 'category' => 'Administrator', 'icon' => 'ti-file-text', 'url' => route('users.kontrak'), 'keywords' => 'contracts kontrak staff masa kerja'];
+                        $topbarMenuLinks[] = ['label' => 'Airport PAS', 'category' => 'Administrator', 'icon' => 'ti-id', 'url' => route('users.pas'), 'keywords' => 'airport pas bandara masa aktif'];
+                        $topbarMenuLinks[] = ['label' => 'Airport TIM', 'category' => 'Administrator', 'icon' => 'ti-badge', 'url' => route('users.tim'), 'keywords' => 'airport tim bandara tanda izin'];
                     }
-                    if ($currentUser->canAccess('blacklist', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Blacklist', 'category' => 'Administrator', 'hint' => 'Data staff blacklist', 'icon' => 'ti-user-x', 'url' => route('blacklist.index')];
+                    if ($currentUser->canAccess('role', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Role & Permissions', 'category' => 'Administrator', 'icon' => 'ti-shield-lock', 'url' => route('roles.index'), 'keywords' => 'role permissions hak akses'];
                     }
                     if ($currentUser->canAccess('job_title', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Job Titles', 'category' => 'Administrator', 'hint' => 'Kelola data master job titles', 'icon' => 'ti-briefcase', 'url' => route('master_data.job_titles.index')];
+                        $topbarMenuLinks[] = ['label' => 'Job Titles', 'category' => 'Administrator', 'icon' => 'ti-briefcase', 'url' => route('master_data.job_titles.index'), 'keywords' => 'job titles jabatan master data'];
                     }
                     if ($currentUser->canAccess('unit', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Units', 'category' => 'Administrator', 'hint' => 'Kelola data master unit', 'icon' => 'ti-building', 'url' => route('master_data.units.index')];
+                        $topbarMenuLinks[] = ['label' => 'Units', 'category' => 'Administrator', 'icon' => 'ti-building', 'url' => route('master_data.units.index'), 'keywords' => 'units unit master data'];
                     }
                     if ($currentUser->canAccess('sub_unit', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Sub Units', 'category' => 'Administrator', 'hint' => 'Kelola data master sub unit', 'icon' => 'ti-hierarchy-2', 'url' => route('master_data.sub_units.index')];
+                        $topbarMenuLinks[] = ['label' => 'Sub Units', 'category' => 'Administrator', 'icon' => 'ti-hierarchy-2', 'url' => route('master_data.sub_units.index'), 'keywords' => 'sub units master data'];
                     }
                     if ($currentUser->canAccess('cluster', 'view') || $currentUser->canAccess('user', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Clusters', 'category' => 'Administrator', 'hint' => 'Kelola data master cluster', 'icon' => 'ti-layout-grid', 'url' => route('master_data.clusters.index')];
+                        $topbarMenuLinks[] = ['label' => 'Clusters', 'category' => 'Administrator', 'icon' => 'ti-layout-grid', 'url' => route('master_data.clusters.index'), 'keywords' => 'clusters cluster master data'];
+                    }
+                    if ($currentUser->canAccess('blacklist', 'view')) {
+                        $topbarMenuLinks[] = ['label' => 'Blacklist Staff', 'category' => 'Administrator', 'icon' => 'ti-user-x', 'url' => route('blacklist.index'), 'keywords' => 'blacklist staff blokir'];
                     }
 
                     if ($currentUser->canAccess('document', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Cetak Dokumen', 'category' => 'General', 'hint' => 'Dokumen dan surat', 'icon' => 'ti-file-text', 'url' => route('document')];
-                    }
-
-                    if ($currentUser->role === 'Admin' || $currentUser->canAccess('document', 'create')) {
-                        $topbarMenuLinks[] = ['label' => 'Manajemen Dokumen', 'category' => 'General', 'hint' => 'Kelola file dan akses dokumen', 'icon' => 'ti-folders', 'url' => route('admin.documents.index')];
+                        $topbarDokumenUrl = ($currentUser->hasPermission('document.edit') || $currentUser->role === 'Admin') ? route('admin.documents.index') : route('document');
+                        $topbarMenuLinks[] = ['label' => 'Documents', 'category' => 'General', 'icon' => 'ti-file-text', 'url' => $topbarDokumenUrl, 'keywords' => 'documents dokumen cetak surat berkas'];
                     }
 
                     if ($currentUser->canAccess('training', 'view')) {
-                        if ($canManageTraining || $currentUser->canAccess('training', 'create')) {
-                            $topbarMenuLinks[] = ['label' => 'Manajemen Training', 'category' => 'Training', 'hint' => 'Kelola data sertifikat', 'icon' => 'ti-book', 'url' => route('admin.training.certificates.index')];
-                            $topbarMenuLinks[] = ['label' => 'Tambah Sertifikat', 'category' => 'Training', 'hint' => 'Input sertifikat baru', 'icon' => 'ti-circle-plus', 'url' => route('admin.training.certificates.create')];
-                        } else {
-                            $topbarMenuLinks[] = ['label' => 'Sertifikat Saya', 'category' => 'Training', 'hint' => 'Lihat sertifikat pribadi', 'icon' => 'ti-certificate', 'url' => route('my.certificates')];
+                        $topbarMenuLinks[] = ['label' => 'My Certificates', 'category' => 'Training', 'icon' => 'ti-certificate', 'url' => route('my.certificates'), 'keywords' => 'sertifikat saya my certificates training'];
+                        if ($canManageTraining || $currentUser->canAccess('training', 'create') || $currentUser->canAccess('training', 'edit') || $currentUser->isAdmin()) {
+                            $topbarMenuLinks[] = ['label' => 'Training Management', 'category' => 'Training', 'icon' => 'ti-book', 'url' => route('admin.training.certificates.index'), 'keywords' => 'training management kelola sertifikat tambah'];
                         }
                     }
 
                     if ($currentUser->canAccess('leave', 'view') || $currentUser->canAccess('leave', 'create')) {
-                        $topbarMenuLinks[] = ['label' => 'Pengajuan Leave', 'category' => 'Apply Leave', 'hint' => 'Ajukan izin atau cuti', 'icon' => 'ti-send', 'url' => route('leaves.pengajuan')];
+                        $topbarMenuLinks[] = ['label' => 'Leave Request', 'category' => 'Apply Leave', 'icon' => 'ti-send', 'url' => route('leaves.pengajuan'), 'keywords' => 'leave request pengajuan cuti izin sakit'];
                     }
 
                     if ($canManageLeave || $currentUser->canAccess('leave', 'approve')) {
-                        $topbarMenuLinks[] = ['label' => 'Approval Leave', 'category' => 'Apply Leave', 'hint' => 'Review pengajuan leave', 'icon' => 'ti-circle-check', 'url' => route('leaves.index')];
+                        $topbarMenuLinks[] = ['label' => 'Leave Approvals', 'category' => 'Apply Leave', 'icon' => 'ti-circle-check', 'url' => route('leaves.index'), 'keywords' => 'leave approvals persetujuan cuti approval'];
+                    }
+
+                    if ($currentUser->canAccess('leave', 'view') || $currentUser->canAccess('leave', 'approve') || $currentUser->isAdmin()) {
+                        $topbarMenuLinks[] = ['label' => 'Leave Balance', 'category' => 'Apply Leave', 'icon' => 'ti-chart-bar', 'url' => route('leaves.balances'), 'keywords' => 'leave balance sisa saldo cuti'];
                     }
 
                     if ($canManageLeave || $currentUser->canAccess('leave', 'export')) {
-                        $topbarMenuLinks[] = ['label' => 'Laporan Leave', 'category' => 'Apply Leave', 'hint' => 'Rekap leave staff', 'icon' => 'ti-file-text', 'url' => route('leaves.laporan')];
+                        $topbarMenuLinks[] = ['label' => 'Leave Report', 'category' => 'Apply Leave', 'icon' => 'ti-file-text', 'url' => route('leaves.laporan'), 'keywords' => 'leave report laporan rekap cuti'];
                     }
 
                     if ($currentUser->canAccess('master_leave', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Master Cuti', 'category' => 'Apply Leave', 'hint' => 'Kelola tipe cuti & aturan masa kerja', 'icon' => 'ti-settings', 'url' => route('master_leaves.index')];
+                        $topbarMenuLinks[] = ['label' => 'Master Cuti', 'category' => 'Apply Leave', 'icon' => 'ti-settings', 'url' => route('master_leaves.index'), 'keywords' => 'master cuti tipe aturan masa kerja'];
                     }
 
                     if ($currentUser->canAccess('announcement', 'view')) {
-                        $topbarMenuLinks[] = ['label' => 'Pengumuman', 'category' => 'General', 'hint' => 'Informasi pengumuman perusahaan', 'icon' => 'ti-speakerphone', 'url' => route('announcements.index')];
+                        $topbarMenuLinks[] = ['label' => 'Announcements', 'category' => 'General', 'icon' => 'ti-speakerphone', 'url' => route('announcements.index'), 'keywords' => 'announcements pengumuman berita informasi'];
                     }
 
-                    $topbarMenuLinks[] = ['label' => 'FAQ', 'category' => 'Support', 'hint' => 'Pertanyaan umum sistem', 'icon' => 'ti-help-circle', 'url' => route('faq')];
-                    $topbarMenuLinks[] = ['label' => 'Kebijakan Privasi', 'category' => 'Support', 'hint' => 'Informasi privasi aplikasi', 'icon' => 'ti-shield-check', 'url' => route('kebijakan')];
+                    $topbarMenuLinks[] = ['label' => 'FAQ', 'category' => 'Support', 'icon' => 'ti-help-circle', 'url' => route('faq'), 'keywords' => 'faq tanya jawab bantuan support'];
+                    $topbarMenuLinks[] = ['label' => 'Privacy Policy', 'category' => 'Support', 'icon' => 'ti-shield-check', 'url' => route('kebijakan'), 'keywords' => 'privacy policy kebijakan privasi privasi support'];
                     $topbarMenuGroups = collect($topbarMenuLinks)->groupBy('category');
                 @endphp
                 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
@@ -800,7 +806,7 @@
                         <h2 class="visually-hidden" id="apsMenuSearchTitle">Pencarian Menu</h2>
                         <div class="aps-menu-search-head">
                             <span class="aps-menu-search-icon"><i class="ti ti-search"></i></span>
-                            <input class="aps-menu-search-input" id="apsMenuSearchInput" type="search"
+                            <input class="aps-menu-search-input" id="apsMenuSearchInput" type="text"
                                 placeholder="Cari menu, fitur, atau halaman..." autocomplete="off">
                             <button class="aps-menu-search-close" type="button" id="apsMenuSearchClose"
                                 aria-label="Tutup pencarian">
@@ -808,34 +814,43 @@
                             </button>
                         </div>
                         <div class="aps-menu-search-body">
-                            <div class="aps-menu-search-empty" id="apsMenuSearchEmpty">
-                                Menu tidak ditemukan. Coba kata kunci lain.
+                            <!-- Initial state (when input is empty) -->
+                            <div class="aps-menu-search-initial" id="apsMenuSearchInitial">
+                                <span class="aps-menu-search-initial-icon"><i class="ti ti-search"></i></span>
+                                <p>Ketik minimal 1 atau 2 huruf untuk mencari menu...</p>
                             </div>
-                            @foreach ($topbarMenuGroups as $category => $items)
-                                <div class="aps-menu-search-group" data-search-group>
-                                    <div class="aps-menu-search-group-title">{{ $category }}</div>
-                                    @foreach ($items as $item)
-                                        <a class="aps-menu-search-item" href="{{ $item['url'] }}"
-                                            data-search-item
-                                            data-keywords="{{ \Illuminate\Support\Str::lower($item['label'] . ' ' . $item['category'] . ' ' . $item['hint']) }}">
+
+                            <!-- Empty / Not found state -->
+                            <div class="aps-menu-search-empty" id="apsMenuSearchEmpty" style="display: none;">
+                                <span class="aps-menu-search-empty-icon"><i class="ti ti-file-search"></i></span>
+                                <p>Menu tidak ditemukan. Coba kata kunci lain.</p>
+                            </div>
+
+                            <!-- Flat vertical list of items (hidden initially until user types) -->
+                            <div class="aps-menu-search-list w-100" id="apsMenuSearchList" style="display: none; width: 100%;">
+                                @foreach ($topbarMenuLinks as $item)
+                                    <a class="aps-menu-search-item w-100" href="{{ $item['url'] }}"
+                                        style="width: 100%;"
+                                        data-search-item
+                                        data-title="{{ $item['label'] }}"
+                                        data-category="{{ $item['category'] }}"
+                                        data-keywords="{{ $item['keywords'] ?? '' }}">
+                                        <div class="aps-menu-search-item-main">
                                             <span class="aps-menu-search-item-icon">
                                                 <i class="ti {{ $item['icon'] }}"></i>
                                             </span>
-                                            <span class="aps-menu-search-copy">
-                                                <strong>{{ $item['label'] }}</strong>
-                                                <span>{{ $item['hint'] }}</span>
-                                            </span>
-                                            <span class="aps-menu-search-arrow" aria-hidden="true">
-                                                <i class="ti ti-chevron-right"></i>
-                                            </span>
-                                        </a>
-                                    @endforeach
-                                </div>
-                            @endforeach
+                                            <span class="aps-menu-search-title">{{ $item['label'] }}</span>
+                                        </div>
+                                        <div class="aps-menu-search-item-meta">
+                                            <span class="aps-menu-search-category">{{ $item['category'] }}</span>
+                                            <i class="ti ti-chevron-right aps-menu-search-arrow" aria-hidden="true"></i>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
                         </div>
                         <div class="aps-menu-search-foot">
-                            <span><kbd>Ctrl</kbd> + <kbd>K</kbd> buka pencarian</span>
-                            <span><kbd>Esc</kbd> tutup</span>
+                            <span>Pro tip: Use <kbd>&uarr;</kbd> <kbd>&darr;</kbd> to navigate, <kbd>Enter</kbd> to select, and <kbd>Esc</kbd> to close.</span>
                         </div>
                     </div>
                 </div>
@@ -956,11 +971,12 @@
         }
 
         .aps-picker-day.is-disabled,
-        .aps-picker-day[disabled] {
-            opacity: 0.3 !important;
+        .aps-picker-day[disabled],
+        .aps-picker-nav[disabled],
+        .aps-picker-nav.is-disabled {
+            opacity: 0.25 !important;
             pointer-events: none !important;
             cursor: not-allowed !important;
-            background: transparent !important;
         }
 
         /* Global Toggle Switch Styling (Light & Dark Mode) */
@@ -1524,8 +1540,8 @@
 	                    daysHtml += '<span class="aps-picker-day is-empty"></span>';
 	                }
 
-	                const minDateVal = input.getAttribute('min') || (input.min || '');
-	                const maxDateVal = input.getAttribute('max') || (input.max || '');
+	                const minDateVal = input.getAttribute('min') || input.dataset.apsMin || (input.min || '');
+	                const maxDateVal = input.getAttribute('max') || input.dataset.apsMax || (input.max || '');
 
 	                for (let day = 1; day <= daysInMonth; day += 1) {
 	                    const itemDate = new Date(data.viewYear, data.viewMonth, day);
@@ -1543,16 +1559,21 @@
 	                    daysHtml += '<button type="button" class="' + classes + '" ' + (isDisabled ? 'disabled' : '') + ' data-picker-date="' + key + '">' + day + '</button>';
 	                }
 
+	                const isNextMonthDisabled = maxDateVal && dateKey(new Date(data.viewYear, data.viewMonth + 1, 1)) > maxDateVal;
+	                const isNextYearDisabled = maxDateVal && dateKey(new Date(data.viewYear + 1, data.viewMonth, 1)) > maxDateVal;
+	                const isPrevMonthDisabled = minDateVal && dateKey(new Date(data.viewYear, data.viewMonth, 0)) < minDateVal;
+	                const isPrevYearDisabled = minDateVal && dateKey(new Date(data.viewYear - 1, data.viewMonth + 1, 0)) < minDateVal;
+
 	                return [
 	                    '<div class="aps-picker-head">',
 	                    '<div class="aps-picker-nav-group">',
-	                    '<button type="button" class="aps-picker-nav" data-picker-nav="-12" aria-label="Tahun sebelumnya"><i class="ti ti-chevrons-left"></i></button>',
-	                    '<button type="button" class="aps-picker-nav" data-picker-nav="-1" aria-label="Bulan sebelumnya"><i class="ti ti-chevron-left"></i></button>',
+	                    '<button type="button" class="aps-picker-nav" data-picker-nav="-12"' + (isPrevYearDisabled ? ' disabled style="opacity:0.25;cursor:not-allowed;pointer-events:none;"' : '') + ' aria-label="Tahun sebelumnya"><i class="ti ti-chevrons-left"></i></button>',
+	                    '<button type="button" class="aps-picker-nav" data-picker-nav="-1"' + (isPrevMonthDisabled ? ' disabled style="opacity:0.25;cursor:not-allowed;pointer-events:none;"' : '') + ' aria-label="Bulan sebelumnya"><i class="ti ti-chevron-left"></i></button>',
 	                    '</div>',
 	                    '<div class="aps-picker-title">' + monthNames[data.viewMonth] + ' ' + data.viewYear + '</div>',
 	                    '<div class="aps-picker-nav-group">',
-	                    '<button type="button" class="aps-picker-nav" data-picker-nav="1" aria-label="Bulan berikutnya"><i class="ti ti-chevron-right"></i></button>',
-	                    '<button type="button" class="aps-picker-nav" data-picker-nav="12" aria-label="Tahun berikutnya"><i class="ti ti-chevrons-right"></i></button>',
+	                    '<button type="button" class="aps-picker-nav" data-picker-nav="1"' + (isNextMonthDisabled ? ' disabled style="opacity:0.25;cursor:not-allowed;pointer-events:none;"' : '') + ' aria-label="Bulan berikutnya"><i class="ti ti-chevron-right"></i></button>',
+	                    '<button type="button" class="aps-picker-nav" data-picker-nav="12"' + (isNextYearDisabled ? ' disabled style="opacity:0.25;cursor:not-allowed;pointer-events:none;"' : '') + ' aria-label="Tahun berikutnya"><i class="ti ti-chevrons-right"></i></button>',
 	                    '</div>',
 	                    '</div>',
 	                    '<div class="aps-picker-body">',
@@ -1707,6 +1728,8 @@
 	                    input.dataset.apsPickerType = type;
 	                    input.dataset.apsRequired = input.required ? 'true' : 'false';
 	                    input.dataset.apsStep = input.getAttribute('step') || '';
+	                    input.dataset.apsMin = input.getAttribute('min') || (input.min || '');
+	                    input.dataset.apsMax = input.getAttribute('max') || (input.max || '');
 	                    input.required = false;
 	                    input.type = 'hidden';
 	                    input.classList.add('aps-control-hidden');
@@ -1952,184 +1975,369 @@
 	        })();
 	    </script>
 	    <script>
-	        document.addEventListener('DOMContentLoaded', function() {
-	            const toggleBtn = document.getElementById('custom-sidebar-toggle');
-            const mobileCloseBtn = document.getElementById('custom-sidebar-close-mobile');
-            const overlay = document.getElementById('custom-layout-overlay');
-            const layoutMenu = document.getElementById('layout-menu');
-            const htmlTag = document.documentElement;
-            let sidebarPeekTimer = null;
+	        (function() {
+	            if (window.__apsSidebarInitialized) return;
+	            window.__apsSidebarInitialized = true;
 
-            function isDesktopSidebar() {
-                return window.innerWidth >= 1200;
-            }
+	            const htmlTag = document.documentElement;
+	            let sidebarPeekTimer = null;
 
-            function closeSidebarPeek() {
-                window.clearTimeout(sidebarPeekTimer);
-                sidebarPeekTimer = null;
-                htmlTag.classList.remove('sidebar-peeking');
-            }
+	            function isDesktopSidebar() {
+	                return window.innerWidth >= 1200;
+	            }
 
-            function scheduleSidebarPeek() {
-                if (!isDesktopSidebar() || !htmlTag.classList.contains('sidebar-collapsed')) {
-                    return;
-                }
+	            function closeSidebarPeek() {
+	                window.clearTimeout(sidebarPeekTimer);
+	                sidebarPeekTimer = null;
+	                htmlTag.classList.remove('sidebar-peeking');
+	            }
 
-                window.clearTimeout(sidebarPeekTimer);
-                sidebarPeekTimer = window.setTimeout(function() {
-                    if (isDesktopSidebar() && htmlTag.classList.contains('sidebar-collapsed')) {
-                        htmlTag.classList.add('sidebar-peeking');
-                    }
-                }, 130);
-            }
+	            function scheduleSidebarPeek() {
+	                if (!isDesktopSidebar() || !htmlTag.classList.contains('sidebar-collapsed')) {
+	                    return;
+	                }
 
-            function toggleSidebar() {
-                const isMobile = window.innerWidth < 1200;
-                closeSidebarPeek();
+	                window.clearTimeout(sidebarPeekTimer);
+	                sidebarPeekTimer = window.setTimeout(function() {
+	                    if (isDesktopSidebar() && htmlTag.classList.contains('sidebar-collapsed')) {
+	                        htmlTag.classList.add('sidebar-peeking');
+	                    }
+	                }, 130);
+	            }
 
-                if (isMobile) {
-                    // Logika Mobile: Toggle class sidebar-mobile-open
-                    htmlTag.classList.toggle('sidebar-mobile-open');
-                } else {
-                    // Logika Desktop: Toggle class sidebar-collapsed & simpan ke localStorage
-                    htmlTag.classList.toggle('sidebar-collapsed');
+	            function toggleSidebar() {
+	                const isMobile = window.innerWidth < 1200;
+	                closeSidebarPeek();
 
-                    if (htmlTag.classList.contains('sidebar-collapsed')) {
-                        localStorage.setItem('customSidebarState', 'collapsed');
-                    } else {
-                        localStorage.setItem('customSidebarState', 'expanded');
-                    }
-                }
-            }
+	                if (isMobile) {
+	                    // Logika Mobile: Toggle class sidebar-mobile-open
+	                    htmlTag.classList.toggle('sidebar-mobile-open');
+	                } else {
+	                    // Logika Desktop: Toggle class sidebar-collapsed & simpan ke localStorage
+	                    htmlTag.classList.toggle('sidebar-collapsed');
 
-            if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
-            if (layoutMenu) {
-                layoutMenu.addEventListener('pointerenter', scheduleSidebarPeek);
-                layoutMenu.addEventListener('pointerleave', closeSidebarPeek);
-                layoutMenu.addEventListener('mouseenter', scheduleSidebarPeek);
-                layoutMenu.addEventListener('mouseleave', closeSidebarPeek);
-                layoutMenu.addEventListener('focusin', scheduleSidebarPeek);
-                layoutMenu.addEventListener('focusout', function(event) {
-                    if (!layoutMenu.contains(event.relatedTarget)) {
-                        closeSidebarPeek();
-                    }
-                });
-            }
+	                    if (htmlTag.classList.contains('sidebar-collapsed')) {
+	                        localStorage.setItem('customSidebarState', 'collapsed');
+	                    } else {
+	                        localStorage.setItem('customSidebarState', 'expanded');
+	                    }
+	                }
+	            }
 
-            document.querySelectorAll('#custom-sidebar-toggle, .dropdown-user .nav-link, .dropdown-user img')
-                .forEach((element) => {
-                    element.setAttribute('draggable', 'false');
-                    element.addEventListener('dragstart', (event) => event.preventDefault());
-                });
+	            function bindMenuHover() {
+	                const layoutMenu = document.getElementById('layout-menu');
+	                if (layoutMenu && !layoutMenu.__apsHoverBound) {
+	                    layoutMenu.__apsHoverBound = true;
+	                    layoutMenu.addEventListener('pointerenter', scheduleSidebarPeek);
+	                    layoutMenu.addEventListener('pointerleave', closeSidebarPeek);
+	                    layoutMenu.addEventListener('mouseenter', scheduleSidebarPeek);
+	                    layoutMenu.addEventListener('mouseleave', closeSidebarPeek);
+	                    layoutMenu.addEventListener('focusin', scheduleSidebarPeek);
+	                    layoutMenu.addEventListener('focusout', function(event) {
+	                        if (!layoutMenu.contains(event.relatedTarget)) {
+	                            closeSidebarPeek();
+	                        }
+	                    });
+	                }
+	            }
 
-            if (mobileCloseBtn) {
-                mobileCloseBtn.addEventListener('click', function() {
-                    htmlTag.classList.remove('sidebar-mobile-open');
-                });
-            }
+	            // Delegated click handler on document - immune to PJAX DOM re-renders & prevents duplicate listeners
+	            document.addEventListener('click', function(event) {
+	                const toggleBtn = event.target.closest('#custom-sidebar-toggle');
+	                if (toggleBtn) {
+	                    event.preventDefault();
+	                    event.stopPropagation();
+	                    toggleSidebar();
+	                    return;
+	                }
 
-            if (overlay) {
-                overlay.addEventListener('click', function() {
-                    htmlTag.classList.remove('sidebar-mobile-open');
-                });
-            }
+	                const mobileCloseBtn = event.target.closest('#custom-sidebar-close-mobile');
+	                if (mobileCloseBtn) {
+	                    event.preventDefault();
+	                    htmlTag.classList.remove('sidebar-mobile-open');
+	                    return;
+	                }
 
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                closeSidebarPeek();
+	                const overlay = event.target.closest('#custom-layout-overlay');
+	                if (overlay) {
+	                    event.preventDefault();
+	                    htmlTag.classList.remove('sidebar-mobile-open');
+	                    return;
+	                }
+	            });
 
-                if (window.innerWidth >= 1200) {
-                    htmlTag.classList.remove('sidebar-mobile-open');
-                }
-            });
+	            // Prevent drag on controls
+	            function preventDrag() {
+	                document.querySelectorAll('#custom-sidebar-toggle, .dropdown-user .nav-link, .dropdown-user img')
+	                    .forEach((element) => {
+	                        element.setAttribute('draggable', 'false');
+	                        element.addEventListener('dragstart', (event) => event.preventDefault());
+	                    });
+	            }
 
-            // State Restoration (Desktop)
-            if (window.innerWidth >= 1200) {
-                const state = localStorage.getItem('customSidebarState');
-                if (state === 'expanded' || !state) {
-                    htmlTag.classList.remove('sidebar-collapsed');
-                }
-            }
-        });
-    </script>
-    <script>
-        (function() {
-            function initTopbarSearch() {
-                const trigger = document.getElementById('topbarSearchTrigger');
-                const modal = document.getElementById('apsMenuSearch');
-                const input = document.getElementById('apsMenuSearchInput');
-                const closeBtn = document.getElementById('apsMenuSearchClose');
-                const empty = document.getElementById('apsMenuSearchEmpty');
-                if (!trigger || !modal || !input) return;
+	            // Handle window resize
+	            window.addEventListener('resize', function() {
+	                closeSidebarPeek();
 
-                const items = Array.from(modal.querySelectorAll('[data-search-item]'));
-                const groups = Array.from(modal.querySelectorAll('[data-search-group]'));
+	                if (window.innerWidth >= 1200) {
+	                    htmlTag.classList.remove('sidebar-mobile-open');
+	                }
+	            });
 
-                function filterItems() {
-                    const query = input.value.trim().toLowerCase();
-                    let visibleCount = 0;
+	            // State Restoration (Desktop)
+	            if (window.innerWidth >= 1200) {
+	                const state = localStorage.getItem('customSidebarState');
+	                if (state === 'expanded' || !state) {
+	                    htmlTag.classList.remove('sidebar-collapsed');
+	                }
+	            }
 
-                    items.forEach(function(item) {
-                        const keywords = item.getAttribute('data-keywords') || '';
-                        const isVisible = !query || keywords.includes(query);
-                        item.style.display = isVisible ? '' : 'none';
-                        if (isVisible) visibleCount += 1;
-                    });
+	            if (document.readyState === 'loading') {
+	                document.addEventListener('DOMContentLoaded', function() {
+	                    bindMenuHover();
+	                    preventDrag();
+	                }, { once: true });
+	            } else {
+	                bindMenuHover();
+	                preventDrag();
+	            }
 
-                    groups.forEach(function(group) {
-                        const hasVisible = Array.from(group.querySelectorAll('[data-search-item]'))
-                            .some(function(item) {
-                                return item.style.display !== 'none';
-                            });
-                        group.style.display = hasVisible ? '' : 'none';
-                    });
+	            window.addEventListener('aps:content-loaded', function() {
+	                bindMenuHover();
+	                preventDrag();
+	            });
+	        })();
+	    </script>
+	    <script>
+	        (function() {
+	            function initTopbarSearch() {
+	                const modal = document.getElementById('apsMenuSearch');
+	                const input = document.getElementById('apsMenuSearchInput');
+	                const initial = document.getElementById('apsMenuSearchInitial');
+	                const empty = document.getElementById('apsMenuSearchEmpty');
+	                const list = document.getElementById('apsMenuSearchList');
+	                if (!modal || !input || !list) return;
 
-                    if (empty) empty.classList.toggle('is-visible', visibleCount === 0);
-                }
+	                let visibleItems = [];
+	                let selectedIndex = -1;
 
-                function openSearch() {
-                    modal.classList.add('is-open');
-                    document.documentElement.classList.add('aps-search-open');
-                    input.value = '';
-                    filterItems();
-                    window.setTimeout(function() {
-                        input.focus();
-                    }, 40);
-                }
+	                function getItems() {
+	                    return Array.from(modal.querySelectorAll('[data-search-item]'));
+	                }
 
-                function closeSearch() {
-                    modal.classList.remove('is-open');
-                    document.documentElement.classList.remove('aps-search-open');
-                }
+	                function updateSelection() {
+	                    visibleItems.forEach(function(item, idx) {
+	                        const isSelected = (idx === selectedIndex);
+	                        item.classList.toggle('is-selected', isSelected);
+	                        if (isSelected) {
+	                            item.scrollIntoView({ block: 'nearest' });
+	                        }
+	                    });
+	                }
 
-                trigger.addEventListener('click', openSearch);
-                if (closeBtn) closeBtn.addEventListener('click', closeSearch);
-                input.addEventListener('input', filterItems);
+	                function getMatchScore(item, query) {
+	                    const title = (item.getAttribute('data-title') || '').toLowerCase().trim();
+	                    const category = (item.getAttribute('data-category') || '').toLowerCase().trim();
+	                    const keywords = (item.getAttribute('data-keywords') || '').toLowerCase().trim();
 
-                modal.addEventListener('click', function(event) {
-                    if (event.target === modal) closeSearch();
-                    if (event.target.closest('[data-search-item]')) closeSearch();
-                });
+	                    if (!query) return 0;
 
-                document.addEventListener('keydown', function(event) {
-                    const key = event.key.toLowerCase();
-                    if ((event.ctrlKey || event.metaKey) && key === 'k') {
-                        event.preventDefault();
-                        openSearch();
-                    }
+	                    // 1. Exact match on title (Highest priority)
+	                    if (title === query) return 10000;
 
-                    if (event.key === 'Escape' && modal.classList.contains('is-open')) {
-                        event.preventDefault();
-                        closeSearch();
-                    }
-                });
+	                    // 2. Title starts with query (e.g. 'dash' -> 'Dashboard')
+	                    if (title.startsWith(query)) return 5000;
 
-                window.apsCloseMenuSearch = closeSearch;
-            }
+	                    // 3. Word in title starts with query (e.g. 'att' -> "Today's Attendance")
+	                    const titleWords = title.split(/[\s\/\-_]+/);
+	                    for (let word of titleWords) {
+	                        if (word.startsWith(query)) return 3000;
+	                    }
 
-            document.addEventListener('DOMContentLoaded', initTopbarSearch);
-        })();
-    </script>
+	                    // 4. Keyword exact or word starts with query (e.g. 'jadwal' -> "Today's Schedule")
+	                    if (keywords) {
+	                        if (keywords === query || keywords.startsWith(query)) return 2000;
+	                        const kwWords = keywords.split(/[\s\/\-_]+/);
+	                        for (let kw of kwWords) {
+	                            if (kw.startsWith(query)) return 1500;
+	                        }
+	                    }
+
+	                    // 5. Title contains query anywhere
+	                    if (title.includes(query)) return 1000;
+
+	                    // 6. Category starts with query (e.g. 'sched' -> all Schedule menus)
+	                    if (category === query || category.startsWith(query)) return 600;
+	                    const catWords = category.split(/[\s\/\-_]+/);
+	                    for (let word of catWords) {
+	                        if (word.startsWith(query)) return 400;
+	                    }
+
+	                    return 0; // Not matched
+	                }
+
+	                function filterItems() {
+	                    const items = getItems();
+	                    const query = input.value.trim().toLowerCase();
+
+	                    if (query.length < 1) {
+	                        if (initial) initial.style.setProperty('display', 'flex', 'important');
+	                        if (empty) empty.style.setProperty('display', 'none', 'important');
+	                        if (list) list.style.setProperty('display', 'none', 'important');
+	                        items.forEach(function(item) {
+	                            item.classList.remove('is-visible', 'is-selected');
+	                        });
+	                        visibleItems = [];
+	                        selectedIndex = -1;
+	                        updateSelection();
+	                        return;
+	                    }
+
+	                    if (initial) initial.style.setProperty('display', 'none', 'important');
+
+	                    // Calculate score and filter
+	                    const scoredItems = [];
+	                    items.forEach(function(item) {
+	                        const score = getMatchScore(item, query);
+	                        if (score > 0) {
+	                            scoredItems.push({ item, score });
+	                        } else {
+	                            item.classList.remove('is-visible', 'is-selected');
+	                        }
+	                    });
+
+	                    scoredItems.sort((a, b) => b.score - a.score);
+
+	                    visibleItems = scoredItems.map(si => si.item);
+
+	                    // Re-append in sorted order to the list container
+	                    visibleItems.forEach(function(item) {
+	                        item.classList.add('is-visible');
+	                        list.appendChild(item);
+	                    });
+
+	                    if (visibleItems.length === 0) {
+	                        if (empty) empty.style.setProperty('display', 'flex', 'important');
+	                        if (list) list.style.setProperty('display', 'none', 'important');
+	                        selectedIndex = -1;
+	                    } else {
+	                        if (empty) empty.style.setProperty('display', 'none', 'important');
+	                        if (list) list.style.setProperty('display', 'flex', 'important');
+	                        selectedIndex = 0; // Highlight the top ranked match by default
+	                    }
+
+	                    updateSelection();
+	                }
+
+	                function openSearch() {
+	                    modal.classList.add('is-open');
+	                    document.documentElement.classList.add('aps-search-open');
+	                    input.value = '';
+	                    filterItems();
+	                    window.setTimeout(function() {
+	                        input.focus();
+	                    }, 40);
+	                }
+
+	                function closeSearch() {
+	                    modal.classList.remove('is-open');
+	                    document.documentElement.classList.remove('aps-search-open');
+	                }
+
+	                input.oninput = filterItems;
+
+	                document.addEventListener('click', function(event) {
+	                    const trigger = event.target.closest('#topbarSearchTrigger');
+	                    if (trigger) {
+	                        event.preventDefault();
+	                        openSearch();
+	                        return;
+	                    }
+
+	                    const closeBtn = event.target.closest('#apsMenuSearchClose');
+	                    if (closeBtn) {
+	                        event.preventDefault();
+	                        closeSearch();
+	                        return;
+	                    }
+
+	                    if (event.target === modal) {
+	                        closeSearch();
+	                        return;
+	                    }
+
+	                    if (event.target.closest('[data-search-item]')) {
+	                        closeSearch();
+	                    }
+	                });
+
+	                // Hover on search item updates selection
+	                modal.addEventListener('mousemove', function(event) {
+	                    const item = event.target.closest('[data-search-item]');
+	                    if (item) {
+	                        const idx = visibleItems.indexOf(item);
+	                        if (idx !== -1 && idx !== selectedIndex) {
+	                            selectedIndex = idx;
+	                            updateSelection();
+	                        }
+	                    }
+	                });
+
+	                document.addEventListener('keydown', function(event) {
+	                    const key = event.key;
+	                    if ((event.ctrlKey || event.metaKey) && key.toLowerCase() === 'k') {
+	                        event.preventDefault();
+	                        openSearch();
+	                        return;
+	                    }
+
+	                    if (!modal.classList.contains('is-open')) return;
+
+	                    if (key === 'Escape') {
+	                        event.preventDefault();
+	                        closeSearch();
+	                        return;
+	                    }
+
+	                    if (key === 'ArrowDown') {
+	                        event.preventDefault();
+	                        if (visibleItems.length > 0) {
+	                            selectedIndex = (selectedIndex + 1) % visibleItems.length;
+	                            updateSelection();
+	                        }
+	                        return;
+	                    }
+
+	                    if (key === 'ArrowUp') {
+	                        event.preventDefault();
+	                        if (visibleItems.length > 0) {
+	                            selectedIndex = (selectedIndex - 1 + visibleItems.length) % visibleItems.length;
+	                            updateSelection();
+	                        }
+	                        return;
+	                    }
+
+	                    if (key === 'Enter') {
+	                        if (selectedIndex >= 0 && visibleItems[selectedIndex]) {
+	                            event.preventDefault();
+	                            const targetLink = visibleItems[selectedIndex];
+	                            closeSearch();
+	                            targetLink.click();
+	                        }
+	                        return;
+	                    }
+	                });
+
+	                window.apsCloseMenuSearch = closeSearch;
+	            }
+
+	            if (document.readyState === 'loading') {
+	                document.addEventListener('DOMContentLoaded', initTopbarSearch);
+	            } else {
+	                initTopbarSearch();
+	            }
+	        })();
+	    </script>
     <script>
         (function() {
             const contentSelector = '#pjax-content';
