@@ -175,6 +175,8 @@ class FaceSampleController extends Controller
         $descriptors = null;
         if (Storage::disk(self::STORAGE_DISK)->exists($descriptorsPath)) {
             $descriptors = json_decode(Storage::disk(self::STORAGE_DISK)->get($descriptorsPath), true);
+        } elseif (self::isComplete($user->id)) {
+            $descriptors = self::extractAndSaveDescriptors($user->id);
         }
 
         return response()->json([
@@ -185,6 +187,43 @@ class FaceSampleController extends Controller
             'descriptors' => $descriptors,
             'positions'   => self::POSITIONS,
         ]);
+    }
+
+    /**
+     * Ekstrak dan simpan descriptors.json untuk user dari 3 foto referensi
+     */
+    public static function extractAndSaveDescriptors(int|string $userId): ?array
+    {
+        $dir = self::userDir($userId);
+        $refPaths = [];
+        foreach (self::POSITIONS as $pos) {
+            $relPath = $dir . '/' . $pos . '.jpg';
+            $absPath = Storage::disk(self::STORAGE_DISK)->path($relPath);
+            if (file_exists($absPath)) {
+                $refPaths[] = $absPath;
+            }
+        }
+
+        if (empty($refPaths)) {
+            return null;
+        }
+
+        $scriptPath = base_path('scripts/face_compare.py');
+        $pythonBin = self::getPythonBinary();
+
+        if ($pythonBin && file_exists($scriptPath)) {
+            $cmd = escapeshellcmd($pythonBin) . ' ' . escapeshellarg($scriptPath) . ' --extract-only --refs ' . implode(' ', array_map('escapeshellarg', $refPaths));
+            $output = shell_exec($cmd);
+            if ($output) {
+                $res = json_decode(trim($output), true);
+                if (!empty($res['descriptors']) && is_array($res['descriptors'])) {
+                    $descriptorsPath = $dir . '/descriptors.json';
+                    Storage::disk(self::STORAGE_DISK)->put($descriptorsPath, json_encode($res['descriptors']));
+                    return $res['descriptors'];
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -296,6 +335,8 @@ class FaceSampleController extends Controller
         if ($request->has('descriptors') && is_array($request->descriptors)) {
             $descriptorsPath = $dir . '/descriptors.json';
             Storage::disk(self::STORAGE_DISK)->put($descriptorsPath, json_encode($request->descriptors));
+        } else {
+            self::extractAndSaveDescriptors($user->id);
         }
 
         $user->update(['face_registered_at' => now()]);
@@ -345,21 +386,25 @@ class FaceSampleController extends Controller
             ], 200);
         }
 
+        $dir = self::userDir($user->id);
+        $descriptorsPath = $dir . '/descriptors.json';
+        $cachedDescriptors = null;
+
+        if (Storage::disk(self::STORAGE_DISK)->exists($descriptorsPath)) {
+            $cachedDescriptors = json_decode(Storage::disk(self::STORAGE_DISK)->get($descriptorsPath), true);
+        }
+
         // Build reference photo paths
         $refPaths = [];
         foreach (self::POSITIONS as $pos) {
-            $relPath = self::userDir($user->id) . '/' . $pos . '.jpg';
+            $relPath = $dir . '/' . $pos . '.jpg';
             $absPath = Storage::disk(self::STORAGE_DISK)->path($relPath);
             if (file_exists($absPath)) {
                 $refPaths[] = $absPath;
             }
         }
 
-        \Log::info('[FaceVerifyDebug] Starting verifyFace for NIP: ' . $user->id);
-        \Log::info('[FaceVerifyDebug] Reference paths found: ' . implode(', ', $refPaths));
-
-        if (empty($refPaths)) {
-            \Log::warning('[FaceVerifyDebug] No reference paths found.');
+        if (empty($refPaths) && empty($cachedDescriptors)) {
             return response()->json([
                 'matched'   => false,
                 'distance'  => null,
@@ -372,12 +417,11 @@ class FaceSampleController extends Controller
         $scriptPath = base_path('scripts/face_compare.py');
         $pythonBin = self::getPythonBinary();
 
-        \Log::info('[FaceVerifyDebug] pythonBin found: ' . ($pythonBin ?? 'NULL') . ' | scriptPath exists: ' . (file_exists($scriptPath) ? 'YES' : 'NO'));
-
         if (file_exists($scriptPath) && $pythonBin) {
             $payload = json_encode([
-                'live_b64'  => $request->live_b64,
-                'ref_paths' => $refPaths,
+                'live_b64'        => $request->live_b64,
+                'ref_paths'       => $refPaths,
+                'ref_descriptors' => $cachedDescriptors,
             ]);
 
             $descriptors = [
@@ -398,25 +442,22 @@ class FaceSampleController extends Controller
                 fclose($pipes[1]);
                 fclose($pipes[2]);
 
-                $exitCode = proc_close($process);
-
-                \Log::info("[FaceVerifyDebug] Python exitCode: $exitCode | output length: " . strlen($output) . " | error output: $errorOutput");
+                proc_close($process);
 
                 if ($output) {
                     $result = json_decode(trim($output), true);
                     if (is_array($result) && !isset($result['error'])) {
-                        \Log::info('[FaceVerifyDebug] Success: ' . json_encode($result));
+                        // Auto-cache descriptors if not cached yet
+                        if (!$cachedDescriptors && !empty($result['descriptors'])) {
+                            Storage::disk(self::STORAGE_DISK)->put($descriptorsPath, json_encode($result['descriptors']));
+                        }
                         return response()->json(array_merge($result, ['method' => 'dlib_resnet']));
                     }
-                    \Log::error('[FaceVerify] Python ML error output: ' . json_encode($result ?? $output) . ' stderr: ' . $errorOutput);
                     return response()->json(array_merge($result ?? [], ['method' => 'dlib_resnet_error']), 200);
-                } else {
-                    \Log::error('[FaceVerify] Python process empty output. stderr: ' . $errorOutput);
                 }
             }
         }
 
-        \Log::warning('[FaceVerifyDebug] Falling back to default failed response.');
         // Error / Python failed -> STRICT: Reject verification
         return response()->json([
             'matched'   => false,

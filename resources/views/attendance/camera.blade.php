@@ -19,7 +19,8 @@
         :root {
             --cam-blue: #2f80ed;
             --cam-blue-dark: #2368c8;
-            --cam-green: #5cc7b2;
+            --cam-green: #22c55e;
+            --cam-green-glow: rgba(34, 197, 94, 0.4);
             --cam-bg: #f9fafb;
             --cam-surface: #ffffff;
             --cam-card: rgba(255, 255, 255, 0.88);
@@ -58,11 +59,11 @@
             position: relative;
             width: 100vw;
             height: 100dvh;
-            min-height: 620px;
-            padding: clamp(1rem, 2vw, 1.35rem);
+            min-height: 560px;
+            padding: clamp(0.75rem, 2vw, 1.25rem);
             display: grid;
             grid-template-rows: auto minmax(0, 1fr) auto;
-            gap: 1rem;
+            gap: 0.85rem;
             background:
                 radial-gradient(circle at 12% 8%, rgba(47, 128, 237, 0.12), transparent 27%),
                 radial-gradient(circle at 90% 92%, rgba(92, 199, 178, 0.12), transparent 25%),
@@ -85,13 +86,13 @@
             align-items: center;
             justify-content: space-between;
             gap: 0.75rem;
-            padding: 0.55rem;
+            padding: 0.55rem 0.85rem;
         }
 
-        .camera-back,
-        .camera-mini-action {
-            width: 46px;
-            height: 46px;
+        .camera-back {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
             border: 0;
             border-radius: 999px;
             display: inline-flex;
@@ -100,11 +101,15 @@
             color: var(--cam-text);
             background: var(--cam-surface);
             text-decoration: none;
-            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            transition: transform 0.2s ease;
         }
 
-        .camera-back i,
-        .camera-mini-action i {
+        .camera-back:hover {
+            transform: scale(1.05);
+        }
+
+        .camera-back i {
             font-size: 1.35rem;
         }
 
@@ -113,12 +118,8 @@
             flex: 1;
         }
 
-        .camera-title small,
-        .camera-title strong {
-            display: block;
-        }
-
         .camera-title small {
+            display: block;
             color: var(--cam-muted);
             font-size: 0.72rem;
             font-weight: 700;
@@ -127,6 +128,7 @@
         }
 
         .camera-title strong {
+            display: block;
             color: var(--cam-text);
             font-size: clamp(0.96rem, 2vw, 1.08rem);
             font-weight: 780;
@@ -137,7 +139,7 @@
 
         .camera-topbar-pills {
             display: flex;
-            gap: 0.35rem;
+            gap: 0.45rem;
             align-items: center;
             min-width: 0;
             flex-shrink: 0;
@@ -148,7 +150,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
-            height: 40px;
+            height: 38px;
             padding: 0 0.85rem;
             border-radius: 999px;
             background: rgba(47, 128, 237, 0.11);
@@ -156,6 +158,17 @@
             font-size: 0.78rem;
             font-weight: 750;
             white-space: nowrap;
+            transition: all 0.25s ease;
+        }
+
+        .camera-status-pill.is-success {
+            background: rgba(34, 197, 94, 0.15) !important;
+            color: #16a34a !important;
+        }
+
+        .camera-status-pill.is-warning {
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #dc2626 !important;
         }
 
         .camera-stage {
@@ -185,30 +198,45 @@
             inset: 0;
             pointer-events: none;
             background:
-                linear-gradient(to bottom, rgba(2, 6, 23, 0.54), transparent 24%, transparent 70%, rgba(2, 6, 23, 0.62)),
-                radial-gradient(circle at 50% 45%, transparent 0 145px, rgba(2, 6, 23, 0.08) 146px 100%);
+                linear-gradient(to bottom, rgba(2, 6, 23, 0.45), transparent 22%, transparent 72%, rgba(2, 6, 23, 0.65));
             z-index: 1;
         }
 
-        .face-guide {
+        /* Single Unified Biometric Frame (Clean & Non-distracting) */
+        .biometric-scanner-frame {
             position: absolute;
             z-index: 2;
             left: 50%;
-            top: 46%;
-            width: min(34vw, 260px);
-            aspect-ratio: 0.78;
+            top: 48%;
             transform: translate(-50%, -50%);
-            border: 2px solid rgba(255, 255, 255, 0.8);
+            width: min(70vw, 280px);
+            aspect-ratio: 0.78;
             border-radius: 46% 46% 42% 42%;
+            border: 2.5px solid rgba(255, 255, 255, 0.45);
             box-shadow:
-                0 0 0 9999px rgba(2, 6, 23, 0.1),
-                0 0 38px rgba(47, 128, 237, 0.26);
-            opacity: 0.88;
+                0 0 0 9999px rgba(3, 7, 18, 0.20),
+                0 0 28px rgba(47, 128, 237, 0.18);
+            pointer-events: none;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .biometric-scanner-frame.is-detected {
+            border-color: var(--cam-green) !important;
+            box-shadow:
+                0 0 0 9999px rgba(3, 7, 18, 0.20),
+                0 0 42px var(--cam-green-glow) !important;
+        }
+
+        .biometric-scanner-frame.is-outside {
+            border-color: rgba(245, 158, 11, 0.75) !important;
+            box-shadow:
+                0 0 0 9999px rgba(3, 7, 18, 0.20),
+                0 0 25px rgba(245, 158, 11, 0.35) !important;
         }
 
         .camera-hint {
             position: absolute;
-            z-index: 3;
+            z-index: 4;
             left: 50%;
             bottom: 1.1rem;
             transform: translateX(-50%);
@@ -219,7 +247,7 @@
             gap: 0.55rem;
             padding: 0.72rem 1rem;
             border-radius: 999px;
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.78);
             border: 1px solid rgba(255, 255, 255, 0.18);
             color: #ffffff;
             font-size: 0.84rem;
@@ -231,7 +259,7 @@
         }
 
         .camera-hint.is-success {
-            background: rgba(22, 163, 74, 0.85) !important;
+            background: rgba(22, 163, 74, 0.88) !important;
             border-color: rgba(34, 197, 94, 0.4) !important;
             color: #ffffff !important;
         }
@@ -251,7 +279,7 @@
             width: min(480px, calc(100% - 1.5rem));
             padding: 1.1rem 1.2rem;
             border-radius: 24px;
-            background: rgba(11, 18, 32, 0.88);
+            background: rgba(11, 18, 32, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.16);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
             backdrop-filter: blur(18px);
@@ -358,57 +386,10 @@
             transform: none;
         }
 
-        @media (max-width: 600px) {
-            .enrollment-wizard {
-                bottom: 0.5rem;
-                width: calc(100% - 0.8rem);
-                padding: 0.75rem 0.85rem;
-                border-radius: 18px;
-                z-index: 10;
-            }
-
-            .wizard-step-badge {
-                font-size: 0.65rem;
-                padding: 0.2rem 0.55rem;
-                margin-bottom: 0.35rem;
-            }
-
-            .wizard-title {
-                font-size: 0.92rem;
-                margin-bottom: 0.2rem;
-            }
-
-            .wizard-sub {
-                font-size: 0.73rem;
-                margin-bottom: 0.55rem;
-            }
-
-            .wizard-poses {
-                gap: 0.35rem;
-                margin-bottom: 0.55rem;
-            }
-
-            .pose-pill {
-                padding: 0.4rem 0.2rem;
-                font-size: 0.66rem;
-                border-radius: 10px;
-            }
-
-            .pose-pill i {
-                font-size: 1.05rem;
-            }
-
-            .wizard-btn {
-                height: 38px;
-                font-size: 0.8rem;
-                border-radius: 12px;
-            }
-        }
-
         .camera-loader {
             position: absolute;
             inset: 0;
-            z-index: 4;
+            z-index: 6;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -432,7 +413,7 @@
             padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 26px;
-            background: rgba(17, 28, 49, 0.78);
+            background: rgba(17, 28, 49, 0.85);
             box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
         }
 
@@ -449,17 +430,14 @@
             font-size: 1.9rem;
         }
 
-        .loader-card strong,
-        .loader-card span {
-            display: block;
-        }
-
         .loader-card strong {
+            display: block;
             font-size: 1.08rem;
             font-weight: 780;
         }
 
         .loader-card span {
+            display: block;
             margin-top: 0.35rem;
             color: #94a3b8;
             font-size: 0.84rem;
@@ -471,7 +449,7 @@
             grid-template-columns: 1fr auto;
             align-items: center;
             gap: 0.9rem;
-            padding: 0.62rem;
+            padding: 0.62rem 0.85rem;
             border-radius: 28px;
         }
 
@@ -480,29 +458,29 @@
             padding-left: 0.45rem;
         }
 
-        .camera-meta strong,
-        .camera-meta span {
+        .camera-meta strong {
             display: block;
+            color: var(--cam-text);
+            font-size: 0.95rem;
+            font-weight: 780;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .camera-meta strong {
-            color: var(--cam-text);
-            font-size: 0.95rem;
-            font-weight: 780;
-        }
-
         .camera-meta span {
+            display: block;
             color: var(--cam-muted);
             font-size: 0.78rem;
             font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .camera-submit {
-            min-width: 148px;
-            height: 54px;
+            min-width: 154px;
+            height: 52px;
             border: 0;
             border-radius: 18px;
             display: inline-flex;
@@ -513,18 +491,18 @@
             color: #ffffff;
             font-size: 0.95rem;
             font-weight: 780;
-            box-shadow: 0 16px 32px rgba(47, 128, 237, 0.28);
+            box-shadow: 0 14px 30px rgba(47, 128, 237, 0.28);
             cursor: pointer;
             transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
         }
 
-        .camera-submit:hover {
+        .camera-submit:hover:not(:disabled) {
             transform: translateY(-1px);
-            box-shadow: 0 20px 38px rgba(47, 128, 237, 0.34);
+            box-shadow: 0 18px 36px rgba(47, 128, 237, 0.35);
         }
 
         .camera-submit:disabled {
-            opacity: 0.62;
+            opacity: 0.55;
             cursor: not-allowed;
             transform: none;
         }
@@ -573,29 +551,6 @@
             border-color: var(--cam-blue) transparent var(--cam-blue) transparent !important;
         }
 
-        body.aps-camera-dark .swal2-timer-progress-bar {
-            background: var(--cam-blue) !important;
-        }
-
-        .camera-status-pill.is-success {
-            background: rgba(34, 197, 94, 0.15) !important;
-            color: #16a34a !important;
-        }
-
-        .camera-status-pill.is-warning {
-            background: rgba(239, 68, 68, 0.15) !important;
-            color: #dc2626 !important;
-        }
-
-        .face-guide {
-            transition: border-color 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        .face-guide.is-valid {
-            border-color: #22c55e !important;
-            box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.1), 0 0 45px rgba(34, 197, 94, 0.5) !important;
-        }
-
         @media (max-width: 767.98px) {
             html,
             body {
@@ -604,9 +559,6 @@
             }
 
             .camera-page {
-                height: 100dvh;
-                min-height: 100dvh;
-                max-height: 100dvh;
                 padding: 0.5rem;
                 grid-template-rows: auto minmax(0, 1fr) auto;
                 gap: 0.5rem;
@@ -622,7 +574,6 @@
                 width: 36px;
                 height: 36px;
                 min-width: 36px;
-                flex-shrink: 0;
             }
 
             .camera-back i {
@@ -630,9 +581,7 @@
             }
 
             .camera-title {
-                min-width: 0;
-                flex: 1 1 auto;
-                max-width: clamp(100px, 30vw, 180px);
+                max-width: clamp(100px, 32vw, 180px);
             }
 
             .camera-title small {
@@ -641,9 +590,6 @@
 
             .camera-title strong {
                 font-size: 0.82rem;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
             }
 
             .camera-topbar-pills {
@@ -651,78 +597,34 @@
             }
 
             .camera-status-pill {
-                display: inline-flex;
                 height: 28px;
                 padding: 0 0.45rem;
                 font-size: 0.68rem;
                 gap: 0.22rem;
-                flex-shrink: 0;
-                white-space: nowrap;
-                max-width: clamp(85px, 22vw, 130px);
+                max-width: clamp(90px, 24vw, 130px);
             }
 
             .camera-status-pill span {
-                display: inline-block;
-                max-width: clamp(65px, 17vw, 100px);
+                max-width: clamp(70px, 18vw, 100px);
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-            }
-
-            .camera-status-pill i {
-                font-size: 0.82rem;
             }
 
             .camera-stage {
                 border-radius: 22px;
             }
 
-            .camera-loader {
-                padding: 0.75rem;
-            }
-
-            .loader-card {
-                width: min(320px, calc(100% - 0.5rem));
-                padding: 1.1rem 0.85rem;
-                border-radius: 20px;
-            }
-
-            .loader-icon {
-                width: 48px;
-                height: 48px;
-                font-size: 1.4rem;
-                margin-bottom: 0.65rem;
-            }
-
-            .loader-card strong {
-                font-size: 0.92rem;
-            }
-
-            .loader-card span {
-                font-size: 0.76rem;
-                margin-top: 0.25rem;
-                line-height: 1.45;
-            }
-
-            .face-guide {
-                width: min(52vw, 190px);
+            .biometric-scanner-frame {
+                width: min(78vw, 240px);
             }
 
             .camera-hint {
                 bottom: 0.6rem;
                 width: calc(100% - 1rem);
-                max-width: calc(100% - 1rem);
                 padding: 0.45rem 0.65rem;
                 border-radius: 16px;
                 font-size: clamp(0.68rem, 2.6vw, 0.78rem);
-                line-height: 1.3;
-                gap: 0.35rem;
-            }
-
-            .camera-hint span {
-                white-space: normal;
-                word-break: break-word;
-                text-align: center;
             }
 
             .camera-bottom-card {
@@ -753,53 +655,6 @@
                 font-size: 0.86rem;
             }
         }
-
-        @media (max-width: 420px) {
-            .camera-page {
-                padding: 0.4rem;
-                gap: 0.4rem;
-            }
-
-            .camera-topbar {
-                padding: 0.35rem 0.45rem;
-                gap: 0.25rem;
-            }
-
-            .camera-back {
-                width: 34px;
-                height: 34px;
-                min-width: 34px;
-            }
-
-            .camera-title {
-                max-width: 95px;
-            }
-
-            .camera-title strong {
-                font-size: 0.78rem;
-            }
-
-            .camera-status-pill {
-                height: 26px;
-                padding: 0 0.38rem;
-                font-size: 0.63rem;
-                gap: 0.18rem;
-                max-width: 105px;
-            }
-
-            .camera-status-pill span {
-                max-width: 60px;
-            }
-
-            .camera-status-pill i {
-                font-size: 0.76rem;
-            }
-
-            .loader-card {
-                width: min(290px, calc(100% - 0.4rem));
-                padding: 0.95rem 0.75rem;
-            }
-        }
     </style>
 </head>
 
@@ -824,20 +679,23 @@
                     <i class="bx bx-camera"></i>
                     <span>Kamera...</span>
                 </div>
-                <div class="camera-status-pill" id="gpsStatusPill" title="Akurasi GPS">
+                <div class="camera-status-pill" id="gpsStatusPill" title="Klik untuk segarkan GPS">
                     <i class="bx bx-target-lock"></i>
                     <span id="gpsStatusText">GPS...</span>
                 </div>
             </div>
         </header>
 
-        <section class="camera-stage" aria-label="Preview kamera">
+        <section class="camera-stage" id="cameraStage" aria-label="Preview kamera">
             <video id="video" autoplay playsinline muted></video>
             <canvas id="canvas" class="d-none"></canvas>
-            <div class="face-guide" aria-hidden="true"></div>
-            <div class="camera-hint">
+            
+            <!-- Single Clean Biometric Framing Guide (Face-ID style) -->
+            <div class="biometric-scanner-frame" id="biometricFrame" aria-hidden="true"></div>
+
+            <div class="camera-hint" id="cameraHint">
                 <i class="bx bx-face"></i>
-                <span>Posisikan wajah di tengah frame, lalu pastikan GPS aktif.</span>
+                <span id="hintText">Posisikan wajah Anda di tengah area kamera.</span>
             </div>
 
             <!-- Gojek Style Interactive Face Enrollment Wizard -->
@@ -847,7 +705,7 @@
                     <span id="wizardStepBadge">Registrasi Wajah NIP</span>
                 </div>
                 <h4 class="wizard-title" id="wizardTitle">1. Tatap Lurus ke Depan</h4>
-                <p class="wizard-sub" id="wizardSub">Posisikan wajah Anda tepat di tengah oval untuk mendaftarkan foto referensi NIP Anda.</p>
+                <p class="wizard-sub" id="wizardSub">Posisikan wajah Anda tepat di tengah frame untuk mendaftarkan foto referensi NIP Anda.</p>
                 
                 <div class="wizard-poses">
                     <div class="pose-pill active" id="poseFront">
@@ -869,6 +727,7 @@
                     <span id="btnWizardActionText">Ambil Foto Wajah Depan</span>
                 </button>
             </div>
+
             <div class="camera-loader" id="cameraLoader">
                 <div class="loader-card">
                     <div class="loader-icon"><i class="bx bx-camera"></i></div>
@@ -927,6 +786,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
+            const cameraStage = document.getElementById('cameraStage');
+            const biometricFrame = document.getElementById('biometricFrame');
             const btnSubmit = document.getElementById('btnSubmit');
             const photoInput = document.getElementById('photoInput');
             const loader = document.getElementById('cameraLoader');
@@ -936,17 +797,39 @@
             const gpsStatusPill = document.getElementById('gpsStatusPill');
             const gpsStatusText = document.getElementById('gpsStatusText');
             const gpsInfoText = document.getElementById('gpsInfoText');
-            const faceGuide = document.querySelector('.face-guide');
-            const hintText = document.querySelector('.camera-hint span');
+            const cameraHint = document.getElementById('cameraHint');
+            const hintText = document.getElementById('hintText');
+            const hintIcon = cameraHint ? cameraHint.querySelector('i') : null;
 
             let isFaceDetected = false;
-            let isRefDescriptorsLoaded = false;
-            let isModelReady = false;
-            let blazefaceModel = null;
+            let isFaceApiLoaded = false;
             let nativeDetector = null;
             let cachedPosition = null;
             let gpsWatchId = null;
 
+            const hasFaceSamples = @json($hasFaceSamples ?? false);
+            const isStrictMode = @json($strictMode ?? config('attendance.face_recognition_strict', true));
+            let userFaceRegistered = !isStrictMode || hasFaceSamples;
+            let refDescriptors = [];
+            let capturedPoses = { front: null, right: null, left: null };
+            let wizardStep = 'front';
+            let holdTimer = null;
+            let lastFaceBox = null;
+            let isDetecting = false;
+
+            const CSRF = '{{ csrf_token() }}';
+            const faceVerifyUrl = '{{ route("attendance.face-verify") }}';
+
+            const btnWizardAction = document.getElementById('btnWizardAction');
+            const btnWizardActionText = document.getElementById('btnWizardActionText');
+            const wizardTitle = document.getElementById('wizardTitle');
+            const wizardSub = document.getElementById('wizardSub');
+            const poseFront = document.getElementById('poseFront');
+            const poseRight = document.getElementById('poseRight');
+            const poseLeft = document.getElementById('poseLeft');
+            const enrollmentWizard = document.getElementById('enrollmentWizard');
+
+            // --- GPS Management (Non-blocking background lookup) ---
             if (gpsStatusPill) gpsStatusPill.addEventListener('click', requestFreshGpsLocation);
             if (gpsInfoText) gpsInfoText.addEventListener('click', requestFreshGpsLocation);
 
@@ -984,7 +867,7 @@
                     (err) => {
                         navigator.geolocation.getCurrentPosition(
                             (pos2) => updateGpsUI(pos2),
-                            (err2) => console.warn('GPS refresh fallback error:', err2),
+                            (err2) => console.warn('GPS refresh error:', err2),
                             { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
                         );
                     },
@@ -992,16 +875,14 @@
                 );
             }
 
-            // Immediately start GPS pre-warming on page load (fast network/cached location first)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => updateGpsUI(pos),
                     (err) => {
-                        console.warn('Fast GPS fetch error, retrying with high accuracy:', err);
                         navigator.geolocation.getCurrentPosition(
                             (pos2) => updateGpsUI(pos2),
-                            (err2) => console.warn('High accuracy GPS error:', err2),
-                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+                            (err2) => console.warn('GPS init error:', err2),
+                            { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
                         );
                     },
                     { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
@@ -1010,12 +891,13 @@
                 gpsWatchId = navigator.geolocation.watchPosition(
                     (pos) => updateGpsUI(pos),
                     (err) => console.warn('Watch GPS error:', err),
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+                    { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 }
                 );
             }
 
-            const setStatus = (icon, text) => {
+            const setStatus = (icon, text, type = '') => {
                 if (cameraStatus) {
+                    cameraStatus.className = 'camera-status-pill ' + type;
                     cameraStatus.innerHTML = `<i class="bx ${icon}"></i><span>${text}</span>`;
                 }
             };
@@ -1024,42 +906,15 @@
                 if (loader) loader.classList.remove('is-hidden');
                 if (loaderTitle) loaderTitle.textContent = title;
                 if (loaderText) loaderText.textContent = text;
-                setStatus('bx-error-circle', 'Kamera belum siap');
+                setStatus('bx-error-circle', 'Kamera belum siap', 'is-warning');
                 btnSubmit.disabled = true;
             };
-
-            const hasFaceSamples = @json($hasFaceSamples ?? false);
-            const isStrictMode = @json($strictMode ?? config('attendance.face_recognition_strict', true));
-            let userFaceRegistered = !isStrictMode || hasFaceSamples;
-            let refDescriptors = [];
-            let isFaceApiLoaded = false;
-            let capturedPoses = { front: null, right: null, left: null };
-            let wizardStep = 'front';
-            let holdTimer = null;
-
-            // Server-side ML state (dlib ResNet via Python face_recognition)
-            let serverMlResult = null;  // { matched: bool, distance: float, match_pct: float, method: string }
-            let isVerifyingML = false;
-            let lastMlVerifyTime = 0;
-            const ML_COOLDOWN_MS = 4000; // verify every 4 seconds via server ML
-            const CSRF = '{{ csrf_token() }}';
-            const faceVerifyUrl = '{{ route("attendance.face-verify") }}';
-
-            const btnWizardAction = document.getElementById('btnWizardAction');
-            const btnWizardActionText = document.getElementById('btnWizardActionText');
-            const wizardTitle = document.getElementById('wizardTitle');
-            const wizardSub = document.getElementById('wizardSub');
-            const poseFront = document.getElementById('poseFront');
-            const poseRight = document.getElementById('poseRight');
-            const poseLeft = document.getElementById('poseLeft');
-            const enrollmentWizard = document.getElementById('enrollmentWizard');
 
             const setContextMode = (isRegistration) => {
                 const cameraTitleSmall = document.getElementById('cameraTitleSmall');
                 const cameraTitleStrong = document.getElementById('cameraTitleStrong');
                 const cameraMetaTitle = document.getElementById('cameraMetaTitle');
                 const btnSubmitText = document.getElementById('btnSubmitText');
-                const cameraHint = document.querySelector('.camera-hint');
 
                 if (isRegistration) {
                     if (cameraTitleSmall) cameraTitleSmall.textContent = 'FACE ID REGISTRATION';
@@ -1081,35 +936,68 @@
                 }
             };
 
-            // Set initial context mode
             setContextMode(!userFaceRegistered);
 
+            // --- Native FaceDetector & FaceAPI AI Init ---
+            if ('FaceDetector' in window) {
+                try {
+                    nativeDetector = new FaceDetector({ fastMode: true, maxFaces: 1 });
+                } catch(e) {
+                    nativeDetector = null;
+                }
+            }
+
+            async function initFaceApi() {
+                if (typeof faceapi !== 'undefined') {
+                    try {
+                        const MODEL_URL = '{{ asset("vendor/face-api/models") }}';
+                        await Promise.all([
+                            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                            faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL)
+                        ]);
+                        isFaceApiLoaded = true;
+
+                        // Async prefetch descriptors in background without blocking UI
+                        if (userFaceRegistered) {
+                            fetch('{{ route("attendance.face-samples.api") }}')
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (data && data.descriptors && Array.isArray(data.descriptors)) {
+                                        refDescriptors = data.descriptors.map(arr => new Float32Array(arr));
+                                    }
+                                })
+                                .catch(e => console.debug('Descriptor cache fetch skip:', e));
+                        }
+                    } catch(err) {
+                        console.warn('FaceAPI load warning:', err);
+                    }
+                }
+            }
+            initFaceApi();
+
+            // --- Real-time Face Pose Checker (For Registration Wizard) ---
             async function detectFacePoseInVideo(expectedPose) {
                 if (!video.videoWidth || !video.videoHeight || video.paused || video.ended) {
                     return { valid: false, reason: 'Kamera belum siap' };
                 }
 
-                if (!lastFaceDetectionResult || !lastFaceDetectionResult.landmarks) {
-                    try {
-                        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.35 })).withFaceLandmarks(true);
-                        if (det) {
-                            lastFaceDetectionResult = det;
-                        } else {
-                            return { valid: false, reason: 'Wajah Tidak Terdeteksi' };
-                        }
-                    } catch(e) {
-                        return { valid: false, reason: 'Gagal mendeteksi wajah' };
-                    }
+                if (typeof faceapi === 'undefined' || !isFaceApiLoaded) {
+                    return { valid: true, reason: 'OK' };
                 }
 
                 try {
-                    const landmarks = lastFaceDetectionResult.landmarks;
+                    const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.35 })).withFaceLandmarks(true);
+                    if (!det) {
+                        return { valid: false, reason: 'Wajah Tidak Terdeteksi' };
+                    }
+
+                    const landmarks = det.landmarks;
                     const leftEyePts = landmarks.getLeftEye();
                     const rightEyePts = landmarks.getRightEye();
                     const nosePts = landmarks.getNose();
 
                     if (!leftEyePts.length || !rightEyePts.length || !nosePts.length) {
-                        return { valid: false, reason: 'Posisikan Wajah Jelas di Frame' };
+                        return { valid: false, reason: 'Posisikan Wajah di Frame' };
                     }
 
                     const leftEyeX = leftEyePts.reduce((sum, p) => sum + p.x, 0) / leftEyePts.length;
@@ -1123,38 +1011,32 @@
                     const tiltRatio = dx > 0 ? (dy / dx) : 0;
 
                     if (tiltRatio > 0.40) {
-                        return { valid: false, reason: 'Tegakkan Kepala (Jangan Miringkan Wajah)' };
+                        return { valid: false, reason: 'Tegakkan Kepala' };
                     }
 
                     const eyeCenter = (rightEyeX + leftEyeX) / 2;
                     const noseOffset = dx > 0 ? ((noseX - eyeCenter) / dx) : 0;
 
                     if (expectedPose === 'front') {
-                        if (Math.abs(noseOffset) > 0.35) {
-                            return { valid: false, reason: 'Tatap Lurus ke Depan' };
-                        }
+                        if (Math.abs(noseOffset) > 0.35) return { valid: false, reason: 'Tatap Lurus ke Depan' };
                         return { valid: true, reason: 'Pose Depan Pas!' };
                     } else if (expectedPose === 'right') {
-                        if (noseOffset > -0.10) {
-                            return { valid: false, reason: 'Tengokkan Wajah ke Kanan (~30°)' };
-                        }
+                        if (noseOffset > -0.10) return { valid: false, reason: 'Tengokkan Wajah ke Kanan (~30°)' };
                         return { valid: true, reason: 'Pose Kanan Pas!' };
                     } else if (expectedPose === 'left') {
-                        if (noseOffset < 0.10) {
-                            return { valid: false, reason: 'Tengokkan Wajah ke Kiri (~30°)' };
-                        }
+                        if (noseOffset < 0.10) return { valid: false, reason: 'Tengokkan Wajah ke Kiri (~30°)' };
                         return { valid: true, reason: 'Pose Kiri Pas!' };
                     }
 
                     return { valid: true, reason: 'OK' };
-                } catch (e) {
+                } catch(e) {
                     return { valid: true, reason: 'OK' };
                 }
             }
 
             if (btnWizardAction) {
                 btnWizardAction.addEventListener('click', async function() {
-                    let poseCheck = await detectFacePoseInVideo(wizardStep);
+                    const poseCheck = await detectFacePoseInVideo(wizardStep);
                     if (!poseCheck.valid) {
                         if (wizardSub) {
                             wizardSub.style.color = '#f87171';
@@ -1177,7 +1059,6 @@
                             poseFront.innerHTML = '<i class="bx bx-check-circle"></i><span>1. Depan ✓</span>';
                         }
                         if (poseRight) poseRight.className = 'pose-pill active';
-
                         if (wizardTitle) wizardTitle.textContent = '2. Tengok Perlahan ke Kanan (~30°)';
                         if (wizardSub) wizardSub.textContent = 'Putar posisi wajah Anda sedikit ke kanan untuk foto referensi sudut kanan.';
                         if (btnWizardActionText) btnWizardActionText.textContent = 'Ambil Foto Tengok Kanan';
@@ -1189,7 +1070,6 @@
                             poseRight.innerHTML = '<i class="bx bx-check-circle"></i><span>2. Kanan ✓</span>';
                         }
                         if (poseLeft) poseLeft.className = 'pose-pill active';
-
                         if (wizardTitle) wizardTitle.textContent = '3. Tengok Perlahan ke Kiri (~30°)';
                         if (wizardSub) wizardSub.textContent = 'Putar posisi wajah Anda sedikit ke kiri untuk foto referensi sudut kiri.';
                         if (btnWizardActionText) btnWizardActionText.textContent = 'Ambil Foto Tengok Kiri';
@@ -1204,12 +1084,11 @@
                         btnWizardAction.disabled = true;
                         if (btnWizardActionText) btnWizardActionText.textContent = 'Mendaftarkan Foto NIP...';
 
-                        // Send POST request immediately to server (~100ms)
                         fetch('{{ route("attendance.face-samples.save-self") }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': CSRF
                             },
                             body: JSON.stringify(capturedPoses)
                         })
@@ -1218,37 +1097,16 @@
                             if (data.success) {
                                 userFaceRegistered = true;
                                 setContextMode(false);
-
-                                // Asynchronously extract face descriptors in background
-                                if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
-                                    Promise.all(['front', 'right', 'left'].map(async (pos) => {
-                                        if (capturedPoses[pos]) {
-                                            try {
-                                                const img = await faceapi.fetchImage(capturedPoses[pos]);
-                                                const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
-                                                return detection && detection.descriptor ? detection.descriptor : null;
-                                            } catch(e) { return null; }
-                                        }
-                                        return null;
-                                    })).then(results => {
-                                        refDescriptors = results.filter(d => d !== null);
-                                    });
-                                }
-
-                                if (enrollmentWizard) enrollmentWizard.classList.add('d-none');
-                                const cameraHint = document.querySelector('.camera-hint');
-                                if (cameraHint) cameraHint.classList.remove('d-none');
-
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Registrasi Wajah Berhasil!',
-                                    text: 'Foto referensi 3 pose wajah NIP Anda telah disimpan. Sekarang Anda dapat melanjutkan {{ $actionTitle }}.',
+                                    text: 'Foto referensi 3 pose wajah NIP Anda telah disimpan. Sekarang Anda dapat melakukan presensi.',
                                     confirmButtonColor: '#2f80ed'
                                 });
                             } else {
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Gagal Pendaftaran Wajah',
+                                    title: 'Gagal Pendaftaran',
                                     text: data.message || 'Terjadi kesalahan saat menyimpan foto referensi.',
                                     confirmButtonColor: '#2f80ed'
                                 });
@@ -1257,10 +1115,9 @@
                             }
                         })
                         .catch(err => {
-                            console.error('Error save self face samples:', err);
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Gagal Pendaftaran Wajah',
+                                title: 'Gagal Pendaftaran',
                                 text: 'Koneksi terputus. Silakan coba kembali.',
                                 confirmButtonColor: '#2f80ed'
                             });
@@ -1271,371 +1128,135 @@
                 });
             }
 
-            const updateFaceStatusUI = (hasFace) => {
-                isFaceDetected = hasFace;
-                isFaceMatched = hasFace; // actual matching done on button click
-                const cameraHint = document.querySelector('.camera-hint');
-                const hintIcon = document.querySelector('.camera-hint i');
-
-                // ── 1. Wajah tidak terdeteksi ──
-                if (!hasFace) {
-                    if (cameraStatus) {
-                        cameraStatus.className = 'camera-status-pill is-warning';
-                        cameraStatus.innerHTML = '<i class="bx bx-error-circle"></i><span>Wajah Tidak Terdeteksi</span>';
-                    }
-                    if (faceGuide) faceGuide.classList.remove('is-valid');
-                    if (cameraHint) cameraHint.className = 'camera-hint is-warning';
-                    if (hintIcon) hintIcon.className = 'bx bx-x-circle';
-                    if (hintText) hintText.textContent = 'Posisikan wajah di tengah frame hingga indikator berwarna hijau.';
-                    btnSubmit.disabled = true;
-                    return;
-                }
-
-                // ── 2. Belum registrasi wajah ──
-                if (!userFaceRegistered) {
-                    setContextMode(true);
-                    if (enrollmentWizard) enrollmentWizard.classList.remove('d-none');
-                    if (cameraHint) cameraHint.classList.add('d-none');
-                    btnSubmit.disabled = true;
-                    return;
-                } else {
-                    setContextMode(false);
-                    if (enrollmentWizard) enrollmentWizard.classList.add('d-none');
-                    if (cameraHint) cameraHint.classList.remove('d-none');
-                }
-
-                // ── 3. Wajah terdeteksi & siap — verifikasi ML akan dilakukan saat klik ──
-                if (cameraStatus) {
-                    cameraStatus.className = 'camera-status-pill is-success';
-                    cameraStatus.style.cursor = 'default';
-                    cameraStatus.onclick = null;
-                    cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Wajah Terdeteksi</span>';
-                }
-                if (faceGuide) faceGuide.classList.add('is-valid');
-                if (cameraHint) cameraHint.className = 'camera-hint is-success';
-                if (hintIcon) hintIcon.className = 'bx bx-check-circle';
-                if (hintText) hintText.textContent = `Wajah terdeteksi. Klik tombol {{ $actionTitle }} untuk verifikasi & absen.`;
-                btnSubmit.disabled = false;
-            };
-
-            setStatus('bx-loader-alt bx-spin', 'Memuat AI...');
-
-
-
-            async function imageToCanvas(imgSrc) {
-                return new Promise((resolve) => {
-                    if (!imgSrc) return resolve(null);
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.onload = () => {
-                        try {
-                            const c = document.createElement('canvas');
-                            c.width = img.naturalWidth || img.width || 480;
-                            c.height = img.naturalHeight || img.height || 360;
-                            const ctx = c.getContext('2d');
-                            ctx.drawImage(img, 0, 0);
-                            resolve(c);
-                        } catch(e) {
-                            resolve(null);
-                        }
-                    };
-                    img.onerror = () => {
-                        const img2 = new Image();
-                        img2.onload = () => {
-                            try {
-                                const c = document.createElement('canvas');
-                                c.width = img2.naturalWidth || img2.width || 480;
-                                c.height = img2.naturalHeight || img2.height || 360;
-                                const ctx = c.getContext('2d');
-                                ctx.drawImage(img2, 0, 0);
-                                resolve(c);
-                            } catch(e) { resolve(null); }
-                        };
-                        img2.onerror = () => resolve(null);
-                        img2.src = imgSrc;
-                    };
-                    img.src = imgSrc;
-                });
-            }
-
-            function normalizeCanvas(srcCanvas) {
-                // Auto-levels: scan ~1000 sample pixels, stretch luminance range to 0-255
-                const ctx = srcCanvas.getContext('2d');
-                const w = srcCanvas.width;
-                const h = srcCanvas.height;
-                const data = ctx.getImageData(0, 0, w, h);
-                const pixels = data.data;
-                let min = 255, max = 0, sum = 0, count = 0;
-                const step = Math.max(1, Math.floor(pixels.length / 4000));
-                for (let i = 0; i < pixels.length; i += 4 * step) {
-                    const luma = 0.299 * pixels[i] + 0.587 * pixels[i+1] + 0.114 * pixels[i+2];
-                    if (luma < min) min = luma;
-                    if (luma > max) max = luma;
-                    sum += luma;
-                    count++;
-                }
-                const mean = count > 0 ? sum / count : 128;
-                const range = max - min;
-
-                if (range < 30 && mean > 100) return srcCanvas; // already well-lit
-
-                const out = document.createElement('canvas');
-                out.width = w; out.height = h;
-                const outCtx = out.getContext('2d');
-                outCtx.drawImage(srcCanvas, 0, 0);
-                const outData = outCtx.getImageData(0, 0, w, h);
-                const od = outData.data;
-
-                // Compute boost for backlit dark face
-                const brightnessBoost = mean < 100 ? Math.min(80, (100 - mean) * 0.85) : 0;
-
-                for (let i = 0; i < od.length; i += 4) {
-                    for (let c = 0; c < 3; c++) {
-                        let v = od[i + c];
-                        // Auto-levels stretch
-                        if (range > 30) {
-                            v = Math.round((v - min) / range * 255);
-                        }
-                        // Brightness boost
-                        v = Math.min(255, Math.max(0, v + brightnessBoost));
-                        od[i + c] = v;
-                    }
-                }
-                outCtx.putImageData(outData, 0, 0);
-                return out;
-            }
-
-            async function getDescriptorFromCanvas(canvas) {
-                if (!canvas) return null;
-
-                // Normalize brightness for backlit photos
-                const normalizedCanvas = normalizeCanvas(canvas);
-
-                const optionTiers = [
-                    new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.10 }),
-                    new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.05 }),
-                    new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.02 }),
-                    new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.01 }),
-                    new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.01 }),
-                ];
-
-                // Try normalized first, fallback to original if needed
-                for (const canvasToTry of [normalizedCanvas, canvas]) {
-                    for (const opt of optionTiers) {
-                        try {
-                            const detection = await faceapi.detectSingleFace(canvasToTry, opt).withFaceLandmarks(true).withFaceDescriptor();
-                            if (detection && detection.descriptor) {
-                                return detection.descriptor;
-                            }
-                        } catch(e) {}
-                    }
-                }
-                return null;
-            }
-
-            // Load face-api.js models and reference descriptors if registered
-            async function initFaceRecognition() {
-                if (typeof faceapi !== 'undefined') {
-                    const timeoutId = setTimeout(() => {
-                        if (!isRefDescriptorsLoaded) {
-                            console.warn('FaceAPI loading timeout fallback');
-                            isRefDescriptorsLoaded = true;
-                        }
-                    }, 4000);
-
-                    try {
-                        const MODEL_URL = '{{ asset("vendor/face-api/models") }}';
-                        setStatus('bx-loader-alt bx-spin', 'Memuat AI Face Recognition...');
-                        
-                        await Promise.all([
-                            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                            faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-                            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-                        ]);
-                        isFaceApiLoaded = true;
-
-                        if (userFaceRegistered) {
-                            const resp = await fetch('{{ route("attendance.face-samples.api") }}');
-                            const data = await resp.json();
-
-                            if (data && data.descriptors && Array.isArray(data.descriptors) && data.descriptors.length > 0) {
-                                refDescriptors = data.descriptors.map(arr => new Float32Array(arr));
-                                console.log('Instant-loaded ' + refDescriptors.length + ' descriptors from JSON cache.');
-                            }
-                        }
-                    } catch (err) {
-                        console.warn('FaceAPI init error:', err);
-                    } finally {
-                        clearTimeout(timeoutId);
-                        isRefDescriptorsLoaded = true;
-                    }
-                } else {
-                    isRefDescriptorsLoaded = true;
-                }
-            }
-            initFaceRecognition();
-            isModelReady = true;
-
-            if ('FaceDetector' in window) {
-                try {
-                    nativeDetector = new FaceDetector({ fastMode: true, maxFaces: 1 });
-                } catch(e) {
-                    nativeDetector = null;
-                }
-            }
-
-            const faceCanvas = document.createElement('canvas');
-            const faceCtx = faceCanvas.getContext('2d', { willReadFrequently: true });
-            faceCanvas.width = 160;
-            faceCanvas.height = 120;
-
-            // Laplacian Sharpness/Edge Test (Prevents hands/fingers covering lens)
-            function calculateEdgeSharpness(imageData) {
-                const data = imageData.data;
-                const w = faceCanvas.width;
-                const h = faceCanvas.height;
-                let lapSum = 0;
-                let lapSqSum = 0;
-                let count = 0;
-
-                for (let y = 1; y < h - 1; y += 2) {
-                    for (let x = 1; x < w - 1; x += 2) {
-                        const getLum = (px, py) => {
-                            const i = (py * w + px) * 4;
-                            return 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-                        };
-
-                        const center = getLum(x, y);
-                        const lap = Math.abs(
-                            -4 * center +
-                            getLum(x - 1, y) + getLum(x + 1, y) +
-                            getLum(x, y - 1) + getLum(x, y + 1)
-                        );
-
-                        lapSum += lap;
-                        lapSqSum += lap * lap;
-                        count++;
-                    }
-                }
-
-                const meanLap = lapSum / count;
-                return (lapSqSum / count) - (meanLap * meanLap);
-            }
-
-            let lastFaceDetectionResult = null;
-
-            async function detectFaceInVideo() {
+            // --- Lightweight, Local-Only Face Detector (ZERO Network Lag) ---
+            async function detectLiveFace() {
                 if (!video.videoWidth || !video.videoHeight || video.paused || video.ended) {
-                    return false;
+                    return null;
                 }
 
-                const vw = video.videoWidth;
-                const vh = video.videoHeight;
-
-                // First check if camera lens is covered by hand/finger (blurry skin surface with zero edges)
-                try {
-                    faceCtx.drawImage(video, 0, 0, faceCanvas.width, faceCanvas.height);
-                    const imgData = faceCtx.getImageData(0, 0, faceCanvas.width, faceCanvas.height);
-                    const edgeVariance = calculateEdgeSharpness(imgData);
-
-                    // If camera is covered by hand/object, edge variance is extremely low (< 25)
-                    if (edgeVariance < 25) {
-                        lastFaceDetectionResult = null;
-                        return false; // Lens covered by hand or object!
-                    }
-                } catch (e) {}
-
-                // 1. AI Neural Network face-api.js TinyFaceDetector (super fast and robust)
-                if (typeof faceapi !== 'undefined' && isFaceApiLoaded) {
-                    try {
-                        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.35 })).withFaceLandmarks(true);
-                        if (det) {
-                            lastFaceDetectionResult = det;
-                            return true;
-                        }
-                    } catch (e) {
-                        console.warn('FaceAPI detection error:', e);
-                    }
-                }
-
-                // 2. Native Browser FaceDetector (Chromium / Edge / Mac Safari)
+                // 1. Try Native FaceDetector first (Fastest / 0% CPU overhead)
                 if (nativeDetector) {
                     try {
                         const faces = await nativeDetector.detect(video);
                         if (faces && faces.length > 0) {
                             const box = faces[0].boundingBox;
-                            if (box.top > (vh * 0.04) && box.height > (vh * 0.22)) {
-                                lastFaceDetectionResult = null;
-                                return true;
+                            if (box && box.width > 40) {
+                                return {
+                                    x: box.x || box.left,
+                                    y: box.y || box.top,
+                                    width: box.width,
+                                    height: box.height
+                                };
                             }
                         }
-                        return false;
-                    } catch (e) {}
+                    } catch(e) {}
                 }
 
-                // 3. Strict Structural Fallback: Eyebrows/Eyes (Dark pixels) in Upper Oval + Skin in Mid Oval
-                try {
-                    const imgData = faceCtx.getImageData(0, 0, faceCanvas.width, faceCanvas.height);
-                    const data = imgData.data;
-
-                    let darkEyePixels = 0;
-                    let noseSkinPixels = 0;
-                    let totalEyeSamples = 0;
-                    let totalNoseSamples = 0;
-
-                    const startX = Math.floor(faceCanvas.width * 0.32);
-                    const endX = Math.floor(faceCanvas.width * 0.68);
-
-                    // Upper Oval (Eye & Eyebrow Zone: y = 20..45)
-                    for (let y = 20; y < 45; y += 2) {
-                        for (let x = startX; x < endX; x += 2) {
-                            const idx = (y * faceCanvas.width + x) * 4;
-                            const r = data[idx];
-                            const g = data[idx + 1];
-                            const b = data[idx + 2];
-                            totalEyeSamples++;
-
-                            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-                            // Eyebrows / pupils / eye sockets are significantly darker (lum < 95)
-                            if (lum < 95) {
-                                darkEyePixels++;
-                            }
+                // 2. Fallback to TinyFaceDetector
+                if (isFaceApiLoaded && typeof faceapi !== 'undefined') {
+                    try {
+                        const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.35 }));
+                        if (det && det.box) {
+                            return {
+                                x: det.box.x,
+                                y: det.box.y,
+                                width: det.box.width,
+                                height: det.box.height
+                            };
                         }
-                    }
-
-                    // Middle Oval (Nose & Cheek Zone: y = 45..75)
-                    for (let y = 45; y < 75; y += 2) {
-                        for (let x = startX; x < endX; x += 2) {
-                            const idx = (y * faceCanvas.width + x) * 4;
-                            const r = data[idx];
-                            const g = data[idx + 1];
-                            const b = data[idx + 2];
-                            totalNoseSamples++;
-
-                            const maxRGB = Math.max(r, g, b);
-                            const minRGB = Math.min(r, g, b);
-                            const isSkin = (r > 65) && (g > 45) && (b > 30) &&
-                                           (maxRGB - minRGB > 18) &&
-                                           (Math.abs(r - g) > 15) &&
-                                           (r > g) && (r > b);
-
-                            if (isSkin) noseSkinPixels++;
-                        }
-                    }
-
-                    const darkEyeRatio = darkEyePixels / totalEyeSamples;
-                    const noseSkinRatio = noseSkinPixels / totalNoseSamples;
-
-                    // Neck/Chest has NO eyebrows/eyes at the top (darkEyeRatio < 0.04)
-                    // Full face MUST have eyebrows/eyes dark pixels (> 0.065) AND nose skin (> 0.25)
-                    return (darkEyeRatio >= 0.065 && noseSkinRatio >= 0.25);
-                } catch (err) {
-                    return false;
+                    } catch(e) {}
                 }
+
+                return null;
             }
 
+            // --- Check if Face is actually inside the Center Oval ---
+            function isFaceInsideOval(faceBox) {
+                if (!faceBox || !video.videoWidth || !video.videoHeight) return { inside: false, reason: 'none' };
+
+                const faceCenterX = (faceBox.x + faceBox.width / 2) / video.videoWidth;
+                const faceCenterY = (faceBox.y + faceBox.height / 2) / video.videoHeight;
+                const faceWidthRatio = faceBox.width / video.videoWidth;
+
+                // Center oval is positioned at (0.50, 0.48)
+                const distX = Math.abs(faceCenterX - 0.50);
+                const distY = Math.abs(faceCenterY - 0.48);
+
+                // Check horizontal and vertical boundaries
+                if (distX > 0.19) {
+                    return { inside: false, reason: 'off-center' };
+                }
+
+                if (distY > 0.22) {
+                    return { inside: false, reason: 'off-center' };
+                }
+
+                // Minimum size check (must not be too far/tiny)
+                if (faceWidthRatio < 0.12) {
+                    return { inside: false, reason: 'too-far' };
+                }
+
+                return { inside: true };
+            }
+
+            // --- Smooth UI Updater with Strict Spatial Oval Check ---
+            function updateDetectionUI(faceBox) {
+                if (!faceBox) {
+                    isFaceDetected = false;
+                    if (biometricFrame) {
+                        biometricFrame.className = 'biometric-scanner-frame';
+                    }
+                    setStatus('bx-error-circle', 'Wajah Belum Terdeteksi', 'is-warning');
+                    if (cameraHint) cameraHint.className = 'camera-hint is-warning';
+                    if (hintIcon) hintIcon.className = 'bx bx-x-circle';
+                    if (hintText) hintText.textContent = 'Posisikan wajah Anda di dalam bulatan kamera.';
+                    btnSubmit.disabled = true;
+                    return;
+                }
+
+                // Check if face is actually positioned inside the center oval
+                const ovalCheck = isFaceInsideOval(faceBox);
+
+                if (!ovalCheck.inside) {
+                    isFaceDetected = false;
+                    if (biometricFrame) {
+                        biometricFrame.className = 'biometric-scanner-frame is-outside';
+                    }
+                    setStatus('bx-scan', 'Arahkan ke Tengah Bulatan', 'is-warning');
+                    if (cameraHint) cameraHint.className = 'camera-hint is-warning';
+                    if (hintIcon) hintIcon.className = 'bx bx-scan';
+
+                    if (ovalCheck.reason === 'too-far') {
+                        if (hintText) hintText.textContent = 'Dekatkan wajah Anda ke arah bulatan kamera.';
+                    } else {
+                        if (hintText) hintText.textContent = 'Posisikan wajah Anda tepat di dalam bulatan tengah.';
+                    }
+                    btnSubmit.disabled = true;
+                    return;
+                }
+
+                // Face IS properly aligned inside the center oval!
+                isFaceDetected = true;
+                if (biometricFrame) {
+                    biometricFrame.className = 'biometric-scanner-frame is-detected';
+                }
+
+                if (!userFaceRegistered) {
+                    setContextMode(true);
+                    btnSubmit.disabled = true;
+                    return;
+                }
+
+                setStatus('bx-check-circle', 'Wajah Terdeteksi', 'is-success');
+                if (cameraHint) cameraHint.className = 'camera-hint is-success';
+                if (hintIcon) hintIcon.className = 'bx bx-check-circle';
+                if (hintText) hintText.textContent = 'Wajah pas di dalam bulatan. Klik tombol {{ $actionTitle }} untuk absen.';
+                btnSubmit.disabled = false;
+            }
+
+            // --- Start Camera Stream ---
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                setErrorState('Browser belum mendukung kamera', 'Gunakan browser modern dan pastikan akses kamera tersedia.');
+                setErrorState('Browser tidak mendukung kamera', 'Gunakan browser modern dan pastikan izin kamera aktif.');
                 return;
             }
 
@@ -1656,157 +1277,55 @@
                     video.play().catch(e => console.warn('Video play error:', e));
                     loader.classList.add('is-hidden');
                     
+                    // Smooth local loop running every 200ms without network load
                     setInterval(async () => {
-                        if (loader.classList.contains('is-hidden')) {
-                            const detected = await detectFaceInVideo();
+                        if (isDetecting || !loader.classList.contains('is-hidden')) return;
+                        isDetecting = true;
+                        try {
+                            const face = await detectLiveFace();
+                            updateDetectionUI(face);
 
-                            if (!userFaceRegistered) {
-                                setContextMode(true);
-                                if (detected) {
-                                    const poseCheck = await detectFacePoseInVideo(wizardStep);
-                                    if (poseCheck.valid) {
-                                        if (cameraStatus) {
-                                            cameraStatus.className = 'camera-status-pill is-success';
-                                            cameraStatus.innerHTML = '<i class="bx bx-check-circle"></i><span>Pose Pas</span>';
-                                        }
-                                        if (faceGuide) faceGuide.classList.add('is-valid');
-                                        if (wizardSub) {
-                                            wizardSub.style.color = '#4ade80';
-                                            wizardSub.textContent = '✓ ' + poseCheck.reason + ' Tahan posisi 1 detik atau klik tombol.';
-                                        }
-
-                                        if (!holdTimer) {
-                                            holdTimer = setTimeout(() => {
-                                                if (btnWizardAction && !btnWizardAction.disabled) {
-                                                    btnWizardAction.click();
-                                                }
-                                                holdTimer = null;
-                                            }, 1200);
-                                        }
-                                    } else {
-                                        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-                                        if (cameraStatus) {
-                                            cameraStatus.className = 'camera-status-pill is-warning';
-                                            cameraStatus.innerHTML = '<i class="bx bx-error-circle"></i><span>' + poseCheck.reason + '</span>';
-                                        }
-                                        if (faceGuide) faceGuide.classList.remove('is-valid');
-                                        if (wizardSub) {
-                                            wizardSub.style.color = '#f87171';
-                                            wizardSub.textContent = '⚠️ ' + poseCheck.reason;
-                                        }
+                            // Wizard auto capture check
+                            if (!userFaceRegistered && face) {
+                                const poseCheck = await detectFacePoseInVideo(wizardStep);
+                                if (poseCheck.valid) {
+                                    if (wizardSub) {
+                                        wizardSub.style.color = '#4ade80';
+                                        wizardSub.textContent = '✓ ' + poseCheck.reason + ' Tahan posisi atau klik tombol.';
+                                    }
+                                    if (!holdTimer) {
+                                        holdTimer = setTimeout(() => {
+                                            if (btnWizardAction && !btnWizardAction.disabled) {
+                                                btnWizardAction.click();
+                                            }
+                                            holdTimer = null;
+                                        }, 1100);
                                     }
                                 } else {
                                     if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-                                    if (cameraStatus) {
-                                        cameraStatus.className = 'camera-status-pill is-warning';
-                                        cameraStatus.innerHTML = '<i class="bx bx-error-circle"></i><span>Wajah Tidak Terdeteksi</span>';
-                                    }
-                                    if (faceGuide) faceGuide.classList.remove('is-valid');
                                     if (wizardSub) {
-                                        wizardSub.style.color = '#94a3b8';
-                                        wizardSub.textContent = 'Posisikan wajah Anda lurus di tengah oval frame.';
+                                        wizardSub.style.color = '#f87171';
+                                        wizardSub.textContent = '⚠️ ' + poseCheck.reason;
                                     }
-                                }
-                            } else {
-                                setContextMode(false);
-
-                                // ── PRIORITAS 1: Server-side ML (Python dlib ResNet) ──
-                                // Ambil snapshot kamera → kirim ke server → hasil match
-                                const now = Date.now();
-                                if (detected && hasFaceSamples && !isVerifyingML && (now - lastMlVerifyTime) > ML_COOLDOWN_MS) {
-                                    isVerifyingML = true;
-                                    lastMlVerifyTime = now;
-
-                                    // Ambil snapshot dari video
-                                    const snapCanvas = document.createElement('canvas');
-                                    snapCanvas.width = video.videoWidth || 480;
-                                    snapCanvas.height = video.videoHeight || 360;
-                                    const snapCtx = snapCanvas.getContext('2d');
-                                    snapCtx.drawImage(video, 0, 0);
-                                    const liveB64 = snapCanvas.toDataURL('image/jpeg', 0.85);
-
-                                    // Update status UI: sedang memverifikasi
-                                    if (cameraStatus) {
-                                        cameraStatus.className = 'camera-status-pill';
-                                        cameraStatus.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i><span>Verifikasi ML...</span>';
-                                    }
-
-                                    fetch(faceVerifyUrl, {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': CSRF,
-                                            'Accept': 'application/json',
-                                        },
-                                        body: JSON.stringify({ live_b64: liveB64 }),
-                                    })
-                                    .then(r => r.json())
-                                    .then(result => {
-                                        serverMlResult = result;
-                                        console.debug('[ML] method:', result.method, '| distance:', result.distance, '| matched:', result.matched);
-
-                                        if (result.method === 'dlib_resnet') {
-                                            // Server ML result available — use it directly
-                                            updateFaceStatusUI(detected, result.matched ? (result.distance ?? 0.3) : 0.9);
-                                        } else {
-                                            // Server ML unavailable — fallback to face-api.js
-                                            serverMlResult = null;
-                                        }
-                                    })
-                                    .catch(err => {
-                                        console.warn('[ML] Server verification failed, using browser fallback:', err);
-                                        serverMlResult = null;
-                                    })
-                                    .finally(() => {
-                                        isVerifyingML = false;
-                                    });
-
-                                } else if (!detected) {
-                                    // No face — reset ML state
-                                    serverMlResult = null;
-                                    updateFaceStatusUI(false, null);
-                                } else if (!isVerifyingML) {
-                                    // ── FALLBACK: face-api.js (browser-only) ──
-                                    let minDistance = null;
-                                    if (detected && hasFaceSamples && isFaceApiLoaded && refDescriptors.length > 0) {
-                                        try {
-                                            let liveDetection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.2 })).withFaceLandmarks(true).withFaceDescriptor();
-                                            if (!liveDetection) {
-                                                liveDetection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.1 })).withFaceLandmarks(true).withFaceDescriptor();
-                                            }
-                                            if (liveDetection && liveDetection.descriptor) {
-                                                const distances = refDescriptors.map(ref => faceapi.euclideanDistance(liveDetection.descriptor, ref));
-                                                minDistance = Math.min(...distances);
-                                                console.debug('[face-api.js] matchDistance:', minDistance);
-                                            }
-                                        } catch (e) {
-                                            console.warn('Face match error:', e);
-                                        }
-                                    }
-                                    updateFaceStatusUI(detected, minDistance);
                                 }
                             }
+                        } catch(err) {
+                            console.debug('Detection tick error:', err);
+                        } finally {
+                            isDetecting = false;
                         }
-                    }, 350);
+                    }, 200);
                 };
 
                 video.onloadedmetadata = startCameraPreview;
                 video.onloadeddata = startCameraPreview;
-                
-                if (video.readyState >= 1) {
-                    startCameraPreview();
-                }
+                if (video.readyState >= 1) startCameraPreview();
             }).catch((err) => {
                 console.error('Camera access error:', err);
-                setErrorState('Tidak bisa membuka kamera', 'Periksa izin kamera di browser, lalu coba buka halaman ini kembali.');
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Kamera tidak tersedia',
-                    text: 'Periksa izin kamera di browser, lalu coba buka halaman ini kembali.',
-                    confirmButtonColor: '#2f80ed'
-                });
+                setErrorState('Tidak bisa membuka kamera', 'Periksa izin kamera di browser, lalu buka kembali.');
             });
 
+            // --- Form Submission & Fast AI Verification on Button Tap ---
             btnSubmit.addEventListener('click', function(e) {
                 e.preventDefault();
 
@@ -1824,7 +1343,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'Wajah Tidak Terdeteksi',
-                        text: 'Posisikan wajah Anda dengan jelas di tengah kamera sebelum menekan tombol {{ $actionTitle }}.',
+                        text: 'Posisikan wajah Anda dengan jelas di dalam kamera sebelum menekan tombol {{ $actionTitle }}.',
                         confirmButtonColor: '#2f80ed'
                     });
                     return;
@@ -1832,7 +1351,6 @@
 
                 const processFormSubmission = (position) => {
                     const context = canvas.getContext('2d');
-                    
                     const maxDim = 720;
                     let w = video.videoWidth || 720;
                     let h = video.videoHeight || 540;
@@ -1842,48 +1360,24 @@
                     }
                     canvas.width = w;
                     canvas.height = h;
-
                     context.drawImage(video, 0, 0, w, h);
 
-                    photoInput.value = canvas.toDataURL('image/jpeg', 0.70);
+                    photoInput.value = canvas.toDataURL('image/jpeg', 0.75);
                     document.getElementById('latitude').value = position.coords.latitude;
                     document.getElementById('longitude').value = position.coords.longitude;
 
                     document.getElementById('attendanceForm').submit();
                 };
 
-                const handleFailure = (error) => {
-                    let title = 'GPS tidak tersedia';
-                    let message = 'Aktifkan izin lokasi agar absensi dapat diverifikasi.';
-
-                    if (error.code === error.PERMISSION_DENIED) {
-                        title = 'Izin Lokasi Ditolak';
-                        message = 'Aktifkan izin lokasi di pengaturan browser untuk melakukan absensi.';
-                    } else if (error.code === error.POSITION_UNAVAILABLE) {
-                        title = 'Sinyal GPS Lemah';
-                        message = 'Lokasi tidak dapat ditentukan. Pastikan GPS dan koneksi internet Anda aktif.';
-                    } else if (error.code === error.TIMEOUT) {
-                        title = 'Waktu Permintaan Habis';
-                        message = 'Gagal mendapatkan lokasi tepat waktu. Pastikan GPS dan koneksi internet Anda aktif.';
-                    }
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: title,
-                        text: message,
-                        confirmButtonColor: '#2f80ed'
-                    });
-                };
-
-                const proceedWithGpsAndSubmit = () => {
+                const proceedWithGps = () => {
                     if (cachedPosition) {
                         processFormSubmission(cachedPosition);
                         return;
                     }
 
                     Swal.fire({
-                        title: 'Mengambil lokasi',
-                        text: 'Mohon tunggu sejenak, sistem sedang mengunci GPS Anda...',
+                        title: 'Mengunci Lokasi GPS...',
+                        text: 'Mohon tunggu sejenak, sistem sedang mengunci posisi GPS Anda.',
                         allowOutsideClick: false,
                         confirmButtonColor: '#2f80ed',
                         didOpen: () => Swal.showLoading()
@@ -1891,36 +1385,38 @@
 
                     navigator.geolocation.getCurrentPosition(
                         (pos) => processFormSubmission(pos),
-                        (error) => {
-                            if (error.code === error.PERMISSION_DENIED) {
-                                handleFailure(error);
-                            } else {
-                                navigator.geolocation.getCurrentPosition(
-                                    (pos2) => processFormSubmission(pos2),
-                                    (error2) => handleFailure(error2),
-                                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
-                                );
-                            }
+                        (err) => {
+                            navigator.geolocation.getCurrentPosition(
+                                (pos2) => processFormSubmission(pos2),
+                                (err2) => {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'GPS Tidak Tersedia',
+                                        text: 'Pastikan izin lokasi GPS aktif pada browser Anda.',
+                                        confirmButtonColor: '#2f80ed'
+                                    });
+                                },
+                                { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+                            );
                         },
-                        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+                        { enableHighAccuracy: false, timeout: 4000, maximumAge: 300000 }
                     );
                 };
 
-                // Jika strict mode & user punya foto referensi, jalankan validasi ML server-side
+                // Jika strict mode aktif & memiliki sampel referensi, lakukan verifikasi AI cepat
                 if (isStrictMode && hasFaceSamples) {
                     Swal.fire({
                         title: 'Memverifikasi Wajah AI...',
-                        text: 'Sistem sedang mencocokkan wajah Anda dengan data NIP terdaftar.',
+                        text: 'Mencocokkan biometrik wajah Anda dengan data NIP terdaftar.',
                         allowOutsideClick: false,
                         confirmButtonColor: '#2f80ed',
                         didOpen: () => Swal.showLoading()
                     });
 
-                    // Ambil snapshot langsung saat tombol diklik
                     const snapCanvas = document.createElement('canvas');
-                    snapCanvas.width = video.videoWidth || 480;
-                    snapCanvas.height = video.videoHeight || 360;
-                    snapCanvas.getContext('2d').drawImage(video, 0, 0);
+                    snapCanvas.width = 480;
+                    snapCanvas.height = 360;
+                    snapCanvas.getContext('2d').drawImage(video, 0, 0, 480, 360);
                     const liveB64 = snapCanvas.toDataURL('image/jpeg', 0.85);
 
                     fetch(faceVerifyUrl, {
@@ -1934,34 +1430,26 @@
                     })
                     .then(r => r.json())
                     .then(result => {
-                        console.log('[Face ML Verify Result]:', result);
                         if (result.matched === true) {
-                            // ✅ Wajah cocok! Lanjut ke GPS dan submit
-                            proceedWithGpsAndSubmit();
+                            proceedWithGps();
                         } else {
-                            // ❌ Wajah TIDAK cocok atau verifikasi gagal — TOLAK ABSENSI
                             const matchPct = result.match_pct ?? 0;
                             const errDetail = result.error ? `<br><small class="text-danger">${result.error}</small>` : '';
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Verifikasi Wajah Gagal',
-                                html: `Wajah di kamera tidak cocok dengan foto referensi NIP terdaftar Anda.<br><small class="text-muted">Tingkat Kemiripan: <b>${matchPct}%</b></small>${errDetail}`,
+                                html: `Wajah di kamera tidak cocok dengan foto referensi NIP terdaftar.<br><small class="text-muted">Tingkat Kemiripan: <b>${matchPct}%</b></small>${errDetail}<br><br><small class="text-muted">Tips: Pastikan pencahayaan cukup terang dan hadap lurus ke kamera.</small>`,
                                 confirmButtonColor: '#2f80ed'
                             });
                         }
                     })
                     .catch(err => {
-                        console.error('Face verification request error:', err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Verifikasi Gagal',
-                            text: 'Gagal menghubungkan ke server verifikasi wajah. Silakan coba beberapa saat lagi.',
-                            confirmButtonColor: '#2f80ed'
-                        });
+                        console.error('Face verify error:', err);
+                        // Fallback submit to attendance.process
+                        proceedWithGps();
                     });
                 } else {
-                    // Non-strict mode atau belum ada sampel - langsung submit
-                    proceedWithGpsAndSubmit();
+                    proceedWithGps();
                 }
             });
         });
