@@ -1046,11 +1046,25 @@
                     }
 
                     const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = 480;
-                    tempCanvas.height = 360;
+                    tempCanvas.width = 640;
+                    tempCanvas.height = 480;
                     const tempCtx = tempCanvas.getContext('2d');
-                    tempCtx.drawImage(video, 0, 0, 480, 360);
-                    const b64 = tempCanvas.toDataURL('image/jpeg', 0.85);
+                    
+                    // Maintain aspect ratio with center-crop to prevent face stretching (lonjong)
+                    const vw = video.videoWidth || 640;
+                    const vh = video.videoHeight || 480;
+                    const targetRatio = 640 / 480;
+                    let sx = 0, sy = 0, sw = vw, sh = vh;
+                    if (vw / vh > targetRatio) {
+                        sw = vh * targetRatio;
+                        sx = (vw - sw) / 2;
+                    } else {
+                        sh = vw / targetRatio;
+                        sy = (vh - sh) / 2;
+                    }
+                    tempCtx.drawImage(video, sx, sy, sw, sh, 0, 0, 640, 480);
+                    // 1.0 = Tanpa kompresi (kualitas asli maksimal untuk akurasi face recognition)
+                    const b64 = tempCanvas.toDataURL('image/jpeg', 1.0);
 
                     if (wizardStep === 'front') {
                         capturedPoses.front = b64;
@@ -1351,9 +1365,9 @@
 
                 const processFormSubmission = (position) => {
                     const context = canvas.getContext('2d');
-                    const maxDim = 720;
-                    let w = video.videoWidth || 720;
-                    let h = video.videoHeight || 540;
+                    const maxDim = 640;
+                    let w = video.videoWidth || 640;
+                    let h = video.videoHeight || 480;
                     if (w > maxDim) {
                         h = Math.round((h * maxDim) / w);
                         w = maxDim;
@@ -1362,7 +1376,8 @@
                     canvas.height = h;
                     context.drawImage(video, 0, 0, w, h);
 
-                    photoInput.value = canvas.toDataURL('image/jpeg', 0.75);
+                    // Kompresi foto absensi harian (0.65 JPEG) agar hemat penyimpanan & cepat terunggah
+                    photoInput.value = canvas.toDataURL('image/jpeg', 0.65);
                     document.getElementById('latitude').value = position.coords.latitude;
                     document.getElementById('longitude').value = position.coords.longitude;
 
@@ -1416,7 +1431,19 @@
                     const snapCanvas = document.createElement('canvas');
                     snapCanvas.width = 480;
                     snapCanvas.height = 360;
-                    snapCanvas.getContext('2d').drawImage(video, 0, 0, 480, 360);
+                    const snapCtx = snapCanvas.getContext('2d');
+                    const vvw = video.videoWidth || 480;
+                    const vvh = video.videoHeight || 360;
+                    const tRatio = 480 / 360;
+                    let lsx = 0, lsy = 0, lsw = vvw, lsh = vvh;
+                    if (vvw / vvh > tRatio) {
+                        lsw = vvh * tRatio;
+                        lsx = (vvw - lsw) / 2;
+                    } else {
+                        lsh = vvw / tRatio;
+                        lsy = (vvh - lsh) / 2;
+                    }
+                    snapCtx.drawImage(video, lsx, lsy, lsw, lsh, 0, 0, 480, 360);
                     const liveB64 = snapCanvas.toDataURL('image/jpeg', 0.85);
 
                     fetch(faceVerifyUrl, {

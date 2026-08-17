@@ -179,8 +179,21 @@ class AttendanceController extends Controller
         if (function_exists('imagecreatefromstring') && function_exists('imagejpeg')) {
             $image = @imagecreatefromstring($decodedData);
             if ($image !== false) {
+                // Resize ke max-width 640px untuk efisiensi penyimpanan foto log absensi
+                $origW = imagesx($image);
+                $origH = imagesy($image);
+                $maxW = 640;
+                if ($origW > $maxW) {
+                    $newW = $maxW;
+                    $newH = (int) round(($origH * $maxW) / $origW);
+                    $resized = imagecreatetruecolor($newW, $newH);
+                    imagecopyresampled($resized, $image, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+                    imagedestroy($image);
+                    $image = $resized;
+                }
+
                 ob_start();
-                imagejpeg($image, null, 70);
+                imagejpeg($image, null, 65); // Kompresi 65% untuk efisiensi penyimpanan log harian
                 $compressedBinary = ob_get_clean();
                 if (!empty($compressedBinary)) {
                     $decodedData = $compressedBinary;

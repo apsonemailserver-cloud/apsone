@@ -200,7 +200,8 @@
         context.scale(-1, 1);
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        // 1.0 = Tanpa kompresi (Original High Quality)
+        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
         document.getElementById('modalPhotoBase64').value = dataUrl;
 
         stopCamera();
