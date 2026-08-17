@@ -176,7 +176,7 @@ class UserController extends Controller
             'manager' => 'required|string|max:255',
             'senior_manager' => 'nullable|string|max:255',
             'is_qantas' => 'required|boolean',
-            'join_date' => 'required|date',
+            'join_date' => 'required|date|before_or_equal:today',
             'salary' => 'required|numeric|min:0',
         ], [
             'role.required' => 'Role wajib diisi.',
@@ -187,6 +187,7 @@ class UserController extends Controller
             'job_title.required' => 'Job title wajib diisi.',
             'unit.required' => 'Unit wajib diisi.',
             'sub_unit.required' => 'Sub unit wajib diisi.',
+            'join_date.before_or_equal' => 'Join date tidak boleh melebihi tanggal hari ini.',
         ]);
 
         try {
@@ -386,7 +387,7 @@ class UserController extends Controller
             'manager' => 'required|string|max:255',
             'senior_manager' => 'nullable|string|max:255',
             'is_qantas' => 'required|boolean',
-            'join_date' => 'required|date',
+            'join_date' => 'required|date|before_or_equal:today',
             'salary' => 'required|numeric|min:0',
         ], [
             'role.required' => 'Role wajib diisi.',
@@ -397,6 +398,7 @@ class UserController extends Controller
             'job_title.required' => 'Job title wajib diisi.',
             'unit.required' => 'Unit wajib diisi.',
             'sub_unit.required' => 'Sub unit wajib diisi.',
+            'join_date.before_or_equal' => 'Join date tidak boleh melebihi tanggal hari ini.',
         ]);
 
         try {

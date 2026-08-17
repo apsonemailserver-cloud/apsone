@@ -205,7 +205,8 @@
                                         <div class="mb-3">
                                             <label class="form-label">Join Date</label>
                                             <input type="date" class="form-control" name="join_date"
-                                                value="{{ old('join_date', $user->join_date) }}">
+                                                max="{{ date('Y-m-d') }}"
+                                                value="{{ old('join_date', $user->join_date ? \Carbon\Carbon::parse($user->join_date)->format('Y-m-d') : '') }}">
                                         </div>
 
                                         <div class="mb-3">

@@ -196,6 +196,7 @@
                                         <div class="mb-3">
                                             <label class="form-label">Join Date</label>
                                             <input type="date" class="form-control" name="join_date"
+                                                max="{{ date('Y-m-d') }}"
                                                 value="{{ old('join_date') }}">
                                         </div>
 
