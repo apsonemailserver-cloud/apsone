@@ -65,7 +65,7 @@ class BlacklistController extends Controller
 
             if ($blacklistKey === '') {
                 Alert::error('Gagal', 'NIK/NIP staff tidak ditemukan, blacklist tidak dapat diproses.');
-                return back();
+                return back()->with('error', 'NIK/NIP staff tidak ditemukan, blacklist tidak dapat diproses.');
             }
 
             $attachmentPath = null;
@@ -94,7 +94,7 @@ class BlacklistController extends Controller
                 }
                 $user->forceFill(['is_active' => 0])->save();
                 Alert::warning('Sudah Blacklist', "{$user->fullname} sudah ada di daftar blacklist dan akun telah dinonaktifkan.");
-                return redirect()->route('blacklist.index');
+                return back()->with('warning', "{$user->fullname} sudah ada di daftar blacklist dan akun telah dinonaktifkan.");
             }
 
             $bannedBy = Auth::user()->fullname ?? Auth::user()->name ?? 'Admin';
@@ -115,12 +115,20 @@ class BlacklistController extends Controller
                 $user->forceFill(['is_active' => 0])->save();
             });
 
-            Alert::success('Sanksi Tegas', "{$user->fullname} berhasil di-blacklist dan akun telah dinonaktifkan.");
-            return redirect()->route('blacklist.index');
+            $successMsg = "{$user->fullname} berhasil di-blacklist dan akun telah dinonaktifkan.";
+            Alert::success('Sanksi Tegas', $successMsg);
+
+            $redirectTo = $request->input('redirect_to');
+            if (!empty($redirectTo)) {
+                return redirect($redirectTo)->with('success', $successMsg);
+            }
+
+            return redirect()->back()->with('success', $successMsg);
         } catch (\Exception $e) {
             Log::error('Gagal memproses blacklist:', ['error' => $e->getMessage()]);
-            Alert::error('Gagal', 'Terjadi kesalahan saat memproses blacklist: '.$e->getMessage());
-            return back()->withInput();
+            $errorMsg = 'Terjadi kesalahan saat memproses blacklist: '.$e->getMessage();
+            Alert::error('Gagal', $errorMsg);
+            return back()->withInput()->with('error', $errorMsg);
         }
     }
 

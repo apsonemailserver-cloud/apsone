@@ -1129,6 +1129,7 @@
 
 	    <div id="pjax-page-scripts" hidden>
 	        @yield('scripts')
+	        @include('sweetalert::alert')
 	    </div>
 	    <script>
 	        (function() {

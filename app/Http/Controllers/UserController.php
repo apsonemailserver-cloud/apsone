@@ -429,19 +429,21 @@ class UserController extends Controller
             unset($data['role'], $data['job_title'], $data['unit'], $data['sub_unit'], $data['cluster']);
 
             $user->update($data);
-            Alert::success('Success', 'Data user berhasil diupdate');
+            $msg = 'Data staff ' . $user->fullname . ' berhasil diperbarui.';
+            Alert::success('Berhasil', $msg);
 
             $redirectTo = $request->input('redirect_to');
             if (!empty($redirectTo)) {
-                return redirect($redirectTo);
+                return redirect($redirectTo)->with('success', $msg);
             }
 
-            return redirect()->route('staff.index');
+            return redirect()->route('staff.index')->with('success', $msg);
         } catch (\Exception $e) {
             Log::error('Gagal update user', ['error' => $e->getMessage()]);
-            Alert::error('Gagal', 'Terjadi kesalahan saat mengupdate user: '.$e->getMessage());
+            $err = 'Terjadi kesalahan saat mengupdate staff: '.$e->getMessage();
+            Alert::error('Gagal', $err);
 
-            return back()->withInput();
+            return back()->withInput()->with('error', $err);
         }
     }
 
