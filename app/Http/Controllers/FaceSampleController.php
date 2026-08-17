@@ -20,7 +20,9 @@ class FaceSampleController extends Controller
      */
     private function authorizeAdmin(): void
     {
-        abort_unless(Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat mengelola foto referensi wajah.');
+        $user = Auth::user();
+        $canAccess = $user && ($user->isAdmin() || $user->canAccess('user', 'reset_face') || $user->canAccess('user', 'edit') || $user->canAccess('user', 'delete'));
+        abort_unless($canAccess, 403, 'Anda tidak memiliki hak akses untuk mengelola atau mereset foto referensi wajah.');
     }
 
     /**
@@ -349,19 +351,30 @@ class FaceSampleController extends Controller
     }
 
     /**
-     * Hapus semua foto referensi user (Admin)
+     * Hapus semua foto referensi user (Admin / Authorized Role)
      */
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
         $this->authorizeAdmin();
 
         $dir = self::userDir($user->id);
-        Storage::disk(self::STORAGE_DISK)->deleteDirectory($dir);
+        if (Storage::disk(self::STORAGE_DISK)->exists($dir)) {
+            Storage::disk(self::STORAGE_DISK)->deleteDirectory($dir);
+        }
 
         $user->update(['face_registered_at' => null]);
 
-        Alert::success('Berhasil', 'Semua foto referensi wajah ' . $user->fullname . ' telah dihapus.');
-        return redirect()->route('users.face-samples.index', $user->id);
+        $message = 'Semua foto referensi wajah ' . $user->fullname . ' telah dihapus. Staff sekarang dapat melakukan registrasi wajah ulang.';
+
+        if ($request->wantsJson() || $request->ajax() || $request->isJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ]);
+        }
+
+        Alert::success('Berhasil', $message);
+        return redirect()->back()->with('success', $message);
     }
 
     /**

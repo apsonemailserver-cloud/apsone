@@ -69,7 +69,7 @@ class Permission extends Model
             'assignment'   => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
 
             'station'      => ['view', 'create', 'edit', 'delete'],
-            'user'         => ['view', 'create', 'edit', 'delete', 'export'],
+            'user'         => ['view', 'create', 'edit', 'delete', 'export', 'reset_face'],
             'role'         => ['view', 'create', 'edit', 'delete'],
             'blacklist'    => ['view', 'create', 'delete'],
             'job_title'    => ['view', 'create', 'edit', 'delete'],
@@ -90,13 +90,14 @@ class Permission extends Model
     public static function actions(): array
     {
         return [
-            'view'    => 'Lihat / Akses',
-            'create'  => 'Tambah / Buat',
-            'edit'    => 'Edit / Ubah',
-            'delete'  => 'Hapus',
-            'approve' => 'Persetujuan / Approval',
-            'sync'    => 'Sync / Auto',
-            'export'  => 'Export / Cetak PDF',
+            'view'       => 'Lihat / Akses',
+            'create'     => 'Tambah / Buat',
+            'edit'       => 'Edit / Ubah',
+            'delete'     => 'Hapus',
+            'approve'    => 'Persetujuan / Approval',
+            'sync'       => 'Sync / Auto',
+            'export'     => 'Export / Cetak PDF',
+            'reset_face' => 'Reset / Hapus Foto Wajah',
         ];
     }
 }

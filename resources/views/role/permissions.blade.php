@@ -34,22 +34,24 @@
 
     $moduleActionsMap = \App\Models\Permission::moduleActionsMap();
     $actionLabels = [
-        'view'    => 'View',
-        'create'  => 'Create',
-        'edit'    => 'Edit',
-        'delete'  => 'Delete',
-        'approve' => 'Approve',
-        'sync'    => 'Sync',
-        'export'  => 'Export',
+        'view'       => 'View',
+        'create'     => 'Create',
+        'edit'       => 'Edit',
+        'delete'     => 'Delete',
+        'approve'    => 'Approve',
+        'sync'       => 'Sync',
+        'export'     => 'Export',
+        'reset_face' => 'Reset Face',
     ];
     $actionIcons = [
-        'view'    => 'ti-eye',
-        'create'  => 'ti-plus',
-        'edit'    => 'ti-pencil',
-        'delete'  => 'ti-trash',
-        'approve' => 'ti-circle-check',
-        'sync'    => 'ti-refresh',
-        'export'  => 'ti-file-export',
+        'view'       => 'ti-eye',
+        'create'     => 'ti-plus',
+        'edit'       => 'ti-pencil',
+        'delete'     => 'ti-trash',
+        'approve'    => 'ti-circle-check',
+        'sync'       => 'ti-refresh',
+        'export'     => 'ti-file-export',
+        'reset_face' => 'ti-face-id',
     ];
 
     $moduleIcons = [
@@ -127,7 +129,7 @@
                             $catTotalCount = 0;
                             $catActiveCount= 0;
                             foreach ($modList as $mKey => $mLabel) {
-                                $vA = $moduleActionsMap[$mKey] ?? ['view','create','edit','delete','approve','export'];
+                                $vA = $moduleActionsMap[$mKey] ?? ['view','create','edit','delete','approve','sync','export','reset_face'];
                                 $mp = ($permissionsByModule[$mKey] ?? collect())->keyBy('action');
                                 foreach ($vA as $aK) {
                                     if (isset($mp[$aK])) {
@@ -162,7 +164,7 @@
                                     @foreach($modList as $modKey => $modLabel)
                                         @php
                                             $modPerms     = ($permissionsByModule[$modKey] ?? collect())->keyBy('action');
-                                            $validActions = $moduleActionsMap[$modKey] ?? ['view','create','edit','delete','approve','export'];
+                                            $validActions = $moduleActionsMap[$modKey] ?? ['view','create','edit','delete','approve','sync','export','reset_face'];
                                         @endphp
                                         <div class="module-row {{ !$loop->first ? 'mt-4 pt-3.5 border-top' : 'pt-1' }}"
                                              data-module="{{ $modKey }}"
@@ -187,7 +189,7 @@
 
                                             {{-- Pill Capsules --}}
                                             <div class="d-flex flex-wrap gap-2 gap-md-2.5 row-gap-2.5 pt-1">
-                                                @foreach(['view','create','edit','delete','approve','sync','export'] as $actKey)
+                                                @foreach(['view','create','edit','delete','approve','sync','export','reset_face'] as $actKey)
                                                     @php
                                                         $isValid  = in_array($actKey, $validActions);
                                                         $perm     = $isValid ? ($modPerms[$actKey] ?? null) : null;

@@ -24,6 +24,9 @@
     } elseif ($action === 'blacklist') {
         $class .= ' action-delete';
         $defaultIcon = 'ti ti-ban';
+    } elseif ($action === 'reset-face' || $action === 'reset_face') {
+        $class .= ' action-reset-face';
+        $defaultIcon = 'ti ti-scan';
     }
     
     $displayIcon = $icon ?: $defaultIcon;

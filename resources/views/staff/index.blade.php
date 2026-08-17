@@ -126,6 +126,16 @@
                                         @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
                                         <x-action-button action="edit" :href="route('users.edit', ['user' => $staff->id, 'redirect_to' => url()->full()])" title="Edit Staff" />
                                         @endif
+                                        @php
+                                            $hasFaceSample = !empty($staff->face_registered_at) || \Illuminate\Support\Facades\Storage::disk('public')->exists('face_samples/' . $staff->id);
+                                        @endphp
+                                        @if(($staff->is_active || $hasFaceSample) && (Auth::user()->canAccess('user', 'reset_face') || Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin'))
+                                        <form id="delete-face-form-{{ $staff->id }}" action="{{ route('users.face-samples.destroy', $staff->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-action-button type="button" action="reset-face" onclick="confirmResetFace('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Reset / Hapus Foto Wajah" />
+                                        </form>
+                                        @endif
                                         @if(!$isBlacklisted && (Auth::user()->canAccess('blacklist', 'create') || Auth::user()->role === 'Admin'))
                                         <x-action-button type="button" action="blacklist" onclick="openBanModal('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Blacklist" />
                                         @endif
@@ -211,6 +221,7 @@
             </div>
             <form action="{{ route('blacklist.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="redirect_to" value="{{ url()->full() }}">
                 <div class="modal-body p-4 text-start">
                     <input type="hidden" name="user_id" id="ban_user_id">
                     
@@ -256,15 +267,89 @@
         </div>
     </div>
 </div>
+@endif
 
 <script>
     function openBanModal(id, name) {
-        document.getElementById('ban_user_id').value = id;
-        document.getElementById('ban_user_name').value = name;
-        var myModal = new bootstrap.Modal(document.getElementById('banModal'));
-        myModal.show();
+        var elId = document.getElementById('ban_user_id');
+        var elName = document.getElementById('ban_user_name');
+        if (elId && elName) {
+            elId.value = id;
+            elName.value = name;
+            var myModal = new bootstrap.Modal(document.getElementById('banModal'));
+            myModal.show();
+        }
+    }
+
+    function confirmResetFace(userId, userName) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Apakah Anda Yakin?',
+                text: 'Foto referensi wajah milik "' + userName + '" akan dihapus permanen agar staff dapat melakukan registrasi wajah ulang.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="ti ti-trash me-1"></i> Ya, Hapus & Reset',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false,
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    var form = document.getElementById('delete-face-form-' + userId);
+                    if (!form) return false;
+                    var tokenEl = form.querySelector('input[name="_token"]');
+                    var token = tokenEl ? tokenEl.value : '{{ csrf_token() }}';
+                    
+                    return fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            _method: 'DELETE'
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(json => {
+                                throw new Error(json.message || 'Gagal menghapus foto referensi wajah.');
+                            }).catch(err => {
+                                throw new Error(err.message || 'Terjadi kesalahan sistem (' + response.status + ').');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(error.message || 'Terjadi kesalahan jaringan/sistem.');
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed && result.value && result.value.success) {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: result.value.message || 'Foto referensi wajah milik "' + userName + '" berhasil dihapus.',
+                        icon: 'success',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        } else {
+            if (confirm('Apakah Anda yakin? Foto referensi wajah milik "' + userName + '" akan dihapus permanen agar staff dapat melakukan registrasi wajah ulang.')) {
+                var form = document.getElementById('delete-face-form-' + userId);
+                if (form) form.submit();
+            }
+        }
     }
 </script>
-@endif
 
 @endsection
