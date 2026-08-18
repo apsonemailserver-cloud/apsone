@@ -15,16 +15,32 @@ return new class extends Migration
         // 1. Add new foreign key columns to users table if not already present
         Schema::table('users', function (Blueprint $table) {
             if (!Schema::hasColumn('users', 'unit_id')) {
-                $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
+                if (DB::getDriverName() === 'sqlite') {
+                    $table->unsignedBigInteger('unit_id')->nullable();
+                } else {
+                    $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
+                }
             }
             if (!Schema::hasColumn('users', 'sub_unit_id')) {
-                $table->foreignId('sub_unit_id')->nullable()->constrained('sub_units')->nullOnDelete();
+                if (DB::getDriverName() === 'sqlite') {
+                    $table->unsignedBigInteger('sub_unit_id')->nullable();
+                } else {
+                    $table->foreignId('sub_unit_id')->nullable()->constrained('sub_units')->nullOnDelete();
+                }
             }
             if (!Schema::hasColumn('users', 'job_title_id')) {
-                $table->foreignId('job_title_id')->nullable()->constrained('job_titles')->nullOnDelete();
+                if (DB::getDriverName() === 'sqlite') {
+                    $table->unsignedBigInteger('job_title_id')->nullable();
+                } else {
+                    $table->foreignId('job_title_id')->nullable()->constrained('job_titles')->nullOnDelete();
+                }
             }
             if (!Schema::hasColumn('users', 'cluster_id')) {
-                $table->foreignId('cluster_id')->nullable()->constrained('clusters')->nullOnDelete();
+                if (DB::getDriverName() === 'sqlite') {
+                    $table->unsignedBigInteger('cluster_id')->nullable();
+                } else {
+                    $table->foreignId('cluster_id')->nullable()->constrained('clusters')->nullOnDelete();
+                }
             }
         });
 

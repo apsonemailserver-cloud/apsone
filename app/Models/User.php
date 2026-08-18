@@ -25,63 +25,34 @@ class User extends Authenticatable
     // GABUNGKAN SEMUA KOLOM DISINI (JANGAN ADA DUA FILLABLE)
     protected $fillable = [
         'id',
-        'fullname',
+        'employee_id',
+        'role_id',
+        'role',
         'email',
         'password',
-        'is_active',
-        'gender',
-        'job_title',
-        'job_title_id',
-        'role',
-        'role_id',
-        'station',
-        'station_id',
-        'cluster',
-        'cluster_id',
-        'unit',
-        'unit_id',
-        'sub_unit',
-        'sub_unit_id',
-        'status',
-        'manager',
-        'senior_manager',
-        'is_qantas',
-        'join_date',
-        'salary',
-        'contract_start',
-        'contract_end',
-        'phone',
-        'pendidikan',
-        'tanggal_lahir',
-        'tempat_lahir',
-        'domisili',
-        'kota_domisili',
-        'no_hp',
-        'alamat',
-        'no_nik',
-        'no_kk',
-        'npwp',
-        'no_pas',
-        'pas_registered',
-        'pas_expired',
-        'bpjs_kesehatan',
-        'bpjs_tk',
-        'tim_number',
-        'tim_registered',
-        'tim_expired',
         'profile_picture',
         'face_registered_at',
+        'is_active',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
      */
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    public function scopeWithEmployee($query)
+    {
+        return $query->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*');
+    }
 
     public function roleRelation()
     {
@@ -118,20 +89,65 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-
-            // Casting Tanggal (Penting agar tidak error saat format tanggal di View)
-            'join_date' => 'date',
-            'contract_start' => 'date',
-            'contract_end' => 'date',
-            'pas_registered' => 'date',
-            'pas_expired' => 'date',
-            'tim_expired' => 'date', // TIM
-
-            // Boolean
-            'is_qantas' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
+
+    /**
+     * Magic getter for backward compatibility (accessing employee attributes directly on user).
+     */
+    public function __get($key)
+    {
+        $value = parent::__get($key);
+        if ($value !== null) {
+            return $value;
+        }
+
+        if (in_array($key, [
+            'fullname', 'station', 'no_pas', 'phone', 'gender', 'job_title_id',
+            'tim_number', 'tim_registered', 'tim_expired', 'join_date',
+            'contract_start', 'contract_end', 'pas_registered', 'pas_expired',
+            'salary', 'is_qantas', 'unit_id', 'sub_unit_id', 'tanggal_lahir',
+            'manager', 'senior_manager', 'status', 'alamat', 'pendidikan',
+            'domisili', 'kota_domisili', 'no_hp', 'bpjs_tk', 'bpjs_kesehatan',
+            'no_kk', 'no_nik', 'tempat_lahir', 'cluster_id'
+        ])) {
+            return $this->employee ? $this->employee->{$key} : null;
+        }
+
+        return null;
+    }
+
+    public function getNameAttribute()
+    {
+        return $this->employee->fullname ?? $this->fullname ?? $this->id;
+    }
+
+    public function getFullnameAttribute()
+    {
+        return $this->employee ? $this->employee->fullname : null;
+    }
+
+    public function jobTitle()
+    {
+        return $this->employee ? $this->employee->jobTitle() : $this->belongsTo(JobTitle::class, 'job_title_id');
+    }
+
+    public function unit()
+    {
+        return $this->employee ? $this->employee->unit() : $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    public function subUnit()
+    {
+        return $this->employee ? $this->employee->subUnit() : $this->belongsTo(SubUnit::class, 'sub_unit_id');
+    }
+
+    public function cluster()
+    {
+        return $this->employee ? $this->employee->cluster() : $this->belongsTo(Cluster::class, 'cluster_id');
+    }
+
 
     // =================================================================
     // RELASI ANTAR TABEL
@@ -240,24 +256,14 @@ class User extends Authenticatable
         return $this->assignments();
     }
 
-    public function unit()
-    {
-        return $this->belongsTo(Unit::class, 'unit_id');
-    }
-
-    public function subUnit()
-    {
-        return $this->belongsTo(SubUnit::class, 'sub_unit_id');
-    }
-
     public function unitRelation()
     {
-        return $this->belongsTo(Unit::class, 'unit_id');
+        return $this->employee ? $this->employee->unit() : $this->belongsTo(Unit::class, 'unit_id');
     }
 
     public function subUnitRelation()
     {
-        return $this->belongsTo(SubUnit::class, 'sub_unit_id');
+        return $this->employee ? $this->employee->subUnit() : $this->belongsTo(SubUnit::class, 'sub_unit_id');
     }
 
     public function leaveBalances()
@@ -272,49 +278,19 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function getNameAttribute()
-    {
-        return $this->fullname ?? $this->id;
-    }
-
     public static function getStationColumn(): string
     {
-        static $col = null;
-        if ($col === null) {
-            $col = \Illuminate\Support\Facades\Schema::hasColumn('users', 'station_id') ? 'station_id' : 'station';
-        }
-        return $col;
+        return 'station_id';
     }
 
     public function getStationAttribute()
     {
-        $col = static::getStationColumn();
-        return $this->attributes[$col] ?? $this->attributes['station'] ?? $this->attributes['station_id'] ?? null;
-    }
-
-    public function setStationAttribute($value)
-    {
-        $col = static::getStationColumn();
-        $this->attributes[$col] = $value;
-        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'station')) {
-            $this->attributes['station'] = $value;
-        }
+        return $this->attributes['station_id'] ?? null;
     }
 
     public function stationRelation()
     {
-        $foreignKey = static::getStationColumn();
-        return $this->belongsTo(Station::class, $foreignKey, 'code');
-    }
-
-    public function jobTitle()
-    {
-        return $this->belongsTo(JobTitle::class, 'job_title_id');
-    }
-
-    public function cluster()
-    {
-        return $this->belongsTo(Cluster::class, 'cluster_id');
+        return $this->belongsTo(Station::class, 'station_id', 'code');
     }
 
     public function setRoleAttribute($value)
@@ -327,58 +303,6 @@ class User extends Authenticatable
         }
         if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
             $this->attributes['role'] = $value;
-        }
-    }
-
-    public function setJobTitleAttribute($value)
-    {
-        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('job_titles')) {
-            try {
-                $jt = \App\Models\JobTitle::firstOrCreate(['name' => trim($value)]);
-                $this->attributes['job_title_id'] = $jt->id;
-            } catch (\Throwable $e) {}
-        }
-        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'job_title')) {
-            $this->attributes['job_title'] = $value;
-        }
-    }
-
-    public function setUnitAttribute($value)
-    {
-        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('units')) {
-            try {
-                $u = \App\Models\Unit::firstOrCreate(['name' => trim($value)]);
-                $this->attributes['unit_id'] = $u->id;
-            } catch (\Throwable $e) {}
-        }
-        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'unit')) {
-            $this->attributes['unit'] = $value;
-        }
-    }
-
-    public function setSubUnitAttribute($value)
-    {
-        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('sub_units')) {
-            try {
-                $su = \App\Models\SubUnit::firstOrCreate(['name' => trim($value)]);
-                $this->attributes['sub_unit_id'] = $su->id;
-            } catch (\Throwable $e) {}
-        }
-        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'sub_unit')) {
-            $this->attributes['sub_unit'] = $value;
-        }
-    }
-
-    public function setClusterAttribute($value)
-    {
-        if (!empty($value) && \Illuminate\Support\Facades\Schema::hasTable('clusters')) {
-            try {
-                $c = \App\Models\Cluster::firstOrCreate(['name' => trim($value)]);
-                $this->attributes['cluster_id'] = $c->id;
-            } catch (\Throwable $e) {}
-        }
-        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'cluster')) {
-            $this->attributes['cluster'] = $value;
         }
     }
 }

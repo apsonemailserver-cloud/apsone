@@ -122,8 +122,9 @@ class ScheduleController extends Controller
             // Users (PORTER sesuai SPV)
             $users = DB::table('users')
                 ->join('roles', 'users.role_id', '=', 'roles.id')
+                ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
                 ->whereIn('roles.name', $rolePorters)
-                ->select('users.id', 'users.is_qantas')
+                ->select('users.id', 'employees.is_qantas')
                 ->orderBy('users.id')
                 ->get();
 
@@ -450,13 +451,16 @@ class ScheduleController extends Controller
 
         $search = request('search');
 
-        $user = User::whereHas('roleRelation', function ($q) use ($rolePorter) {
-            $q->where('name', 'like', "%{$rolePorter}%");
-        })->when($search, function ($query, $search) {
-            return $query->where('fullname', 'like', "%{$search}%")
-                ->orWhere('id', 'like', "%{$search}%");
-        })
-            ->orderBy('fullname', 'asc')
+        $user = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*')
+            ->whereHas('roleRelation', function ($q) use ($rolePorter) {
+                $q->where('name', 'like', "%{$rolePorter}%");
+            })->when($search, function ($query, $search) {
+                return $query->where('employees.fullname', 'like', "%{$search}%")
+                    ->orWhere('users.id', 'like', "%{$search}%");
+            })
+            ->orderBy('employees.fullname', 'asc')
             ->paginate(request()->input('per_page', 10))
             ->withQueryString();
 

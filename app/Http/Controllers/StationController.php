@@ -86,11 +86,11 @@ class StationController extends Controller
     }
 
     // Proses Ganti Status ON/OFF
-    public function toggleStatus($id)
+    public function toggleStatus($code)
     {
         abort_unless(Auth::user()->canAccess('station', 'edit'), 403, 'Akses Ditolak');
 
-        $station = Station::findOrFail($id);
+        $station = Station::where('code', $code)->firstOrFail();
 
         // Balik statusnya (Jika 1 jadi 0, Jika 0 jadi 1)
         $station->is_active = !$station->is_active;
@@ -105,9 +105,9 @@ class StationController extends Controller
     }
 
     // Menampilkan Form Ubah Station
-    public function edit($id)
+    public function edit($code)
     {
-        $station = Station::findOrFail($id);
+        $station = Station::where('code', $code)->firstOrFail();
         $availableRoles = $this->availableRoles();
 
         return view('stations.edit', compact('station', 'availableRoles'));
@@ -117,7 +117,7 @@ class StationController extends Controller
     public function update(Request $request, $station)
     {
         if (!$station instanceof Station) {
-            $station = Station::findOrFail($station);
+            $station = Station::where('code', $station)->firstOrFail();
         }
 
         $request->validate([
@@ -148,13 +148,13 @@ class StationController extends Controller
         return redirect()->route('stations.index');
     }
 
-    public function destroy($id)
+    public function destroy($code)
     {
         DB::beginTransaction();
 
         try {
-            // Ambil data station berdasarkan id
-            $station = Station::findOrFail($id);
+            // Ambil data station berdasarkan code
+            $station = Station::where('code', $code)->firstOrFail();
 
             // Hapus user yang station-nya sama dengan code station
             User::where('station', $station->code)->delete();

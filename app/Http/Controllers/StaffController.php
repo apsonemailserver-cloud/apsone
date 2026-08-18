@@ -38,27 +38,29 @@ class StaffController extends Controller
         }
 
         // 2. Base query
-        $query = User::query();
+        $query = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*');
 
         // 3. Filter search (NIP / Nama)
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('fullname', 'like', "%{$search}%")
-                    ->orWhere('id', 'like', "%{$search}%");
+                $q->where('employees.fullname', 'like', "%{$search}%")
+                    ->orWhere('users.id', 'like', "%{$search}%");
             });
         }
 
         // 4. Filter station dari tab
         if ($isFullAccess) {
             if ($request->filled('station')) {
-                $query->where('station', $request->station);
+                $query->where('employees.station', $request->station);
             }
         } else {
-            $query->where('station', $authUser->station);
+            $query->where('employees.station', $authUser->station);
         }
 
         // 6. Ambil data + pagination
-        $staffs = $query->orderBy('fullname', 'asc')
+        $staffs = $query->orderBy('employees.fullname', 'asc')
             ->paginate(10)
             ->withQueryString();
 

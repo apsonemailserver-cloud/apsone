@@ -225,7 +225,7 @@
                                     @endphp
                                     <tr>
                                         <td>{{ $attendanceDate->translatedFormat('d M Y') }}</td>
-                                        <td>{{ $attendance->station?->code ?? Auth::user()->station ?? '-' }}</td>
+                                        <td>{{ $attendance->station?->code ?? Auth::user()->employee?->station ?? Auth::user()->station ?? '-' }}</td>
                                         <td>
                                             @if ($schedule?->shift)
                                                 {{ \Carbon\Carbon::parse($schedule->shift->start_time)->format('H:i') }}

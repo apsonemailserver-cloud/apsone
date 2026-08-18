@@ -15,7 +15,8 @@ class AdminTrainingCertificateController extends Controller
         $user = \Illuminate\Support\Facades\Auth::user();
 
         $query = Certificate::leftJoin('users', 'certificates.user_id', '=', 'users.id')
-            ->select('certificates.*', 'users.fullname');
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('certificates.*', 'employees.fullname');
 
         // User biasa hanya dapat melihat sertifikat miliknya sendiri, Admin dapat melihat semua
         if (!$user->isAdmin() && $user->role !== 'Admin') {
@@ -25,7 +26,7 @@ class AdminTrainingCertificateController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('certificates.certificate_name', 'like', "%{$search}%")
-                    ->orWhere('users.fullname', 'like', "%{$search}%")
+                    ->orWhere('employees.fullname', 'like', "%{$search}%")
                     ->orWhere('users.id', 'like', "%{$search}%");
             });
         }
@@ -39,7 +40,11 @@ class AdminTrainingCertificateController extends Controller
 
     public function create()
     {
-        $users = User::orderBy('fullname')->get(['id', 'fullname']);
+        $users = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->orderBy('employees.fullname', 'asc')
+            ->select('users.id', 'employees.fullname')
+            ->get();
 
         return view('training.admin.create', compact('users'));
     }

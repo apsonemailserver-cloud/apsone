@@ -28,6 +28,35 @@
                             <form action="{{ route('users.store') }}" method="POST" id="createUserForm">
                                 @csrf
 
+                                <div class="card mb-4 bg-label-secondary border-0">
+                                    <div class="card-body py-3">
+                                        <label class="form-label fw-bold"><i class="ti ti-link me-1"></i> Hubungkan dengan Data Karyawan (Opsional)</label>
+                                        <select name="employee_id" id="employee_select" class="form-select">
+                                            <option value="">-- Buat Data Karyawan Baru --</option>
+                                            @if(isset($employees))
+                                                @foreach($employees as $emp)
+                                                    <option value="{{ $emp->id }}" 
+                                                        data-fullname="{{ $emp->fullname }}"
+                                                        data-gender="{{ $emp->gender }}"
+                                                        data-station="{{ $emp->user->station_id ?? '' }}"
+                                                        data-job_title="{{ $emp->jobTitle->name ?? '' }}"
+                                                        data-unit="{{ $emp->unit->name ?? '' }}"
+                                                        data-sub_unit="{{ $emp->subUnit->name ?? '' }}"
+                                                        data-cluster="{{ $emp->cluster->name ?? '' }}"
+                                                        data-manager="{{ $emp->manager }}"
+                                                        data-senior_manager="{{ $emp->senior_manager }}"
+                                                        data-is_qantas="{{ $emp->is_qantas ? '1' : '0' }}"
+                                                        data-join_date="{{ $emp->join_date ? $emp->join_date->format('Y-m-d') : '' }}"
+                                                        data-salary="{{ $emp->salary }}"
+                                                        {{ old('employee_id') == $emp->id ? 'selected' : '' }}>
+                                                        {{ $emp->no_nik ? $emp->no_nik . ' - ' : '' }}{{ $emp->fullname }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div class="row">
                                     {{-- Kolom Kiri --}}
                                     <div class="col-md-6">
@@ -242,6 +271,84 @@
                 }
             }
             initUserSelect2();
+
+            function setSelectValue(select, val) {
+                if (!select || val === undefined || val === null) return;
+                const target = val.toString().trim().toLowerCase();
+                let matched = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    const optVal = select.options[i].value.toString().trim().toLowerCase();
+                    const optText = select.options[i].text.toString().trim().toLowerCase();
+                    if (optVal === target || optText === target) {
+                        select.selectedIndex = i;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched && val !== '') {
+                    select.value = val;
+                }
+                select.dispatchEvent(new Event('change'));
+                syncSelectUI(select);
+            }
+
+            // Auto-fill when existing employee is selected
+            const employeeSelect = document.getElementById('employee_select');
+            if (employeeSelect) {
+                employeeSelect.addEventListener('change', function() {
+                    const selected = this.options[this.selectedIndex];
+                    if (this.value && selected) {
+                        const ds = selected.dataset;
+
+                        if (ds.fullname) {
+                            const fn = document.querySelector('input[name="fullname"]');
+                            if (fn) fn.value = ds.fullname;
+                        }
+                        if (ds.gender) {
+                            const gn = document.querySelector('select[name="gender"]');
+                            if (gn) setSelectValue(gn, ds.gender);
+                        }
+                        if (ds.station) {
+                            const st = document.querySelector('select[name="station"]');
+                            if (st) {
+                                setSelectValue(st, ds.station);
+                                updateSuperiors(ds.station, ds.manager || '', ds.senior_manager || '');
+                            }
+                        }
+                        if (ds.job_title) {
+                            const jt = document.querySelector('select[name="job_title"]');
+                            if (jt) setSelectValue(jt, ds.job_title);
+                        }
+                        if (ds.unit) {
+                            const u = document.querySelector('select[name="unit"]');
+                            if (u) setSelectValue(u, ds.unit);
+                        }
+                        if (ds.sub_unit) {
+                            const su = document.querySelector('select[name="sub_unit"]');
+                            if (su) setSelectValue(su, ds.sub_unit);
+                        }
+                        if (ds.cluster) {
+                            const cl = document.querySelector('select[name="cluster"]');
+                            if (cl) setSelectValue(cl, ds.cluster);
+                        }
+                        if (ds.is_qantas !== undefined && ds.is_qantas !== '') {
+                            const qt = document.querySelector('select[name="is_qantas"]');
+                            if (qt) setSelectValue(qt, ds.is_qantas);
+                        }
+                        if (ds.join_date) {
+                            const jd = document.querySelector('input[name="join_date"]');
+                            if (jd) jd.value = ds.join_date;
+                        }
+                        if (ds.salary) {
+                            const salDisplay = document.getElementById('salary_display');
+                            if (salDisplay) {
+                                salDisplay.value = ds.salary;
+                                salDisplay.dispatchEvent(new Event('input'));
+                            }
+                        }
+                    }
+                });
+            }
 
             // Dynamic Superiors Filter based on Station
             const stationSelect = document.querySelector('select[name="station"]');

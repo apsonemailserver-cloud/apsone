@@ -506,19 +506,21 @@ class AttendanceController extends Controller
                 $endDate = $period->copy()->endOfMonth();
 
                 // ===== QUERY USER (GABUNG SEMUA FILTER) =====
-                $queryUser = \App\Models\User::query();
+                $queryUser = \App\Models\User::with('employee')
+                    ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+                    ->select('users.*');
 
                 if ($request->filled('user_name')) {
                     $queryUser->where(function ($q) use ($request) {
-                        $q->where('id', $request->user_name)
-                            ->orWhere('fullname', 'LIKE', "%{$request->user_name}%");
+                        $q->where('users.id', $request->user_name)
+                            ->orWhere('employees.fullname', 'LIKE', "%{$request->user_name}%");
                     });
                 }
 
                 if ($request->filled('station_id')) {
-                    $queryUser->where('station', $request->station_id);
+                    $queryUser->where('employees.station', $request->station_id);
                 } elseif (!$isFullAccess && $authUser->station) {
-                    $queryUser->where('station', $authUser->station);
+                    $queryUser->where('employees.station', $authUser->station);
                 }
 
                 if ($request->filled('role')) {

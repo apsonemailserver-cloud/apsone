@@ -95,14 +95,17 @@ class AssignmentController extends Controller
         }
         $stations = Station::where('is_active', true)->get();
 
-        $staffQuery = User::where('is_active', true);
-
         $scheduledUserIds = Schedule::whereDate('date', '>=', now()->subDays(7)->toDateString())
             ->pluck('user_id')
             ->unique()
             ->toArray();
 
-        $allStaffs = $staffQuery->orderBy('fullname')->get(['id', 'fullname', 'station']);
+        $allStaffs = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->where('users.is_active', true)
+            ->orderBy('employees.fullname', 'asc')
+            ->select('users.id', 'employees.fullname', 'employees.station')
+            ->get();
 
         $staffs = $allStaffs->map(function ($s) use ($scheduledUserIds) {
             $s->is_scheduled = in_array($s->id, $scheduledUserIds);

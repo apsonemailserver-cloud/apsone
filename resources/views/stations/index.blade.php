@@ -49,7 +49,7 @@
                                 <td>{{ $st->longitude }}</td>
                                 <td>{{ $st->radius }} m</td>
                                 <td>
-                                    <form action="{{ route('stations.toggle', $st->id) }}" method="POST">
+                                    <form action="{{ route('stations.toggle', $st->code) }}" method="POST">
                                         @csrf
 
                                         <div class="form-check form-switch d-flex align-items-center">
@@ -69,17 +69,17 @@
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                     @if(Auth::user()->canAccess('station', 'edit'))
-                                    <x-action-button action="edit" :href="route('stations.edit', $st->id)" title="Edit Station" />
+                                    <x-action-button action="edit" :href="route('stations.edit', $st->code)" title="Edit Station" />
                                     @endif
 
                                     @if(Auth::user()->canAccess('station', 'delete'))
-                                    <form action="{{ route('stations.destroy', $st->id) }}"
+                                    <form action="{{ route('stations.destroy', $st->code) }}"
                                         method="POST"
                                         class="d-inline"
-                                        id="delete-form-{{ $st->id }}">
+                                        id="delete-form-{{ $st->code }}">
                                         @csrf
                                         @method('DELETE')
-                                        <x-action-button type="button" action="delete" onclick="confirmDeleteShift('{{ $st->id }}', '{{ $st->code }}')" title="Hapus Station" />
+                                        <x-action-button type="button" action="delete" onclick="confirmDeleteShift('{{ $st->code }}', '{{ $st->code }}')" title="Hapus Station" />
                                     </form>
                                     @endif
                                     </div>

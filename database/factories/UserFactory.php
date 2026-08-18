@@ -17,15 +17,25 @@ class UserFactory extends Factory
     {
         return [
             'id' => 'USR' . Str::upper(Str::random(8)),
-            'fullname' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
-            'gender' => 'Male',
-            'job_title' => 'Staff',
-            'station' => 'CGK',
-            'status' => 'Tetap',
-            'join_date' => now()->toDateString(),
             'is_active' => true,
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterMaking(function (\App\Models\User $user) {
+            if (!$user->employee_id) {
+                $employee = \App\Models\Employee::create([
+                    'fullname' => fake()->name(),
+                    'gender' => 'Male',
+                    'station' => 'CGK',
+                    'status' => 'Tetap',
+                    'join_date' => now()->toDateString(),
+                ]);
+                $user->employee_id = $employee->id;
+            }
+        });
     }
 }

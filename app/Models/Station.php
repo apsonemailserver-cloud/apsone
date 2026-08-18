@@ -10,6 +10,9 @@ class Station extends Model
     use HasFactory;
 
     protected $table = 'stations'; // Nama tabel di database
+    protected $primaryKey = 'code';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'code',      // Kode (SUB, CGK)

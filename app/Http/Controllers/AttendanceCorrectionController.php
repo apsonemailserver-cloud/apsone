@@ -81,7 +81,7 @@ class AttendanceCorrectionController extends Controller
             } else {
                 $query->whereHas(
                     'user',
-                    fn ($builder) => $builder->where('manager', $actor->fullname)
+                    fn ($builder) => $builder->whereHas('employee', fn ($eq) => $eq->where('manager', $actor->fullname))
                 );
                 if (! empty($userStations)) {
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));

@@ -13,9 +13,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('job_title_id')->nullable()->after('gender')->constrained('job_titles')->nullOnDelete();
-            $table->foreignId('unit_id')->nullable()->after('cluster')->constrained('units')->nullOnDelete();
-            $table->foreignId('sub_unit_id')->nullable()->after('unit')->constrained('sub_units')->nullOnDelete();
+            if (!Schema::hasColumn('users', 'job_title_id')) {
+                if (DB::getDriverName() === 'sqlite') {
+                    $table->unsignedBigInteger('job_title_id')->nullable();
+                } else {
+                    $table->foreignId('job_title_id')->nullable()->constrained('job_titles')->nullOnDelete();
+                }
+            }
+            if (!Schema::hasColumn('users', 'unit_id')) {
+                if (DB::getDriverName() === 'sqlite') {
+                    $table->unsignedBigInteger('unit_id')->nullable();
+                } else {
+                    $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
+                }
+            }
+            if (!Schema::hasColumn('users', 'sub_unit_id')) {
+                if (DB::getDriverName() === 'sqlite') {
+                    $table->unsignedBigInteger('sub_unit_id')->nullable();
+                } else {
+                    $table->foreignId('sub_unit_id')->nullable()->constrained('sub_units')->nullOnDelete();
+                }
+            }
         });
 
         // Migrate existing string data to IDs, dynamically creating master entries if missing

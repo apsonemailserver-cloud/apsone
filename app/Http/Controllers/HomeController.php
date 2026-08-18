@@ -129,9 +129,10 @@ class HomeController extends Controller
         $userCount = User::where('is_active', 1)->count();
 
         // 3b. Staff for attendance calculation (Filtered by Station)
-        $userKehadiranQuery = User::where('is_active', 1);
+        $userKehadiranQuery = User::where('users.is_active', 1);
         if ($selectedStation !== 'All') {
-            $userKehadiranQuery->where('station', $selectedStation);
+            $userKehadiranQuery->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+                ->where('employees.station', $selectedStation);
         }
         $userKehadiranCount = $userKehadiranQuery->count();
 
@@ -151,35 +152,38 @@ class HomeController extends Controller
         $twoMonthsFromNow = Carbon::today()->addMonths(2);
 
         // 1. Kontrak Expired Soon
-        $contractQuery = User::where('is_active', 1)
-            ->whereDate('contract_end', '<=', $twoMonthsFromNow)
-            ->whereDate('contract_end', '>=', Carbon::today());
+        $contractQuery = User::where('users.is_active', 1)
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->whereDate('employees.contract_end', '<=', $twoMonthsFromNow)
+            ->whereDate('employees.contract_end', '>=', Carbon::today());
         if ($selectedStation !== 'All') {
-            $contractQuery->where('station', $selectedStation);
+            $contractQuery->where('employees.station', $selectedStation);
         }
         $totalContractStaff = $contractQuery->count();
 
         // 2. PAS Expired Soon
-        $pasQuery = User::where('is_active', 1)
-            ->whereDate('pas_expired', '<=', $twoMonthsFromNow)
-            ->whereDate('pas_expired', '>=', Carbon::today());
+        $pasQuery = User::where('users.is_active', 1)
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->whereDate('employees.pas_expired', '<=', $twoMonthsFromNow)
+            ->whereDate('employees.pas_expired', '>=', Carbon::today());
         if ($selectedStation !== 'All') {
-            $pasQuery->where('station', $selectedStation);
+            $pasQuery->where('employees.station', $selectedStation);
         }
         $totalPasStaff = $pasQuery->count();
 
         // 3. Data Absensi / Cuti Hari Ini
         $absentQuery = DB::table('leaves')
             ->join('users', 'leaves.user_id', '=', 'users.id')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
             ->whereDate('leaves.start_date', '<=', Carbon::today())
             ->whereDate('leaves.end_date', '>=', Carbon::today())
             ->where('leaves.status', 'approved');
 
         if ($selectedStation !== 'All') {
-            $absentQuery->where('users.' . User::getStationColumn(), $selectedStation);
+            $absentQuery->where('employees.station', $selectedStation);
         }
 
-        $absentUsers = $absentQuery->select('users.id', 'users.fullname', 'leaves.leave_type', 'leaves.status')->get();
+        $absentUsers = $absentQuery->select('users.id', 'employees.fullname', 'leaves.leave_type', 'leaves.status')->get();
         $totalAbsent = $absentUsers->count();
 
         // Hitung Hadir & Persentase
@@ -211,11 +215,12 @@ class HomeController extends Controller
 
         // 2. Batch query daily leaves for Sakit & Tahunan (1 query instead of 14)
         $dailyLeaveQ = Leave::join('users', 'leaves.user_id', '=', 'users.id')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
             ->select(DB::raw('DATE(leaves.start_date) as date_key'), 'leaves.leave_type', DB::raw('count(*) as total'))
             ->whereBetween('leaves.start_date', [$chartStartDate->toDateString(), $chartEndDate->toDateString()])
             ->whereIn('leaves.leave_type', ['Cuti Sakit', 'Cuti Tahunan']);
         if ($selectedStation !== 'All') {
-            $dailyLeaveQ->where('users.' . User::getStationColumn(), $selectedStation);
+            $dailyLeaveQ->where('employees.station', $selectedStation);
         }
         $dailyLeaveCounts = $dailyLeaveQ->groupBy(DB::raw('DATE(leaves.start_date)'), 'leaves.leave_type')
             ->get();
@@ -247,10 +252,11 @@ class HomeController extends Controller
         // Doughnut Chart: Distribusi Role (Filtered)
         if (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
             $doughnutQuery = User::where('users.is_active', 1)
+                ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
                 ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
                 ->select(DB::raw("COALESCE(roles.name, 'Unassigned') as role"), DB::raw('count(*) as total'));
             if ($selectedStation !== 'All') {
-                $doughnutQuery->where('users.' . User::getStationColumn(), $selectedStation);
+                $doughnutQuery->where('employees.station', $selectedStation);
             }
             $doughnutData = $doughnutQuery->groupBy(DB::raw("COALESCE(roles.name, 'Unassigned')"))->get();
         } else {
@@ -292,11 +298,11 @@ class HomeController extends Controller
                 ->where('code', $user->station)
                 ->get();
         }
-        $stationCol = User::getStationColumn();
-        $stationStats = User::where('is_active', 1)
-            ->select($stationCol, DB::raw('count(*) as total'))
-            ->groupBy($stationCol)
-            ->pluck('total', $stationCol);
+        $stationStats = User::where('users.is_active', 1)
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('employees.station', DB::raw('count(*) as total'))
+            ->groupBy('employees.station')
+            ->pluck('total', 'employees.station');
 
         // =================================================================
         // BAGIAN 4B: WORK RESULTS STATS (BARU)
@@ -500,8 +506,9 @@ class HomeController extends Controller
         }
 
         $karyawan = DB::table('users')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
             ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
-            ->select('users.id', 'users.fullname', 'roles.name as role', 'users.alamat')
+            ->select('users.id', 'employees.fullname', 'roles.name as role', 'employees.alamat')
             ->where('users.id', $user->id)
             ->first();
 

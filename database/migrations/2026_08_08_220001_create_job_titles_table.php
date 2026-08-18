@@ -8,12 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('job_titles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('job_titles')) {
+            Schema::create('job_titles', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->unique();
+                $table->boolean('is_active')->default(true);
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

@@ -45,6 +45,7 @@ class LeaveController extends Controller
         $query = Leave::with('user')
             ->select('leaves.*')
             ->join('users', 'users.id', '=', 'leaves.user_id')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
             ->latest('leaves.created_at');
 
         if (!$user->isAdmin()) {
@@ -62,22 +63,22 @@ class LeaveController extends Controller
             $query->whereIn('leaves.status', ['pending', 'pending Apron', 'pending Bge']);
         } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
             // Leader / SPV BGE melihat pengajuan pending BGE di station miliknya
-            $query->where('users.' . User::getStationColumn(), $user->station)
+            $query->where('employees.station', $user->station)
                   ->where('leaves.status', 'pending Bge');
         } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
             // Leader / SPV Apron melihat pengajuan pending Apron di station miliknya
-            $query->where('users.' . User::getStationColumn(), $user->station)
+            $query->where('employees.station', $user->station)
                   ->where('leaves.status', 'pending Apron');
         } else {
             // Atasan/Supervisor lain hanya melihat pengajuan pending di station miliknya
-            $query->where('users.' . User::getStationColumn(), $user->station)
+            $query->where('employees.station', $user->station)
                   ->where('leaves.status', 'pending');
         }
 
         // Search Filter
         if ($search = request('search')) {
             $query->where(function($q) use ($search) {
-                $q->where('users.fullname', 'LIKE', "%{$search}%")
+                $q->where('employees.fullname', 'LIKE', "%{$search}%")
                   ->orWhere('users.id', 'LIKE', "%{$search}%")
                   ->orWhere('leaves.reason', 'LIKE', "%{$search}%");
             });
@@ -99,6 +100,7 @@ class LeaveController extends Controller
         $query = Leave::with('user')
             ->select('leaves.*')
             ->join('users', 'users.id', '=', 'leaves.user_id')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
             ->latest(); // Eager load relasi user
 
         $userRole = $user->role ?? '';
@@ -107,13 +109,13 @@ class LeaveController extends Controller
             // Admin sees all leaves
         } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
             // HOAS sees leaves in their station
-            $query->where('users.' . User::getStationColumn(), $user->station);
+            $query->where('employees.station', $user->station);
         } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
             // Leader Bge sees own leaves + Bge subordinates
             $query->where(function ($q) use ($user) {
                 $q->where('leaves.user_id', $user->id)
                   ->orWhere(function ($q2) use ($user) {
-                      $q2->where('users.' . User::getStationColumn(), $user->station)
+                      $q2->where('employees.station', $user->station)
                          ->where(function ($q3) {
                              $q3->where('users.role', 'LIKE', '%Bge%')
                                 ->orWhere('users.role', 'LIKE', '%BGE%')
@@ -126,7 +128,7 @@ class LeaveController extends Controller
             $query->where(function ($q) use ($user) {
                 $q->where('leaves.user_id', $user->id)
                   ->orWhere(function ($q2) use ($user) {
-                      $q2->where('users.' . User::getStationColumn(), $user->station)
+                      $q2->where('employees.station', $user->station)
                          ->where(function ($q3) {
                              $q3->where('users.role', 'LIKE', '%Apron%')
                                 ->orWhere('users.role', 'LIKE', '%APRON%');
@@ -141,7 +143,7 @@ class LeaveController extends Controller
         // Search Filter
         if ($search = request('search')) {
             $query->where(function($q) use ($search) {
-                $q->where('users.fullname', 'LIKE', "%{$search}%")
+                $q->where('employees.fullname', 'LIKE', "%{$search}%")
                   ->orWhere('users.id', 'LIKE', "%{$search}%")
                   ->orWhere('leaves.reason', 'LIKE', "%{$search}%");
             });
@@ -170,18 +172,21 @@ class LeaveController extends Controller
             'all' => $request->all()
         ]);
 
-        // Ambil data leaves join users (pemohon, approver, rejector)
+        // Ambil data leaves join users & employees (pemohon, approver, rejector)
         $query = \App\Models\Leave::join('users as u', 'leaves.user_id', '=', 'u.id')
+            ->leftJoin('employees as emp', 'u.employee_id', '=', 'emp.id')
             ->leftJoin('users as approved', 'leaves.approved_by', '=', 'approved.id')
+            ->leftJoin('employees as emp_app', 'approved.employee_id', '=', 'emp_app.id')
             ->leftJoin('users as rejected', 'leaves.rejected_by', '=', 'rejected.id')
+            ->leftJoin('employees as emp_rej', 'rejected.employee_id', '=', 'emp_rej.id')
             ->whereYear('leaves.start_date', $year)
             ->select(
                 'leaves.*',
                 'u.id as user_id',
-                'u.fullname as user_leave',
-                'u.station as station',
-                'approved.fullname as user_approve',
-                'rejected.fullname as user_rejected'
+                'emp.fullname as user_leave',
+                'emp.station as station',
+                'emp_app.fullname as user_approve',
+                'emp_rej.fullname as user_rejected'
             )
             ->orderBy('leaves.created_at', 'desc');
 
@@ -189,15 +194,15 @@ class LeaveController extends Controller
         $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
 
         if ($request->filled('station')) {
-            $query->where('u.station', $request->station);
+            $query->where('emp.station', $request->station);
         } elseif (!$isFullAccess && $authUser->station) {
-            $query->where('u.station', $authUser->station);
+            $query->where('emp.station', $authUser->station);
         }
 
         if ($request->filled('user_name')) {
             $query->where(function ($q) use ($request) {
                 $q->whereRaw("CAST(u.id AS CHAR) LIKE ?", ["%{$request->user_name}%"])
-                    ->orWhere('u.fullname', 'LIKE', "%{$request->user_name}%");
+                    ->orWhere('emp.fullname', 'LIKE', "%{$request->user_name}%");
             });
         }
 
@@ -218,33 +223,36 @@ class LeaveController extends Controller
 
             // Build query with joins to get full data matching the laporan view
             $query = \App\Models\Leave::join('users as u', 'leaves.user_id', '=', 'u.id')
+                ->leftJoin('employees as emp', 'u.employee_id', '=', 'emp.id')
                 ->leftJoin('users as approved', 'leaves.approved_by', '=', 'approved.id')
+                ->leftJoin('employees as emp_app', 'approved.employee_id', '=', 'emp_app.id')
                 ->leftJoin('users as rejected', 'leaves.rejected_by', '=', 'rejected.id')
+                ->leftJoin('employees as emp_rej', 'rejected.employee_id', '=', 'emp_rej.id')
                 ->whereYear('leaves.start_date', $year)
                 ->select(
                     'leaves.*',
                     'u.id as user_nip',
-                    'u.fullname as user_leave',
-                    'u.station as station',
-                    'approved.fullname as user_approve',
-                    'rejected.fullname as user_rejected'
+                    'emp.fullname as user_leave',
+                    'emp.station as station',
+                    'emp_app.fullname as user_approve',
+                    'emp_rej.fullname as user_rejected'
                 )
-                ->orderBy('u.fullname')
+                ->orderBy('emp.fullname')
                 ->orderBy('leaves.start_date');
 
             $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
 
             if ($request->filled('station')) {
-                $query->where('u.station', $request->station);
+                $query->where('emp.station', $request->station);
             } elseif (!$isFullAccess && $authUser->station) {
-                $query->where('u.station', $authUser->station);
+                $query->where('emp.station', $authUser->station);
             }
 
             // Optional: filter by specific user
             if ($request->filled('user_name')) {
                 $query->where(function ($q) use ($request) {
                     $q->whereRaw("CAST(u.id AS CHAR) LIKE ?", ["%{$request->user_name}%"])
-                      ->orWhere('u.fullname', 'LIKE', "%{$request->user_name}%");
+                      ->orWhere('emp.fullname', 'LIKE', "%{$request->user_name}%");
                 });
             }
 

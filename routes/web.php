@@ -32,6 +32,7 @@ use App\Http\Controllers\ClusterController;
 use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\LeaveRuleController;
 use App\Http\Controllers\FaceSampleController;
+use App\Http\Controllers\EmployeeController;
 use App\Models\Blacklist;
 
 /*
@@ -91,6 +92,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users/bge', [UserController::class, 'indexBGE'])->name('users.bge');
     Route::get('/users/office', [UserController::class, 'indexOffice'])->name('users.office');
     Route::resource('users', UserController::class);
+    Route::resource('employees', EmployeeController::class);
     Route::put('/reset-password/{id}', [UserController::class, 'resetPassword'])->name('user.resetPassword');
 
     // Face Recognition Sample Management (Admin)
@@ -125,10 +127,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/stations', [StationController::class, 'index'])->name('stations.index');
     Route::get('/stations/create', [StationController::class, 'create'])->name('stations.create');
     Route::post('/stations/store', [StationController::class, 'store'])->name('stations.store');
-    Route::post('/stations/toggle/{id}', [StationController::class, 'toggleStatus'])->name('stations.toggle');
-    Route::get('/stations/{id}/edit', [StationController::class, 'edit'])->name('stations.edit');
+    Route::post('/stations/toggle/{code}', [StationController::class, 'toggleStatus'])->name('stations.toggle');
+    Route::get('/stations/{code}/edit', [StationController::class, 'edit'])->name('stations.edit');
     Route::match(['post', 'put'], '/stations/{station}/update', [StationController::class, 'update'])->name('stations.update');
-    Route::delete('/stations/{id}', [StationController::class, 'destroy'])->name('stations.destroy');
+    Route::delete('/stations/{code}', [StationController::class, 'destroy'])->name('stations.destroy');
 
     // --- MASTER DATA (per table, masing-masing controller sendiri) ---
     Route::prefix('master-data')->name('master_data.')->group(function () {

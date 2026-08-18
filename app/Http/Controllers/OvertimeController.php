@@ -140,6 +140,7 @@ class OvertimeController extends Controller
         $query = Overtime::with('user')
             ->select('overtimes.*')
             ->join('users', 'users.id', '=', 'overtimes.user_id')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
             ->where('overtimes.status', 'Pending');
 
         if (!$user->isAdmin()) {
@@ -149,7 +150,7 @@ class OvertimeController extends Controller
         // Filter Search (NIP / Nama)
         if ($search = $request->input('search')) {
             $query->where(function($q) use ($search) {
-                $q->where('users.fullname', 'like', "%{$search}%")
+                $q->where('employees.fullname', 'like', "%{$search}%")
                   ->orWhere('users.id', 'like', "%{$search}%");
             });
         }

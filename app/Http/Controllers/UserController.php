@@ -6,6 +6,7 @@ use App\Models\Blacklist;
 use App\Models\Certificate;
 use App\Models\Station;
 use App\Models\User;
+use App\Models\Employee;
 use App\Models\JobTitle;
 use App\Models\Unit;
 use App\Models\SubUnit;
@@ -38,11 +39,14 @@ class UserController extends Controller
 
         $search = $request->input('search');
 
-        $user = User::when($search, function ($query, $search) {
-            return $query->where('fullname', 'like', "%{$search}%")
-                ->orWhere('id', 'like', "%{$search}%");
-        })
-            ->orderBy('fullname', 'asc')
+        $user = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*')
+            ->when($search, function ($query, $search) {
+                return $query->where('employees.fullname', 'like', "%{$search}%")
+                    ->orWhere('users.id', 'like', "%{$search}%");
+            })
+            ->orderBy('employees.fullname', 'asc')
             ->paginate(10)
             ->withQueryString();
 
@@ -61,17 +65,19 @@ class UserController extends Controller
 
         $search = request('search');
 
-        $user = User::with('roleRelation')
+        $user = User::with(['roleRelation', 'employee'])
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*')
             ->whereHas('roleRelation', function ($q) {
                 $q->where('name', 'Porter Apron');
             })
             ->where(function ($q) use ($search) {
                 if ($search) {
-                    $q->where('fullname', 'like', "%{$search}%")
-                        ->orWhere('id', 'like', "%{$search}%");
+                    $q->where('employees.fullname', 'like', "%{$search}%")
+                        ->orWhere('users.id', 'like', "%{$search}%");
                 }
             })
-            ->orderBy('fullname', 'asc')
+            ->orderBy('employees.fullname', 'asc')
             ->paginate(10)
             ->withQueryString();
 
@@ -84,17 +90,19 @@ class UserController extends Controller
 
         $search = request('search');
 
-        $user = User::with('roleRelation')
+        $user = User::with(['roleRelation', 'employee'])
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*')
             ->whereHas('roleRelation', function ($q) {
                 $q->where('name', 'Porter Bge');
             })
             ->where(function ($q) use ($search) {
                 if ($search) {
-                    $q->where('fullname', 'like', "%{$search}%")
-                        ->orWhere('id', 'like', "%{$search}%");
+                    $q->where('employees.fullname', 'like', "%{$search}%")
+                        ->orWhere('users.id', 'like', "%{$search}%");
                 }
             })
-            ->orderBy('fullname', 'asc')
+            ->orderBy('employees.fullname', 'asc')
             ->paginate(10)
             ->withQueryString();
 
@@ -107,7 +115,9 @@ class UserController extends Controller
 
         $search = request('search');
 
-        $user = User::with(['jobTitle', 'roleRelation'])
+        $user = User::with(['jobTitle', 'roleRelation', 'employee'])
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*')
             ->where(function ($q) {
                 $q->whereDoesntHave('roleRelation')
                   ->orWhereHas('roleRelation', function ($rq) {
@@ -116,11 +126,11 @@ class UserController extends Controller
             })
             ->where(function ($q) use ($search) {
                 if ($search) {
-                    $q->where('fullname', 'like', "%{$search}%")
-                        ->orWhere('id', 'like', "%{$search}%");
+                    $q->where('employees.fullname', 'like', "%{$search}%")
+                        ->orWhere('users.id', 'like', "%{$search}%");
                 }
             })
-            ->orderBy('fullname', 'asc')
+            ->orderBy('employees.fullname', 'asc')
             ->paginate(10)
             ->withQueryString();
 
@@ -154,8 +164,12 @@ class UserController extends Controller
         $units = Unit::orderBy('name')->get();
         $subUnits = SubUnit::orderBy('name')->get();
         $clusters = Cluster::orderBy('name')->get();
+        $employees = Employee::doesntHave('user')
+            ->with(['unit', 'subUnit', 'jobTitle', 'cluster'])
+            ->orderBy('fullname')
+            ->get();
 
-        return view('user.create', compact('stations', 'jobTitles', 'units', 'subUnits', 'clusters'));
+        return view('user.create', compact('stations', 'jobTitles', 'units', 'subUnits', 'clusters', 'employees'));
     }
 
     // =========================================================================
@@ -176,8 +190,8 @@ class UserController extends Controller
             'manager' => 'required|string|max:255',
             'senior_manager' => 'nullable|string|max:255',
             'is_qantas' => 'required|boolean',
-            'join_date' => 'required|date|before_or_equal:today',
-            'salary' => 'required|numeric|min:0',
+            'join_date' => 'required|date',
+            'salary' => 'nullable',
         ], [
             'role.required' => 'Role wajib diisi.',
             'station.required' => 'Station wajib diisi.',
@@ -187,16 +201,13 @@ class UserController extends Controller
             'job_title.required' => 'Job title wajib diisi.',
             'unit.required' => 'Unit wajib diisi.',
             'sub_unit.required' => 'Sub unit wajib diisi.',
-            'join_date.before_or_equal' => 'Join date tidak boleh melebihi tanggal hari ini.',
         ]);
 
         try {
-
             // =========================
             // GENERATE ID (NIP: 2643001)
-            // 2 angka depan tahun + 2 angka tengah random + 3 angka urut
             // =========================
-            $yearPrefix = Carbon::now()->format('y'); // contoh: 26
+            $yearPrefix = Carbon::now()->format('y');
 
             $lastUser = User::where('id', 'like', $yearPrefix.'%')
                 ->orderBy('id', 'desc')
@@ -230,7 +241,7 @@ class UserController extends Controller
             }
 
             // =========================
-            // SIMPAN USER
+            // PROCESS ROLE & RELATIONS
             // =========================
             $roleInput = is_array($request->role) ? implode(', ', $request->role) : $request->role;
             $roleId = null;
@@ -247,29 +258,56 @@ class UserController extends Controller
             $subUnitId = !empty($request->sub_unit) ? \App\Models\SubUnit::where('name', trim($request->sub_unit))->value('id') : null;
             $clusterId = !empty($request->cluster) ? \App\Models\Cluster::where('name', trim($request->cluster))->value('id') : null;
 
+            // =========================
+            // 1. CREATE / LINK EMPLOYEE
+            // =========================
+            $employeeData = [
+                'fullname' => $request->fullname,
+                'gender' => $request->gender,
+                'job_title_id' => $jobTitleId,
+                'unit_id' => $unitId,
+                'sub_unit_id' => $subUnitId,
+                'cluster_id' => $clusterId,
+                'manager' => $request->manager,
+                'senior_manager' => $request->senior_manager,
+                'is_qantas' => $request->is_qantas ? 1 : 0,
+                'join_date' => $request->join_date ?: null,
+                'salary' => $request->salary ?: null,
+                'status' => 'Employed',
+            ];
+
+            if (!empty($request->employee_id)) {
+                $employee = Employee::find($request->employee_id);
+                if ($employee) {
+                    $employee->update($employeeData);
+                } else {
+                    $employee = Employee::create($employeeData);
+                }
+            } else {
+                $employee = Employee::create($employeeData);
+            }
+
+            // =========================
+            // 2. CREATE USER ACCOUNT
+            // =========================
             $user = new User;
             $user->id = $generatedId;
-            $user->fullname = $request->fullname;
+            $user->employee_id = $employee->id;
             $user->email = $request->email;
+            $user->station_id = $request->station ?? $request->station_id;
             $user->role_id = $roleId;
-            $user->station = $request->station;
-            $user->gender = $request->gender;
-            $user->job_title_id = $jobTitleId;
-            $user->cluster_id = $clusterId;
-            $user->unit_id = $unitId;
-            $user->sub_unit_id = $subUnitId;
-            $user->manager = $request->manager;
-            $user->senior_manager = $request->senior_manager;
-            $user->is_qantas = $request->is_qantas;
-            $user->join_date = $request->join_date;
-            $user->salary = $request->salary;
-            $user->password = Hash::make('password123');
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+                $user->role = $roleInput;
+            }
+            $user->password = Hash::make($request->password ?: 'password123');
+            $user->is_active = true;
             $user->save();
 
             Alert::success('Success', 'User berhasil ditambahkan dengan ID: '.$generatedId);
 
             return redirect()->route('staff.index');
         } catch (\Exception $e) {
+            Log::error('Error store user: ' . $e->getMessage());
             Alert::error('Gagal', 'Terjadi kesalahan: '.$e->getMessage());
 
             return back()->withInput();
@@ -290,61 +328,73 @@ class UserController extends Controller
             'Head Of Airport Service', 'Admin'
         ];
 
-        $queryManagers = User::with('roleRelation')->whereHas('roleRelation', function ($q) use ($managerRoles) {
-            $q->whereIn('name', $managerRoles);
-        });
+        $queryManagers = User::with(['roleRelation', 'employee'])
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*')
+            ->whereHas('roleRelation', function ($q) use ($managerRoles) {
+                $q->whereIn('name', $managerRoles);
+            });
 
-        $querySenior = User::with('roleRelation')->whereHas('roleRelation', function ($q) use ($seniorRoles) {
-            $q->whereIn('name', $seniorRoles);
-        });
+        $querySenior = User::with(['roleRelation', 'employee'])
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*')
+            ->whereHas('roleRelation', function ($q) use ($seniorRoles) {
+                $q->whereIn('name', $seniorRoles);
+            });
 
         if (!empty($station)) {
-            $queryManagers->where('station', $station);
-            $querySenior->where('station', $station);
+            $queryManagers->where('employees.station', $station);
+            $querySenior->where('employees.station', $station);
         }
 
-        $managers = $queryManagers->orderBy('fullname', 'asc')->get()->map(function ($user) {
+        $managers = $queryManagers->orderBy('employees.fullname', 'asc')->get()->map(function ($user) {
             return [
                 'id' => $user->id,
-                'fullname' => trim($user->fullname),
+                'fullname' => trim($user->fullname ?? ''),
                 'role' => $user->roleRelation->name ?? '-',
-                'display' => trim($user->fullname) . ' (' . $user->id . ')'
+                'display' => trim($user->fullname ?? '') . ' (' . $user->id . ')'
             ];
         })->values();
 
-        $seniorManagers = $querySenior->orderBy('fullname', 'asc')->get()->map(function ($user) {
+        $seniorManagers = $querySenior->orderBy('employees.fullname', 'asc')->get()->map(function ($user) {
             return [
                 'id' => $user->id,
-                'fullname' => trim($user->fullname),
+                'fullname' => trim($user->fullname ?? ''),
                 'role' => $user->roleRelation->name ?? '-',
-                'display' => trim($user->fullname) . ' (' . $user->id . ')'
+                'display' => trim($user->fullname ?? '') . ' (' . $user->id . ')'
             ];
         })->values();
 
         if ($seniorManagers->isEmpty() && !empty($station)) {
-            $seniorManagers = User::with('roleRelation')->whereHas('roleRelation', function ($q) use ($seniorRoles) {
-                $q->whereIn('name', $seniorRoles);
-            })->orderBy('fullname', 'asc')->get()->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'fullname' => trim($user->fullname),
-                    'role' => $user->roleRelation->name ?? '-',
-                    'display' => trim($user->fullname) . ' (' . $user->id . ')'
-                ];
-            })->values();
+            $seniorManagers = User::with(['roleRelation', 'employee'])
+                ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+                ->select('users.*')
+                ->whereHas('roleRelation', function ($q) use ($seniorRoles) {
+                    $q->whereIn('name', $seniorRoles);
+                })->orderBy('employees.fullname', 'asc')->get()->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'fullname' => trim($user->fullname ?? ''),
+                        'role' => $user->roleRelation->name ?? '-',
+                        'display' => trim($user->fullname ?? '') . ' (' . $user->id . ')'
+                    ];
+                })->values();
         }
 
         if ($managers->isEmpty() && !empty($station)) {
-            $managers = User::with('roleRelation')->whereHas('roleRelation', function ($q) use ($managerRoles) {
-                $q->whereIn('name', $managerRoles);
-            })->orderBy('fullname', 'asc')->get()->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'fullname' => trim($user->fullname),
-                    'role' => $user->roleRelation->name ?? '-',
-                    'display' => trim($user->fullname) . ' (' . $user->id . ')'
-                ];
-            })->values();
+            $managers = User::with(['roleRelation', 'employee'])
+                ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+                ->select('users.*')
+                ->whereHas('roleRelation', function ($q) use ($managerRoles) {
+                    $q->whereIn('name', $managerRoles);
+                })->orderBy('employees.fullname', 'asc')->get()->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'fullname' => trim($user->fullname ?? ''),
+                        'role' => $user->roleRelation->name ?? '-',
+                        'display' => trim($user->fullname ?? '') . ' (' . $user->id . ')'
+                    ];
+                })->values();
         }
 
         return response()->json([
@@ -387,8 +437,8 @@ class UserController extends Controller
             'manager' => 'required|string|max:255',
             'senior_manager' => 'nullable|string|max:255',
             'is_qantas' => 'required|boolean',
-            'join_date' => 'required|date|before_or_equal:today',
-            'salary' => 'required|numeric|min:0',
+            'join_date' => 'required|date',
+            'salary' => 'nullable',
         ], [
             'role.required' => 'Role wajib diisi.',
             'station.required' => 'Station wajib diisi.',
@@ -398,38 +448,63 @@ class UserController extends Controller
             'job_title.required' => 'Job title wajib diisi.',
             'unit.required' => 'Unit wajib diisi.',
             'sub_unit.required' => 'Sub unit wajib diisi.',
-            'join_date.before_or_equal' => 'Join date tidak boleh melebihi tanggal hari ini.',
         ]);
 
         try {
-            $data = $request->all();
-            
-            if (!empty($request->role)) {
-                $roleInput = is_array($request->role) ? implode(', ', $request->role) : $request->role;
+            $roleInput = is_array($request->role) ? implode(', ', $request->role) : $request->role;
+            $roleId = null;
+            if (!empty($roleInput)) {
                 $roleObj = \App\Models\Role::where('name', trim($roleInput))->first();
                 if (!$roleObj) {
                     $roleObj = \App\Models\Role::create(['name' => trim($roleInput), 'label' => trim($roleInput)]);
                 }
-                $data['role_id'] = $roleObj->id;
+                $roleId = $roleObj->id;
             }
 
-            if (!empty($request->job_title)) {
-                $data['job_title_id'] = \App\Models\JobTitle::where('name', trim($request->job_title))->value('id');
-            }
-            if (!empty($request->unit)) {
-                $data['unit_id'] = \App\Models\Unit::where('name', trim($request->unit))->value('id');
-            }
-            if (!empty($request->sub_unit)) {
-                $data['sub_unit_id'] = \App\Models\SubUnit::where('name', trim($request->sub_unit))->value('id');
-            }
-            if (!empty($request->cluster)) {
-                $data['cluster_id'] = \App\Models\Cluster::where('name', trim($request->cluster))->value('id');
+            $jobTitleId = !empty($request->job_title) ? \App\Models\JobTitle::where('name', trim($request->job_title))->value('id') : null;
+            $unitId = !empty($request->unit) ? \App\Models\Unit::where('name', trim($request->unit))->value('id') : null;
+            $subUnitId = !empty($request->sub_unit) ? \App\Models\SubUnit::where('name', trim($request->sub_unit))->value('id') : null;
+            $clusterId = !empty($request->cluster) ? \App\Models\Cluster::where('name', trim($request->cluster))->value('id') : null;
+
+            // 1. Update / Create Employee Data
+            $employeeData = [
+                'fullname' => $request->fullname,
+                'gender' => $request->gender,
+                'job_title_id' => $jobTitleId,
+                'unit_id' => $unitId,
+                'sub_unit_id' => $subUnitId,
+                'cluster_id' => $clusterId,
+                'manager' => $request->manager,
+                'senior_manager' => $request->senior_manager,
+                'is_qantas' => $request->is_qantas ? 1 : 0,
+                'join_date' => $request->join_date ?: null,
+                'salary' => $request->salary ?: null,
+            ];
+
+            if ($user->employee) {
+                $user->employee->update($employeeData);
+            } else {
+                $employee = Employee::create($employeeData);
+                $user->employee_id = $employee->id;
             }
 
-            unset($data['role'], $data['job_title'], $data['unit'], $data['sub_unit'], $data['cluster']);
+            // 2. Update User Account Data
+            $userData = [
+                'email' => $request->email,
+                'station_id' => $request->station ?? $request->station_id,
+            ];
+            if ($roleId) {
+                $userData['role_id'] = $roleId;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+                $userData['role'] = $roleInput;
+            }
+            if (!empty($request->password)) {
+                $userData['password'] = Hash::make($request->password);
+            }
+            $user->update($userData);
 
-            $user->update($data);
-            $msg = 'Data staff ' . $user->fullname . ' berhasil diperbarui.';
+            $msg = 'Data user ' . ($user->fullname ?? $user->email) . ' berhasil diperbarui.';
             Alert::success('Berhasil', $msg);
 
             $redirectTo = $request->input('redirect_to');
@@ -440,7 +515,7 @@ class UserController extends Controller
             return redirect()->route('staff.index')->with('success', $msg);
         } catch (\Exception $e) {
             Log::error('Gagal update user', ['error' => $e->getMessage()]);
-            $err = 'Terjadi kesalahan saat mengupdate staff: '.$e->getMessage();
+            $err = 'Terjadi kesalahan saat mengupdate user: '.$e->getMessage();
             Alert::error('Gagal', $err);
 
             return back()->withInput()->with('error', $err);
@@ -467,32 +542,37 @@ class UserController extends Controller
     // =================================================================
     // 3. MONITORING KONTRAK
     // =================================================================
+    // =================================================================
+    // 3. MONITORING KONTRAK KARYAWAN
+    // =================================================================
     public function kontrak(Request $request): View
     {
         abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
 
-        $query = User::query();
+        $query = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*');
         $search = $request->input('search');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('fullname', 'like', "%{$search}%")
-                    ->orWhere('id', 'like', "%{$search}%");
+                $q->where('employees.fullname', 'like', "%{$search}%")
+                    ->orWhere('users.id', 'like', "%{$search}%");
             });
         }
 
         if ($request->has('station') && $request->station != null) {
-            $query->where('station', $request->station);
+            $query->where('employees.station', $request->station);
         }
         if (! Auth::user()->isAdmin()) {
-            $query->where('station', Auth::user()->station);
+            $query->where('employees.station', Auth::user()->station);
         }
 
-        $query->whereNotNull('contract_end');
+        $query->whereNotNull('employees.contract_end');
         $perPage = $request->input('per_page', 20);
-        $users = $query->orderBy('contract_end', 'ASC')->paginate($perPage)->withQueryString();
+        $users = $query->orderBy('employees.contract_end', 'ASC')->paginate($perPage)->withQueryString();
 
         return view('user.kontrak', compact('users', 'stations'));
     }
@@ -523,7 +603,9 @@ class UserController extends Controller
         ]);
 
         try {
-            $user->update($request->only(['contract_start', 'contract_end']));
+            if ($user->employee) {
+                $user->employee->update($request->only(['contract_start', 'contract_end']));
+            }
             Alert::success('Berhasil', 'Data kontrak berhasil diperbarui');
 
             return redirect()->route('users.kontrak')->with('success', 'Data kontrak berhasil diperbarui');
@@ -542,26 +624,28 @@ class UserController extends Controller
         abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
-        $query = User::query();
+        $query = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*');
         $search = $request->input('search');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('fullname', 'like', "%{$search}%")
-                    ->orWhere('id', 'like', "%{$search}%");
+                $q->where('employees.fullname', 'like', "%{$search}%")
+                    ->orWhere('users.id', 'like', "%{$search}%");
             });
         }
 
         if ($request->has('station') && $request->station != null) {
-            $query->where('station', $request->station);
+            $query->where('employees.station', $request->station);
         }
         if (! Auth::user()->isAdmin()) {
-            $query->where('station', Auth::user()->station);
+            $query->where('employees.station', Auth::user()->station);
         }
 
-        $query->whereNotNull('pas_expired');
+        $query->whereNotNull('employees.pas_expired');
         $perPage = $request->input('per_page', 20);
-        $users = $query->orderBy('pas_expired', 'ASC')->paginate($perPage)->withQueryString();
+        $users = $query->orderBy('employees.pas_expired', 'ASC')->paginate($perPage)->withQueryString();
 
         return view('user.pas', compact('users', 'stations'));
     }
@@ -591,7 +675,9 @@ class UserController extends Controller
         ]);
 
         try {
-            $user->update($request->only(['pas_expired', 'pas_registered']));
+            if ($user->employee) {
+                $user->employee->update($request->only(['pas_expired', 'pas_registered']));
+            }
             Alert::success('Berhasil', 'Data PAS berhasil diperbarui');
 
             return redirect()->route('users.pas')->with('success', 'Data PAS berhasil diperbarui');
@@ -610,33 +696,35 @@ class UserController extends Controller
         abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
-        $query = User::query();
+        $query = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*');
         $search = $request->input('search');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('fullname', 'like', "%{$search}%")
-                    ->orWhere('id', 'like', "%{$search}%");
+                $q->where('employees.fullname', 'like', "%{$search}%")
+                    ->orWhere('users.id', 'like', "%{$search}%");
             });
         }
 
         if ($request->has('station') && $request->station != null) {
-            $query->where('station', $request->station);
+            $query->where('employees.station', $request->station);
         }
         if (! Auth::user()->isAdmin()) {
-            $query->where('station', Auth::user()->station);
+            $query->where('employees.station', Auth::user()->station);
         }
 
         // Hanya tampilkan yang punya data TIM (nomor TIM atau TIM Expired)
         $query->where(function ($q) {
             $q->where(function ($sq) {
-                $sq->whereNotNull('tim_expired')->where('tim_expired', '!=', '');
+                $sq->whereNotNull('employees.tim_expired')->where('employees.tim_expired', '!=', '');
             })->orWhere(function ($sq) {
-                $sq->whereNotNull('tim_number')->where('tim_number', '!=', '');
+                $sq->whereNotNull('employees.tim_number')->where('employees.tim_number', '!=', '');
             });
         });
         $perPage = $request->input('per_page', 20);
-        $users = $query->orderBy('tim_expired', 'ASC')->paginate($perPage)->withQueryString();
+        $users = $query->orderBy('employees.tim_expired', 'ASC')->paginate($perPage)->withQueryString();
 
         return view('user.tim', compact('users', 'stations'));
     }
@@ -660,7 +748,9 @@ class UserController extends Controller
         ]);
 
         try {
-            $user->update($request->only(['tim_number', 'tim_expired', 'tim_registered']));
+            if ($user->employee) {
+                $user->employee->update($request->only(['tim_number', 'tim_expired', 'tim_registered']));
+            }
             Alert::success('Berhasil', 'Data TIM Bandara berhasil diperbarui');
 
             return redirect()->route('users.tim');
