@@ -12,6 +12,19 @@
                 @method('PUT')
 
                 <div class="mb-3">
+                    <label class="form-label fw-semibold">Unit Induk <span class="text-danger">*</span></label>
+                    <select name="unit_id" class="form-select" required>
+                        <option value="">-- Pilih Unit Induk --</option>
+                        @foreach($units as $unit)
+                            <option value="{{ $unit->id }}" {{ old('unit_id', $subUnit->unit_id) == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('unit_id')
+                        <small class="text-danger mt-1 d-block">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label fw-semibold">Nama Sub Unit <span class="text-danger">*</span></label>
                     <input type="text" name="name" class="form-control" value="{{ old('name', $subUnit->name) }}" required />
                     @error('name')

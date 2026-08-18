@@ -28,7 +28,8 @@ class EmployeeController extends Controller
 
         $employees = Employee::with(['unit', 'subUnit', 'jobTitle', 'cluster', 'user'])
             ->when($search, function ($query, $search) {
-                return $query->where('fullname', 'like', "%{$search}%")
+                return $query->where('id', 'like', "%{$search}%")
+                    ->orWhere('fullname', 'like', "%{$search}%")
                     ->orWhere('no_nik', 'like', "%{$search}%")
                     ->orWhere('no_pas', 'like', "%{$search}%");
             })
@@ -48,8 +49,8 @@ class EmployeeController extends Controller
         abort_unless(Auth::user()->canAccess('user', 'create'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
         $jobTitles = JobTitle::orderBy('name')->get();
-        $units = Unit::orderBy('name')->get();
-        $subUnits = SubUnit::orderBy('name')->get();
+        $units = Unit::orderBy('id', 'asc')->get();
+        $subUnits = SubUnit::orderBy('id', 'asc')->get();
         $clusters = Cluster::orderBy('name')->get();
 
         return view('employees.create', compact('stations', 'jobTitles', 'units', 'subUnits', 'clusters'));
@@ -61,7 +62,8 @@ class EmployeeController extends Controller
 
         $request->validate([
             'fullname' => 'required|string|max:255',
-            'station' => 'required|string|max:15',
+            'station_id' => 'nullable|string|max:15|exists:stations,code',
+            'station' => 'nullable|string|max:15',
             'gender' => 'required|in:Male,Female',
             'job_title_id' => 'required|exists:job_titles,id',
             'unit_id' => 'required|exists:units,id',
@@ -80,6 +82,9 @@ class EmployeeController extends Controller
 
         try {
             $data = $request->all();
+            if (empty($data['station_id']) && !empty($data['station'])) {
+                $data['station_id'] = $data['station'];
+            }
             foreach ($data as $key => $value) {
                 if ($value === '') {
                     $data[$key] = null;
@@ -109,8 +114,8 @@ class EmployeeController extends Controller
         abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
         $jobTitles = JobTitle::orderBy('name')->get();
-        $units = Unit::orderBy('name')->get();
-        $subUnits = SubUnit::orderBy('name')->get();
+        $units = Unit::orderBy('id', 'asc')->get();
+        $subUnits = SubUnit::orderBy('id', 'asc')->get();
         $clusters = Cluster::orderBy('name')->get();
 
         return view('employees.edit', compact('employee', 'stations', 'jobTitles', 'units', 'subUnits', 'clusters'));
@@ -122,7 +127,8 @@ class EmployeeController extends Controller
 
         $request->validate([
             'fullname' => 'required|string|max:255',
-            'station' => 'required|string|max:15',
+            'station_id' => 'nullable|string|max:15|exists:stations,code',
+            'station' => 'nullable|string|max:15',
             'gender' => 'required|in:Male,Female',
             'job_title_id' => 'required|exists:job_titles,id',
             'unit_id' => 'required|exists:units,id',
@@ -141,6 +147,9 @@ class EmployeeController extends Controller
 
         try {
             $data = $request->all();
+            if (empty($data['station_id']) && !empty($data['station'])) {
+                $data['station_id'] = $data['station'];
+            }
             foreach ($data as $key => $value) {
                 if ($value === '') {
                     $data[$key] = null;

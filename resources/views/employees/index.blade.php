@@ -18,7 +18,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Daftar Karyawan</h5>
             <form action="{{ route('employees.index') }}" method="GET" class="d-flex gap-2">
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari Nama / NIK / PAS..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari ID / Nama / NIK..." value="{{ request('search') }}">
                 <button type="submit" class="btn btn-sm btn-outline-primary"><i class="ti ti-search"></i></button>
             </form>
         </div>
@@ -26,7 +26,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>ID / NIK</th>
+                        <th>ID</th>
                         <th>Nama Lengkap</th>
                         <th>Jabatan</th>
                         <th>Unit</th>
@@ -38,7 +38,7 @@
                 <tbody class="table-border-bottom-0">
                     @forelse($employees as $emp)
                     <tr>
-                        <td><strong>{{ $emp->no_nik ?? '-' }}</strong></td>
+                        <td><strong>{{ $emp->id }}</strong></td>
                         <td>{{ $emp->fullname }}</td>
                         <td>{{ $emp->jobTitle->name ?? '-' }}</td>
                         <td>{{ $emp->unit->name ?? '-' }}</td>

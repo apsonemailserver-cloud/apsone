@@ -14,4 +14,9 @@ class Unit extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function subUnits()
+    {
+        return $this->hasMany(SubUnit::class, 'unit_id');
+    }
 }

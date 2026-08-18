@@ -36,6 +36,7 @@
                             <tr>
                                 <th style="width: 80px;">NO</th>
                                 <th>NAMA SUB UNIT</th>
+                                <th>UNIT INDUK</th>
                                 <th class="text-center" style="width: 120px;">AKSI</th>
                             </tr>
                         </thead>
@@ -44,6 +45,7 @@
                             <tr>
                                 <td>{{ $subUnits->firstItem() + $index }}</td>
                                 <td><span class="fw-semibold">{{ $item->name }}</span></td>
+                                <td><span class="badge bg-label-info">{{ $item->unit->name ?? '-' }}</span></td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-1">
                                         <x-action-button action="edit" :href="route('master_data.sub_units.edit', $item->id)" title="Edit Sub Unit" />

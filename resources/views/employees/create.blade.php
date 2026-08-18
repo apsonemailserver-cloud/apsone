@@ -31,9 +31,9 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Station <span class="text-danger">*</span></label>
-                        <select name="station" class="form-select" required>
+                        <select name="station_id" class="form-select" required>
                             @foreach($stations as $st)
-                            <option value="{{ $st->code }}" {{ old('station') == $st->code ? 'selected' : '' }}>{{ $st->code }} - {{ $st->name }}</option>
+                            <option value="{{ $st->code }}" {{ old('station_id', old('station')) == $st->code ? 'selected' : '' }}>{{ $st->code }} - {{ $st->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -85,7 +85,8 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Unit <span class="text-danger">*</span></label>
-                        <select name="unit_id" class="form-select" required>
+                        <select name="unit_id" id="unit_id" class="form-select" required>
+                            <option value="">-- Pilih Unit --</option>
                             @foreach($units as $u)
                             <option value="{{ $u->id }}" {{ old('unit_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
                             @endforeach
@@ -93,9 +94,10 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Sub Unit <span class="text-danger">*</span></label>
-                        <select name="sub_unit_id" class="form-select" required>
+                        <select name="sub_unit_id" id="sub_unit_id" class="form-select" required>
+                            <option value="">-- Pilih Sub Unit --</option>
                             @foreach($subUnits as $su)
-                            <option value="{{ $su->id }}" {{ old('sub_unit_id') == $su->id ? 'selected' : '' }}>{{ $su->name }}</option>
+                            <option value="{{ $su->id }}" data-unit-id="{{ $su->unit_id }}" {{ old('sub_unit_id') == $su->id ? 'selected' : '' }}>{{ $su->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -118,21 +120,29 @@
             </div>
             <div class="card-body pt-4">
                 <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Tanggal Join <span class="text-danger">*</span></label>
+                    <div class="col-md-4">
+                        <label class="form-label">Tanggal Masuk (Join Date) <span class="text-danger">*</span></label>
                         <input type="date" name="join_date" class="form-control" required value="{{ old('join_date') }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Mulai Kontrak</label>
                         <input type="date" name="contract_start" class="form-control" value="{{ old('contract_start') }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Akhir Kontrak</label>
                         <input type="date" name="contract_end" class="form-control" value="{{ old('contract_end') }}">
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Gaji (Salary)</label>
-                        <input type="number" step="0.01" name="salary" class="form-control" value="{{ old('salary') }}">
+                    <div class="col-md-4">
+                        <label class="form-label">PAS Registered</label>
+                        <input type="date" name="pas_registered" class="form-control" value="{{ old('pas_registered') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">PAS Expired</label>
+                        <input type="date" name="pas_expired" class="form-control" value="{{ old('pas_expired') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">No PAS</label>
+                        <input type="text" name="no_pas" class="form-control" value="{{ old('no_pas') }}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">BPJS Ketenagakerjaan</label>
@@ -156,4 +166,93 @@
         </div>
     </form>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+(function() {
+    function initUnitSubUnitFilter() {
+        const unitSelect = document.getElementById('unit_id');
+        const subUnitSelect = document.getElementById('sub_unit_id');
+
+        if (!unitSelect || !subUnitSelect) return;
+
+        // Store all original subUnit options in memory
+        if (!window._allSubUnitOptionsBackup) {
+            window._allSubUnitOptionsBackup = Array.from(subUnitSelect.querySelectorAll('option')).map(opt => {
+                return {
+                    value: String(opt.value || '').trim(),
+                    text: opt.textContent.trim(),
+                    unitId: String(opt.getAttribute('data-unit-id') || '').trim()
+                };
+            }).filter(item => item.value !== '');
+        }
+
+        function filterSubUnits() {
+            const selectedUnitId = String(unitSelect.value || '').trim();
+            const currentVal = String(subUnitSelect.value || "{{ old('sub_unit_id') }}").trim();
+
+            subUnitSelect.innerHTML = '';
+
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = selectedUnitId ? '-- Pilih Sub Unit --' : '-- Pilih Unit Terlebih Dahulu --';
+            subUnitSelect.appendChild(defaultOpt);
+
+            let hasMatch = false;
+
+            if (selectedUnitId) {
+                window._allSubUnitOptionsBackup.forEach(optData => {
+                    if (optData.unitId === selectedUnitId) {
+                        const newOpt = document.createElement('option');
+                        newOpt.value = optData.value;
+                        newOpt.textContent = optData.text;
+                        newOpt.setAttribute('data-unit-id', optData.unitId);
+
+                        if (optData.value === currentVal) {
+                            newOpt.selected = true;
+                            hasMatch = true;
+                        }
+
+                        subUnitSelect.appendChild(newOpt);
+                    }
+                });
+            }
+
+            if (!hasMatch) {
+                subUnitSelect.value = '';
+            }
+
+            // Sync with aps-combobox custom component
+            subUnitSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+            if (subUnitSelect._apsCombobox) {
+                const data = subUnitSelect._apsCombobox;
+                const selectedOpt = subUnitSelect.options[subUnitSelect.selectedIndex];
+                const text = selectedOpt ? selectedOpt.text.trim() : '';
+                const hasValue = subUnitSelect.value !== '';
+                if (data.value) {
+                    data.value.textContent = hasValue ? text : (selectedUnitId ? '-- Pilih Sub Unit --' : '-- Pilih Unit Terlebih Dahulu --');
+                    data.value.classList.toggle('aps-combobox-placeholder', !hasValue);
+                }
+            }
+        }
+
+        unitSelect.removeEventListener('change', filterSubUnits);
+        unitSelect.addEventListener('change', filterSubUnits);
+        unitSelect.removeEventListener('input', filterSubUnits);
+        unitSelect.addEventListener('input', filterSubUnits);
+
+        filterSubUnits();
+        setTimeout(filterSubUnits, 50);
+        setTimeout(filterSubUnits, 200);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initUnitSubUnitFilter);
+    } else {
+        initUnitSubUnitFilter();
+    }
+})();
+</script>
 @endsection

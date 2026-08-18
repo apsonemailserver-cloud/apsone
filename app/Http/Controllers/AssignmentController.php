@@ -25,7 +25,7 @@ class AssignmentController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $stations = Station::select('id', 'code', 'name')->where('is_active', true)->get();
+        $stations = Station::where('is_active', true)->get();
 
         $query = Assignment::with([
             'users:id,fullname,station',
@@ -104,7 +104,7 @@ class AssignmentController extends Controller
             ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
             ->where('users.is_active', true)
             ->orderBy('employees.fullname', 'asc')
-            ->select('users.id', 'employees.fullname', 'employees.station')
+            ->select('users.id', 'employees.fullname', 'employees.station_id')
             ->get();
 
         $staffs = $allStaffs->map(function ($s) use ($scheduledUserIds) {

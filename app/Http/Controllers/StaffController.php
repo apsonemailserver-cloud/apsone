@@ -53,10 +53,10 @@ class StaffController extends Controller
         // 4. Filter station dari tab
         if ($isFullAccess) {
             if ($request->filled('station')) {
-                $query->where('employees.station', $request->station);
+                $query->where('employees.station_id', $request->station);
             }
         } else {
-            $query->where('employees.station', $authUser->station);
+            $query->where('employees.station_id', $authUser->station);
         }
 
         // 6. Ambil data + pagination

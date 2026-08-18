@@ -12,6 +12,7 @@ return new class extends Migration
             Schema::create('sub_units', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->unique();
+                $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
                 $table->boolean('is_active')->default(true);
                 $table->timestamps();
             });

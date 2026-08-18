@@ -518,9 +518,9 @@ class AttendanceController extends Controller
                 }
 
                 if ($request->filled('station_id')) {
-                    $queryUser->where('employees.station', $request->station_id);
+                    $queryUser->where('employees.station_id', $request->station_id);
                 } elseif (!$isFullAccess && $authUser->station) {
-                    $queryUser->where('employees.station', $authUser->station);
+                    $queryUser->where('employees.station_id', $authUser->station);
                 }
 
                 if ($request->filled('role')) {

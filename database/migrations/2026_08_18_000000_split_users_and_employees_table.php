@@ -17,7 +17,8 @@ return new class extends Migration
             Schema::create('employees', function (Blueprint $table) {
                 $table->id();
                 $table->string('fullname')->nullable();
-                $table->string('station')->nullable();
+                $table->string('station_id', 15)->nullable();
+                $table->foreign('station_id')->references('code')->on('stations')->nullOnDelete();
                 $table->string('no_pas')->nullable();
                 $table->string('phone')->nullable();
                 $table->string('gender')->nullable();

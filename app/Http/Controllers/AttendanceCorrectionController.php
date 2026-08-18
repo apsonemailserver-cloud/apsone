@@ -93,13 +93,21 @@ class AttendanceCorrectionController extends Controller
                 $query->whereHas('station', fn ($b) => $b->where('code', $singleCode));
             } elseif (count($userStations) > 1) {
                 if ($request->filled('station_id')) {
-                    $query->where('station_id', $request->integer('station_id'));
+                    $stVal = $request->input('station_id');
+                    $query->where(function ($q) use ($stVal) {
+                        $q->where('station', $stVal)
+                          ->orWhereHas('station', fn ($b) => $b->where('code', $stVal));
+                    });
                 } else {
                     $query->whereHas('station', fn ($b) => $b->whereIn('code', $userStations));
                 }
             } else {
                 if ($request->filled('station_id')) {
-                    $query->where('station_id', $request->integer('station_id'));
+                    $stVal = $request->input('station_id');
+                    $query->where(function ($q) use ($stVal) {
+                        $q->where('station', $stVal)
+                          ->orWhereHas('station', fn ($b) => $b->where('code', $stVal));
+                    });
                 }
             }
         }

@@ -205,42 +205,6 @@ class UserController extends Controller
 
         try {
             // =========================
-            // GENERATE ID (NIP: 2643001)
-            // =========================
-            $yearPrefix = Carbon::now()->format('y');
-
-            $lastUser = User::where('id', 'like', $yearPrefix.'%')
-                ->orderBy('id', 'desc')
-                ->first();
-
-            if ($lastUser && strlen($lastUser->id) === 7) {
-                $lastNumber = (int) substr($lastUser->id, -3);
-                $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
-            } else {
-                $newNumber = '001';
-            }
-
-            do {
-                $randomDigits = str_pad(mt_rand(10, 99), 2, '0', STR_PAD_LEFT);
-                $generatedId = $yearPrefix . $randomDigits . $newNumber;
-            } while (User::where('id', $generatedId)->exists());
-
-            // =========================
-            // CEK BLACKLIST
-            // =========================
-            $isBlacklisted = Blacklist::where('nik', $generatedId)->first();
-            if ($isBlacklisted) {
-                Alert::error(
-                    'PERINGATAN KERAS',
-                    "NIK ini terdaftar di BLACKLIST!\n".
-                        'Nama: '.$isBlacklisted->fullname."\n".
-                        'Kasus: '.$isBlacklisted->reason
-                );
-
-                return back()->withInput();
-            }
-
-            // =========================
             // PROCESS ROLE & RELATIONS
             // =========================
             $roleInput = is_array($request->role) ? implode(', ', $request->role) : $request->role;
@@ -287,6 +251,23 @@ class UserController extends Controller
                 $employee = Employee::create($employeeData);
             }
 
+            $generatedId = (string) $employee->id;
+
+            // =========================
+            // CEK BLACKLIST
+            // =========================
+            $isBlacklisted = Blacklist::where('nik', $generatedId)->first();
+            if ($isBlacklisted) {
+                Alert::error(
+                    'PERINGATAN KERAS',
+                    "NIK/ID Karyawan ini terdaftar di BLACKLIST!\n".
+                        'Nama: '.$isBlacklisted->fullname."\n".
+                        'Kasus: '.$isBlacklisted->reason
+                );
+
+                return back()->withInput();
+            }
+
             // =========================
             // 2. CREATE USER ACCOUNT
             // =========================
@@ -303,7 +284,7 @@ class UserController extends Controller
             $user->is_active = true;
             $user->save();
 
-            Alert::success('Success', 'User berhasil ditambahkan dengan ID: '.$generatedId);
+            Alert::success('Success', 'User berhasil ditambahkan dengan NIP/ID: '.$generatedId);
 
             return redirect()->route('staff.index');
         } catch (\Exception $e) {
@@ -343,8 +324,8 @@ class UserController extends Controller
             });
 
         if (!empty($station)) {
-            $queryManagers->where('employees.station', $station);
-            $querySenior->where('employees.station', $station);
+            $queryManagers->where('employees.station_id', $station);
+            $querySenior->where('employees.station_id', $station);
         }
 
         $managers = $queryManagers->orderBy('employees.fullname', 'asc')->get()->map(function ($user) {
@@ -564,10 +545,10 @@ class UserController extends Controller
         }
 
         if ($request->has('station') && $request->station != null) {
-            $query->where('employees.station', $request->station);
+            $query->where('employees.station_id', $request->station);
         }
         if (! Auth::user()->isAdmin()) {
-            $query->where('employees.station', Auth::user()->station);
+            $query->where('employees.station_id', Auth::user()->station);
         }
 
         $query->whereNotNull('employees.contract_end');
@@ -637,10 +618,10 @@ class UserController extends Controller
         }
 
         if ($request->has('station') && $request->station != null) {
-            $query->where('employees.station', $request->station);
+            $query->where('employees.station_id', $request->station);
         }
         if (! Auth::user()->isAdmin()) {
-            $query->where('employees.station', Auth::user()->station);
+            $query->where('employees.station_id', Auth::user()->station);
         }
 
         $query->whereNotNull('employees.pas_expired');
@@ -709,10 +690,10 @@ class UserController extends Controller
         }
 
         if ($request->has('station') && $request->station != null) {
-            $query->where('employees.station', $request->station);
+            $query->where('employees.station_id', $request->station);
         }
         if (! Auth::user()->isAdmin()) {
-            $query->where('employees.station', Auth::user()->station);
+            $query->where('employees.station_id', Auth::user()->station);
         }
 
         // Hanya tampilkan yang punya data TIM (nomor TIM atau TIM Expired)

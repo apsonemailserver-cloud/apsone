@@ -36,9 +36,10 @@
                                             @if(isset($employees))
                                                 @foreach($employees as $emp)
                                                     <option value="{{ $emp->id }}" 
+                                                        data-nip="{{ $emp->id }}"
                                                         data-fullname="{{ $emp->fullname }}"
                                                         data-gender="{{ $emp->gender }}"
-                                                        data-station="{{ $emp->user->station_id ?? '' }}"
+                                                        data-station="{{ $emp->station_id ?? '' }}"
                                                         data-job_title="{{ $emp->jobTitle->name ?? '' }}"
                                                         data-unit="{{ $emp->unit->name ?? '' }}"
                                                         data-sub_unit="{{ $emp->subUnit->name ?? '' }}"
@@ -49,7 +50,7 @@
                                                         data-join_date="{{ $emp->join_date ? $emp->join_date->format('Y-m-d') : '' }}"
                                                         data-salary="{{ $emp->salary }}"
                                                         {{ old('employee_id') == $emp->id ? 'selected' : '' }}>
-                                                        {{ $emp->no_nik ? $emp->no_nik . ' - ' : '' }}{{ $emp->fullname }}
+                                                        {{ $emp->id ? $emp->id . ' - ' : '' }}{{ $emp->fullname }}
                                                     </option>
                                                 @endforeach
                                             @endif
@@ -295,59 +296,108 @@
             // Auto-fill when existing employee is selected
             const employeeSelect = document.getElementById('employee_select');
             if (employeeSelect) {
-                employeeSelect.addEventListener('change', function() {
-                    const selected = this.options[this.selectedIndex];
-                    if (this.value && selected) {
+                function handleEmployeeSelect() {
+                    const selected = employeeSelect.options[employeeSelect.selectedIndex];
+                    if (employeeSelect.value && selected) {
                         const ds = selected.dataset;
 
-                        if (ds.fullname) {
-                            const fn = document.querySelector('input[name="fullname"]');
-                            if (fn) fn.value = ds.fullname;
+                        // NIP / ID
+                        const nipInput = document.querySelector('input[name="id"]');
+                        if (nipInput) nipInput.value = ds.nip || ds.id || employeeSelect.value || '';
+
+                        // Nama Lengkap
+                        const fn = document.querySelector('input[name="fullname"]');
+                        if (fn) fn.value = ds.fullname || '';
+
+                        // Jenis Kelamin
+                        const gn = document.querySelector('select[name="gender"]');
+                        if (gn) setSelectValue(gn, ds.gender || '');
+
+                        // Station
+                        const st = document.querySelector('select[name="station"]');
+                        if (st) setSelectValue(st, ds.station || '');
+
+                        // Job Title
+                        const jt = document.querySelector('select[name="job_title"]');
+                        if (jt) setSelectValue(jt, ds.job_title || '');
+
+                        // Unit
+                        const u = document.querySelector('select[name="unit"]');
+                        if (u) setSelectValue(u, ds.unit || '');
+
+                        // Sub Unit
+                        const su = document.querySelector('select[name="sub_unit"]');
+                        if (su) setSelectValue(su, ds.sub_unit || '');
+
+                        // Cluster
+                        const cl = document.querySelector('select[name="cluster"]');
+                        if (cl) setSelectValue(cl, ds.cluster || '');
+
+                        // Qantas
+                        const qt = document.querySelector('select[name="is_qantas"]');
+                        if (qt) setSelectValue(qt, ds.is_qantas !== undefined ? ds.is_qantas : '');
+
+                        // Join Date
+                        const jd = document.querySelector('input[name="join_date"]');
+                        if (jd) jd.value = ds.join_date || '';
+
+                        // Salary
+                        const salDisplay = document.getElementById('salary_display');
+                        if (salDisplay) {
+                            salDisplay.value = ds.salary || '';
+                            salDisplay.dispatchEvent(new Event('input', { bubbles: true }));
                         }
-                        if (ds.gender) {
-                            const gn = document.querySelector('select[name="gender"]');
-                            if (gn) setSelectValue(gn, ds.gender);
+
+                        // Superiors (Manager & Senior Manager)
+                        updateSuperiors(ds.station || '', ds.manager || '', ds.senior_manager || '');
+                    } else {
+                        // Reset when unselected
+                        const nipInput = document.querySelector('input[name="id"]');
+                        if (nipInput) nipInput.value = '';
+
+                        const fn = document.querySelector('input[name="fullname"]');
+                        if (fn) fn.value = '';
+
+                        const gn = document.querySelector('select[name="gender"]');
+                        if (gn) setSelectValue(gn, '');
+
+                        const st = document.querySelector('select[name="station"]');
+                        if (st) setSelectValue(st, '');
+
+                        const jt = document.querySelector('select[name="job_title"]');
+                        if (jt) setSelectValue(jt, '');
+
+                        const u = document.querySelector('select[name="unit"]');
+                        if (u) setSelectValue(u, '');
+
+                        const su = document.querySelector('select[name="sub_unit"]');
+                        if (su) setSelectValue(su, '');
+
+                        const cl = document.querySelector('select[name="cluster"]');
+                        if (cl) setSelectValue(cl, '');
+
+                        const qt = document.querySelector('select[name="is_qantas"]');
+                        if (qt) setSelectValue(qt, '');
+
+                        const jd = document.querySelector('input[name="join_date"]');
+                        if (jd) jd.value = '';
+
+                        const salDisplay = document.getElementById('salary_display');
+                        if (salDisplay) {
+                            salDisplay.value = '';
+                            salDisplay.dispatchEvent(new Event('input', { bubbles: true }));
                         }
-                        if (ds.station) {
-                            const st = document.querySelector('select[name="station"]');
-                            if (st) {
-                                setSelectValue(st, ds.station);
-                                updateSuperiors(ds.station, ds.manager || '', ds.senior_manager || '');
-                            }
-                        }
-                        if (ds.job_title) {
-                            const jt = document.querySelector('select[name="job_title"]');
-                            if (jt) setSelectValue(jt, ds.job_title);
-                        }
-                        if (ds.unit) {
-                            const u = document.querySelector('select[name="unit"]');
-                            if (u) setSelectValue(u, ds.unit);
-                        }
-                        if (ds.sub_unit) {
-                            const su = document.querySelector('select[name="sub_unit"]');
-                            if (su) setSelectValue(su, ds.sub_unit);
-                        }
-                        if (ds.cluster) {
-                            const cl = document.querySelector('select[name="cluster"]');
-                            if (cl) setSelectValue(cl, ds.cluster);
-                        }
-                        if (ds.is_qantas !== undefined && ds.is_qantas !== '') {
-                            const qt = document.querySelector('select[name="is_qantas"]');
-                            if (qt) setSelectValue(qt, ds.is_qantas);
-                        }
-                        if (ds.join_date) {
-                            const jd = document.querySelector('input[name="join_date"]');
-                            if (jd) jd.value = ds.join_date;
-                        }
-                        if (ds.salary) {
-                            const salDisplay = document.getElementById('salary_display');
-                            if (salDisplay) {
-                                salDisplay.value = ds.salary;
-                                salDisplay.dispatchEvent(new Event('input'));
-                            }
-                        }
+
+                        updateSuperiors('', '', '');
                     }
-                });
+                }
+
+                employeeSelect.addEventListener('change', handleEmployeeSelect);
+                employeeSelect.addEventListener('input', handleEmployeeSelect);
+
+                if (employeeSelect.value) {
+                    handleEmployeeSelect();
+                }
             }
 
             // Dynamic Superiors Filter based on Station

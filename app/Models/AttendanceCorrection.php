@@ -51,7 +51,22 @@ class AttendanceCorrection extends Model
 
     public function station()
     {
-        return $this->belongsTo(Station::class);
+        return $this->belongsTo(Station::class, 'station', 'code');
+    }
+
+    public function getStationIdAttribute()
+    {
+        return $this->attributes['station'] ?? null;
+    }
+
+    public function setStationIdAttribute($value)
+    {
+        $this->attributes['station'] = $value;
+    }
+
+    public function setStationAttribute($value)
+    {
+        $this->attributes['station'] = $value;
     }
 
     public function decider()

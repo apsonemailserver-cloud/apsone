@@ -132,7 +132,7 @@ class HomeController extends Controller
         $userKehadiranQuery = User::where('users.is_active', 1);
         if ($selectedStation !== 'All') {
             $userKehadiranQuery->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
-                ->where('employees.station', $selectedStation);
+                ->where('employees.station_id', $selectedStation);
         }
         $userKehadiranCount = $userKehadiranQuery->count();
 
@@ -157,7 +157,7 @@ class HomeController extends Controller
             ->whereDate('employees.contract_end', '<=', $twoMonthsFromNow)
             ->whereDate('employees.contract_end', '>=', Carbon::today());
         if ($selectedStation !== 'All') {
-            $contractQuery->where('employees.station', $selectedStation);
+            $contractQuery->where('employees.station_id', $selectedStation);
         }
         $totalContractStaff = $contractQuery->count();
 
@@ -167,7 +167,7 @@ class HomeController extends Controller
             ->whereDate('employees.pas_expired', '<=', $twoMonthsFromNow)
             ->whereDate('employees.pas_expired', '>=', Carbon::today());
         if ($selectedStation !== 'All') {
-            $pasQuery->where('employees.station', $selectedStation);
+            $pasQuery->where('employees.station_id', $selectedStation);
         }
         $totalPasStaff = $pasQuery->count();
 
@@ -180,7 +180,7 @@ class HomeController extends Controller
             ->where('leaves.status', 'approved');
 
         if ($selectedStation !== 'All') {
-            $absentQuery->where('employees.station', $selectedStation);
+            $absentQuery->where('employees.station_id', $selectedStation);
         }
 
         $absentUsers = $absentQuery->select('users.id', 'employees.fullname', 'leaves.leave_type', 'leaves.status')->get();
@@ -220,7 +220,7 @@ class HomeController extends Controller
             ->whereBetween('leaves.start_date', [$chartStartDate->toDateString(), $chartEndDate->toDateString()])
             ->whereIn('leaves.leave_type', ['Cuti Sakit', 'Cuti Tahunan']);
         if ($selectedStation !== 'All') {
-            $dailyLeaveQ->where('employees.station', $selectedStation);
+            $dailyLeaveQ->where('employees.station_id', $selectedStation);
         }
         $dailyLeaveCounts = $dailyLeaveQ->groupBy(DB::raw('DATE(leaves.start_date)'), 'leaves.leave_type')
             ->get();
@@ -256,14 +256,14 @@ class HomeController extends Controller
                 ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
                 ->select(DB::raw("COALESCE(roles.name, 'Unassigned') as role"), DB::raw('count(*) as total'));
             if ($selectedStation !== 'All') {
-                $doughnutQuery->where('employees.station', $selectedStation);
+                $doughnutQuery->where('employees.station_id', $selectedStation);
             }
             $doughnutData = $doughnutQuery->groupBy(DB::raw("COALESCE(roles.name, 'Unassigned')"))->get();
         } else {
             $doughnutQuery = User::where('is_active', 1)
                 ->select(DB::raw("'Unassigned' as role"), DB::raw('count(*) as total'));
             if ($selectedStation !== 'All') {
-                $doughnutQuery->where('station', $selectedStation);
+                $doughnutQuery->where('employees.station_id', $selectedStation);
             }
             $doughnutData = $doughnutQuery->groupBy(DB::raw("'Unassigned'"))->get();
         }
@@ -300,9 +300,9 @@ class HomeController extends Controller
         }
         $stationStats = User::where('users.is_active', 1)
             ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
-            ->select('employees.station', DB::raw('count(*) as total'))
-            ->groupBy('employees.station')
-            ->pluck('total', 'employees.station');
+            ->select('employees.station_id as station', DB::raw('count(*) as total'))
+            ->groupBy('employees.station_id')
+            ->pluck('total', 'station');
 
         // =================================================================
         // BAGIAN 4B: WORK RESULTS STATS (BARU)

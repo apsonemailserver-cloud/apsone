@@ -9,8 +9,14 @@ class Employee extends Model
 {
     use HasFactory;
 
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
+        'id',
         'fullname',
+        'station_id',
+        'station',
         'no_pas',
         'phone',
         'gender',
@@ -44,6 +50,33 @@ class Employee extends Model
         'cluster_id',
     ];
 
+    public static function generateEmployeeId($date = null): int
+    {
+        $date = $date ? \Carbon\Carbon::parse($date) : \Carbon\Carbon::now();
+        $prefix = $date->format('ym');
+        $start = (int) ($prefix . '001');
+        $end = (int) ($prefix . '999');
+
+        $maxId = static::whereBetween('id', [$start, $end])->max('id');
+
+        if ($maxId) {
+            return (int) $maxId + 1;
+        }
+
+        return $start;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($employee) {
+            if (empty($employee->id)) {
+                $employee->id = static::generateEmployeeId($employee->created_at ?? null);
+            }
+        });
+    }
+
     protected $casts = [
         'join_date' => 'date',
         'contract_start' => 'date',
@@ -58,7 +91,12 @@ class Employee extends Model
 
     public function getStationAttribute()
     {
-        return $this->user ? $this->user->station_id : null;
+        return $this->attributes['station_id'] ?? ($this->attributes['station'] ?? null);
+    }
+
+    public function getStationIdAttribute()
+    {
+        return $this->attributes['station_id'] ?? ($this->attributes['station'] ?? null);
     }
 
     public function user()
@@ -88,6 +126,6 @@ class Employee extends Model
 
     public function stationRelation()
     {
-        return $this->user ? $this->user->stationRelation() : null;
+        return $this->belongsTo(Station::class, 'station_id', 'code');
     }
 }

@@ -104,7 +104,7 @@ class User extends Authenticatable
         }
 
         if (in_array($key, [
-            'fullname', 'station', 'no_pas', 'phone', 'gender', 'job_title_id',
+            'fullname', 'station', 'station_id', 'no_pas', 'phone', 'gender', 'job_title_id',
             'tim_number', 'tim_registered', 'tim_expired', 'join_date',
             'contract_start', 'contract_end', 'pas_registered', 'pas_expired',
             'salary', 'is_qantas', 'unit_id', 'sub_unit_id', 'tanggal_lahir',
@@ -285,12 +285,17 @@ class User extends Authenticatable
 
     public function getStationAttribute()
     {
-        return $this->attributes['station_id'] ?? null;
+        return $this->employee ? $this->employee->station_id : null;
+    }
+
+    public function getStationIdAttribute()
+    {
+        return $this->employee ? $this->employee->station_id : null;
     }
 
     public function stationRelation()
     {
-        return $this->belongsTo(Station::class, 'station_id', 'code');
+        return $this->employee ? $this->employee->stationRelation() : null;
     }
 
     public function setRoleAttribute($value)
