@@ -37,16 +37,7 @@
             </div>
             
             <div class="card-body">
-                {{-- Toolbar --}}
-                <div class="dt-toolbar">
-                    <form action="{{ route('users.tim') }}" method="GET" class="dt-search">
-                        @if(request('station'))
-                            <input type="hidden" name="station" value="{{ request('station') }}">
-                        @endif
-                        <i class="bx bx-search search-icon"></i>
-                        <input type="text" name="search" class="form-control" placeholder="Cari NIP atau Nama..." value="{{ request('search') }}">
-                    </form>
-                </div>
+                <x-dt-toolbar :searchFormAction="route('users.tim')" searchPlaceholder="Cari NIP atau Nama..." />
 
                 @php
                     $canEditTIM = Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin';

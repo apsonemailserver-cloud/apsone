@@ -21,7 +21,7 @@
 
         <div class="card">
             <div class="card-body">
-                <x-dt-toolbar searchPlaceholder="Cari sertifikat...">
+                <x-dt-toolbar :searchFormAction="route('my.certificates')" searchPlaceholder="Cari sertifikat...">
                     <x-slot:actions>
                         <a href="{{ route('training.certificates.create') }}" class="btn btn-primary">
                             <i class="ti ti-plus me-1"></i> Tambah Sertifikat

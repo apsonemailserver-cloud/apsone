@@ -11,15 +11,21 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class TrainingController extends Controller
 {
-    public function myCertificates()
+    public function myCertificates(Request $request)
     {
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Anda harus login untuk melihat sertifikat Anda.');
         }
 
-        $certificates = Certificate::where('user_id', Auth::id())
-                                   ->orderBy('end_date', 'asc')
-                                   ->paginate(10);
+        $query = Certificate::where('user_id', Auth::id());
+
+        if ($search = $request->input('search')) {
+            $query->where('certificate_name', 'like', "%{$search}%");
+        }
+
+        $certificates = $query->orderBy('end_date', 'asc')
+                               ->paginate(10)
+                               ->withQueryString();
 
         return view('training.my-certificates', compact('certificates'));
     }

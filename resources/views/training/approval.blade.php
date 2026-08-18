@@ -10,10 +10,10 @@
         </div>
     </div>
 
-    <x-dt-toolbar :searchFormAction="route('training.approval')" searchPlaceholder="Cari nama staff / sertifikat..." />
-
     <div class="card">
         <div class="card-body">
+            <x-dt-toolbar :searchFormAction="route('training.approval')" searchPlaceholder="Cari nama staff / sertifikat..." />
+
             <div class="table-responsive">
                 <table class="table align-middle">
                     <thead>

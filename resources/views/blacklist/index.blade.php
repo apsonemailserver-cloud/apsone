@@ -11,10 +11,10 @@
             </div>
         </div>
 
-        <x-dt-toolbar :searchFormAction="route('blacklist.index')" searchPlaceholder="Cari data blacklist..." />
-
         <div class="card">
             <div class="card-body">
+                <x-dt-toolbar :searchFormAction="route('blacklist.index')" searchPlaceholder="Cari data blacklist..." />
+
                 <div class="table-responsive">
                     <table class="table">
                         <thead>

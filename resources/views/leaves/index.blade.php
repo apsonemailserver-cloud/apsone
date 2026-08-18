@@ -83,15 +83,6 @@
         color: #ffffff !important;
     }
 
-    html.aps-dark .dt-search input {
-        background-color: #0f172a !important;
-        border-color: #2b3b5a !important;
-        color: #f8fafc !important;
-    }
-
-    html.aps-dark .dt-search .search-icon {
-        color: #94a3b8 !important;
-    }
 </style>
 @endsection
 

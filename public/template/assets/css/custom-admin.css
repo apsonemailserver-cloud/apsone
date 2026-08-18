@@ -1800,3 +1800,165 @@ html.aps-dark .action-btn.action-reset-face:hover,
     background: #7c3aed !important;
     color: #ffffff !important;
 }
+
+/* ============================================================
+   DATATABLE TOOLBAR & SEARCH SYSTEM - STANDARDIZED & RESPONSIVE
+   ============================================================ */
+.dt-toolbar {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.85rem !important;
+    margin: 0.5rem 0 1rem 0 !important;
+    width: 100% !important;
+}
+
+.dt-toolbar form.dt-search,
+.dt-toolbar div.dt-search,
+.dt-search {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 320px;
+    min-width: 220px;
+    flex: 1 1 auto;
+    margin: 0 !important;
+}
+
+.dt-search .search-icon,
+.dt-search i.search-icon,
+.dt-search > i.ti,
+.dt-search > i.bx,
+.dt-search > i {
+    position: absolute !important;
+    left: 0.95rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #94a3b8 !important;
+    font-size: 1.05rem !important;
+    line-height: 1 !important;
+    pointer-events: none !important;
+    z-index: 5 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.dt-search input.form-control,
+.dt-search .form-control,
+.dt-toolbar .dt-search input.form-control,
+.dt-toolbar .dt-search .form-control {
+    width: 100% !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.55rem !important;
+    padding-left: 2.75rem !important;
+    padding-right: 0.85rem !important;
+    border-radius: 0.75rem !important;
+    border: 1.5px solid #cbd5e1 !important;
+    font-size: 0.88rem !important;
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    line-height: 1.4 !important;
+    box-shadow: none !important;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease !important;
+}
+
+.dt-search input.form-control::placeholder,
+.dt-search .form-control::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
+.dt-search input.form-control:focus,
+.dt-search .form-control:focus,
+.dt-toolbar .dt-search input.form-control:focus,
+.dt-toolbar .dt-search .form-control:focus {
+    background-color: #ffffff !important;
+    border-color: rgba(47, 128, 237, 0.5) !important;
+    box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1) !important;
+    outline: none !important;
+}
+
+.dt-toolbar .dt-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+}
+
+/* Form control with leading icon helper padding overrides */
+.form-control.ps-5,
+input.form-control.ps-5 {
+    padding-left: 2.85rem !important;
+}
+.form-control.ps-4,
+input.form-control.ps-4 {
+    padding-left: 2.25rem !important;
+}
+
+/* Dark Mode Support for Datatable Search & Inputs */
+html.aps-dark .dt-search input.form-control,
+html.aps-dark .dt-search .form-control,
+html.aps-dark .dt-toolbar .dt-search input.form-control,
+html.aps-dark .dt-toolbar .dt-search .form-control,
+[data-aps-theme="dark"] .dt-search input.form-control,
+[data-aps-theme="dark"] .dt-search .form-control {
+    background-color: #0f172a !important;
+    border-color: #2b3b5a !important;
+    color: #f8fafc !important;
+}
+
+html.aps-dark .dt-search input.form-control::placeholder,
+html.aps-dark .dt-search .form-control::placeholder,
+[data-aps-theme="dark"] .dt-search input.form-control::placeholder,
+[data-aps-theme="dark"] .dt-search .form-control::placeholder {
+    color: #64748b !important;
+}
+
+html.aps-dark .dt-search input.form-control:focus,
+html.aps-dark .dt-search .form-control:focus,
+html.aps-dark .dt-toolbar .dt-search input.form-control:focus,
+html.aps-dark .dt-toolbar .dt-search .form-control:focus,
+[data-aps-theme="dark"] .dt-search input.form-control:focus,
+[data-aps-theme="dark"] .dt-search .form-control:focus {
+    background-color: #1e293b !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15) !important;
+}
+
+html.aps-dark .dt-search .search-icon,
+html.aps-dark .dt-search i.search-icon,
+html.aps-dark .dt-search > i.ti,
+html.aps-dark .dt-search > i.bx,
+html.aps-dark .dt-search > i,
+[data-aps-theme="dark"] .dt-search .search-icon,
+[data-aps-theme="dark"] .dt-search > i {
+    color: #64748b !important;
+}
+
+/* Responsive Datatable Toolbar */
+@media (max-width: 575.98px) {
+    .dt-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.75rem !important;
+    }
+
+    .dt-toolbar form.dt-search,
+    .dt-toolbar div.dt-search,
+    .dt-search {
+        max-width: 100% !important;
+        min-width: 100% !important;
+        width: 100% !important;
+        flex: 1 1 100% !important;
+    }
+
+    .dt-toolbar .dt-actions {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+}

@@ -128,7 +128,7 @@
     }
 
     .document-admin-page .document-role-search .form-control {
-        padding-left: 2.35rem;
+        padding-left: 2.5rem !important;
         border-radius: 999px;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
