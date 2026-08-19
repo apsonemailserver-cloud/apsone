@@ -28,34 +28,32 @@
                             <form action="{{ route('users.store') }}" method="POST" id="createUserForm">
                                 @csrf
 
-                                <div class="card mb-4 bg-label-secondary border-0">
-                                    <div class="card-body py-3">
-                                        <label class="form-label fw-bold"><i class="ti ti-link me-1"></i> Hubungkan dengan Data Karyawan (Opsional)</label>
-                                        <select name="employee_id" id="employee_select" class="form-select">
-                                            <option value="">-- Buat Data Karyawan Baru --</option>
-                                            @if(isset($employees))
-                                                @foreach($employees as $emp)
-                                                    <option value="{{ $emp->id }}" 
-                                                        data-nip="{{ $emp->id }}"
-                                                        data-fullname="{{ $emp->fullname }}"
-                                                        data-gender="{{ $emp->gender }}"
-                                                        data-station="{{ $emp->station_id ?? '' }}"
-                                                        data-job_title="{{ $emp->jobTitle->name ?? '' }}"
-                                                        data-unit="{{ $emp->unit->name ?? '' }}"
-                                                        data-sub_unit="{{ $emp->subUnit->name ?? '' }}"
-                                                        data-cluster="{{ $emp->cluster->name ?? '' }}"
-                                                        data-manager="{{ $emp->manager }}"
-                                                        data-senior_manager="{{ $emp->senior_manager }}"
-                                                        data-is_qantas="{{ $emp->is_qantas ? '1' : '0' }}"
-                                                        data-join_date="{{ $emp->join_date ? $emp->join_date->format('Y-m-d') : '' }}"
-                                                        data-salary="{{ $emp->salary }}"
-                                                        {{ old('employee_id') == $emp->id ? 'selected' : '' }}>
-                                                        {{ $emp->id ? $emp->id . ' - ' : '' }}{{ $emp->fullname }}
-                                                    </option>
-                                                @endforeach
-                                            @endif
-                                        </select>
-                                    </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold"><i class="ti ti-link me-1"></i> Hubungkan dengan Data Karyawan (Opsional)</label>
+                                    <select name="employee_id" id="employee_select" class="form-select">
+                                        <option value="">-- Buat Data Karyawan Baru --</option>
+                                        @if(isset($employees))
+                                            @foreach($employees as $emp)
+                                                <option value="{{ $emp->id }}" 
+                                                    data-nip="{{ $emp->id }}"
+                                                    data-fullname="{{ $emp->fullname }}"
+                                                    data-gender="{{ $emp->gender }}"
+                                                    data-station="{{ $emp->station_id ?? '' }}"
+                                                    data-job_title="{{ $emp->jobTitle->name ?? '' }}"
+                                                    data-unit="{{ $emp->unit->name ?? '' }}"
+                                                    data-sub_unit="{{ $emp->subUnit->name ?? '' }}"
+                                                    data-cluster="{{ $emp->cluster->name ?? '' }}"
+                                                    data-manager="{{ $emp->manager }}"
+                                                    data-senior_manager="{{ $emp->senior_manager }}"
+                                                    data-is_qantas="{{ $emp->is_qantas ? '1' : '0' }}"
+                                                    data-join_date="{{ $emp->join_date ? $emp->join_date->format('Y-m-d') : '' }}"
+                                                    data-salary="{{ $emp->salary }}"
+                                                    {{ old('employee_id') == $emp->id ? 'selected' : '' }}>
+                                                    {{ $emp->id ? $emp->id . ' - ' : '' }}{{ $emp->fullname }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    </select>
                                 </div>
 
                                 <div class="row">
@@ -213,8 +211,8 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Qantas</label>
-                                            <select name="is_qantas" class="form-select">
+                                            <label class="form-label">Qantas <span class="text-danger">*</span></label>
+                                            <select name="is_qantas" class="form-select" required>
                                                 <option value="">-- Pilih --</option>
                                                 <option value="1" {{ old('is_qantas') == '1' ? 'selected' : '' }}>Ya
                                                 </option>
@@ -224,10 +222,10 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Join Date</label>
+                                            <label class="form-label">Join Date <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" name="join_date"
                                                 max="{{ date('Y-m-d') }}"
-                                                value="{{ old('join_date') }}">
+                                                value="{{ old('join_date') }}" required>
                                         </div>
 
                                         <div class="mb-3">

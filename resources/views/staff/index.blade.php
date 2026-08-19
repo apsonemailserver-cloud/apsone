@@ -125,6 +125,11 @@
                                         <x-action-button action="view" :href="route('users.userProfile', $staff->id)" title="Detail" />
                                         @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
                                         <x-action-button action="edit" :href="route('users.edit', ['user' => $staff->id, 'redirect_to' => url()->full()])" title="Edit Staff" />
+                                        <form id="reset-password-form-{{ $staff->id }}" action="{{ route('user.resetPassword', $staff->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <x-action-button type="button" action="reset" onclick="confirmResetPassword('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Reset Password" />
+                                        </form>
                                         @endif
                                         @php
                                             $hasFaceSample = !empty($staff->face_registered_at) || \Illuminate\Support\Facades\Storage::disk('public')->exists('face_samples/' . $staff->id);
@@ -138,6 +143,13 @@
                                         @endif
                                         @if(!$isBlacklisted && (Auth::user()->canAccess('blacklist', 'create') || Auth::user()->role === 'Admin'))
                                         <x-action-button type="button" action="blacklist" onclick="openBanModal('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Blacklist" />
+                                        @endif
+                                        @if(Auth::user()->canAccess('user', 'delete') || Auth::user()->role === 'Admin')
+                                        <form id="delete-form-{{ $staff->id }}" action="{{ route('users.destroy', $staff->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-action-button type="button" action="delete" onclick="confirmDeleteStaff('{{ $staff->id }}', '{{ addslashes($staff->fullname) }}')" title="Hapus Staff" />
+                                        </form>
                                         @endif
                                     </div>
                                 </td>
@@ -346,6 +358,62 @@
         } else {
             if (confirm('Apakah Anda yakin? Foto referensi wajah milik "' + userName + '" akan dihapus permanen agar staff dapat melakukan registrasi wajah ulang.')) {
                 var form = document.getElementById('delete-face-form-' + userId);
+                if (form) form.submit();
+            }
+        }
+    }
+
+    function confirmResetPassword(userId, userName) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Reset Password?',
+                text: 'Password untuk user "' + userName + '" akan direset menjadi default (password123).',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '<i class="ti ti-key me-1"></i> Ya, Reset Password',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = document.getElementById('reset-password-form-' + userId);
+                    if (form) form.submit();
+                }
+            });
+        } else {
+            if (confirm('Reset password untuk ' + userName + ' menjadi password123?')) {
+                var form = document.getElementById('reset-password-form-' + userId);
+                if (form) form.submit();
+            }
+        }
+    }
+
+    function confirmDeleteStaff(userId, userName) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Hapus Data Staff?',
+                text: 'Data user dan profil karyawan "' + userName + '" akan dihapus permanen dari sistem.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="ti ti-trash me-1"></i> Ya, Hapus Data',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-2',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = document.getElementById('delete-form-' + userId);
+                    if (form) form.submit();
+                }
+            });
+        } else {
+            if (confirm('Hapus data staff ' + userName + '?')) {
+                var form = document.getElementById('delete-form-' + userId);
                 if (form) form.submit();
             }
         }

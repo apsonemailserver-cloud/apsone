@@ -191,8 +191,8 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Qantas</label>
-                                            <select name="is_qantas" class="form-select">
+                                            <label class="form-label">Qantas <span class="text-danger">*</span></label>
+                                            <select name="is_qantas" class="form-select" required>
                                                 <option value="1"
                                                     {{ old('is_qantas', $user->is_qantas) == 1 ? 'selected' : '' }}>Ya
                                                 </option>
@@ -203,10 +203,10 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Join Date</label>
+                                            <label class="form-label">Join Date <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" name="join_date"
                                                 max="{{ date('Y-m-d') }}"
-                                                value="{{ old('join_date', $user->join_date ? \Carbon\Carbon::parse($user->join_date)->format('Y-m-d') : '') }}">
+                                                value="{{ old('join_date', $user->join_date ? \Carbon\Carbon::parse($user->join_date)->format('Y-m-d') : '') }}" required>
                                         </div>
 
                                         <div class="mb-3">

@@ -699,7 +699,12 @@
                 <h4 class="fw-bold mb-1">{{ $user->fullname }}</h4>
                 <p class="text-muted mb-0" style="font-size:0.875rem;">Informasi detail data diri, hak akses, dan station penugasan.</p>
             </div>
-            <div class="profile-page-badges mt-2 mt-md-0">
+            <div class="profile-page-badges mt-2 mt-md-0 d-flex align-items-center gap-2">
+                @if(request()->routeIs('users.userProfile') || (Auth::check() && Auth::id() != $user->id))
+                <a href="{{ route('staff.index') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="ti ti-arrow-left me-1"></i>Kembali
+                </a>
+                @endif
                 <span class="badge bg-primary">{{ $user->roleRelation->name ?? $user->role }}</span>
                 <span class="badge bg-label-secondary">{{ $user->station }}</span>
             </div>

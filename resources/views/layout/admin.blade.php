@@ -288,13 +288,7 @@
                                         <div data-i18n="Master Karyawan">Master Karyawan</div>
                                     </a>
                                 </li>
-                                <li class="menu-item {{ request()->routeIs('users.index') || request()->routeIs('users.create') || request()->routeIs('users.show') ? 'active' : '' }}">
-                                    <a href="{{ route('users.index') }}" class="menu-link">
-                                        <i class="menu-icon tf-icons ti ti-user-check"></i>
-                                        <div data-i18n="User Accounts">User Accounts</div>
-                                    </a>
-                                </li>
-                                <li class="menu-item {{ request()->routeIs('staff.*') || (request()->routeIs('users.edit') && (str_contains(request('redirect_to', ''), 'staff') || str_contains(url()->previous(), 'staff-data'))) ? 'active' : '' }}">
+                                <li class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('users.*') ? 'active' : '' }}">
                                     <a href="{{ route('staff.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-device-desktop"></i>
                                         <div data-i18n="Station Monitoring">Station Monitoring</div>

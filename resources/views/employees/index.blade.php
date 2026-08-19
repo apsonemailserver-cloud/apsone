@@ -2,77 +2,134 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold py-1 mb-1"><i class="ti ti-users me-2"></i>Master Karyawan</h4>
-            <p class="text-muted mb-0">Kelola master data karyawan (biodata, BPJS, NIK, KK, data kontrak, dll).</p>
+    <div class="py-4">
+        {{-- Header --}}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Master Karyawan</h4>
+                <p class="text-muted mb-0" style="font-size:0.875rem;">Kelola master data karyawan (biodata, BPJS, NIK, KK, data kontrak, dll).</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                @if(Auth::user()->canAccess('user', 'create') || Auth::user()->role === 'Admin')
+                <a href="{{ route('employees.create') }}" class="btn btn-sm btn-primary">
+                    <i class="ti ti-user-plus me-1"></i>Tambah Karyawan
+                </a>
+                @endif
+            </div>
         </div>
-        <div>
-            <a href="{{ route('employees.create') }}" class="btn btn-primary">
-                <i class="ti ti-plus me-1"></i> Tambah Karyawan
-            </a>
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Daftar Karyawan</h5>
-            <form action="{{ route('employees.index') }}" method="GET" class="d-flex gap-2">
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari ID / Nama / NIK..." value="{{ request('search') }}">
-                <button type="submit" class="btn btn-sm btn-outline-primary"><i class="ti ti-search"></i></button>
-            </form>
-        </div>
-        <div class="table-responsive text-nowrap">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nama Lengkap</th>
-                        <th>Jabatan</th>
-                        <th>Unit</th>
-                        <th>Station</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="table-border-bottom-0">
-                    @forelse($employees as $emp)
-                    <tr>
-                        <td><strong>{{ $emp->id }}</strong></td>
-                        <td>{{ $emp->fullname }}</td>
-                        <td>{{ $emp->jobTitle->name ?? '-' }}</td>
-                        <td>{{ $emp->unit->name ?? '-' }}</td>
-                        <td><span class="badge bg-label-info">{{ $emp->station ?? '-' }}</span></td>
-                        <td><span class="badge bg-label-success">{{ $emp->status ?? 'Aktif' }}</span></td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('employees.show', $emp->id) }}" class="btn btn-sm btn-icon btn-label-info" title="Detail">
-                                    <i class="ti ti-eye"></i>
-                                </a>
-                                <a href="{{ route('employees.edit', $emp->id) }}" class="btn btn-sm btn-icon btn-label-warning" title="Edit">
-                                    <i class="ti ti-edit"></i>
-                                </a>
-                                <form action="{{ route('employees.destroy', $emp->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin menghapus data karyawan ini?');" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-icon btn-label-danger" title="Hapus">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="text-center py-4">Belum ada data karyawan.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer">
-            {{ $employees->links('vendor.pagination.custom') }}
+        <div class="card">
+            <div class="card-body">
+                <x-dt-toolbar :searchFormAction="route('employees.index')" searchPlaceholder="Cari ID / Nama / NIK / No PAS..." />
+
+                {{-- Tabel --}}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nama Lengkap</th>
+                                <th>NIP / ID</th>
+                                <th>Jabatan</th>
+                                <th>Unit</th>
+                                <th>Station</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($employees as $emp)
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm me-2 flex-shrink-0" style="width: 36px; height: 36px; min-width: 36px; min-height: 36px;">
+                                            @if(optional($emp->user)->profile_picture)
+                                            <img src="{{ asset('storage/photo/'.$emp->user->profile_picture) }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
+                                            @else
+                                            <img src="{{ asset('storage/photo/user.jpg') }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
+                                            @endif
+                                        </div>
+                                        <strong class="text-truncate">{{ $emp->fullname }}</strong>
+                                    </div>
+                                </td>
+                                <td>{{ $emp->id }}</td>
+                                <td><span class="badge bg-label-primary">{{ $emp->jobTitle->name ?? '-' }}</span></td>
+                                <td>{{ $emp->unit->name ?? '-' }}</td>
+                                <td>
+                                    <span class="badge bg-label-info">{{ $emp->station_id ?? $emp->station ?? '-' }}</span>
+                                </td>
+                                <td>
+                                    @if(in_array(strtolower($emp->status ?? 'employed'), ['employed', 'aktif', 'active']))
+                                    <span class="badge bg-label-success">{{ $emp->status ?? 'Aktif' }}</span>
+                                    @else
+                                    <span class="badge bg-label-secondary">{{ $emp->status ?? 'Nonaktif' }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <x-action-button action="view" :href="route('employees.show', $emp->id)" title="Detail Karyawan" />
+                                        @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
+                                        <x-action-button action="edit" :href="route('employees.edit', $emp->id)" title="Edit Karyawan" />
+                                        @endif
+                                        @if(Auth::user()->canAccess('user', 'delete') || Auth::user()->role === 'Admin')
+                                        <form id="delete-form-{{ $emp->id }}" action="{{ route('employees.destroy', $emp->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-action-button type="button" action="delete" onclick="confirmDeleteEmployee('{{ $emp->id }}', '{{ addslashes($emp->fullname) }}')" title="Hapus Karyawan" />
+                                        </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-state">
+                                        <i class="ti ti-user-x d-block"></i>
+                                        <p>Belum ada data karyawan.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Pagination --}}
+                <div class="dt-pagination-wrapper">
+                    {{ $employees->links('vendor.pagination.custom') }}
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    function confirmDeleteEmployee(id, name) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Hapus Data Karyawan?',
+                text: 'Data master karyawan "' + name + '" akan dihapus permanen dari sistem.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="ti ti-trash me-1"></i> Ya, Hapus Data',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-danger me-2',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = document.getElementById('delete-form-' + id);
+                    if (form) form.submit();
+                }
+            });
+        } else {
+            if (confirm('Apakah Anda yakin ingin menghapus data karyawan ' + name + '?')) {
+                var form = document.getElementById('delete-form-' + id);
+                if (form) form.submit();
+            }
+        }
+    }
+</script>
 @endsection

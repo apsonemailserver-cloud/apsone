@@ -16,7 +16,6 @@ class Employee extends Model
         'id',
         'fullname',
         'station_id',
-        'station',
         'no_pas',
         'phone',
         'gender',
@@ -89,14 +88,19 @@ class Employee extends Model
         'is_qantas' => 'boolean',
     ];
 
+    public function setStationAttribute($value)
+    {
+        $this->attributes['station_id'] = $value;
+    }
+
     public function getStationAttribute()
     {
-        return $this->attributes['station_id'] ?? ($this->attributes['station'] ?? null);
+        return $this->attributes['station_id'] ?? null;
     }
 
     public function getStationIdAttribute()
     {
-        return $this->attributes['station_id'] ?? ($this->attributes['station'] ?? null);
+        return $this->attributes['station_id'] ?? null;
     }
 
     public function user()

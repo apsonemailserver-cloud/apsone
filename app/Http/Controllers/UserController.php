@@ -14,6 +14,7 @@ use App\Models\Cluster;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -31,32 +32,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
-
-        if ($redirect = $this->checkIndexState($request, 'user', '#^/user(/\d+)?(/edit)?$|/user/create#')) {
-            return $redirect;
-        }
-
-        $search = $request->input('search');
-
-        $user = User::with('employee')
-            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
-            ->select('users.*')
-            ->when($search, function ($query, $search) {
-                return $query->where('employees.fullname', 'like', "%{$search}%")
-                    ->orWhere('users.id', 'like', "%{$search}%");
-            })
-            ->orderBy('employees.fullname', 'asc')
-            ->paginate(10)
-            ->withQueryString();
-
-        $title = 'Konfirmasi Hapus Data User';
-        $text = 'Data user yang dihapus tidak dapat dikembalikan. Apakah Anda yakin ingin menghapus data ini?';
-        confirmDelete($title, $text);
-
-        return view('user.index', [
-            'user' => $user,
-        ]);
+        return redirect()->route('staff.index');
     }
 
     public function indexApron(): View
@@ -203,6 +179,7 @@ class UserController extends Controller
             'sub_unit.required' => 'Sub unit wajib diisi.',
         ]);
 
+        DB::beginTransaction();
         try {
             // =========================
             // PROCESS ROLE & RELATIONS
@@ -225,8 +202,10 @@ class UserController extends Controller
             // =========================
             // 1. CREATE / LINK EMPLOYEE
             // =========================
+            $stationCode = $request->station ?? $request->station_id;
             $employeeData = [
                 'fullname' => $request->fullname,
+                'station_id' => $stationCode,
                 'gender' => $request->gender,
                 'job_title_id' => $jobTitleId,
                 'unit_id' => $unitId,
@@ -258,6 +237,7 @@ class UserController extends Controller
             // =========================
             $isBlacklisted = Blacklist::where('nik', $generatedId)->first();
             if ($isBlacklisted) {
+                DB::rollBack();
                 Alert::error(
                     'PERINGATAN KERAS',
                     "NIK/ID Karyawan ini terdaftar di BLACKLIST!\n".
@@ -275,7 +255,6 @@ class UserController extends Controller
             $user->id = $generatedId;
             $user->employee_id = $employee->id;
             $user->email = $request->email;
-            $user->station_id = $request->station ?? $request->station_id;
             $user->role_id = $roleId;
             if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
                 $user->role = $roleInput;
@@ -284,10 +263,13 @@ class UserController extends Controller
             $user->is_active = true;
             $user->save();
 
+            DB::commit();
+
             Alert::success('Success', 'User berhasil ditambahkan dengan NIP/ID: '.$generatedId);
 
             return redirect()->route('staff.index');
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Error store user: ' . $e->getMessage());
             Alert::error('Gagal', 'Terjadi kesalahan: '.$e->getMessage());
 
@@ -431,6 +413,7 @@ class UserController extends Controller
             'sub_unit.required' => 'Sub unit wajib diisi.',
         ]);
 
+        DB::beginTransaction();
         try {
             $roleInput = is_array($request->role) ? implode(', ', $request->role) : $request->role;
             $roleId = null;
@@ -448,8 +431,10 @@ class UserController extends Controller
             $clusterId = !empty($request->cluster) ? \App\Models\Cluster::where('name', trim($request->cluster))->value('id') : null;
 
             // 1. Update / Create Employee Data
+            $stationCode = $request->station ?? $request->station_id;
             $employeeData = [
                 'fullname' => $request->fullname,
+                'station_id' => $stationCode,
                 'gender' => $request->gender,
                 'job_title_id' => $jobTitleId,
                 'unit_id' => $unitId,
@@ -472,7 +457,6 @@ class UserController extends Controller
             // 2. Update User Account Data
             $userData = [
                 'email' => $request->email,
-                'station_id' => $request->station ?? $request->station_id,
             ];
             if ($roleId) {
                 $userData['role_id'] = $roleId;
@@ -485,6 +469,8 @@ class UserController extends Controller
             }
             $user->update($userData);
 
+            DB::commit();
+
             $msg = 'Data user ' . ($user->fullname ?? $user->email) . ' berhasil diperbarui.';
             Alert::success('Berhasil', $msg);
 
@@ -495,6 +481,7 @@ class UserController extends Controller
 
             return redirect()->route('staff.index')->with('success', $msg);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Gagal update user', ['error' => $e->getMessage()]);
             $err = 'Terjadi kesalahan saat mengupdate user: '.$e->getMessage();
             Alert::error('Gagal', $err);
@@ -511,7 +498,7 @@ class UserController extends Controller
             $user->delete();
             Alert::success('Berhasil', 'Data berhasil dihapus');
 
-            return redirect()->route('users.index');
+            return redirect()->route('staff.index');
         } catch (\Exception $e) {
             Log::error('Gagal hapus user', ['error' => $e->getMessage()]);
             Alert::error('Gagal', 'Terjadi kesalahan saat menghapus data: '.$e->getMessage());
@@ -746,10 +733,14 @@ class UserController extends Controller
     // 6. FITUR UMUM LAINNYA
     // =================================================================
 
-    public function profile()
+    public function profile($id = null)
     {
-        $user = Auth::user();
-        $user->load(['unit', 'subUnit', 'jobTitle', 'cluster', 'roleRelation']);
+        if ($id) {
+            $user = User::with(['unit', 'subUnit', 'jobTitle', 'cluster', 'roleRelation'])->findOrFail($id);
+        } else {
+            $user = Auth::user();
+            $user->load(['unit', 'subUnit', 'jobTitle', 'cluster', 'roleRelation']);
+        }
 
         return view('user.profile', compact('user'));
     }
@@ -758,7 +749,7 @@ class UserController extends Controller
     {
         $user = User::with(['unit', 'subUnit', 'jobTitle', 'cluster', 'roleRelation'])->findOrFail($id);
 
-        return view('staff.profile', compact('user'));
+        return view('user.profile', compact('user'));
     }
 
     public function updatePhoto(Request $request, $userId)

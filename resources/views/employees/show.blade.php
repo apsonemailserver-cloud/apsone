@@ -2,44 +2,52 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold py-1 mb-1"><i class="ti ti-user me-2"></i>Detail Karyawan</h4>
-            <p class="text-muted mb-0">Informasi detail biodata, jabatan, kontrak, dan dokumen karyawan.</p>
+    <div class="py-4">
+        {{-- Header --}}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Detail Karyawan</h4>
+                <p class="text-muted mb-0" style="font-size:0.875rem;">Informasi detail biodata, jabatan, kontrak, dan dokumen karyawan {{ $employee->fullname }}.</p>
+            </div>
+            <div class="d-flex gap-2">
+                @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
+                <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-sm btn-primary">
+                    <i class="ti ti-pencil me-1"></i>Edit Data
+                </a>
+                @endif
+                <a href="{{ route('employees.index') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="ti ti-arrow-left me-1"></i>Kembali
+                </a>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-warning">
-                <i class="ti ti-edit me-1"></i> Edit Data
-            </a>
-            <a href="{{ route('employees.index') }}" class="btn btn-label-secondary">
-                <i class="ti ti-arrow-left me-1"></i> Kembali
-            </a>
-        </div>
-    </div>
 
-    <div class="row">
-        <!-- Header Info Karyawan -->
-        <div class="col-12 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="avatar avatar-xl bg-label-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; font-size: 24px;">
-                                <i class="ti ti-user"></i>
-                            </div>
-                            <div>
-                                <h4 class="mb-1 fw-bold">{{ $employee->fullname }}</h4>
-                                <div class="d-flex flex-wrap gap-2 align-items-center">
-                                    <span class="badge bg-label-primary">{{ $employee->jobTitle->name ?? '-' }}</span>
-                                    <span class="badge bg-label-info">Station: {{ $employee->station ?? '-' }}</span>
-                                    <span class="badge bg-label-success">{{ $employee->status ?? 'Employed' }}</span>
+        <div class="row">
+            <!-- Header Info Karyawan -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar avatar-xl rounded-circle flex-shrink-0" style="width: 64px; height: 64px; min-width: 64px; min-height: 64px;">
+                                    @if(optional($employee->user)->profile_picture)
+                                    <img src="{{ asset('storage/photo/'.$employee->user->profile_picture) }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
+                                    @else
+                                    <img src="{{ asset('storage/photo/user.jpg') }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
+                                    @endif
+                                </div>
+                                <div>
+                                    <h4 class="mb-1 fw-bold">{{ $employee->fullname }}</h4>
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                                        <span class="badge bg-label-primary">{{ $employee->jobTitle->name ?? '-' }}</span>
+                                        <span class="badge bg-label-info">Station: {{ $employee->station_id ?? $employee->station ?? '-' }}</span>
+                                        <span class="badge bg-label-success">{{ $employee->status ?? 'Employed' }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
         <!-- 1. Biodata Utama -->
         <div class="col-md-6 mb-4">
