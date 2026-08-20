@@ -25,7 +25,7 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <form action="{{ route('leaves.balances') }}" method="GET" class="row g-3 align-items-end">
-                    @if(Auth::user()->isAdmin())
+                    @if($isAdmin)
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Stasiun</label>
                             <select name="station_id" class="form-select">
@@ -48,7 +48,7 @@
                         </select>
                     </div>
 
-                    <div class="{{ Auth::user()->isAdmin() ? 'col-md-4' : 'col-md-7' }}">
+                    <div class="{{ $isAdmin ? 'col-md-4' : 'col-md-7' }}">
                         <label class="form-label fw-semibold">Cari Data</label>
                         <input type="text" name="search" class="form-control" placeholder="Cari nama atau NIP..." value="{{ $search }}">
                     </div>
@@ -85,64 +85,72 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($users as $user)
-                                @foreach($leaveTypes as $lt)
-                                    @php
-                                        $b = $user->leaveBalances->firstWhere('leave_type_id', $lt->id);
-                                    @endphp
-                                    <tr>
-                                        @if($loop->first)
-                                            <td rowspan="{{ count($leaveTypes) }}" class="align-middle fw-bold text-dark text-uppercase bg-body">
-                                                {{ $user->fullname }}
-                                            </td>
-                                            <td rowspan="{{ count($leaveTypes) }}" class="align-middle fw-semibold text-body bg-body">
-                                                {{ $user->id }}
-                                            </td>
-                                            <td rowspan="{{ count($leaveTypes) }}" class="align-middle text-center bg-body">
-                                                <span class="badge bg-label-info">{{ $user->station ?? 'Pusat/HO' }}</span>
-                                            </td>
-                                        @endif
-
-                                        <td>
-                                            <span class="fw-semibold text-dark">{{ $lt->name }}</span>
-                                        </td>
-                                        <td class="text-center">
-                                            @if($lt->is_unlimited)
-                                                <span class="badge bg-label-success">Tidak Terbatas</span>
-                                            @else
-                                                <span class="fw-semibold">{{ $b ? $b->total_quota : 0 }}</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            @if($lt->is_unlimited)
-                                                <span class="text-muted">-</span>
-                                            @else
-                                                <span class="{{ ($b && $b->used_days > 0) ? 'text-warning fw-bold' : 'text-muted' }}">{{ $b ? $b->used_days : 0 }}</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            @if($lt->is_unlimited)
-                                                <span class="text-muted">-</span>
-                                            @else
-                                                <span class="{{ ($b && $b->pending_days > 0) ? 'text-info fw-bold' : 'text-muted' }}">{{ $b ? $b->pending_days : 0 }}</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            @if($lt->is_unlimited)
-                                                <span class="badge bg-label-success">Tidak Terbatas</span>
-                                            @else
-                                                <span class="fw-bold fs-6 {{ ($b && $b->remaining_days > 0) ? 'text-primary' : 'text-muted' }}">{{ $b ? $b->remaining_days : 0 }}</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @empty
+                            @if($leaveTypes->isEmpty())
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        Belum ada jenis cuti aktif yang terdaftar di sistem.
+                                    </td>
+                                </tr>
+                            @elseif($users->isEmpty())
                                 <tr>
                                     <td colspan="8" class="text-center py-4 text-muted">
                                         Tidak ada data karyawan / saldo cuti ditemukan.
                                     </td>
                                 </tr>
-                            @endforelse
+                            @else
+                                @foreach($users as $user)
+                                    @foreach($leaveTypes as $lt)
+                                        @php
+                                            $b = $user->leaveBalances->firstWhere('leave_type_id', $lt->id);
+                                        @endphp
+                                        <tr>
+                                            @if($loop->first)
+                                                <td rowspan="{{ count($leaveTypes) }}" class="align-middle fw-bold text-dark text-uppercase bg-body">
+                                                    {{ $user->fullname }}
+                                                </td>
+                                                <td rowspan="{{ count($leaveTypes) }}" class="align-middle fw-semibold text-body bg-body">
+                                                    {{ $user->id }}
+                                                </td>
+                                                <td rowspan="{{ count($leaveTypes) }}" class="align-middle text-center bg-body">
+                                                    <span class="badge bg-label-info">{{ $user->station ?? 'Pusat/HO' }}</span>
+                                                </td>
+                                            @endif
+
+                                            <td>
+                                                <span class="fw-semibold text-dark">{{ $lt->name }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($lt->is_unlimited)
+                                                    <span class="badge bg-label-success">Tidak Terbatas</span>
+                                                @else
+                                                    <span class="fw-semibold">{{ $b ? $b->total_quota : 0 }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                @if($lt->is_unlimited)
+                                                    <span class="text-muted">-</span>
+                                                @else
+                                                    <span class="{{ ($b && $b->used_days > 0) ? 'text-warning fw-bold' : 'text-muted' }}">{{ $b ? $b->used_days : 0 }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                @if($lt->is_unlimited)
+                                                    <span class="text-muted">-</span>
+                                                @else
+                                                    <span class="{{ ($b && $b->pending_days > 0) ? 'text-info fw-bold' : 'text-muted' }}">{{ $b ? $b->pending_days : 0 }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                @if($lt->is_unlimited)
+                                                    <span class="badge bg-label-success">Tidak Terbatas</span>
+                                                @else
+                                                    <span class="fw-bold fs-6 {{ ($b && $b->remaining_days > 0) ? 'text-primary' : 'text-muted' }}">{{ $b ? $b->remaining_days : 0 }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>

@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        // 1. Ensure columns can store string IDs
-        try {
-            DB::statement('ALTER TABLE users DROP FOREIGN KEY users_employee_id_foreign;');
-        } catch (\Throwable $e) {}
+            // 1. Ensure columns can store string IDs
+            try {
+                DB::statement('ALTER TABLE users DROP FOREIGN KEY users_employee_id_foreign;');
+            } catch (\Throwable $e) {}
 
-        DB::statement('ALTER TABLE employees MODIFY id VARCHAR(50) NOT NULL;');
-        DB::statement('ALTER TABLE users MODIFY employee_id VARCHAR(50) NULL;');
-        
-        try {
-            DB::statement('ALTER TABLE users ADD CONSTRAINT users_employee_id_foreign FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE;');
-        } catch (\Throwable $e) {}
+            DB::statement('ALTER TABLE employees MODIFY id VARCHAR(50) NOT NULL;');
+            DB::statement('ALTER TABLE users MODIFY employee_id VARCHAR(50) NULL;');
+            
+            try {
+                DB::statement('ALTER TABLE users ADD CONSTRAINT users_employee_id_foreign FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE;');
+            } catch (\Throwable $e) {}
+        }
 
         // 2. Parse original user IDs from sql dump if present
         $sqlPath = base_path('apsonemy_laravel.sql');
@@ -104,7 +106,9 @@ return new class extends Migration
             }
         }
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
     }
 
     /**

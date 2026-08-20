@@ -742,7 +742,8 @@ class LeaveController extends Controller
     }
 
     /**
-     * Display list of leave balances for all users (for Admin & Atasan).
+     * Display list of leave balances for all users with role-based scoping.
+     * Default shows current user's balance. Superiors & Admin can view subordinates / all users.
      */
     public function balances(Request $request)
     {
@@ -751,8 +752,23 @@ class LeaveController extends Controller
         $stationId = $request->input('station_id');
         $search = trim((string) $request->input('search'));
 
-        // Ensure balances exist for target year
-        $this->quotaService->syncAllBalances($year);
+        // Determine user access levels & role capabilities
+        $userRole = $currentUser->getRoleName() ?? $currentUser->role ?? '';
+        $isAdmin = $currentUser->isAdmin();
+        $isHoas = ($userRole === 'Head Of Airport Service' || $currentUser->station === 'Ho');
+        $isBgeLeader = (str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE') || str_contains($userRole, 'Baggage'))
+            && !in_array($userRole, ['Porter Bge', 'Porter Baggage'])
+            && !str_starts_with($userRole, 'Porter');
+        $isApronLeader = (str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON'))
+            && !in_array($userRole, ['Porter Apron', 'Driver'])
+            && !str_starts_with($userRole, 'Porter');
+        $isManagerOrSpv = (str_contains($userRole, 'SPV') || str_contains($userRole, 'Manager') || (str_contains($userRole, 'Leader') && !str_starts_with($userRole, 'Porter')));
+        
+        // Porter, Staff, Driver must NEVER see other employees
+        $isPorterOrStaff = in_array($userRole, ['Porter Bge', 'Porter Apron', 'Staff', 'Driver']) || str_starts_with($userRole, 'Porter');
+
+        // Can this user view subordinates?
+        $canViewSubordinates = !$isPorterOrStaff && ($isAdmin || $isHoas || $isBgeLeader || $isApronLeader || $isManagerOrSpv);
 
         // Fetch active leave types
         $leaveTypes = LeaveType::where('is_active', true)->orderBy('name')->get();
@@ -765,28 +781,127 @@ class LeaveController extends Controller
                 $q->where('year', $year)->with('leaveType');
             }]);
 
-        // Access control: if not Admin, scope by station
-        if (!$currentUser->isAdmin()) {
-            if ($currentUser->station_id) {
-                $userQuery->where('employees.station_id', $currentUser->station_id);
+        // Role-based Access & Scoping
+        if (!$canViewSubordinates) {
+            // Staff / Porter: strictly locked to self only under all circumstances
+            $userQuery->where('users.id', $currentUser->id);
+
+            if ($search) {
+                $userQuery->where(function($q) use ($search) {
+                    $q->where('employees.fullname', 'like', "%{$search}%")
+                      ->orWhere('users.id', 'like', "%{$search}%")
+                      ->orWhere('employees.id', 'like', "%{$search}%");
+                });
+            }
+        } elseif (empty($search) && empty($stationId)) {
+            // Superiors & Admin: default view (no search / station filter) is current user only
+            $userQuery->where('users.id', $currentUser->id);
+        } else {
+            // Superiors & Admin: searching or filtering by station
+            if ($isAdmin) {
+                // Admin can view all users or filter by station
+                if ($stationId) {
+                    $userQuery->where('employees.station_id', $stationId);
+                }
+            } elseif ($isHoas) {
+                // HOAS / HO sees their station (or all if HO)
+                if ($currentUser->station && $currentUser->station !== 'Ho') {
+                    $userQuery->where('employees.station_id', $currentUser->station);
+                } elseif ($stationId) {
+                    $userQuery->where('employees.station_id', $stationId);
+                }
+            } elseif ($isBgeLeader) {
+                // BGE Leader: self + BGE subordinates in same station
+                $userQuery->where(function ($q) use ($currentUser) {
+                    $q->where('users.id', $currentUser->id)
+                      ->orWhere(function ($q2) use ($currentUser) {
+                          if ($currentUser->station) {
+                              $q2->where('employees.station_id', $currentUser->station);
+                          }
+                          $q2->where(function ($q3) {
+                              if (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
+                                  $q3->whereHas('roleRelation', function ($rq) {
+                                      $rq->where('name', 'LIKE', '%Bge%')
+                                         ->orWhere('name', 'LIKE', '%BGE%')
+                                         ->orWhere('name', 'LIKE', '%Baggage%');
+                                  });
+                              }
+                              if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+                                  $q3->orWhere('users.role', 'LIKE', '%Bge%')
+                                     ->orWhere('users.role', 'LIKE', '%BGE%')
+                                     ->orWhere('users.role', 'LIKE', '%Baggage%');
+                              }
+                          });
+                      });
+                });
+            } elseif ($isApronLeader) {
+                // Apron Leader: self + Apron subordinates in same station
+                $userQuery->where(function ($q) use ($currentUser) {
+                    $q->where('users.id', $currentUser->id)
+                      ->orWhere(function ($q2) use ($currentUser) {
+                          if ($currentUser->station) {
+                              $q2->where('employees.station_id', $currentUser->station);
+                          }
+                          $q2->where(function ($q3) {
+                              if (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
+                                  $q3->whereHas('roleRelation', function ($rq) {
+                                      $rq->where('name', 'LIKE', '%Apron%')
+                                         ->orWhere('name', 'LIKE', '%APRON%');
+                                  });
+                              }
+                              if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+                                  $q3->orWhere('users.role', 'LIKE', '%Apron%')
+                                     ->orWhere('users.role', 'LIKE', '%APRON%');
+                              }
+                          });
+                      });
+                });
+            } elseif ($isManagerOrSpv) {
+                // SPV / Manager in same station
+                $userQuery->where(function ($q) use ($currentUser) {
+                    $q->where('users.id', $currentUser->id)
+                      ->orWhere(function ($q2) use ($currentUser) {
+                          if ($currentUser->station) {
+                              $q2->where('employees.station_id', $currentUser->station);
+                          }
+                      });
+                });
             } else {
                 $userQuery->where('users.id', $currentUser->id);
             }
-        } elseif ($stationId) {
-            $userQuery->where('employees.station_id', $stationId);
-        }
 
-        if ($search) {
-            $userQuery->where(function($q) use ($search) {
-                $q->where('employees.fullname', 'like', "%{$search}%")
-                  ->orWhere('users.id', 'like', "%{$search}%")
-                  ->orWhere('employees.id', 'like', "%{$search}%");
-            });
+            // Search filter within allowed scope
+            if ($search) {
+                $userQuery->where(function($q) use ($search) {
+                    $q->where('employees.fullname', 'like', "%{$search}%")
+                      ->orWhere('users.id', 'like', "%{$search}%")
+                      ->orWhere('employees.id', 'like', "%{$search}%");
+                });
+            }
         }
 
         $users = $userQuery->orderBy('employees.fullname', 'asc')->paginate(15)->appends($request->all());
-        $stations = Station::all();
 
-        return view('leaves.balances', compact('users', 'leaveTypes', 'stations', 'year', 'stationId', 'search'));
+        // Sync balances for all users returned on this page to guarantee accurate quota
+        foreach ($users as $u) {
+            $this->quotaService->syncBalancesForUser($u, $year);
+        }
+
+        // Re-load leaveBalances relation for the paginated users after sync
+        $users->load(['leaveBalances' => function($q) use ($year) {
+            $q->where('year', $year)->with('leaveType');
+        }]);
+
+        $stations = Station::where('is_active', 1)->orderBy('name', 'asc')->get();
+
+        return view('leaves.balances', compact(
+            'users',
+            'leaveTypes',
+            'stations',
+            'year',
+            'stationId',
+            'search',
+            'isAdmin'
+        ));
     }
 }
