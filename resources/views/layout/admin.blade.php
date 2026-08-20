@@ -204,7 +204,7 @@
                                 </li>
                             @endif
 
-                            @if (Auth::user()->canAccess('attendance', 'approve') || \App\Models\User::where('manager', Auth::user()->fullname)->exists())
+                            @if (Auth::user()->canAccess('attendance', 'approve') || \App\Models\Employee::where('manager', Auth::user()->fullname)->exists())
                                 <li class="menu-item {{ request()->routeIs('attendance.corrections.approval') ? 'active' : '' }}">
                                     <a href="{{ route('attendance.corrections.approval') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-user-check"></i>
@@ -516,7 +516,7 @@
                     $canViewAdminAttendance = in_array($currentUser->role, ['Admin', 'Head Of Airport Service']);
                     $canApproveOvertime = in_array($currentUser->role, ['Admin', 'LEADER', 'Head Of Airport Service', 'ASS LEADER']);
                     $canApproveAttendanceCorrections = in_array('Admin', array_map('trim', explode(',', (string) $currentUser->role)), true)
-                        || \App\Models\User::where('manager', $currentUser->fullname)->exists();
+                        || \App\Models\Employee::where('manager', $currentUser->fullname)->exists();
                     $canManageTraining = in_array($currentUser->role, ['Admin', 'HSE', 'Head Of Airport Service']);
                     $canManageLeave = in_array($currentUser->role, ['Admin', 'Head Of Airport Service']);
                     $topbarMenuLinks = [];
