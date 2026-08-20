@@ -28,8 +28,8 @@ class AssignmentController extends Controller
         $stations = Station::where('is_active', true)->get();
 
         $query = Assignment::with([
-            'users:id,fullname,station',
-            'submittedBy:id,fullname'
+            'users',
+            'submittedBy'
         ]);
 
         // Role-based visibility

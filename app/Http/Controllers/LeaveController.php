@@ -175,6 +175,7 @@ class LeaveController extends Controller
         // Ambil data leaves join users & employees (pemohon, approver, rejector)
         $query = \App\Models\Leave::join('users as u', 'leaves.user_id', '=', 'u.id')
             ->leftJoin('employees as emp', 'u.employee_id', '=', 'emp.id')
+            ->leftJoin('stations as st', 'emp.station_id', '=', 'st.code')
             ->leftJoin('users as approved', 'leaves.approved_by', '=', 'approved.id')
             ->leftJoin('employees as emp_app', 'approved.employee_id', '=', 'emp_app.id')
             ->leftJoin('users as rejected', 'leaves.rejected_by', '=', 'rejected.id')
@@ -184,7 +185,7 @@ class LeaveController extends Controller
                 'leaves.*',
                 'u.id as user_id',
                 'emp.fullname as user_leave',
-                'emp.station as station',
+                'st.code as station',
                 'emp_app.fullname as user_approve',
                 'emp_rej.fullname as user_rejected'
             )
@@ -194,9 +195,9 @@ class LeaveController extends Controller
         $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
 
         if ($request->filled('station')) {
-            $query->where('emp.station', $request->station);
+            $query->where('st.code', $request->station);
         } elseif (!$isFullAccess && $authUser->station) {
-            $query->where('emp.station', $authUser->station);
+            $query->where('st.code', $authUser->station);
         }
 
         if ($request->filled('user_name')) {
@@ -224,6 +225,7 @@ class LeaveController extends Controller
             // Build query with joins to get full data matching the laporan view
             $query = \App\Models\Leave::join('users as u', 'leaves.user_id', '=', 'u.id')
                 ->leftJoin('employees as emp', 'u.employee_id', '=', 'emp.id')
+                ->leftJoin('stations as st', 'emp.station_id', '=', 'st.code')
                 ->leftJoin('users as approved', 'leaves.approved_by', '=', 'approved.id')
                 ->leftJoin('employees as emp_app', 'approved.employee_id', '=', 'emp_app.id')
                 ->leftJoin('users as rejected', 'leaves.rejected_by', '=', 'rejected.id')
@@ -233,7 +235,7 @@ class LeaveController extends Controller
                     'leaves.*',
                     'u.id as user_nip',
                     'emp.fullname as user_leave',
-                    'emp.station as station',
+                    'st.code as station',
                     'emp_app.fullname as user_approve',
                     'emp_rej.fullname as user_rejected'
                 )
@@ -243,9 +245,9 @@ class LeaveController extends Controller
             $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
 
             if ($request->filled('station')) {
-                $query->where('emp.station', $request->station);
+                $query->where('st.code', $request->station);
             } elseif (!$isFullAccess && $authUser->station) {
-                $query->where('emp.station', $authUser->station);
+                $query->where('st.code', $authUser->station);
             }
 
             // Optional: filter by specific user
