@@ -33,9 +33,8 @@
                                name="id" 
                                id="id" 
                                value="{{ $shift->id }}" 
-                               readonly 
-                               disabled>
-                        <div class="form-text">Kode Shift tidak dapat diubah.</div>
+                               readonly>
+                        <div class="form-text">Kode Shift bersifat tetap (primary key).</div>
                     </div>
 
                     <div class="col-md-6">
@@ -45,6 +44,7 @@
                             <option value="Pagi" {{ old('name', $shift->name) === 'Pagi' ? 'selected' : '' }}>Pagi</option>
                             <option value="Siang" {{ old('name', $shift->name) === 'Siang' ? 'selected' : '' }}>Siang</option>
                             <option value="Malam" {{ old('name', $shift->name) === 'Malam' ? 'selected' : '' }}>Malam</option>
+                            <option value="Libur" {{ old('name', $shift->name) === 'Libur' ? 'selected' : '' }}>Libur</option>
                         </select>
                         @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -99,11 +99,27 @@
                                id="use_manpower" 
                                placeholder="Contoh: 5" 
                                value="{{ old('use_manpower', $shift->use_manpower) }}" 
-                               min="1" 
+                               min="0" 
                                max="50" 
                                required>
                         <div class="form-text">Kapasitas staff yang dibutuhkan untuk shift ini.</div>
                         @error('use_manpower')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="tolerance_minutes">Toleransi Keterlambatan (Menit)</label>
+                        <input type="number" 
+                               class="form-control @error('tolerance_minutes') is-invalid @enderror" 
+                               name="tolerance_minutes" 
+                               id="tolerance_minutes" 
+                               placeholder="Contoh: 15" 
+                               value="{{ old('tolerance_minutes', $shift->tolerance_minutes ?? 15) }}" 
+                               min="0" 
+                               max="120">
+                        <div class="form-text">Batas toleransi check-in sebelum status dianggap terlambat (default: 15 menit).</div>
+                        @error('tolerance_minutes')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -114,46 +130,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('shiftForm');
-        const startTime = document.getElementById('start_time');
-        const endTime = document.getElementById('end_time');
-
-        if (!form || !startTime || !endTime) return;
-
-        function validateTime() {
-            if (startTime.value && endTime.value && startTime.value >= endTime.value) {
-                endTime.setCustomValidity('Jam berakhir harus setelah jam mulai');
-                endTime.classList.add('is-invalid');
-                return false;
-            } else {
-                endTime.setCustomValidity('');
-                endTime.classList.remove('is-invalid');
-                return true;
-            }
-        }
-
-        startTime.addEventListener('change', validateTime);
-        endTime.addEventListener('change', validateTime);
-
-        form.addEventListener('submit', function(e) {
-            if (!validateTime()) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: 'Validasi Jam Kerja',
-                        text: 'Jam berakhir harus setelah jam mulai.',
-                        icon: 'warning',
-                        confirmButtonText: 'OK'
-                    });
-                }
-            }
-        });
-    });
-</script>
 @endsection

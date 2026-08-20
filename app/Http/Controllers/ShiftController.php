@@ -106,23 +106,23 @@ class ShiftController extends Controller
         Log::info('Request masuk ke update()', ['data' => $request->all()]);
 
         $request->validate([
-            'id' => 'required',
             'name' => 'required',
             'description' => 'required',
             'start_time' => 'required',
             'end_time' => 'required',
-            'use_manpower' => 'required',
+            'use_manpower' => 'required|integer|min:0',
+            'tolerance_minutes' => 'nullable|integer|min:0',
         ]);
 
         try {
-            $shift->update($request->only([
-                'id',
-                'name',
-                'description',
-                'start_time',
-                'end_time',
-                'use_manpower',
-            ]));
+            $shift->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'start_time' => $request->start_time,
+                'end_time' => $request->end_time,
+                'use_manpower' => $request->use_manpower,
+                'tolerance_minutes' => $request->input('tolerance_minutes', $shift->tolerance_minutes ?? 15),
+            ]);
 
             Alert::success('Success', 'Data shift berhasil diperbarui');
 

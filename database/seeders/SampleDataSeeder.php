@@ -44,8 +44,8 @@ class SampleDataSeeder extends Seeder
 
         $shiftTimes = [
             'pagi' => ['07:00:00', '15:00:00'],
-            'siang' => ['15:00:00', '23:00:00'],
-            'malam' => ['23:00:00', '07:00:00'],
+            'siang' => ['15:30:00', '23:30:00'],
+            'malam' => ['01:00:00', '06:30:00'],
         ];
 
         $flightTemplates = [
