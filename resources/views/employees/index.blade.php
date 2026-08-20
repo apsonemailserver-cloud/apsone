@@ -6,7 +6,7 @@
         {{-- Header --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-1 mb-4">
             <div>
-                <h4 class="fw-bold mb-1">Master Karyawan</h4>
+                <h4 class="fw-bold mb-1">Employees</h4>
                 <p class="text-muted mb-0" style="font-size:0.875rem;">Kelola master data karyawan (biodata, BPJS, NIK, KK, data kontrak, dll).</p>
             </div>
             <div class="d-flex gap-2 flex-wrap">

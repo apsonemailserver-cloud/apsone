@@ -285,7 +285,7 @@
                                 <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                                     <a href="{{ route('employees.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-users"></i>
-                                        <div data-i18n="Master Karyawan">Master Karyawan</div>
+                                        <div data-i18n="Employees">Employees</div>
                                     </a>
                                 </li>
                                 <li class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('users.*') ? 'active' : '' }}">
@@ -296,7 +296,7 @@
                                 </li>
 
                                 <li class="menu-header small text-uppercase mt-3 mb-1" style="padding-left: 2.5rem !important;">
-                                    <span class="menu-header-text" style="font-size: 0.68rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em;">DATA OPERASIONAL</span>
+                                    <span class="menu-header-text" style="font-size: 0.68rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em;">DATA OPERATIONAL</span>
                                 </li>
                                 <li class="menu-item {{ request()->routeIs('users.kontrak*') || request()->routeIs('users.Kontrak*') ? 'active' : '' }}">
                                     <a href="{{ route('users.kontrak') }}" class="menu-link">
