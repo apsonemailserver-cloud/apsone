@@ -16,7 +16,7 @@ class Shift extends Model
      *
      * @var array
      */
-    protected $fillable = ['id', 'name', 'description', 'start_time', 'end_time', 'tolerance_minutes', 'use_manpower'];
+    protected $fillable = ['id', 'name', 'description', 'start_time', 'end_time', 'use_manpower'];
 
     public $incrementing = false;
     protected $keyType = 'string';

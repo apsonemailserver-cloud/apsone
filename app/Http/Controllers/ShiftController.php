@@ -67,7 +67,6 @@ class ShiftController extends Controller
             'start_time' => 'required',
             'end_time' => 'required',
             'use_manpower' => 'required',
-            'tolerance_minutes' => 'nullable|integer|min:0',
         ]);
 
         try {
@@ -77,7 +76,6 @@ class ShiftController extends Controller
                 'description' => $request->description,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
-                'tolerance_minutes' => $request->input('tolerance_minutes', 15),
                 'use_manpower' => $request->use_manpower,
             ]);
 
@@ -111,7 +109,6 @@ class ShiftController extends Controller
             'start_time' => 'required',
             'end_time' => 'required',
             'use_manpower' => 'required|integer|min:0',
-            'tolerance_minutes' => 'nullable|integer|min:0',
         ]);
 
         try {
@@ -121,7 +118,6 @@ class ShiftController extends Controller
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
                 'use_manpower' => $request->use_manpower,
-                'tolerance_minutes' => $request->input('tolerance_minutes', $shift->tolerance_minutes ?? 15),
             ]);
 
             Alert::success('Success', 'Data shift berhasil diperbarui');

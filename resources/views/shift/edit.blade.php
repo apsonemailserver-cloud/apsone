@@ -107,22 +107,6 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label" for="tolerance_minutes">Toleransi Keterlambatan (Menit)</label>
-                        <input type="number" 
-                               class="form-control @error('tolerance_minutes') is-invalid @enderror" 
-                               name="tolerance_minutes" 
-                               id="tolerance_minutes" 
-                               placeholder="Contoh: 15" 
-                               value="{{ old('tolerance_minutes', $shift->tolerance_minutes ?? 15) }}" 
-                               min="0" 
-                               max="120">
-                        <div class="form-text">Batas toleransi check-in sebelum status dianggap terlambat (default: 15 menit).</div>
-                        @error('tolerance_minutes')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
                 </div>
 
                 <x-form-actions :cancelHref="route('shift.index')" submitText="Update Data" />

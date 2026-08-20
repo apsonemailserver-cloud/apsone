@@ -230,7 +230,7 @@ class AttendanceController extends Controller
 
             if ($schedule && $schedule->shift) {
                 $shiftStartTime = Carbon::parse($today . ' ' . $schedule->shift->start_time);
-                $toleranceMinutes = $schedule->shift->tolerance_minutes ?? 15;
+                $toleranceMinutes = 15;
                 $deadline = (clone $shiftStartTime)->addMinutes($toleranceMinutes);
 
                 if ($now->isAfter($deadline)) {
@@ -369,7 +369,7 @@ class AttendanceController extends Controller
         }
 
         $shiftStartTime = Carbon::parse($schedule->date . ' ' . $schedule->shift->start_time);
-        $toleranceMinutes = $schedule->shift->tolerance_minutes ?? 15;
+        $toleranceMinutes = 15;
         $deadline = (clone $shiftStartTime)->addMinutes($toleranceMinutes);
 
         if ($now->isAfter($deadline)) {
