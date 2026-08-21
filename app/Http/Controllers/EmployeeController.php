@@ -23,7 +23,7 @@ class EmployeeController extends Controller
 
     public function index(Request $request)
     {
-        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->canAccess('employee', 'view') || Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $search = $request->input('search');
 
@@ -47,7 +47,7 @@ class EmployeeController extends Controller
 
     public function create(): View
     {
-        abort_unless(Auth::user()->canAccess('user', 'create'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->canAccess('employee', 'create') || Auth::user()->canAccess('user', 'create'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
         $jobTitles = JobTitle::orderBy('name')->get();
         $units = Unit::orderBy('name', 'asc')->get();
@@ -60,7 +60,7 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
-        abort_unless(Auth::user()->canAccess('user', 'create'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->canAccess('employee', 'create') || Auth::user()->canAccess('user', 'create'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $request->validate([
             'fullname' => 'required|string|max:255',
@@ -134,7 +134,7 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee): View
     {
-        abort_unless(Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->canAccess('employee', 'view') || Auth::user()->canAccess('user', 'view'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $employee->load(['unit', 'subUnit', 'jobTitle', 'cluster', 'user']);
 
         return view('employees.show', compact('employee'));
@@ -142,7 +142,7 @@ class EmployeeController extends Controller
 
     public function edit(Employee $employee): View
     {
-        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->canAccess('employee', 'edit') || Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
         $stations = Station::where('is_active', 1)->orderBy('code', 'ASC')->get();
         $jobTitles = JobTitle::orderBy('name')->get();
         $units = Unit::orderBy('name', 'asc')->get();
@@ -155,7 +155,7 @@ class EmployeeController extends Controller
 
     public function update(Request $request, Employee $employee)
     {
-        abort_unless(Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->canAccess('employee', 'edit') || Auth::user()->canAccess('user', 'edit'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         $request->validate([
             'fullname' => 'required|string|max:255',
@@ -236,7 +236,7 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-        abort_unless(Auth::user()->canAccess('user', 'delete'), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless(Auth::user()->canAccess('employee', 'delete') || Auth::user()->canAccess('user', 'delete'), 403, 'Anda tidak memiliki akses ke halaman ini.');
 
         try {
             $employee->delete();

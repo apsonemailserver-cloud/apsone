@@ -75,9 +75,9 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
 <script>
-    function confirmDeleteJobTitle(id, name) {
+    window.confirmDeleteJobTitle = function(id, name) {
         apsConfirmDelete({
             title: 'Hapus Job Title?',
             text: `Job Title ${name} akan dihapus dari sistem.`,
@@ -85,6 +85,6 @@
             cancelButtonText: 'Batal',
             formId: 'delete-form-' + id
         });
-    }
+    };
 </script>
-@endpush
+@endsection

@@ -27,7 +27,16 @@
                                 <i class="bx bx-search search-icon"></i>
                                 <input type="text" name="search" class="form-control" placeholder="Cari NIP atau Nama..." value="{{ request('search') }}">
                             </div>
-                             <div>
+                            <div>
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select" style="min-width: 150px;">
+                                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
+                                    <option value="Approved" {{ request('status', 'Approved') == 'Approved' ? 'selected' : '' }}>Disetujui (Approved)</option>
+                                    <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="Rejected" {{ request('status') == 'Rejected' ? 'selected' : '' }}>Ditolak (Rejected)</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label class="form-label">Station</label>
                                 <select name="station" class="form-select" style="min-width: 180px;" {{ !$isFullAccess ? 'disabled' : '' }}>
                                     <option value="">Semua Station</option>
@@ -66,6 +75,7 @@
                                 <th>Station</th>
                                 <th>Tanggal</th>
                                 <th>Durasi</th>
+                                <th>Status</th>
                                 <th>Kegiatan</th>
                                 <th>Disetujui Oleh</th>
                             </tr>
@@ -74,12 +84,23 @@
                             @forelse($overtimes as $ot)
                             <tr>
                                 <td>
-                                    <strong>{{ $ot->user->fullname }}</strong><br>
+                                    <strong>{{ $ot->user->fullname ?? '-' }}</strong><br>
                                     <small class="text-muted">NIP: {{ $ot->user_id }}</small>
                                 </td>
-                                <td><span class="badge bg-label-secondary">{{ $ot->user->station }}</span></td>
+                                <td><span class="badge bg-label-secondary">{{ $ot->user->station ?? '-' }}</span></td>
                                 <td>{{ date('d M Y', strtotime($ot->date)) }}</td>
                                 <td><span class="badge bg-label-success">{{ $ot->duration }} Jam</span></td>
+                                <td>
+                                    @if($ot->status === 'Approved')
+                                        <span class="badge bg-label-success">Disetujui</span>
+                                    @elseif($ot->status === 'Pending')
+                                        <span class="badge bg-label-warning">Pending</span>
+                                    @elseif($ot->status === 'Rejected')
+                                        <span class="badge bg-label-danger">Ditolak</span>
+                                    @else
+                                        <span class="badge bg-label-secondary">{{ $ot->status }}</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <strong>{{ $ot->title }}</strong><br>
                                     <small class="text-muted">{{ $ot->description }}</small>
@@ -88,10 +109,10 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center py-5">
+                                <td colspan="7" class="text-center py-5">
                                     <div class="empty-state">
                                         <i class="bx bx-file-blank d-block"></i>
-                                        <p>Tidak ada data lembur yang disetujui.</p>
+                                        <p>Tidak ada data lembur yang sesuai filter.</p>
                                     </div>
                                 </td>
                             </tr>

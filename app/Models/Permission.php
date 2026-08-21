@@ -38,12 +38,14 @@ class Permission extends Model
 
             // Administrator
             'station'      => 'Station Management',
+            'employee'     => 'Employees',
             'user'         => 'Station Monitoring (Staff)',
             'role'         => 'Role & Permissions',
             'blacklist'    => 'Blacklist Staff',
             'job_title'    => 'Job Titles',
             'unit'         => 'Units',
             'sub_unit'     => 'Sub Units',
+            'cluster'      => 'Clusters',
 
             // General
             'document'     => 'Documents',
@@ -69,12 +71,14 @@ class Permission extends Model
             'assignment'   => ['view', 'create', 'edit', 'delete', 'approve', 'export'],
 
             'station'      => ['view', 'create', 'edit', 'delete'],
+            'employee'     => ['view', 'create', 'edit', 'delete', 'export'],
             'user'         => ['view', 'create', 'edit', 'delete', 'export', 'reset_face'],
             'role'         => ['view', 'create', 'edit', 'delete'],
             'blacklist'    => ['view', 'create', 'delete'],
             'job_title'    => ['view', 'create', 'edit', 'delete'],
             'unit'         => ['view', 'create', 'edit', 'delete'],
             'sub_unit'     => ['view', 'create', 'edit', 'delete'],
+            'cluster'      => ['view', 'create', 'edit', 'delete'],
 
             'document'     => ['view', 'create', 'edit', 'delete', 'export'],
             'training'     => ['view', 'create', 'edit', 'delete'],

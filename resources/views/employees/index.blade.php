@@ -102,10 +102,20 @@
         </div>
     </div>
 </div>
+@endsection
 
+@section('scripts')
 <script>
-    function confirmDeleteEmployee(id, name) {
-        if (typeof Swal !== 'undefined') {
+    window.confirmDeleteEmployee = function(id, name) {
+        if (typeof apsConfirmDelete === 'function') {
+            apsConfirmDelete({
+                title: 'Hapus Data Karyawan?',
+                text: 'Data master karyawan "' + name + '" akan dihapus permanen dari sistem.',
+                confirmButtonText: 'Ya, Hapus Data',
+                cancelButtonText: 'Batal',
+                formId: 'delete-form-' + id
+            });
+        } else if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: 'Hapus Data Karyawan?',
                 text: 'Data master karyawan "' + name + '" akan dihapus permanen dari sistem.',
@@ -130,6 +140,6 @@
                 if (form) form.submit();
             }
         }
-    }
+    };
 </script>
 @endsection

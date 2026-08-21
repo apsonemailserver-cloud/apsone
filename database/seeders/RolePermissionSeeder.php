@@ -35,16 +35,21 @@ class RolePermissionSeeder extends Seeder
         }
 
         // 2. Discover roles from users table + default system roles
-        $existingRoles = User::whereNotNull('role')
-            ->where('role', '!=', '')
-            ->pluck('role')
-            ->flatMap(function ($r) {
-                return array_map('trim', explode(',', $r));
-            })
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray();
+        $existingRoles = [];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+            $existingRoles = User::whereNotNull('role')
+                ->where('role', '!=', '')
+                ->pluck('role')
+                ->flatMap(function ($r) {
+                    return array_map('trim', explode(',', $r));
+                })
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+        } elseif (\Illuminate\Support\Facades\Schema::hasTable('roles')) {
+            $existingRoles = Role::pluck('name')->toArray();
+        }
 
         $defaultRoles = [
             'Admin' => 'Administrator dengan akses penuh sistem',

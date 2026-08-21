@@ -75,9 +75,9 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
 <script>
-    function confirmDeleteCluster(id, name) {
+    window.confirmDeleteCluster = function(id, name) {
         apsConfirmDelete({
             title: 'Hapus Cluster?',
             text: `Cluster ${name} akan dihapus dari sistem.`,
@@ -85,6 +85,6 @@
             cancelButtonText: 'Batal',
             formId: 'delete-form-' + id
         });
-    }
+    };
 </script>
-@endpush
+@endsection

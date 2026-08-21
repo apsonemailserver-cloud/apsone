@@ -273,7 +273,7 @@
                         </li>
                         @endif
 
-                        @if(Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view') || Auth::user()->canAccess('job_title', 'view') || Auth::user()->canAccess('unit', 'view') || Auth::user()->canAccess('sub_unit', 'view') || Auth::user()->canAccess('cluster', 'view'))
+                        @if(Auth::user()->canAccess('employee', 'view') || Auth::user()->canAccess('user', 'view') || Auth::user()->canAccess('blacklist', 'view') || Auth::user()->canAccess('role', 'view') || Auth::user()->canAccess('job_title', 'view') || Auth::user()->canAccess('unit', 'view') || Auth::user()->canAccess('sub_unit', 'view') || Auth::user()->canAccess('cluster', 'view'))
                         <li
                             class="menu-item {{ request()->routeIs('employees.*') || request()->routeIs('users.*') || request()->routeIs('staff.*') || request()->routeIs('blacklist.*') || request()->routeIs('roles.*') || request()->routeIs('master_data.*') || request()->routeIs('master.clusters.*') ? 'active open' : '' }}">
                             <a href="#" class="menu-link menu-toggle" role="button" aria-expanded="false">
@@ -281,13 +281,15 @@
                                 <div data-i18n="User Management">User Management</div>
                             </a>
                             <ul class="menu-sub">
-                                @if(Auth::user()->canAccess('user', 'view'))
+                                @if(Auth::user()->canAccess('employee', 'view') || Auth::user()->canAccess('user', 'view'))
                                 <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                                     <a href="{{ route('employees.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-users"></i>
                                         <div data-i18n="Employees">Employees</div>
                                     </a>
                                 </li>
+                                @endif
+                                @if(Auth::user()->canAccess('user', 'view'))
                                 <li class="menu-item {{ request()->routeIs('staff.*') || request()->routeIs('users.*') ? 'active' : '' }}">
                                     <a href="{{ route('staff.index') }}" class="menu-link">
                                         <i class="menu-icon tf-icons ti ti-device-desktop"></i>
@@ -1135,6 +1137,7 @@
 
 	    <div id="pjax-page-scripts" hidden>
 	        @yield('scripts')
+	        @stack('scripts')
 	        @include('sweetalert::alert')
 	    </div>
 	    <script>
@@ -2789,6 +2792,8 @@
             });
         });
     </script>
+    @yield('scripts')
+    @stack('scripts')
 </body>
 
 </html>

@@ -75,9 +75,9 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
 <script>
-    function confirmDeleteUnit(id, name) {
+    window.confirmDeleteUnit = function(id, name) {
         apsConfirmDelete({
             title: 'Hapus Unit?',
             text: `Unit ${name} akan dihapus dari sistem.`,
@@ -85,6 +85,6 @@
             cancelButtonText: 'Batal',
             formId: 'delete-form-' + id
         });
-    }
+    };
 </script>
-@endpush
+@endsection

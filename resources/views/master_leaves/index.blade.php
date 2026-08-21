@@ -112,9 +112,9 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
 <script>
-    function confirmDeleteLeaveType(id, name) {
+    window.confirmDeleteLeaveType = function(id, name) {
         apsConfirmDelete({
             title: 'Hapus Tipe Cuti?',
             text: `Tipe cuti ${name} akan dihapus dari sistem.`,
@@ -122,6 +122,6 @@
             cancelButtonText: 'Batal',
             formId: 'delete-form-' + id
         });
-    }
+    };
 </script>
-@endpush
+@endsection

@@ -261,7 +261,14 @@ class OvertimeController extends Controller
         $authUser = Auth::user();
         abort_unless($authUser->canAccess('overtime', 'export'), 403);
 
-        $query = Overtime::with(['user.employee'])->where('status', 'Approved');
+        $query = Overtime::with(['user.employee']);
+        
+        // Filter Status (Default: Approved)
+        $status = $request->input('status', 'Approved');
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
         $search = $request->input('search');
 
         // Filter Search (NIP / Nama)
@@ -321,7 +328,13 @@ class OvertimeController extends Controller
         abort_unless($authUser->canAccess('overtime', 'export'), 403);
 
         try {
-            $query = Overtime::with(['user.employee'])->where('status', 'Approved');
+            $query = Overtime::with(['user.employee']);
+            
+            $status = $request->input('status', 'Approved');
+            if ($status && $status !== 'all') {
+                $query->where('status', $status);
+            }
+
             $search = $request->input('search');
 
             if ($search) {
@@ -361,7 +374,7 @@ class OvertimeController extends Controller
             $overtimes = $query->latest('date')->get();
 
             if ($overtimes->isEmpty()) {
-                return redirect()->back()->with('warning', 'Tidak ada data lembur yang disetujui untuk diexport.');
+                return redirect()->back()->with('warning', 'Tidak ada data lembur yang sesuai kriteria untuk diexport.');
             }
 
             $stationLabel = $request->filled('station') ? '_' . $request->station : '';

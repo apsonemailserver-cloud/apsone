@@ -81,9 +81,9 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
 <script>
-    function confirmDeleteRule(id) {
+    window.confirmDeleteRule = function(id) {
         apsConfirmDelete({
             title: 'Hapus Aturan Masa Kerja?',
             text: 'Aturan masa kerja ini akan dihapus dari sistem.',
@@ -91,6 +91,6 @@
             cancelButtonText: 'Batal',
             formId: 'delete-form-' + id
         });
-    }
+    };
 </script>
-@endpush
+@endsection
