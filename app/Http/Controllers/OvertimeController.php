@@ -160,25 +160,25 @@ class OvertimeController extends Controller
         // Filter Station dan Divisi berdasarkan hak akses
         if ($user->isAdmin()) {
             if ($request->filled('station')) {
-                $query->where('users.' . User::getStationColumn(), $request->station);
+                $query->where('employees.station_id', $request->station);
             }
         } elseif ($userRole === 'Head Of Airport Service' || $user->station === 'Ho') {
-            $query->where('users.' . User::getStationColumn(), $user->station);
+            $query->where('employees.station_id', $user->station);
         } elseif ((str_contains($userRole, 'Bge') || str_contains($userRole, 'BGE')) && !in_array($userRole, ['Porter Bge'])) {
-            $query->where('users.' . User::getStationColumn(), $user->station)
+            $query->where('employees.station_id', $user->station)
                   ->where(function($q) {
                       $q->where('users.role', 'LIKE', '%Bge%')
                         ->orWhere('users.role', 'LIKE', '%BGE%')
                         ->orWhere('users.role', 'LIKE', '%Baggage%');
                   });
         } elseif ((str_contains($userRole, 'Apron') || str_contains($userRole, 'APRON')) && !in_array($userRole, ['Porter Apron'])) {
-            $query->where('users.' . User::getStationColumn(), $user->station)
+            $query->where('employees.station_id', $user->station)
                   ->where(function($q) {
                       $q->where('users.role', 'LIKE', '%Apron%')
                         ->orWhere('users.role', 'LIKE', '%APRON%');
                   });
         } else {
-            $query->where('users.' . User::getStationColumn(), $user->station);
+            $query->where('employees.station_id', $user->station);
         }
 
         $perPage = $request->input('per_page', 20);
@@ -261,14 +261,19 @@ class OvertimeController extends Controller
         $authUser = Auth::user();
         abort_unless($authUser->canAccess('overtime', 'export'), 403);
 
-        $query = Overtime::with('user')->where('status', 'Approved');
+        $query = Overtime::with(['user.employee'])->where('status', 'Approved');
         $search = $request->input('search');
 
         // Filter Search (NIP / Nama)
         if ($search) {
-            $query->whereHas('user', function($q) use ($search) {
-                $q->where('fullname', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('user_id', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($uq) use ($search) {
+                      $uq->where('id', 'like', "%{$search}%")
+                         ->orWhereHas('employee', function($eq) use ($search) {
+                             $eq->where('fullname', 'like', "%{$search}%");
+                         });
+                  });
             });
         }
 
@@ -276,22 +281,28 @@ class OvertimeController extends Controller
 
         // Filter Station
         if ($request->filled('station')) {
-            $query->whereHas('user', function($q) use ($request) {
-                $q->where('station', $request->station);
+            $st = $request->station;
+            $query->whereHas('user.employee', function($q) use ($st) {
+                $q->where('station_id', $st);
             });
         } elseif (!$isFullAccess && $authUser->station) {
-            $query->whereHas('user', function($q) use ($authUser) {
-                $q->where('station', $authUser->station);
+            $st = $authUser->station;
+            $query->whereHas('user.employee', function($q) use ($st) {
+                $q->where('station_id', $st);
             });
         }
         
         // Filter Tanggal (Opsional)
-        if ($request->date_start && $request->date_end) {
+        if ($request->filled('date_start') && $request->filled('date_end')) {
             $query->whereBetween('date', [$request->date_start, $request->date_end]);
+        } elseif ($request->filled('date_start')) {
+            $query->whereDate('date', '>=', $request->date_start);
+        } elseif ($request->filled('date_end')) {
+            $query->whereDate('date', '<=', $request->date_end);
         }
 
-        $overtimes = $query->latest()->paginate(20)->withQueryString();
-        $totalHours = $query->sum('duration'); // Total jam untuk payroll
+        $totalHours = (clone $query)->sum('duration'); // Total jam untuk payroll
+        $overtimes = $query->latest('date')->paginate(20)->withQueryString();
 
         if ($isFullAccess) {
             $stations = \App\Models\Station::where('is_active', 1)->orderBy('name', 'asc')->get();
@@ -310,33 +321,44 @@ class OvertimeController extends Controller
         abort_unless($authUser->canAccess('overtime', 'export'), 403);
 
         try {
-            $query = Overtime::with('user')->where('status', 'Approved');
+            $query = Overtime::with(['user.employee'])->where('status', 'Approved');
             $search = $request->input('search');
 
             if ($search) {
-                $query->whereHas('user', function($q) use ($search) {
-                    $q->where('fullname', 'like', "%{$search}%")
-                      ->orWhere('id', 'like', "%{$search}%");
+                $query->where(function($q) use ($search) {
+                    $q->where('user_id', 'like', "%{$search}%")
+                      ->orWhereHas('user', function($uq) use ($search) {
+                          $uq->where('id', 'like', "%{$search}%")
+                             ->orWhereHas('employee', function($eq) use ($search) {
+                                 $eq->where('fullname', 'like', "%{$search}%");
+                             });
+                      });
                 });
             }
 
             $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
 
             if ($request->filled('station')) {
-                $query->whereHas('user', function($q) use ($request) {
-                    $q->where('station', $request->station);
+                $st = $request->station;
+                $query->whereHas('user.employee', function($q) use ($st) {
+                    $q->where('station_id', $st);
                 });
             } elseif (!$isFullAccess && $authUser->station) {
-                $query->whereHas('user', function($q) use ($authUser) {
-                    $q->where('station', $authUser->station);
+                $st = $authUser->station;
+                $query->whereHas('user.employee', function($q) use ($st) {
+                    $q->where('station_id', $st);
                 });
             }
             
-            if ($request->date_start && $request->date_end) {
+            if ($request->filled('date_start') && $request->filled('date_end')) {
                 $query->whereBetween('date', [$request->date_start, $request->date_end]);
+            } elseif ($request->filled('date_start')) {
+                $query->whereDate('date', '>=', $request->date_start);
+            } elseif ($request->filled('date_end')) {
+                $query->whereDate('date', '<=', $request->date_end);
             }
 
-            $overtimes = $query->latest()->get();
+            $overtimes = $query->latest('date')->get();
 
             if ($overtimes->isEmpty()) {
                 return redirect()->back()->with('warning', 'Tidak ada data lembur yang disetujui untuk diexport.');
