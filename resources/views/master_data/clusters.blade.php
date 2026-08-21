@@ -23,11 +23,13 @@
         <div class="card">
             <div class="card-body">
                 <x-dt-toolbar :searchFormAction="route('master_data.clusters.index')" searchPlaceholder="Cari cluster...">
+                    @if(Auth::user()->canAccess('cluster', 'create'))
                     <x-slot:actions>
                         <a href="{{ route('master_data.clusters.create') }}" class="btn btn-primary">
                             <i class="ti ti-plus me-1"></i> Tambah Cluster
                         </a>
                     </x-slot:actions>
+                    @endif
                 </x-dt-toolbar>
 
                 <div class="table-responsive">
@@ -46,12 +48,16 @@
                                 <td><span class="fw-semibold">{{ $item->name }}</span></td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-1">
+                                        @if(Auth::user()->canAccess('cluster', 'edit'))
                                         <x-action-button action="edit" :href="route('master_data.clusters.edit', $item->id)" title="Edit Cluster" />
+                                        @endif
+                                        @if(Auth::user()->canAccess('cluster', 'delete'))
                                         <form id="delete-form-{{ $item->id }}" action="{{ route('master_data.clusters.destroy', $item->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <x-action-button type="button" action="delete" onclick="confirmDeleteCluster('{{ $item->id }}', '{{ addslashes($item->name) }}')" title="Hapus Cluster" />
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

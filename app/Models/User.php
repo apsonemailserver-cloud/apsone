@@ -204,29 +204,29 @@ class User extends Authenticatable
             return true;
         }
 
-        $roleName = $this->getRoleName();
-
-        if ($this->isAdmin() || $roleName === 'Admin') {
-            return true;
-        }
-
-        if (empty($roleName)) {
-            return false;
-        }
-
-        $userRoles = array_map('trim', explode(',', $roleName));
-        if (in_array('Admin', $userRoles)) {
-            return true;
-        }
-
         try {
+            $roleId = $this->role_id ?? ($this->roleRelation ? $this->roleRelation->id : null);
+            if ($roleId) {
+                return Role::where('id', $roleId)
+                    ->whereHas('permissions', function ($query) use ($permissionName) {
+                        $query->where('name', $permissionName);
+                    })
+                    ->exists();
+            }
+
+            $roleName = $this->getRoleName();
+            if (empty($roleName)) {
+                return false;
+            }
+
+            $userRoles = array_map('trim', explode(',', $roleName));
             return Role::whereIn('name', $userRoles)
                 ->whereHas('permissions', function ($query) use ($permissionName) {
                     $query->where('name', $permissionName);
                 })
                 ->exists();
         } catch (\Throwable $e) {
-            return true;
+            return false;
         }
     }
 

@@ -10,7 +10,7 @@
                 <p class="text-muted mb-0" style="font-size:0.875rem;">Kelola master data karyawan (biodata, BPJS, NIK, KK, data kontrak, dll).</p>
             </div>
             <div class="d-flex gap-2 flex-wrap">
-                @if(Auth::user()->canAccess('user', 'create') || Auth::user()->role === 'Admin')
+                @if(Auth::user()->canAccess('employee', 'create') || Auth::user()->canAccess('user', 'create'))
                 <a href="{{ route('employees.create') }}" class="btn btn-sm btn-primary">
                     <i class="ti ti-user-plus me-1"></i>Tambah Karyawan
                 </a>
@@ -43,7 +43,7 @@
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-2 flex-shrink-0" style="width: 36px; height: 36px; min-width: 36px; min-height: 36px;">
                                             @if(optional($emp->user)->profile_picture)
-                                            <img src="{{ asset('storage/photo/'.$emp->user->profile_picture) }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
+                                             <img src="{{ asset('storage/photo/'.$emp->user->profile_picture) }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
                                             @else
                                             <img src="{{ asset('storage/photo/user.jpg') }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; width:100%; height:100%;">
                                             @endif
@@ -66,11 +66,13 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-1">
+                                        @if(Auth::user()->canAccess('employee', 'view') || Auth::user()->canAccess('user', 'view'))
                                         <x-action-button action="view" :href="route('employees.show', $emp->id)" title="Detail Karyawan" />
-                                        @if(Auth::user()->canAccess('user', 'edit') || Auth::user()->role === 'Admin')
+                                        @endif
+                                        @if(Auth::user()->canAccess('employee', 'edit') || Auth::user()->canAccess('user', 'edit'))
                                         <x-action-button action="edit" :href="route('employees.edit', $emp->id)" title="Edit Karyawan" />
                                         @endif
-                                        @if(Auth::user()->canAccess('user', 'delete') || Auth::user()->role === 'Admin')
+                                        @if(Auth::user()->canAccess('employee', 'delete') || Auth::user()->canAccess('user', 'delete'))
                                         <form id="delete-form-{{ $emp->id }}" action="{{ route('employees.destroy', $emp->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')

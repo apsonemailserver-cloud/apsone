@@ -138,7 +138,7 @@
                                 foreach ($vA as $aK) {
                                     if (isset($mp[$aK])) {
                                         $catTotalCount++;
-                                        if (in_array($mp[$aK]->id, $assignedPermissionIds) || $role->name === 'Admin') $catActiveCount++;
+                                        if (in_array($mp[$aK]->id, $assignedPermissionIds)) $catActiveCount++;
                                     }
                                 }
                             }
@@ -198,7 +198,6 @@
                                                         $isValid  = in_array($actKey, $validActions);
                                                         $perm     = $isValid ? ($modPerms[$actKey] ?? null) : null;
                                                         $isChecked= $perm ? in_array($perm->id, $assignedPermissionIds) : false;
-                                                        if ($role->name === 'Admin') $isChecked = true;
                                                     @endphp
                                                     @if($perm)
                                                         <span

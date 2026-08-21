@@ -132,11 +132,7 @@ class RoleController extends Controller
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        if ($role->name === 'Admin') {
-            $role->permissions()->sync(Permission::pluck('id')->toArray());
-        } else {
-            $role->permissions()->sync($validated['permissions'] ?? []);
-        }
+        $role->permissions()->sync($validated['permissions'] ?? []);
 
         // AJAX / fetch request — return JSON so the page can stay and show toast
         if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
