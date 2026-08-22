@@ -53,9 +53,8 @@ class EmployeeController extends Controller
         $units = Unit::orderBy('name', 'asc')->get();
         $subUnits = SubUnit::orderBy('name', 'asc')->get();
         $clusters = Cluster::orderBy('name')->get();
-        $users = User::with('employee')->orderBy('id', 'asc')->get();
 
-        return view('employees.create', compact('stations', 'jobTitles', 'units', 'subUnits', 'clusters', 'users'));
+        return view('employees.create', compact('stations', 'jobTitles', 'units', 'subUnits', 'clusters'));
     }
 
     public function store(Request $request)

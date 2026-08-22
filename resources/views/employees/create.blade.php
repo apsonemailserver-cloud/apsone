@@ -27,34 +27,6 @@
                 <form action="{{ route('employees.store') }}" method="POST" id="createEmployeeForm">
                     @csrf
 
-                    {{-- Hubungkan dengan Akun User (Opsional) --}}
-                    <div class="mb-4">
-                        <label class="form-label fw-bold"><i class="ti ti-link me-1"></i> Hubungkan dengan Akun User (Opsional)</label>
-                        <select name="user_id" id="user_select" class="form-select">
-                            <option value="">-- Buat Data Karyawan Baru (Tanpa Akun) --</option>
-                            @if(isset($users))
-                                @foreach($users as $u)
-                                    <option value="{{ $u->id }}" 
-                                        data-fullname="{{ $u->fullname }}"
-                                        data-gender="{{ $u->gender }}"
-                                        data-station="{{ $u->station }}"
-                                        data-job_title_id="{{ $u->job_title_id }}"
-                                        data-unit_id="{{ $u->unit_id }}"
-                                        data-sub_unit_id="{{ $u->sub_unit_id }}"
-                                        data-cluster_id="{{ $u->cluster_id }}"
-                                        data-manager="{{ $u->manager }}"
-                                        data-senior_manager="{{ $u->senior_manager }}"
-                                        data-is_qantas="{{ $u->is_qantas ? '1' : '0' }}"
-                                        data-join_date="{{ $u->join_date ? \Carbon\Carbon::parse($u->join_date)->format('Y-m-d') : '' }}"
-                                        data-salary="{{ $u->salary }}"
-                                        {{ old('user_id') == $u->id ? 'selected' : '' }}>
-                                        {{ $u->id }} - {{ $u->fullname }} ({{ $u->email }})
-                                    </option>
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
-
                     <div class="row">
                         {{-- Kolom Kiri: Biodata & Data Pribadi --}}
                         <div class="col-md-6 border-end-md">
@@ -291,7 +263,6 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const userSelect = document.getElementById('user_select');
     const unitSelect = document.getElementById('unit_id');
     const subUnitSelect = document.getElementById('sub_unit_id');
 
@@ -321,39 +292,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (unitSelect) {
         unitSelect.addEventListener('change', filterSubUnits);
         filterSubUnits();
-    }
-
-    // Autofill when user is selected
-    if (userSelect) {
-        userSelect.addEventListener('change', function () {
-            const selectedOpt = this.options[this.selectedIndex];
-            if (!selectedOpt || !selectedOpt.value) return;
-
-            const fullname = selectedOpt.getAttribute('data-fullname');
-            const gender = selectedOpt.getAttribute('data-gender');
-            const station = selectedOpt.getAttribute('data-station');
-            const jobTitleId = selectedOpt.getAttribute('data-job_title_id');
-            const unitId = selectedOpt.getAttribute('data-unit_id');
-            const subUnitId = selectedOpt.getAttribute('data-sub_unit_id');
-            const clusterId = selectedOpt.getAttribute('data-cluster_id');
-            const isQantas = selectedOpt.getAttribute('data-is_qantas');
-            const joinDate = selectedOpt.getAttribute('data-join_date');
-            const salary = selectedOpt.getAttribute('data-salary');
-
-            if (fullname) document.getElementById('fullname').value = fullname;
-            if (gender) document.getElementById('gender').value = gender;
-            if (station) document.getElementById('station_id').value = station;
-            if (jobTitleId) document.getElementById('job_title_id').value = jobTitleId;
-            if (unitId) {
-                document.getElementById('unit_id').value = unitId;
-                filterSubUnits();
-            }
-            if (subUnitId) document.getElementById('sub_unit_id').value = subUnitId;
-            if (clusterId) document.getElementById('cluster_id').value = clusterId;
-            if (isQantas !== null) document.getElementById('is_qantas').value = isQantas;
-            if (joinDate) document.getElementById('join_date').value = joinDate;
-            if (salary) document.getElementById('salary').value = salary;
-        });
     }
 });
 </script>
