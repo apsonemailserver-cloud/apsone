@@ -637,7 +637,7 @@
             <h5 class="mb-0 fw-bold">Edit Data Station: {{ $station->name }}</h5>
         </div>
         <div class="card-body pt-4">
-            <form id="stationForm" action="{{ route('stations.update', $station->id) }}" method="POST">
+            <form id="stationForm" action="{{ route('stations.update', $station->code) }}" method="POST">
                 @csrf
                 @method('PUT')
 

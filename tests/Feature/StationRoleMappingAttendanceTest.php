@@ -57,7 +57,7 @@ class StationRoleMappingAttendanceTest extends TestCase
             'role' => 'Porter Bge, Porter Apron',
         ]);
 
-        $unmappedUser = User::create([
+        $unmappedUser = User::forceCreate([
             'id' => '1001',
             'name' => 'Driver User',
             'role' => 'Driver',
@@ -90,7 +90,7 @@ class StationRoleMappingAttendanceTest extends TestCase
             'role' => 'Porter Bge, Porter Apron',
         ]);
 
-        $mappedUser = User::create([
+        $mappedUser = User::forceCreate([
             'id' => '1002',
             'name' => 'Porter User',
             'role' => 'Porter Bge',
@@ -110,7 +110,7 @@ class StationRoleMappingAttendanceTest extends TestCase
             'role' => 'Porter Bge',
         ]);
 
-        $adminUser = User::create([
+        $adminUser = User::forceCreate([
             'id' => '1003',
             'name' => 'Admin User',
             'role' => 'Admin',
@@ -123,7 +123,7 @@ class StationRoleMappingAttendanceTest extends TestCase
 
     public function test_updating_station_roles_saves_to_database(): void
     {
-        $adminUser = User::create([
+        $adminUser = User::forceCreate([
             'id' => '9999',
             'name' => 'Admin User 2',
             'role' => 'Admin',
@@ -141,7 +141,7 @@ class StationRoleMappingAttendanceTest extends TestCase
             'role' => null,
         ]);
 
-        $response = $this->actingAs($adminUser)->post(route('stations.update', $station->id), [
+        $response = $this->actingAs($adminUser)->post(route('stations.update', $station->code), [
             'latitude' => -6.1256,
             'longitude' => 106.6558,
             'radius' => 5000,
@@ -166,7 +166,7 @@ class StationRoleMappingAttendanceTest extends TestCase
             $table->timestamps();
         });
 
-        $user = User::create([
+        $user = User::forceCreate([
             'id' => '1004',
             'name' => 'Leave User',
             'role' => 'Porter Bge',
@@ -200,7 +200,7 @@ class StationRoleMappingAttendanceTest extends TestCase
 
     public function test_station_update_supports_put_and_post(): void
     {
-        $admin = User::create([
+        $admin = User::forceCreate([
             'id' => '1005',
             'name' => 'Admin User',
             'role' => 'Administrator',
@@ -215,13 +215,15 @@ class StationRoleMappingAttendanceTest extends TestCase
             'latitude' => -7.3798,
             'longitude' => 112.7877,
             'radius' => 5000,
+            'role' => 'Porter Bge',
         ]);
 
         $response = $this->actingAs($admin)
-            ->put(route('stations.update', $station->id), [
+            ->put(route('stations.update', $station->code), [
                 'latitude' => -7.3800,
                 'longitude' => 112.7880,
                 'radius' => 3000,
+                'role' => ['Porter Bge'],
             ]);
 
         $response->assertRedirect(route('stations.index'));

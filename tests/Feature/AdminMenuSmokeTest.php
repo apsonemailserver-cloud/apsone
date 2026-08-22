@@ -74,8 +74,8 @@ class AdminMenuSmokeTest extends TestCase
             'Kebijakan Privasi' => route('kebijakan'),
         ];
 
-        if ($station = Station::orderBy('id')->first()) {
-            $routes['Station Edit'] = route('stations.edit', $station->id);
+        if ($station = Station::first()) {
+            $routes['Station Edit'] = route('stations.edit', $station->code);
         }
 
         if ($shift = Shift::orderBy('id')->first()) {

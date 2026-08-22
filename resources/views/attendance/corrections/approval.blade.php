@@ -24,7 +24,7 @@
                             <select name="station_id" class="form-select">
                                 <option value="">Semua Office</option>
                                 @foreach ($stations as $station)
-                                    <option value="{{ $station->id }}" @selected((string) request('station_id') === (string) $station->id)>
+                                    <option value="{{ $station->code }}" @selected((string) request('station_id') === (string) $station->code)>
                                         {{ $station->code }} — {{ $station->name }}
                                     </option>
                                 @endforeach
@@ -57,7 +57,7 @@
                                         <div class="small text-muted">{{ $correction->user->id }} · {{ $correction->user->role }}</div>
                                     </td>
                                     <td>{{ $correction->attendance_date->format('d M Y') }}</td>
-                                    <td>{{ $correction->station->code }} — {{ $correction->station->name }}</td>
+                                    <td>{{ $correction->station ? ($correction->station->code . ' — ' . $correction->station->name) : ($correction->station_id ?? '-') }}</td>
                                     <td class="text-nowrap">
                                         @if ($correction->attendance)
                                             {{ \Carbon\Carbon::parse($correction->attendance->check_in_time)->format('d M, H:i') }}<br>

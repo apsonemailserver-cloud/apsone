@@ -37,8 +37,7 @@ class AttendanceCorrectionTest extends TestCase
         });
 
         Schema::create('stations', function (Blueprint $table) {
-            $table->id();
-            $table->string('code', 3)->unique();
+            $table->string('code', 3)->primary();
             $table->string('name');
             $table->boolean('is_active')->default(true);
             $table->decimal('latitude', 10, 8)->nullable();
@@ -50,6 +49,7 @@ class AttendanceCorrectionTest extends TestCase
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->string('user_id');
+            $table->string('station', 15)->nullable();
             $table->dateTime('check_in_time')->nullable();
             $table->dateTime('check_out_time')->nullable();
             $table->string('check_in_ip')->nullable();
@@ -57,6 +57,23 @@ class AttendanceCorrectionTest extends TestCase
             $table->string('check_in_longitude')->nullable();
             $table->string('status')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('attendance_corrections', function (Blueprint $table) {
+            $table->id();
+            $table->string('user_id', 20);
+            $table->foreignId('attendance_id')->nullable()->constrained('attendances')->nullOnDelete();
+            $table->string('station', 15);
+            $table->date('attendance_date');
+            $table->dateTime('proposed_check_in_time');
+            $table->dateTime('proposed_check_out_time');
+            $table->text('reason');
+            $table->text('rejection_reason')->nullable();
+            $table->string('status')->default('pending');
+            $table->string('decided_by', 20)->nullable();
+            $table->timestamp('decided_at')->nullable();
+            $table->timestamps();
+            $table->unique(['user_id', 'attendance_date']);
         });
 
         Schema::create('shifts', function (Blueprint $table) {
@@ -76,8 +93,6 @@ class AttendanceCorrectionTest extends TestCase
             $table->date('date');
             $table->string('shift_id');
         });
-
-        $this->runFeatureMigrationsIfPresent();
     }
 
     protected function tearDown(): void
@@ -92,7 +107,7 @@ class AttendanceCorrectionTest extends TestCase
 
         AttendanceCorrection::create([
             'user_id' => $user->id,
-            'station_id' => $station->id,
+            'station_id' => $station->code,
             'attendance_date' => '2026-07-20',
             'proposed_check_in_time' => '2026-07-20 08:00:00',
             'proposed_check_out_time' => '2026-07-20 17:00:00',
@@ -102,7 +117,7 @@ class AttendanceCorrectionTest extends TestCase
 
         $this->assertDatabaseHas('attendance_corrections', [
             'user_id' => $user->id,
-            'station_id' => $station->id,
+            'station' => $station->code,
             'attendance_date' => '2026-07-20',
         ]);
     }
@@ -115,7 +130,7 @@ class AttendanceCorrectionTest extends TestCase
             ->post(route('attendance.corrections.store', '2026-07-20'), [
                 'check_in_time' => '08:00',
                 'check_out_time' => '17:00',
-                'station_id' => $station->id,
+                'station_id' => $station->code,
                 'reason' => 'Mesin absensi tidak mencatat.',
             ])
             ->assertRedirect(route('attendance.history'));
@@ -144,7 +159,7 @@ class AttendanceCorrectionTest extends TestCase
             ->post(route('attendance.corrections.store', '2026-07-27'), [
                 'check_in_time' => '17:00',
                 'check_out_time' => '08:00',
-                'station_id' => $inactiveStation->id,
+                'station_id' => $inactiveStation->code,
                 'reason' => 'Data salah.',
             ])
             ->assertRedirect(route('attendance.history'))
@@ -155,7 +170,7 @@ class AttendanceCorrectionTest extends TestCase
             ->post(route('attendance.corrections.store', '2026-07-20'), [
                 'check_in_time' => '17:61',
                 'check_out_time' => 'bukan-jam',
-                'station_id' => $inactiveStation->id,
+                'station_id' => $inactiveStation->code,
                 'reason' => 'Data salah.',
             ])
             ->assertRedirect(route('attendance.history'))
@@ -172,7 +187,7 @@ class AttendanceCorrectionTest extends TestCase
 
         AttendanceCorrection::create([
             'user_id' => $user->id,
-            'station_id' => $station->id,
+            'station_id' => $station->code,
             'attendance_date' => '2026-07-20',
             'proposed_check_in_time' => '2026-07-20 08:00:00',
             'proposed_check_out_time' => '2026-07-20 17:00:00',
@@ -185,7 +200,7 @@ class AttendanceCorrectionTest extends TestCase
             ->post(route('attendance.corrections.store', '2026-07-20'), [
                 'check_in_time' => '09:00',
                 'check_out_time' => '18:00',
-                'station_id' => $station->id,
+                'station_id' => $station->code,
                 'reason' => 'Pengajuan kedua.',
             ])
             ->assertRedirect(route('attendance.history'))
@@ -204,7 +219,7 @@ class AttendanceCorrectionTest extends TestCase
 
         $attendance = Attendance::where('user_id', $applicant->id)->firstOrFail();
 
-        $this->assertSame($station->id, $attendance->station_id);
+        $this->assertSame($station->code, $attendance->station_id);
         $this->assertSame('2026-07-20 08:00:00', $attendance->check_in_time);
         $this->assertSame('2026-07-20 17:00:00', $attendance->check_out_time);
         $this->assertDatabaseHas('attendance_corrections', [
@@ -227,7 +242,7 @@ class AttendanceCorrectionTest extends TestCase
 
         $this->assertSame('2026-07-20 08:00:00', $attendance->check_in_time);
         $this->assertSame('2026-07-20 17:00:00', $attendance->check_out_time);
-        $this->assertSame($station->id, $attendance->station_id);
+        $this->assertSame($station->code, $attendance->station_id);
         $this->assertSame($attendance->id, $correction->fresh()->attendance_id);
     }
 
@@ -316,7 +331,7 @@ class AttendanceCorrectionTest extends TestCase
 
         $this->assertDatabaseHas('attendances', [
             'user_id' => $user->id,
-            'station_id' => $station->id,
+            'station' => $station->code,
         ]);
     }
 
@@ -347,7 +362,7 @@ class AttendanceCorrectionTest extends TestCase
 
         AttendanceCorrection::create([
             'user_id' => $user->id,
-            'station_id' => $station->id,
+            'station_id' => $station->code,
             'attendance_date' => '2026-07-20',
             'proposed_check_in_time' => '2026-07-20 08:00:00',
             'proposed_check_out_time' => '2026-07-20 17:00:00',
@@ -392,7 +407,7 @@ class AttendanceCorrectionTest extends TestCase
             ->post(route('attendance.corrections.store', '2026-07-20'), [
                 'check_in_time' => '22:00',
                 'check_out_time' => '06:00',
-                'station_id' => $station->id,
+                'station_id' => $station->code,
                 'reason' => 'Shift malam.',
             ])
             ->assertRedirect(route('attendance.history'))
@@ -412,7 +427,7 @@ class AttendanceCorrectionTest extends TestCase
 
         AttendanceCorrection::create([
             'user_id' => $user->id,
-            'station_id' => $station->id,
+            'station_id' => $station->code,
             'attendance_date' => '2026-07-20',
             'proposed_check_in_time' => '2026-07-20 08:00:00',
             'proposed_check_out_time' => '2026-07-20 17:00:00',
@@ -446,7 +461,7 @@ class AttendanceCorrectionTest extends TestCase
             'radius' => 40,
         ]);
 
-        $user = User::create([
+        $user = User::forceCreate([
             'id' => '101001',
             'fullname' => 'Staff Satu',
             'email' => 'staff@example.com',
@@ -486,7 +501,7 @@ class AttendanceCorrectionTest extends TestCase
         $correction = AttendanceCorrection::create([
             'user_id' => $applicant->id,
             'attendance_id' => $attendance?->id,
-            'station_id' => $station->id,
+            'station_id' => $station->code,
             'attendance_date' => '2026-07-20',
             'proposed_check_in_time' => '2026-07-20 08:00:00',
             'proposed_check_out_time' => '2026-07-20 17:00:00',
@@ -499,7 +514,7 @@ class AttendanceCorrectionTest extends TestCase
 
     private function makeUser(string $id, string $fullname, string $role, ?string $manager = null): User
     {
-        return User::create([
+        return User::forceCreate([
             'id' => $id,
             'fullname' => $fullname,
             'email' => strtolower($id).'@example.com',
@@ -560,7 +575,7 @@ class AttendanceCorrectionTest extends TestCase
             ->post(route('attendance.corrections.store', '2026-07-20'), [
                 'check_in_time' => '08:00',
                 'check_out_time' => '17:00',
-                'station_id' => $station->id,
+                'station_id' => $station->code,
                 'reason' => 'Mesin absensi tidak mencatat.',
             ])
             ->assertRedirect();

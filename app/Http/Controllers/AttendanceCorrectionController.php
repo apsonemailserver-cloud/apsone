@@ -194,12 +194,14 @@ class AttendanceCorrectionController extends Controller
             }
         }
 
+        $stationColumn = \Illuminate\Support\Facades\Schema::hasColumn('stations', 'code') ? 'code' : 'id';
+
         $validated = $request->validate([
             'check_in_time' => ['required', 'date_format:H:i'],
             'check_out_time' => ['required', 'date_format:H:i'],
             'station_id' => [
                 'required',
-                Rule::exists('stations', 'id')->where(
+                Rule::exists('stations', $stationColumn)->where(
                     fn ($query) => $query->where('is_active', true)
                 ),
             ],

@@ -125,7 +125,7 @@ class User extends Authenticatable
 
     public function getFullnameAttribute()
     {
-        return $this->employee ? $this->employee->fullname : null;
+        return $this->employee ? $this->employee->fullname : ($this->attributes['fullname'] ?? null);
     }
 
     public function jobTitle()
@@ -285,12 +285,12 @@ class User extends Authenticatable
 
     public function getStationAttribute()
     {
-        return $this->employee ? $this->employee->station_id : null;
+        return $this->employee ? $this->employee->station_id : ($this->attributes['station'] ?? $this->attributes['station_id'] ?? null);
     }
 
     public function getStationIdAttribute()
     {
-        return $this->employee ? $this->employee->station_id : null;
+        return $this->employee ? $this->employee->station_id : ($this->attributes['station_id'] ?? $this->attributes['station'] ?? null);
     }
 
     public function stationRelation()

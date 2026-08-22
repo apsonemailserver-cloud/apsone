@@ -55,7 +55,7 @@
                     <select id="station_id" name="station_id" class="form-select @error('station_id') is-invalid @enderror" required>
                         <option value="">-- Pilih Office --</option>
                         @foreach ($stations as $station)
-                            <option value="{{ $station->id }}" @selected((string) old('station_id', $attendance?->station_id) === (string) $station->id)>
+                            <option value="{{ $station->code }}" @selected((string) old('station_id', $attendance?->station_id ?? $attendance?->station?->code) === (string) $station->code)>
                                 {{ $station->code }} — {{ $station->name }}
                             </option>
                         @endforeach

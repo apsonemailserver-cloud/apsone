@@ -243,7 +243,7 @@ class AttendanceController extends Controller
 
             Attendance::create([
                 'user_id' => $user->id,
-                'station_id' => $station->id,
+                'station' => $station->code,
                 'check_in_time' => $now,
                 'check_in_photo' => $fileName,
                 'check_in_latitude' => $request->latitude,
@@ -387,7 +387,7 @@ class AttendanceController extends Controller
         try {
             Attendance::create([
                 'user_id' => $user->id,
-                'station_id' => $station->id,
+                'station' => $station->code,
                 'check_in_time' => $now,
                 'check_in_ip' => $request->ip(),
                 'check_in_latitude' => $userLat,
