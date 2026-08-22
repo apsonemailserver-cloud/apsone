@@ -20,16 +20,18 @@ import argparse
 def get_encodings(img):
     import face_recognition
     # Try upsample=0 first (best for large/close-up faces in high-res captures)
-    locs = face_recognition.face_locations(img, number_of_times_to_upsample=0)
-    if not locs:
-        # Fallback to upsample=1 for medium distance faces
-        locs = face_recognition.face_locations(img, number_of_times_to_upsample=1)
-    if not locs:
-        # Fallback to upsample=2 for far away faces
-        locs = face_recognition.face_locations(img, number_of_times_to_upsample=2)
-    if not locs:
-        return []
-    return face_recognition.face_encodings(img, known_face_locations=locs, num_jitters=1, model="large")
+    for u in [0, 1, 2]:
+        locs = face_recognition.face_locations(img, number_of_times_to_upsample=u)
+        if locs:
+            return face_recognition.face_encodings(img, known_face_locations=locs, num_jitters=1, model="large")
+    # Fallback to CNN model (very robust for angled, tilted, or turned side-profile faces)
+    try:
+        cnn_locs = face_recognition.face_locations(img, model="cnn")
+        if cnn_locs:
+            return face_recognition.face_encodings(img, known_face_locations=cnn_locs, num_jitters=1, model="large")
+    except Exception:
+        pass
+    return []
 
 def get_encodings_with_fallback(img):
     from PIL import Image, ImageEnhance
@@ -102,18 +104,21 @@ def main():
         ref_paths = data.get("ref_paths", [])
         ref_descriptors = data.get("ref_descriptors", [])
         extract_only = data.get("extract_only", False)
+        threshold_arg = data.get("threshold", 0.48)
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument("--live", default="")
         parser.add_argument("--refs", nargs="*", default=[])
         parser.add_argument("--extract-only", action="store_true")
+        parser.add_argument("--threshold", type=float, default=0.48)
         args = parser.parse_args()
         live_b64 = args.live
         ref_paths = args.refs
         extract_only = args.extract_only
+        threshold_arg = args.threshold
 
-    # Calibrated threshold for dlib ResNet128: 0.58 gives ideal balance for glasses, reflections, and varied lighting
-    THRESHOLD = 0.58
+    # Calibrated strict threshold for dlib ResNet128: 0.48 prevents different people from passing
+    THRESHOLD = float(threshold_arg) if threshold_arg is not None else 0.48
 
     ref_encodings = []
     # 1. Use pre-cached descriptors if available (instant 0.001s lookup)
@@ -204,10 +209,18 @@ def main():
         min_dist = float(np.min(distances))
         matched = bool(min_dist <= THRESHOLD)
 
-        # Calibrate match percentage: min_dist = 0.0 -> 100%, 0.35 -> 92%, 0.50 -> 80%, 0.58 -> 70%, 0.70 -> 50%
-        match_pct = round(max(0.0, min(100.0, (1.0 - (min_dist / 0.72)) * 100)), 1)
-        if matched and match_pct < 65.0:
-            match_pct = 70.0
+        # Calibrated intuitive percentage mapping
+        if min_dist <= 0.20:
+            match_pct = 99.0
+        elif min_dist <= THRESHOLD:
+            ratio = (min_dist - 0.20) / (THRESHOLD - 0.20) if THRESHOLD > 0.20 else 0
+            match_pct = round(99.0 - (ratio * 24.0), 1)
+        else:
+            if min_dist >= 0.75:
+                match_pct = 0.0
+            else:
+                ratio = (min_dist - THRESHOLD) / (0.75 - THRESHOLD)
+                match_pct = round(max(0.0, 74.9 - (ratio * 74.9)), 1)
 
         print(json.dumps({
             "matched": matched,

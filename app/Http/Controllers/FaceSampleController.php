@@ -334,12 +334,8 @@ class FaceSampleController extends Controller
             }
         }
 
-        if ($request->has('descriptors') && is_array($request->descriptors)) {
-            $descriptorsPath = $dir . '/descriptors.json';
-            Storage::disk(self::STORAGE_DISK)->put($descriptorsPath, json_encode($request->descriptors));
-        } else {
-            self::extractAndSaveDescriptors($user->id);
-        }
+        // Selalu ekstrak descriptor 128-d server-side menggunakan python dlib ResNet untuk presisi maksimal
+        self::extractAndSaveDescriptors($user->id);
 
         $user->update(['face_registered_at' => now()]);
 
@@ -374,7 +370,7 @@ class FaceSampleController extends Controller
         }
 
         Alert::success('Berhasil', $message);
-        return redirect()->back()->with('success', $message);
+        return redirect()->route('users.face-samples.index', $user->id)->with('success', $message);
     }
 
     /**

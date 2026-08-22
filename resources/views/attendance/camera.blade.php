@@ -1299,24 +1299,16 @@
                             const face = await detectLiveFace();
                             updateDetectionUI(face);
 
-                            // Wizard auto capture check
+                            // Wizard pose feedback
                             if (!userFaceRegistered && face) {
                                 const poseCheck = await detectFacePoseInVideo(wizardStep);
                                 if (poseCheck.valid) {
                                     if (wizardSub) {
                                         wizardSub.style.color = '#4ade80';
-                                        wizardSub.textContent = '✓ ' + poseCheck.reason + ' Tahan posisi atau klik tombol.';
+                                        wizardSub.textContent = '✓ ' + poseCheck.reason + ' Silakan klik tombol di bawah untuk mengambil foto.';
                                     }
-                                    if (!holdTimer) {
-                                        holdTimer = setTimeout(() => {
-                                            if (btnWizardAction && !btnWizardAction.disabled) {
-                                                btnWizardAction.click();
-                                            }
-                                            holdTimer = null;
-                                        }, 1100);
-                                    }
+                                    if (btnWizardAction) btnWizardAction.disabled = false;
                                 } else {
-                                    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
                                     if (wizardSub) {
                                         wizardSub.style.color = '#f87171';
                                         wizardSub.textContent = '⚠️ ' + poseCheck.reason;
