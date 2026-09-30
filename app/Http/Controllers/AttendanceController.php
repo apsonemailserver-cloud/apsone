@@ -488,6 +488,8 @@ class AttendanceController extends Controller
         $authUser = Auth::user();
         $isFullAccess = $authUser->hasRole(['Admin', 'Head Of Airport Service']) || ($authUser->station === 'Ho');
 
+        $employeeReports = collect();
+        $paginatedUsers = collect();
         $attendances = collect();
         $message = null;
 
@@ -501,12 +503,13 @@ class AttendanceController extends Controller
 
         if ($selectedMonth) {
             try {
-                $period = \Carbon\Carbon::parse($selectedMonth . '-01');
+                $period = Carbon::parse($selectedMonth . '-01');
                 $startDate = $period->copy()->startOfMonth();
                 $endDate = $period->copy()->endOfMonth();
+                $today = Carbon::today();
 
                 // ===== QUERY USER (GABUNG SEMUA FILTER) =====
-                $queryUser = \App\Models\User::with('employee')
+                $queryUser = User::with(['employee', 'roleRelation'])
                     ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
                     ->select('users.*');
 
@@ -514,6 +517,20 @@ class AttendanceController extends Controller
                     $queryUser->where(function ($q) use ($request) {
                         $q->where('users.id', $request->user_name)
                             ->orWhere('employees.fullname', 'LIKE', "%{$request->user_name}%");
+                    });
+                } else {
+                    // Ambil karyawan aktif atau yang memiliki rekam absensi pada periode ini
+                    $queryUser->where(function ($q) use ($startDate, $endDate) {
+                        $q->where('users.is_active', 1)
+                          ->orWhereExists(function ($sq) use ($startDate, $endDate) {
+                              $sq->select(\Illuminate\Support\Facades\DB::raw(1))
+                                 ->from('attendances')
+                                 ->whereColumn('attendances.user_id', 'users.id')
+                                 ->whereBetween('check_in_time', [
+                                     $startDate->copy()->startOfDay(),
+                                     $endDate->copy()->endOfDay()
+                                 ]);
+                          });
                     });
                 }
 
@@ -529,29 +546,29 @@ class AttendanceController extends Controller
                     });
                 }
 
-                if (! $request->filled('user_name') && ! $request->filled('station_id') && ! $request->filled('role')) {
-                    $user = Auth::user();
-                } else {
-                    $user = $queryUser->first();
-                }
+                $perPage = $request->input('per_page', 5);
+                $paginatedUsers = $queryUser->orderBy('employees.fullname', 'asc')
+                    ->paginate($perPage)
+                    ->withQueryString();
 
                 // ===== VALIDASI USER =====
-                if (! $user) {
+                if ($paginatedUsers->isEmpty()) {
                     $message = 'Data karyawan tidak ditemukan sesuai filter.';
                 } else {
+                    $userIds = $paginatedUsers->pluck('id')->toArray();
 
-                    // ===== ATTENDANCE =====
-                    $attData = \App\Models\Attendance::with('station')
-                        ->where('user_id', $user->id)
+                    // Bulk fetch Attendances
+                    $allAttendances = Attendance::with('station')
+                        ->whereIn('user_id', $userIds)
                         ->whereBetween('check_in_time', [
                             $startDate->copy()->startOfDay(),
                             $endDate->copy()->endOfDay()
                         ])
                         ->get()
-                        ->groupBy(fn($att) => \Carbon\Carbon::parse($att->check_in_time)->toDateString());
+                        ->groupBy('user_id');
 
-                    // ===== SCHEDULE =====
-                    $scheduleData = \App\Models\Schedule::where('user_id', $user->id)
+                    // Bulk fetch Schedules
+                    $allSchedules = Schedule::whereIn('user_id', $userIds)
                         ->selectRaw('schedules.*, shifts.description as shift_description, shifts.start_time, shifts.end_time')
                         ->join('shifts', 'shifts.id', '=', 'schedules.shift_id')
                         ->whereBetween('date', [
@@ -559,10 +576,10 @@ class AttendanceController extends Controller
                             $endDate->toDateString()
                         ])
                         ->get()
-                        ->groupBy(fn($item) => \Carbon\Carbon::parse($item->date)->toDateString());
+                        ->groupBy('user_id');
 
-                    // ===== LEAVE (CUTI) DATA =====
-                    $leaveData = Leave::where('user_id', $user->id)
+                    // Bulk fetch Leaves
+                    $allLeaves = Leave::whereIn('user_id', $userIds)
                         ->where('status', 'approved')
                         ->where(function ($q) use ($startDate, $endDate) {
                             $q->whereBetween('start_date', [$startDate->toDateString(), $endDate->toDateString()])
@@ -572,57 +589,123 @@ class AttendanceController extends Controller
                                      ->where('end_date', '>=', $endDate->toDateString());
                               });
                         })
-                        ->get();
+                        ->get()
+                        ->groupBy('user_id');
 
-                    // ===== CORRECTION DATA =====
-                    $correctionData = \App\Models\AttendanceCorrection::where('user_id', $user->id)
+                    // Bulk fetch Corrections
+                    $allCorrections = AttendanceCorrection::whereIn('user_id', $userIds)
                         ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
                         ->get()
-                        ->keyBy(fn ($item) => $item->attendance_date->toDateString());
+                        ->groupBy('user_id');
 
-                    // ===== GENERATE DATA =====
-                    $cursor = $startDate->copy();
+                    // Bangun riwayat rekap per karyawan: Si A 1 bulan, Si B 1 bulan, Si C 1 bulan
+                    foreach ($paginatedUsers as $user) {
+                        $userAtts = $allAttendances->get($user->id, collect())
+                            ->groupBy(fn($att) => Carbon::parse($att->check_in_time)->toDateString());
 
-                    while ($cursor->lte($endDate)) {
-                        $dateStr = $cursor->toDateString();
+                        $userScheds = $allSchedules->get($user->id, collect())
+                            ->groupBy(fn($item) => Carbon::parse($item->date)->toDateString());
 
-                        $attendancesForDate = $attData->get($dateStr) ?? collect();
-                        $schedulesForDate = $scheduleData->get($dateStr) ?? collect();
-                        $leaveForDate = $leaveData->first(fn($leave) => 
-                            \Carbon\Carbon::parse($dateStr)->between(
-                                \Carbon\Carbon::parse($leave->start_date),
-                                \Carbon\Carbon::parse($leave->end_date)
-                            )
-                        );
-                        $correctionForDate = $correctionData->get($dateStr);
-
-                        if ($schedulesForDate->isEmpty()) {
-                            $attendances->push((object) [
-                                'date'       => $dateStr,
-                                'attendance' => $attendancesForDate->first(),
-                                'schedule'   => null,
-                                'user'       => $user,
-                                'leave'      => $leaveForDate,
-                                'correction' => $correctionForDate,
-                            ]);
-                        } else {
-                            foreach ($schedulesForDate as $schedule) {
-                                $attendances->push((object) [
-                                    'date'       => $dateStr,
-                                    'attendance' => $attendancesForDate->first(),
-                                    'schedule'   => $schedule,
-                                    'user'       => $user,
-                                    'leave'      => $leaveForDate,
-                                    'correction' => $correctionForDate,
-                                ]);
+                        $userLeaves = $allLeaves->get($user->id, collect());
+                        $leaveDates = collect();
+                        foreach ($userLeaves as $leave) {
+                            $leaveStart = Carbon::parse($leave->start_date);
+                            $leaveEnd   = Carbon::parse($leave->end_date);
+                            $leaveCursor = $leaveStart->copy();
+                            while ($leaveCursor->lte($leaveEnd)) {
+                                $leaveDates->put($leaveCursor->toDateString(), $leave);
+                                $leaveCursor->addDay();
                             }
                         }
 
-                        $cursor->addDay();
+                        $userCorrections = $allCorrections->get($user->id, collect())
+                            ->keyBy(fn ($item) => Carbon::parse($item->attendance_date)->toDateString());
+
+                        $userRecords = collect();
+                        $summary = [
+                            'hadir'       => 0,
+                            'tepat_waktu' => 0,
+                            'telat'       => 0,
+                            'cuti'        => 0,
+                            'koreksi'     => 0,
+                            'libur'       => 0,
+                            'tidak_hadir' => 0,
+                        ];
+
+                        $cursor = $startDate->copy();
+                        while ($cursor->lte($endDate)) {
+                            $dateStr = $cursor->toDateString();
+
+                            $attendancesForDate = $userAtts->get($dateStr) ?? collect();
+                            $schedulesForDate   = $userScheds->get($dateStr) ?? collect();
+                            $leaveForDate       = $leaveDates->get($dateStr);
+                            $correctionForDate  = $userCorrections->get($dateStr);
+
+                            $record = (object) [
+                                'date'       => $dateStr,
+                                'attendance' => $attendancesForDate->first(),
+                                'schedule'   => $schedulesForDate->first(),
+                                'user'       => $user,
+                                'leave'      => $leaveForDate,
+                                'correction' => $correctionForDate,
+                            ];
+
+                            // Hitung status untuk ringkasan karyawan
+                            $hasAttendance = $record->attendance !== null;
+                            $hasApprovedCorrection = $record->correction && $record->correction->status === 'approved';
+
+                            if ($record->leave) {
+                                $summary['cuti']++;
+                            } elseif ($hasAttendance || $hasApprovedCorrection) {
+                                $summary['hadir']++;
+                                if ($hasApprovedCorrection) {
+                                    $summary['koreksi']++;
+                                }
+
+                                $checkIn = $hasAttendance && $record->attendance->check_in_time ? Carbon::parse($record->attendance->check_in_time) : null;
+                                if ($hasApprovedCorrection) {
+                                    $checkIn = Carbon::parse($record->correction->proposed_check_in_time);
+                                }
+
+                                if ($checkIn && $record->schedule && !empty($record->schedule->start_time)) {
+                                    $schedStart = Carbon::parse($dateStr . ' ' . $record->schedule->start_time);
+                                    if ($checkIn->gt($schedStart)) {
+                                        $summary['telat']++;
+                                    } else {
+                                        $summary['tepat_waktu']++;
+                                    }
+                                } elseif ($hasAttendance && $record->attendance->status === 'Terlambat') {
+                                    $summary['telat']++;
+                                } else {
+                                    $summary['tepat_waktu']++;
+                                }
+                            } elseif ($cursor->lt($today)) {
+                                if ($record->schedule && strtolower($record->schedule->shift_id ?? '') !== 'off') {
+                                    $summary['tidak_hadir']++;
+                                } else {
+                                    $summary['libur']++;
+                                }
+                            } else {
+                                if (!$record->schedule || strtolower($record->schedule->shift_id ?? '') === 'off') {
+                                    $summary['libur']++;
+                                }
+                            }
+
+                            $userRecords->push($record);
+                            $cursor->addDay();
+                        }
+
+                        $employeeReports->push((object) [
+                            'user'        => $user,
+                            'summary'     => $summary,
+                            'attendances' => $userRecords,
+                        ]);
                     }
+
+                    $attendances = $employeeReports->first()?->attendances ?? collect();
                 }
             } catch (\Exception $e) {
-                $message = "Format periode tidak valid.";
+                $message = "Format periode tidak valid: " . $e->getMessage();
             }
         }
 
@@ -635,7 +718,17 @@ class AttendanceController extends Controller
 
         $userStation = !$isFullAccess ? $authUser->station : null;
 
-        return view('attendance.report', compact('attendances', 'message', 'stations', 'roles', 'isFullAccess', 'userStation'));
+        return view('attendance.report', compact(
+            'employeeReports',
+            'paginatedUsers',
+            'attendances',
+            'message',
+            'stations',
+            'roles',
+            'isFullAccess',
+            'userStation',
+            'selectedMonth'
+        ));
     }
 
     public function export(Request $request)
@@ -655,19 +748,35 @@ class AttendanceController extends Controller
             $endDate = $period->copy()->endOfMonth();
 
             // ===== QUERY USER (GABUNG SEMUA FILTER) =====
-            $queryUser = \App\Models\User::query();
+            $queryUser = User::with(['employee', 'roleRelation'])
+                ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+                ->select('users.*');
 
             if ($request->filled('user_name')) {
                 $queryUser->where(function ($q) use ($request) {
-                    $q->where('id', $request->user_name)
-                        ->orWhere('fullname', 'LIKE', "%{$request->user_name}%");
+                    $q->where('users.id', $request->user_name)
+                        ->orWhere('employees.fullname', 'LIKE', "%{$request->user_name}%");
+                });
+            } else {
+                // Jika tidak mencari user spesifik, sertakan karyawan aktif atau yang memiliki rekam absensi pada periode ini
+                $queryUser->where(function ($q) use ($startDate, $endDate) {
+                    $q->where('users.is_active', 1)
+                      ->orWhereExists(function ($sq) use ($startDate, $endDate) {
+                          $sq->select(\Illuminate\Support\Facades\DB::raw(1))
+                             ->from('attendances')
+                             ->whereColumn('attendances.user_id', 'users.id')
+                             ->whereBetween('check_in_time', [
+                                 $startDate->copy()->startOfDay(),
+                                 $endDate->copy()->endOfDay()
+                             ]);
+                      });
                 });
             }
 
             if ($request->filled('station_id')) {
-                $queryUser->where('station', $request->station_id);
+                $queryUser->where('employees.station_id', $request->station_id);
             } elseif (!$isFullAccess && $authUser->station) {
-                $queryUser->where('station', $authUser->station);
+                $queryUser->where('employees.station_id', $authUser->station);
             }
 
             if ($request->filled('role')) {
@@ -676,63 +785,81 @@ class AttendanceController extends Controller
                 });
             }
 
-            if (! $request->filled('user_name') && ! $request->filled('station_id') && ! $request->filled('role')) {
-                $users = collect([$authUser]);
-            } else {
-                $users = $queryUser->orderBy('fullname')->get();
+            $users = $queryUser->orderBy('employees.fullname', 'asc')->get();
+
+            if ($users->isEmpty()) {
+                return redirect()->back()->with('warning', 'Tidak ada data karyawan yang sesuai kriteria untuk diexport.');
             }
 
             // ===== AMBIL INFO STATION UNTUK FILENAME =====
             $stationName = 'Semua_Station';
             if ($request->filled('station_id')) {
-                $st = \App\Models\Station::where('code', $request->station_id)->first();
+                $st = Station::where('code', $request->station_id)->first();
                 if ($st) $stationName = str_replace(' ', '_', $st->name);
             } elseif (!$isFullAccess && $authUser->station) {
-                $st = \App\Models\Station::where('code', $authUser->station)->first();
+                $st = Station::where('code', $authUser->station)->first();
                 if ($st) $stationName = str_replace(' ', '_', $st->name);
             }
 
+            $userIds = $users->pluck('id')->toArray();
+
+            // Bulk fetch Attendances untuk mencegah N+1 query
+            $allAttendances = Attendance::with('station')
+                ->whereIn('user_id', $userIds)
+                ->whereBetween('check_in_time', [
+                    $startDate->copy()->startOfDay(),
+                    $endDate->copy()->endOfDay()
+                ])
+                ->get()
+                ->groupBy('user_id');
+
+            // Bulk fetch Schedules dengan Shift
+            $allSchedules = Schedule::whereIn('user_id', $userIds)
+                ->selectRaw('schedules.*, shifts.description as shift_description, shifts.start_time, shifts.end_time')
+                ->join('shifts', 'shifts.id', '=', 'schedules.shift_id')
+                ->whereBetween('date', [
+                    $startDate->toDateString(),
+                    $endDate->toDateString()
+                ])
+                ->get()
+                ->groupBy('user_id');
+
+            // Bulk fetch Approved Leaves
+            $allLeaves = Leave::whereIn('user_id', $userIds)
+                ->where('status', 'approved')
+                ->where(function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('start_date', [$startDate->toDateString(), $endDate->toDateString()])
+                      ->orWhereBetween('end_date', [$startDate->toDateString(), $endDate->toDateString()])
+                      ->orWhere(function ($q2) use ($startDate, $endDate) {
+                          $q2->where('start_date', '<=', $startDate->toDateString())
+                             ->where('end_date', '>=', $endDate->toDateString());
+                      });
+                })
+                ->get()
+                ->groupBy('user_id');
+
+            // Bulk fetch Corrections
+            $allCorrections = AttendanceCorrection::whereIn('user_id', $userIds)
+                ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->get()
+                ->groupBy('user_id');
+
+            $matrixData = collect();
             $attendances = collect();
+            $today = Carbon::today();
+            $daysInMonth = $startDate->daysInMonth;
 
             // ===== LOOP SEMUA USER =====
             foreach ($users as $user) {
+                $userAtts = $allAttendances->get($user->id, collect())
+                    ->groupBy(fn($att) => Carbon::parse($att->check_in_time)->toDateString());
 
-                // ATTENDANCE
-                $attData = \App\Models\Attendance::with('station')
-                    ->where('user_id', $user->id)
-                    ->whereBetween('check_in_time', [
-                        $startDate->copy()->startOfDay(),
-                        $endDate->copy()->endOfDay()
-                    ])
-                    ->get()
-                    ->groupBy(fn($att) => \Carbon\Carbon::parse($att->check_in_time)->toDateString());
+                $userScheds = $allSchedules->get($user->id, collect())
+                    ->groupBy(fn($item) => Carbon::parse($item->date)->toDateString());
 
-                // SCHEDULE
-                $scheduleData = \App\Models\Schedule::where('user_id', $user->id)
-                    ->selectRaw('schedules.*, shifts.description as shift_description, shifts.start_time, shifts.end_time')
-                    ->join('shifts', 'shifts.id', '=', 'schedules.shift_id')
-                    ->whereBetween('date', [
-                        $startDate->toDateString(),
-                        $endDate->toDateString()
-                    ])
-                    ->get()
-                    ->groupBy(fn($item) => \Carbon\Carbon::parse($item->date)->toDateString());
-
-                // LEAVE DATA
-                $leaveData = Leave::where('user_id', $user->id)
-                    ->where('status', 'approved')
-                    ->where(function ($q) use ($startDate, $endDate) {
-                        $q->whereBetween('start_date', [$startDate->toDateString(), $endDate->toDateString()])
-                          ->orWhereBetween('end_date', [$startDate->toDateString(), $endDate->toDateString()])
-                          ->orWhere(function ($q2) use ($startDate, $endDate) {
-                              $q2->where('start_date', '<=', $startDate->toDateString())
-                                 ->where('end_date', '>=', $endDate->toDateString());
-                          });
-                    })
-                    ->get();
-
+                $userLeaves = $allLeaves->get($user->id, collect());
                 $leaveDates = collect();
-                foreach ($leaveData as $leave) {
+                foreach ($userLeaves as $leave) {
                     $leaveStart = Carbon::parse($leave->start_date);
                     $leaveEnd   = Carbon::parse($leave->end_date);
                     $leaveCursor = $leaveStart->copy();
@@ -742,27 +869,112 @@ class AttendanceController extends Controller
                     }
                 }
 
-                // CORRECTION DATA
-                $correctionData = \App\Models\AttendanceCorrection::where('user_id', $user->id)
-                    ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
-                    ->get()
-                    ->keyBy(fn ($item) => $item->attendance_date->toDateString());
+                $userCorrections = $allCorrections->get($user->id, collect())
+                    ->keyBy(fn ($item) => Carbon::parse($item->attendance_date)->toDateString());
 
-                // LOOP TANGGAL
+                $userDays = [];
+                $summary = [
+                    'hadir'       => 0,
+                    'tepat_waktu' => 0,
+                    'telat'       => 0,
+                    'cuti'        => 0,
+                    'libur'       => 0,
+                    'tidak_hadir' => 0,
+                ];
+
+                // LOOP TANGGAL 1 s/d daysInMonth
                 $cursor = $startDate->copy();
-
                 while ($cursor->lte($endDate)) {
                     $dateStr = $cursor->toDateString();
+                    $dayNum = $cursor->day;
 
-                    $attendancesForDate = $attData->get($dateStr) ?? collect();
-                    $schedulesForDate = $scheduleData->get($dateStr) ?? collect();
-                    $leaveForDate = $leaveDates->get($dateStr);
-                    $correctionForDate = $correctionData->get($dateStr);
+                    $attendancesForDate = $userAtts->get($dateStr) ?? collect();
+                    $schedulesForDate   = $userScheds->get($dateStr) ?? collect();
+                    $leaveForDate       = $leaveDates->get($dateStr);
+                    $correctionForDate  = $userCorrections->get($dateStr);
 
+                    $att = $attendancesForDate->first();
+                    $sched = $schedulesForDate->first();
+                    $leave = $leaveForDate;
+                    $corr = $correctionForDate;
+
+                    $hasAttendance = $att !== null;
+                    $hasApprovedCorrection = $corr && $corr->status === 'approved';
+
+                    $checkInTime = $hasAttendance && $att->check_in_time ? Carbon::parse($att->check_in_time) : null;
+                    $checkOutTime = $hasAttendance && $att->check_out_time ? Carbon::parse($att->check_out_time) : null;
+                    if ($hasApprovedCorrection) {
+                        $checkInTime = Carbon::parse($corr->proposed_check_in_time);
+                        $checkOutTime = Carbon::parse($corr->proposed_check_out_time);
+                    }
+
+                    $statusCode = '-';
+                    $timeDisplay = '-';
+                    $isWeekend = in_array($cursor->dayOfWeek, [Carbon::SATURDAY, Carbon::SUNDAY]);
+
+                    if ($leave) {
+                        $statusCode = 'C';
+                        $timeDisplay = 'Cuti';
+                        $summary['cuti']++;
+                    } elseif ($hasAttendance || $hasApprovedCorrection) {
+                        $summary['hadir']++;
+
+                        $isLate = false;
+                        if ($checkInTime && $sched && !empty($sched->start_time)) {
+                            $schedStart = Carbon::parse($dateStr . ' ' . $sched->start_time);
+                            if ($checkInTime->gt($schedStart)) {
+                                $isLate = true;
+                            }
+                        } elseif ($hasAttendance && $att->status === 'Terlambat') {
+                            $isLate = true;
+                        }
+
+                        if ($isLate) {
+                            $statusCode = 'T';
+                            $timeDisplay = ($checkInTime ? $checkInTime->format('H:i') : '-') . ' (T)';
+                            $summary['telat']++;
+                        } else {
+                            $statusCode = 'H';
+                            $timeDisplay = $checkInTime ? $checkInTime->format('H:i') : 'H';
+                            $summary['tepat_waktu']++;
+                        }
+                    } elseif ($cursor->lt($today)) {
+                        if ($sched && strtolower($sched->shift_id ?? '') !== 'off') {
+                            $statusCode = 'A';
+                            $timeDisplay = 'A';
+                            $summary['tidak_hadir']++;
+                        } else {
+                            $statusCode = 'OFF';
+                            $timeDisplay = 'OFF';
+                            $summary['libur']++;
+                        }
+                    } else {
+                        if (!$sched || strtolower($sched->shift_id ?? '') === 'off') {
+                            $statusCode = 'OFF';
+                            $timeDisplay = 'OFF';
+                            $summary['libur']++;
+                        } else {
+                            $statusCode = '-';
+                            $timeDisplay = '-';
+                        }
+                    }
+
+                    $userDays[$dayNum] = [
+                        'day'          => $dayNum,
+                        'date'         => $dateStr,
+                        'day_name'     => $cursor->isoFormat('ddd'),
+                        'is_weekend'   => $isWeekend,
+                        'status_code'  => $statusCode,
+                        'time_display' => $timeDisplay,
+                        'check_in'     => $checkInTime ? $checkInTime->format('H:i:s') : '-',
+                        'check_out'    => $checkOutTime ? $checkOutTime->format('H:i:s') : '-',
+                    ];
+
+                    // Data untuk Sheet 3: Log Detail Presensi
                     if ($schedulesForDate->isEmpty()) {
                         $attendances->push((object) [
                             'date'       => $dateStr,
-                            'attendance' => $attendancesForDate->first(),
+                            'attendance' => $att,
                             'schedule'   => null,
                             'user'       => $user,
                             'leave'      => $leaveForDate,
@@ -772,7 +984,7 @@ class AttendanceController extends Controller
                         foreach ($schedulesForDate as $schedule) {
                             $attendances->push((object) [
                                 'date'       => $dateStr,
-                                'attendance' => $attendancesForDate->first(),
+                                'attendance' => $att,
                                 'schedule'   => $schedule,
                                 'user'       => $user,
                                 'leave'      => $leaveForDate,
@@ -783,9 +995,15 @@ class AttendanceController extends Controller
 
                     $cursor->addDay();
                 }
+
+                $matrixData->push((object) [
+                    'user'    => $user,
+                    'days'    => $userDays,
+                    'summary' => $summary,
+                ]);
             }
 
-            // ===== SORTING =====
+            // ===== SORTING DATA DETAIL =====
             $attendances = $attendances->sortBy([
                 ['user.fullname', 'asc'],
                 ['date', 'asc'],
@@ -793,10 +1011,11 @@ class AttendanceController extends Controller
 
             // ===== FILE NAME =====
             $exportName = $users->count() === 1 ? str_replace(' ', '_', $users->first()->fullname) : $stationName;
-            $fileName = 'Laporan_Absensi_' . $exportName . '_' . $request->month . '.xlsx';
+            $fileName = 'Laporan_Absensi_' . $exportName . '_' . $month . '.xlsx';
+            $readableStation = str_replace('_', ' ', $stationName);
 
-            return \Maatwebsite\Excel\Facades\Excel::download(
-                new AttendanceReportExport($attendances),
+            return Excel::download(
+                new AttendanceReportExport($matrixData, $attendances, $month, $readableStation),
                 $fileName
             );
         } catch (\Exception $e) {

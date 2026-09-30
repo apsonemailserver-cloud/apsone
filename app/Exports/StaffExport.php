@@ -19,11 +19,15 @@ class StaffExport implements FromCollection, WithHeadings, WithMapping
 
     public function collection()
     {
-        $query = User::query();
+        $query = User::with('employee')
+            ->leftJoin('employees', 'users.employee_id', '=', 'employees.id')
+            ->select('users.*');
+
         if ($this->station) {
-            $query->where('station', $this->station);
+            $query->where('employees.station_id', $this->station);
         }
-        return $query->get();
+
+        return $query->orderBy('employees.fullname', 'asc')->get();
     }
 
     public function map($user): array
