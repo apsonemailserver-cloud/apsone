@@ -395,6 +395,28 @@ Buka URL di browser: `http://127.0.0.1:8000`
 
 Aplikasi dideploy ke VPS Ubuntu tanpa Docker menggunakan stack **Nginx + PHP 8.3-FPM + MySQL** dengan SSL Let's Encrypt.
 
+### Patch keamanan PHP2Shell (21 Oktober 2026)
+
+PHP-FPM wajib memakai **PHP 8.3.36 atau lebih baru**, atau paket Ubuntu 24.04
+**8.3.6-0ubuntu0.24.04.13 atau lebih baru** yang memuat backport perbaikan.
+Referensi: [advisori PHP](https://www.php.net/archive/2026.php) dan
+[paket perbaikan Ubuntu](https://ubuntu.com/blog/php2shell-vulnerability-fixes-available).
+Mengubah `composer.json` saja tidak memperbarui runtime PHP di server.
+
+Jalankan dari folder proyek di VPS:
+
+```bash
+bash scripts/update-php-security.sh
+```
+
+Script memperbarui seluruh paket PHP 8.3 yang sudah terpasang dari repository APT
+yang dikonfigurasi di server, memeriksa konfigurasi FPM, me-restart FPM, lalu
+memverifikasi versi paket CLI, FPM, dan core. Script berhenti dengan error jika
+repository belum menyediakan versi perbaikan yang dikenali. Workflow deploy
+menjalankannya sebelum perintah Artisan. User deploy memerlukan akses sudo untuk
+APT dan layanan FPM. Restart juga layanan queue/worker PHP yang berjalan lama
+melalui pengelola layanan yang digunakan di VPS setelah pembaruan.
+
 ![GitHub Actions Deployment Flow](docs/images/workflow-deploy-flow.png)
 
 ### Alur Deploy Otomatis (CI/CD GitHub Actions):
